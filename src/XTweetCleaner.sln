@@ -1,0 +1,63 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.13.35931.197
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UI", "UI\UI.csproj", "{48A19ABC-B503-5409-9E90-1467B8E8649F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core", "Core\Core.csproj", "{A65F1C77-11C1-DC4F-0A69-6EE789D29685}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{F7B3E70B-3487-8FDC-C91B-9CA0F0F66BE0}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{8EC462FD-D22E-90A8-E5CE-7E832BA40C5D}"
+	ProjectSection(SolutionItems) = preProject
+		..\.editorconfig = ..\.editorconfig
+		..\README.md = ..\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "charts", "charts", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+	ProjectSection(SolutionItems) = preProject
+		..\infrastructure\charts\ollama\values.yaml = ..\infrastructure\charts\ollama\values.yaml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ollama", "ollama", "{B0570E67-6EAA-400E-B2F3-058A540BDF9F}"
+	ProjectSection(SolutionItems) = preProject
+		..\infrastructure\charts\ollama\values.yaml = ..\infrastructure\charts\ollama\values.yaml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "webui", "webui", "{679D24C8-C3A7-4B4A-9DF6-3F8002463461}"
+	ProjectSection(SolutionItems) = preProject
+		..\infrastructure\charts\open-webui\values.yaml = ..\infrastructure\charts\open-webui\values.yaml
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{48A19ABC-B503-5409-9E90-1467B8E8649F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{48A19ABC-B503-5409-9E90-1467B8E8649F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{48A19ABC-B503-5409-9E90-1467B8E8649F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{48A19ABC-B503-5409-9E90-1467B8E8649F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A65F1C77-11C1-DC4F-0A69-6EE789D29685}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A65F1C77-11C1-DC4F-0A69-6EE789D29685}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A65F1C77-11C1-DC4F-0A69-6EE789D29685}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A65F1C77-11C1-DC4F-0A69-6EE789D29685}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F7B3E70B-3487-8FDC-C91B-9CA0F0F66BE0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F7B3E70B-3487-8FDC-C91B-9CA0F0F66BE0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F7B3E70B-3487-8FDC-C91B-9CA0F0F66BE0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F7B3E70B-3487-8FDC-C91B-9CA0F0F66BE0}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{02EA681E-C7D8-13C7-8484-4AC65E1B71E8} = {8EC462FD-D22E-90A8-E5CE-7E832BA40C5D}
+		{B0570E67-6EAA-400E-B2F3-058A540BDF9F} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{679D24C8-C3A7-4B4A-9DF6-3F8002463461} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {C5A00240-64B9-4718-9682-317A36915078}
+	EndGlobalSection
+EndGlobal

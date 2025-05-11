@@ -3,7 +3,6 @@
 
 ## TODO
 * delete all tweets
-* show tweets count
 * disable delete button if the login is not completed
 * show progressbar / update progressbar
 * unit tests, coverage > 80%
@@ -16,6 +15,7 @@
   * run nightly integration tests
 
 ### Nice to Have
+* show tweets count
 * delete all stars
 * show stars count
 * handle 1000 msgs

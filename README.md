@@ -16,8 +16,8 @@
 
 ### Nice to Have
 * show tweets count
-* delete all stars
+* delete all starred posts
 * show stars count
 * handle 1000 msgs
 * integration tests
-    * create 10000 stars and delete them
+    * create and delete 10,000 starred posts.

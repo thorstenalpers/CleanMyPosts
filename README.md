@@ -19,5 +19,5 @@
 * delete all stars
 * show stars count
 * handle 1000 msgs
-* * integration tests
+* integration tests
     * create 10000 stars and delete them

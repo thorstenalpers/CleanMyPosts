@@ -1,8 +1,6 @@
-﻿using XTweetCleaner.Core.Models;
-
-namespace XTweetCleaner.Core.Contracts.Services;
+﻿namespace XTweetCleaner.Core.Contracts.Services;
 
 public interface IXService
 {
-    Task<DeleteResult> DeleteAllTweetsAsync(string authToken, string ct0);
+    Task DeleteAllTweetsAsync(string authToken, string ct0, string screen_name, string operationId, CancellationToken cancellationToken = default);
 }

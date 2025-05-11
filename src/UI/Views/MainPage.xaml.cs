@@ -1,4 +1,5 @@
-﻿using System.Windows.Controls;
+﻿using System.Windows;
+using System.Windows.Controls;
 using XTweetCleaner.UI.ViewModels;
 
 namespace XTweetCleaner.UI.Views;
@@ -12,6 +13,11 @@ public partial class MainPage : Page
         InitializeComponent();
         DataContext = viewModel;
         _viewModel = viewModel;
-        _viewModel.Initialize(webView);
+        Loaded += MainPage_LoadedAsync;
+    }
+
+    private async void MainPage_LoadedAsync(object sender, RoutedEventArgs e)
+    {
+        await _viewModel.InitializeAsync(webView);
     }
 }

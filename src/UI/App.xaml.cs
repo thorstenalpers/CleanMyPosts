@@ -2,6 +2,7 @@
 using System.Reflection;
 using System.Windows;
 using System.Windows.Threading;
+using MahApps.Metro.Controls.Dialogs;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -16,11 +17,6 @@ using XTweetCleaner.UI.Views;
 
 namespace XTweetCleaner.UI;
 
-// For more information about application lifecycle events see https://docs.microsoft.com/dotnet/framework/wpf/app-development/application-management-overview
-
-// WPF UI elements use language en-US by default.
-// If you need to support other cultures make sure you add converters and review dates and numbers in your UI to ensure everything adapts correctly.
-// Tracking issue for improving this is https://github.com/dotnet/wpf/issues/1946
 public partial class App : Application
 {
     private IHost _host;
@@ -37,7 +33,6 @@ public partial class App : Application
     {
         var appLocation = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
 
-        // For more information about .NET generic host see  https://docs.microsoft.com/aspnet/core/fundamentals/host/generic-host?view=aspnetcore-3.0
         _host = Host.CreateDefaultBuilder(e.Args)
                 .ConfigureAppConfiguration(c =>
                 {
@@ -67,7 +62,7 @@ public partial class App : Application
         services.AddSingleton<IPageService, PageService>();
         services.AddSingleton<INavigationService, NavigationService>();
         services.AddSingleton<IXService, XService>();
-        services.AddSingleton<IWebViewCookieService, WebViewCookieService>();
+        services.AddSingleton<IWebViewService, WebViewService>();
 
         // Views and ViewModels
         services.AddTransient<IShellWindow, ShellWindow>();
@@ -80,6 +75,8 @@ public partial class App : Application
         services.AddTransient<SettingsPage>();
 
         services.AddHttpClient();
+        services.AddLogging();
+        services.AddSingleton(DialogCoordinator.Instance);
 
         services.AddTransient<IShellDialogWindow, ShellDialogWindow>();
         services.AddTransient<ShellDialogViewModel>();

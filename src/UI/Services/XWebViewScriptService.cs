@@ -7,12 +7,12 @@ using XTweetCleaner.UI.Contracts.Services;
 
 namespace XTweetCleaner.UI.Services;
 
-public class WebViewService : IWebViewService
+public class XWebViewScriptService : IXWebViewScriptService
 {
     private readonly IHttpClientFactory _httpClientFactory;
-    private readonly ILogger<WebViewService> _logger;
+    private readonly ILogger<XWebViewScriptService> _logger;
 
-    public WebViewService(IHttpClientFactory httpClientFactory, ILogger<WebViewService> logger)
+    public XWebViewScriptService(IHttpClientFactory httpClientFactory, ILogger<XWebViewScriptService> logger)
     {
         _httpClientFactory = httpClientFactory;
         _logger = logger;
@@ -45,7 +45,7 @@ public class WebViewService : IWebViewService
         return (authToken, ct0);
     }
 
-    public async Task<(string deleteOperationId, string userByScreenNameOperationId)> GetOperationIdsAsync(WebView2 webView, CancellationToken cancellationToken = default)
+    public async Task<(string deleteTweetOperationId, string userByScreenNameOperationId)> GetOperationIdsAsync(WebView2 webView, CancellationToken cancellationToken = default)
     {
         try
         {
@@ -85,5 +85,46 @@ public class WebViewService : IWebViewService
             _logger.LogError(ex, "Exception");
             return (null, null);
         }
+    }
+
+    public async Task<string> GetTweetCountFromProfile(WebView2 webView)
+    {
+
+        const string jsScript = @"
+            (() => {
+                const el = document.querySelector('[data-testid=""primaryColumn""] > div > div > div');
+                if (!el) return null;
+
+                const match = el.textContent.match(/((\d|,|\.|K)+) (\w+)$/);
+                if (!match) return null;
+
+                return match[1]
+                    .replace(/\.(\d+)K/, '$1'.padEnd(4, '0'))
+                    .replace('K', '000')
+                    .replace(',', '')
+                    .replace('.', '');
+            })();
+        ";
+
+        var result = await webView.ExecuteScriptAsync(jsScript);
+        var tweetCount = JsonConvert.DeserializeObject<string>(result);
+        return tweetCount;
+    }
+
+    public async Task<string> GetUserName(WebView2 webView)
+    {
+        var jsScript = @"
+            (() => {          
+                const element = document.querySelector('a[aria-label=""Profile""]');
+                if (element) {
+                    const href = element.getAttribute('href');
+                    const username = href ? href.replace('/', '') : '';
+                    return username;
+                }
+                return '';
+            })()";
+        var userName = await webView.ExecuteScriptAsync(jsScript);
+
+        return userName?.Replace("\\\"", "\"")?.Trim('\"');
     }
 }

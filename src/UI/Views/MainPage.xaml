@@ -46,6 +46,7 @@
 					Grid.Column="1"
 					Margin="0,0,10,0"
 					Command="{Binding DeleteAllPostsCommand}"
+					IsEnabled="{Binding IsInitialized}" 
 					Content="Delete"
 					FontSize="12" />
 			</Grid>

@@ -3,27 +3,28 @@ using System.Windows.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MahApps.Metro.Controls.Dialogs;
-using XTweetCleaner.Core.Contracts.Services;
 using XTweetCleaner.UI.Contracts.Services;
 
 namespace XTweetCleaner.UI.ViewModels;
 
 public partial class MainViewModel : ObservableObject
 {
-    private readonly IWebViewService _webViewService;
-    private readonly IXService _xService;
+    private readonly IXWebViewScriptService _xWebViewScriptService;
     private Microsoft.Web.WebView2.Wpf.WebView2 _webView;
     public ICommand DeleteAllPostsCommand { get; }
     private readonly IDialogCoordinator _dialogCoordinator;
 
-    private readonly Uri _source = new("https://x.com");
-    private string _operationId;
-    private string _screen_name;
+    private const string _source = "https://x.com";
+    private string _deleteTweetOperationId;
+    private string _userByScreenNameOperationId;
+    private string _userName;
 
-    public MainViewModel(IWebViewService webViewService, IXService xService, IDialogCoordinator dialogCoordinator)
+    [ObservableProperty]
+    private bool _isInitialized;
+
+    public MainViewModel(IXWebViewScriptService xWebViewScriptService, IDialogCoordinator dialogCoordinator)
     {
-        _webViewService = webViewService;
-        _xService = xService;
+        _xWebViewScriptService = xWebViewScriptService;
         DeleteAllPostsCommand = new AsyncRelayCommand(ExecuteDeleteAllPostsAsync);
         _dialogCoordinator = dialogCoordinator;
     }
@@ -33,14 +34,17 @@ public partial class MainViewModel : ObservableObject
         _webView = webView;
         await _webView.EnsureCoreWebView2Async();
         await _webView.CoreWebView2.CallDevToolsProtocolMethodAsync("Network.enable", "{}");
+        await _webView.CoreWebView2.CallDevToolsProtocolMethodAsync("Console.enable", "{}");
 
-        _webView.Source = _source;
+        _webView.Source = new Uri(_source);
 
         _webView.NavigationCompleted += async (s, e) =>
         {
             if (e.IsSuccess)
             {
-                (_operationId, _screen_name) = await _webViewService.GetOperationIdsAsync(_webView);
+                (_deleteTweetOperationId, _userByScreenNameOperationId) = await _xWebViewScriptService.GetOperationIdsAsync(_webView);
+                _userName = await _xWebViewScriptService.GetUserName(_webView);
+                IsInitialized = true;
             }
         };
     }
@@ -48,7 +52,7 @@ public partial class MainViewModel : ObservableObject
 
     private async Task ExecuteDeleteAllPostsAsync()
     {
-        var (authToken, ct0) = await _webViewService.GetTwitterCookiesAsync(_webView);
+        var (authToken, ct0) = await _xWebViewScriptService.GetTwitterCookiesAsync(_webView);
 
         if (string.IsNullOrEmpty(authToken) || string.IsNullOrEmpty(ct0))
         {
@@ -56,7 +60,7 @@ public partial class MainViewModel : ObservableObject
             return;
         }
 
-        await _xService.DeleteAllTweetsAsync(authToken, ct0, _screen_name, _operationId);
+        //await _xService.DeleteAllTweetsAsync(authToken, ct0, _userByScreenNameOperationId, _deleteTweetOperationId);
     }
 
     private async Task ShowInfoDialogAsync(string title, string message)
@@ -68,10 +72,5 @@ public partial class MainViewModel : ObservableObject
             message,
             MessageDialogStyle.Affirmative);
         _webView.Visibility = Visibility.Visible;
-    }
-
-    public void ClearCookiesOnClose()
-    {
-        _webView?.CoreWebView2?.CookieManager?.DeleteAllCookies();
     }
 }

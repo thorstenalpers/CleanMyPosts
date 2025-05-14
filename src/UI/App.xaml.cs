@@ -61,8 +61,7 @@ public partial class App : Application
         services.AddSingleton<IThemeSelectorService, ThemeSelectorService>();
         services.AddSingleton<IPageService, PageService>();
         services.AddSingleton<INavigationService, NavigationService>();
-        services.AddSingleton<IXService, XService>();
-        services.AddSingleton<IWebViewService, WebViewService>();
+        services.AddSingleton<IXWebViewScriptService, XWebViewScriptService>();
 
         // Views and ViewModels
         services.AddTransient<IShellWindow, ShellWindow>();

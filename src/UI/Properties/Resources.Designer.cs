@@ -61,7 +61,7 @@ namespace XTweetCleaner.UI.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to X Tweet Cleaner.
+        ///   Looks up a localized string similar to X-Tweet Cleaner.
         /// </summary>
         public static string AppDisplayName {
             get {

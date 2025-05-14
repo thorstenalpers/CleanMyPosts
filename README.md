@@ -65,4 +65,5 @@ To build from source:
 ```bash
 git clone https://github.com/thorstenalpers/x-tweet-cleaner.git
 cd x-tweet-cleaner
+cd src
 dotnet build

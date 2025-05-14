@@ -2,7 +2,6 @@
 using System.Reflection;
 using System.Windows;
 using System.Windows.Threading;
-using MahApps.Metro.Controls.Dialogs;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -46,10 +45,7 @@ public partial class App : Application
 
     internal static void ConfigureServices(HostBuilderContext context, IServiceCollection services)
     {
-        // App Host
         services.AddHostedService<ApplicationHostService>();
-
-        // Activation Handlers
 
         // Core Services
         services.AddSingleton<IFileService, FileService>();
@@ -73,12 +69,12 @@ public partial class App : Application
         services.AddTransient<SettingsViewModel>();
         services.AddTransient<SettingsPage>();
 
-        services.AddHttpClient();
-        services.AddLogging();
-        services.AddSingleton(DialogCoordinator.Instance);
-
         services.AddTransient<IShellDialogWindow, ShellDialogWindow>();
         services.AddTransient<ShellDialogViewModel>();
+
+        // Utilities
+        services.AddHttpClient();
+        services.AddLogging();
 
         // Configuration
         services.Configure<AppConfig>(context.Configuration.GetSection(nameof(AppConfig)));

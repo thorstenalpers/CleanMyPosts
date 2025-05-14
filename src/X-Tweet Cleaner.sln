@@ -15,21 +15,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		..\README.md = ..\README.md
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "charts", "charts", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
-	ProjectSection(SolutionItems) = preProject
-		..\infrastructure\charts\ollama\values.yaml = ..\infrastructure\charts\ollama\values.yaml
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ollama", "ollama", "{B0570E67-6EAA-400E-B2F3-058A540BDF9F}"
-	ProjectSection(SolutionItems) = preProject
-		..\infrastructure\charts\ollama\values.yaml = ..\infrastructure\charts\ollama\values.yaml
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "webui", "webui", "{679D24C8-C3A7-4B4A-9DF6-3F8002463461}"
-	ProjectSection(SolutionItems) = preProject
-		..\infrastructure\charts\open-webui\values.yaml = ..\infrastructure\charts\open-webui\values.yaml
-	EndProjectSection
-EndProject
+
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

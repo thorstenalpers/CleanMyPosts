@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.Wpf;
 using XTweetCleaner.UI.Contracts.Services;
+using XTweetCleaner.UI.Helpers;
 
 namespace XTweetCleaner.UI.Services;
 
@@ -20,17 +21,18 @@ public class XWebViewScriptService(ILogger<XWebViewScriptService> logger) : IXWe
                 const username = href ? href.split('/')[1] : '';
                 return username;
             }
+            window.chrome.webview.postMessage(JSON.stringify({level: ""info"", message: ""No username found!""}));
             return '';
         })()";
 
         var userName = await webView.ExecuteScriptAsync(jsScript);
 
-        return userName?.Replace("\\\"", "\"")?.Trim('\"');
+        return Helper.CleanJsonResult(userName);
     }
 
     public async Task DeleteAllPostsAsync(WebView2 webView)
     {
-        const int maxPosts = 1;
+        const int maxPosts = 10;
 
         var userName = await GetUserNameAsync(webView);
         var query = $"from:{userName} since:2000-01-01";
@@ -114,7 +116,14 @@ public class XWebViewScriptService(ILogger<XWebViewScriptService> logger) : IXWe
     private async Task DeleteSinglePostAsync(WebView2 webView)
     {
         const string jsScript = @"
-            document.querySelector('div[data-testid=""primaryColumn""] section button[data-testid=""caret""]')?.click();
+        (() => {
+            const caret = document.querySelector('div[data-testid=""primaryColumn""] section button[data-testid=""caret""]');
+            if (!caret) {
+                window.chrome.webview.postMessage(JSON.stringify({level: ""error"", message: ""Caret button not found!""}));
+                return;
+            } else {
+                caret.click();
+            }
 
             const delays = [100, 200, 500, 1000];
 
@@ -150,7 +159,7 @@ public class XWebViewScriptService(ILogger<XWebViewScriptService> logger) : IXWe
                             tryClickDelete(attempt + 1);
                         }
                     } else {
-                        console.log('Menu not visible yet, retrying...');
+                        window.chrome.webview.postMessage(JSON.stringify({level: ""info"", message: ""Menu not visible yet, retrying...""}));
                         tryClickDelete(attempt + 1);
                     }
                 }, delays[attempt]);
@@ -163,18 +172,20 @@ public class XWebViewScriptService(ILogger<XWebViewScriptService> logger) : IXWe
                     const confirmBtn = document.querySelector('button[data-testid=""confirmationSheetConfirm""]');
                     if (confirmBtn && confirmBtn.offsetParent !== null) {
                         confirmBtn.click();
-                        console.log('Delete confirmed.');
+                        window.scrollBy(0, 300); // Force load more content
+                        window.chrome.webview.postMessage(JSON.stringify({level: ""info"", message: ""Delete confirmed.""}));
                     } else {
-                        console.log('Confirmation button not found or not visible, retrying...');
+                        window.chrome.webview.postMessage(JSON.stringify({level: ""info"", message: ""Confirmation button not found or not visible, retrying...""}));
                         retryConfirm(attempt + 1);
                     }
                 }, delays[attempt]);
             }
 
-            tryClickDelete();";
-
+            tryClickDelete();
+        })();";
         await webView.ExecuteScriptAsync(jsScript);
     }
+
 
     private async Task<int> GetCaretCountAsync(WebView2 webView)
     {

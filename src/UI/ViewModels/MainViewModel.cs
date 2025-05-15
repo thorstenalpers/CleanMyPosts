@@ -1,6 +1,7 @@
 ﻿using System.Windows.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Extensions.Logging;
 using Microsoft.Web.WebView2.Core;
 using XTweetCleaner.UI.Contracts.Services;
 
@@ -8,6 +9,7 @@ namespace XTweetCleaner.UI.ViewModels;
 
 public partial class MainViewModel : ObservableObject
 {
+    private readonly ILogger<MainViewModel> _logger;
     private readonly IXWebViewScriptService _xWebViewScriptService;
     private Microsoft.Web.WebView2.Wpf.WebView2 _webView;
     public ICommand DeleteAllPostsCommand { get; }
@@ -16,8 +18,9 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private bool _isDeleteButtonEnabled;
 
-    public MainViewModel(IXWebViewScriptService xWebViewScriptService)
+    public MainViewModel(ILogger<MainViewModel> logger, IXWebViewScriptService xWebViewScriptService)
     {
+        _logger = logger;
         _xWebViewScriptService = xWebViewScriptService;
         DeleteAllPostsCommand = new AsyncRelayCommand(ExecuteDeleteAllPostsAsync);
     }
@@ -32,7 +35,42 @@ public partial class MainViewModel : ObservableObject
 #endif
 
         _webView.Source = new Uri(XBaseUrl);
+        var jsScript = @"
+            window.onerror = function(message, source, lineno, colno, error) {
+            chrome.webview.postMessage(JSON.stringify({
+                level: ""error"",
+                message: `JS Error: ${message} at ${source}:${lineno}:${colno}`
+            }));
+        };";
+        await webView.ExecuteScriptAsync(jsScript);
         _webView.NavigationCompleted += IsUserLoggedInEventHandler();
+        _webView.CoreWebView2.WebMessageReceived += (sender, args) =>
+        {
+            var raw = args.TryGetWebMessageAsString();
+            try
+            {
+                var json = System.Text.Json.JsonDocument.Parse(raw);
+                var level = json.RootElement.GetProperty("level").GetString();
+                var msg = json.RootElement.GetProperty("message").GetString();
+
+                if (level == "error")
+                {
+                    _logger.LogError("JS Error: {Message}", msg);
+                }
+                else if (level == "warning")
+                {
+                    _logger.LogWarning("JS Warning: {Message}", msg);
+                }
+                else
+                {
+                    _logger.LogInformation("JS: {Message}", msg);
+                }
+            }
+            catch
+            {
+                _logger.LogWarning("Malformed JS message: {Raw}", raw);
+            }
+        };
     }
 
     private EventHandler<CoreWebView2NavigationCompletedEventArgs> IsUserLoggedInEventHandler()

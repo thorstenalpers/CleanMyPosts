@@ -46,9 +46,9 @@
 					Grid.Column="1"
 					Margin="0,0,10,0"
 					Command="{Binding DeleteAllPostsCommand}"
-					IsEnabled="{Binding IsDeleteButtonEnabled}" 
 					Content="Delete"
-					FontSize="12" />
+					FontSize="12"
+					IsEnabled="{Binding IsDeleteButtonEnabled}" />
 			</Grid>
 		</Border>
 
@@ -56,7 +56,7 @@
 			<wv2:WebView2
 				x:Name="webView"
 				HorizontalAlignment="Stretch"
-				VerticalAlignment="Stretch"/>
+				VerticalAlignment="Stretch" />
 		</Grid>
 	</Grid>
 </Page>

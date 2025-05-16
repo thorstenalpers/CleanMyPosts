@@ -69,6 +69,12 @@
 								</i:EventTrigger>
 							</i:Interaction.Triggers>
 						</RadioButton>
+
+						<CheckBox
+							Margin="{StaticResource MediumTopMargin}"
+							Content="Show Logs"
+							IsChecked="{Binding ShowLogs, Mode=TwoWay}"
+							FontSize="{StaticResource MediumFontSize}" />
 					</StackPanel>
 				</StackPanel>
 

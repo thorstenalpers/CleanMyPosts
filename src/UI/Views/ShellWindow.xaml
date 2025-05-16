@@ -5,13 +5,15 @@
 	xmlns:controls="http://metro.mahapps.com/winfx/xaml/controls"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 	xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+	xmlns:material="http://metro.mahapps.com/winfx/xaml/iconpacks/material"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 	xmlns:properties="clr-namespace:XTweetCleaner.UI.Properties"
 	xmlns:templateSelectors="clr-namespace:XTweetCleaner.UI.TemplateSelectors"
 	Title="{x:Static properties:Resources.AppDisplayName}"
-	MinWidth="500"
-	MinHeight="350"
-	Icon="../Assets/logo.png"
+	Width="860"
+	Height="600"
+	MinWidth="300"
+	MinHeight="300"
 	Style="{StaticResource CustomMetroWindow}"
 	mc:Ignorable="d">
 	<i:Interaction.Triggers>
@@ -47,6 +49,7 @@
 					</Grid>
 				</DataTemplate>
 			</templateSelectors:MenuItemTemplateSelector.GlyphDataTemplate>
+
 			<templateSelectors:MenuItemTemplateSelector.ImageDataTemplate>
 				<DataTemplate DataType="{x:Type controls:HamburgerMenuImageItem}">
 					<Grid Height="48">
@@ -73,7 +76,30 @@
 					</Grid>
 				</DataTemplate>
 			</templateSelectors:MenuItemTemplateSelector.ImageDataTemplate>
+
+			<templateSelectors:MenuItemTemplateSelector.IconDataTemplate>
+				<DataTemplate DataType="{x:Type controls:HamburgerMenuIconItem}">
+					<Grid Height="48">
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="48" />
+							<ColumnDefinition />
+						</Grid.ColumnDefinitions>
+						<ContentControl
+							Grid.Column="0"
+							HorizontalAlignment="Center"
+							VerticalAlignment="Center"
+							Content="{Binding Icon}"
+							ToolTip="{Binding Label}" />
+						<TextBlock
+							Grid.Column="1"
+							VerticalAlignment="Center"
+							FontSize="16"
+							Text="{Binding Label}" />
+					</Grid>
+				</DataTemplate>
+			</templateSelectors:MenuItemTemplateSelector.IconDataTemplate>
 		</templateSelectors:MenuItemTemplateSelector>
+
 	</controls:MetroWindow.Resources>
 	<controls:MetroWindow.Content>
 		<controls:HamburgerMenu
@@ -84,6 +110,7 @@
 			ItemCommand="{Binding MenuItemInvokedCommand}"
 			ItemTemplateSelector="{StaticResource MenuItemTemplateSelector}"
 			ItemsSource="{Binding MenuItems}"
+			OpenPaneLength="140"
 			OptionsItemCommand="{Binding OptionsMenuItemInvokedCommand}"
 			OptionsItemTemplateSelector="{StaticResource MenuItemTemplateSelector}"
 			OptionsItemsSource="{Binding OptionMenuItems}"

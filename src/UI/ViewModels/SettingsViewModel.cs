@@ -1,6 +1,4 @@
-﻿using System.Windows.Input;
-
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using XTweetCleaner.UI.Contracts.Services;
 using XTweetCleaner.UI.Contracts.ViewModels;
@@ -8,47 +6,41 @@ using XTweetCleaner.UI.Models;
 
 namespace XTweetCleaner.UI.ViewModels;
 
-public class SettingsViewModel : ObservableObject, INavigationAware
+public partial class SettingsViewModel(IThemeSelectorService themeSelectorService,
+    IApplicationInfoService applicationInfoService,
+    IAppSettingsService appSettingsService) : ObservableObject, INavigationAware
 {
-    private readonly IThemeSelectorService _themeSelectorService;
-    private readonly IApplicationInfoService _applicationInfoService;
+    private readonly IThemeSelectorService _themeSelectorService = themeSelectorService ?? throw new ArgumentNullException(nameof(themeSelectorService));
+    private readonly IApplicationInfoService _applicationInfoService = applicationInfoService ?? throw new ArgumentNullException(nameof(applicationInfoService));
+    private readonly IAppSettingsService _appSettingsService = appSettingsService ?? throw new ArgumentNullException(nameof(appSettingsService));
+
+    [ObservableProperty]
     private AppTheme _theme;
+
+    [ObservableProperty]
     private string _versionDescription;
-    private ICommand _setThemeCommand;
 
-    public AppTheme Theme
+    [ObservableProperty]
+    private bool _showLogs = false;
+
+    [RelayCommand]
+    private void SetTheme(string themeName)
     {
-        get { return _theme; }
-        set { SetProperty(ref _theme, value); }
+        if (Enum.TryParse<AppTheme>(themeName, out var theme))
+        {
+            _themeSelectorService.SetTheme(theme);
+        }
     }
 
-    public string VersionDescription
+    partial void OnShowLogsChanged(bool value)
     {
-        get { return _versionDescription; }
-        set { SetProperty(ref _versionDescription, value); }
-    }
-
-    public ICommand SetThemeCommand => _setThemeCommand ?? (_setThemeCommand = new RelayCommand<string>(OnSetTheme));
-
-    public SettingsViewModel(IThemeSelectorService themeSelectorService, IApplicationInfoService applicationInfoService)
-    {
-        _themeSelectorService = themeSelectorService;
-        _applicationInfoService = applicationInfoService;
+        _appSettingsService.SetShowLogs(value);
     }
 
     public void OnNavigatedTo(object parameter)
     {
         VersionDescription = $"{Properties.Resources.AppDisplayName} - {_applicationInfoService.GetVersion()}";
         Theme = _themeSelectorService.GetCurrentTheme();
-    }
-
-    public void OnNavigatedFrom()
-    {
-    }
-
-    private void OnSetTheme(string themeName)
-    {
-        var theme = (AppTheme)Enum.Parse(typeof(AppTheme), themeName);
-        _themeSelectorService.SetTheme(theme);
+        ShowLogs = _appSettingsService.GetShowLogs();
     }
 }

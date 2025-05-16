@@ -6,20 +6,13 @@ using XTweetCleaner.UI.Helpers;
 
 namespace XTweetCleaner.UI.Services;
 
-public class NavigationService : INavigationService
+public class NavigationService(IPageService pageService) : INavigationService
 {
-    private readonly IPageService _pageService;
+    private readonly IPageService _pageService = pageService;
     private Frame _frame;
     private object _lastParameterUsed;
-
     public event EventHandler<string> Navigated;
-
     public bool CanGoBack => _frame.CanGoBack;
-
-    public NavigationService(IPageService pageService)
-    {
-        _pageService = pageService;
-    }
 
     public void Initialize(Frame shellFrame)
     {
@@ -40,12 +33,7 @@ public class NavigationService : INavigationService
     {
         if (_frame.CanGoBack)
         {
-            var vmBeforeNavigation = _frame.GetDataContext();
             _frame.GoBack();
-            if (vmBeforeNavigation is INavigationAware navigationAware)
-            {
-                navigationAware.OnNavigatedFrom();
-            }
         }
     }
 
@@ -61,16 +49,9 @@ public class NavigationService : INavigationService
             if (navigated)
             {
                 _lastParameterUsed = parameter;
-                var dataContext = _frame.GetDataContext();
-                if (dataContext is INavigationAware navigationAware)
-                {
-                    navigationAware.OnNavigatedFrom();
-                }
             }
-
             return navigated;
         }
-
         return false;
     }
 
@@ -92,7 +73,6 @@ public class NavigationService : INavigationService
             {
                 navigationAware.OnNavigatedTo(e.ExtraData);
             }
-
             Navigated?.Invoke(sender, dataContext.GetType().FullName);
         }
     }

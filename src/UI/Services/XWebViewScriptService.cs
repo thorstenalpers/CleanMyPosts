@@ -1,218 +1,187 @@
 ﻿using System.Net;
 using Microsoft.Extensions.Logging;
-using Microsoft.Web.WebView2.Core;
-using Microsoft.Web.WebView2.Wpf;
 using XTweetCleaner.UI.Contracts.Services;
 using XTweetCleaner.UI.Helpers;
+using XTweetCleaner.UI.Models;
 
 namespace XTweetCleaner.UI.Services;
 
-public class XWebViewScriptService(ILogger<XWebViewScriptService> logger) : IXWebViewScriptService
+public class XWebViewScriptService(ILogger<XWebViewScriptService> logger, IWebViewHostService webViewHostService) : IXWebViewScriptService
 {
     private readonly ILogger<XWebViewScriptService> _logger = logger;
+    private readonly IWebViewHostService _webViewHostService = webViewHostService;
+    private string _userName;
 
-    public async Task<string> GetUserNameAsync(WebView2 webView)
+    public async Task<string> GetUserNameAsync()
     {
-        var jsScript = @"
+        const string jsScript = @"
         (() => { 
-            const element = document.querySelector('a[data-testid=""AppTabBar_Profile_Link""]');
-            if (element) {
-                const href = element.getAttribute('href');
-                const username = href ? href.split('/')[1] : '';
-                return username;
-            }
-            window.chrome.webview.postMessage(JSON.stringify({level: ""info"", message: ""No username found!""}));
-            return '';
+            const el = document.querySelector('a[data-testid=""AppTabBar_Profile_Link""]');
+            const href = el?.getAttribute('href');
+            return href?.split('/')[1] ?? '';
         })()";
-
-        var userName = await webView.ExecuteScriptAsync(jsScript);
-
-        return Helper.CleanJsonResult(userName);
+        var userName = await _webViewHostService.ExecuteScriptAsync(jsScript);
+        _userName = Helper.CleanJsonResult(userName);
+        return _userName;
     }
 
-    public async Task DeleteAllPostsAsync(WebView2 webView)
+    public async Task DeleteAllPostsAsync()
     {
-        const int maxPosts = 10;
-
-        var userName = await GetUserNameAsync(webView);
-        var query = $"from:{userName} since:2000-01-01";
-        var encodedQuery = WebUtility.UrlEncode(query);
-        var url = $"https://x.com/search?q={encodedQuery}&src=typed_query";
-        webView.Source = new Uri(url);
-
-        var navigationCompletedTcs = new TaskCompletionSource<bool>();
-        EventHandler<CoreWebView2NavigationCompletedEventArgs> handler = null!;
-        handler = (s, e) =>
+        var userName = await GetUserNameAsync();
+        if (string.IsNullOrWhiteSpace(userName))
         {
-            webView.NavigationCompleted -= handler;
-            navigationCompletedTcs.SetResult(e.IsSuccess);
-        };
-        webView.NavigationCompleted += handler;
-        var navigationSuccess = await navigationCompletedTcs.Task;
-
-        if (!navigationSuccess)
-        {
-            _logger.LogWarning("Failed to navigate to the URL.");
+            _logger.LogWarning("Unable to retrieve username.");
             return;
         }
 
-        for (var i = 0; i < maxPosts; i++)
-        {
-            var exists = await PostExistsAsync(webView);
-            if (!exists)
-            {
-                _logger.LogInformation("No more posts found.");
-                break;
-            }
+        var searchQuery = $"from:{userName} since:2000-01-01";
+        var encodedQuery = WebUtility.UrlEncode(searchQuery);
+        var url = new Uri($"https://x.com/search?q={encodedQuery}&src=typed_query");
 
-            var countBefore = await GetCaretCountAsync(webView);
-            _logger.LogInformation("Found {CaretCount} posts before delete.", countBefore);
+        if (_webViewHostService.Source != url)
+        {
+            _webViewHostService.Source = url;
+            if (!await WaitForNavigationAsync())
+            {
+                _logger.LogWarning("Navigation to search page failed.");
+                return;
+            }
+        }
+        var postNumber = 1;
+        while (await PostsExistAsync())
+        {
+            var countBefore = await GetCaretCountAsync();
+            _logger.LogInformation("Found {Count} posts before deletion.", countBefore);
 
             try
             {
-                _logger.LogInformation("Attempting to delete post #{PostNumber}...", i + 1);
-                await DeleteSinglePostAsync(webView);
+                _logger.LogInformation("Deleting post #{Number}...", postNumber);
+                await DeleteSinglePostAsync();
 
-                var deleted = await WaitForPostDeletedAsync(webView, countBefore);
-                if (deleted)
+                if (await WaitForPostDeletedAsync(countBefore))
                 {
-                    _logger.LogInformation("Successfully deleted post #{PostNumber}", i + 1);
+                    _logger.LogInformation("Post #{Number} deleted successfully.", postNumber);
                 }
                 else
                 {
-                    _logger.LogWarning("Post #{PostNumber} was not deleted (DOM didn't update).", i + 1);
+                    _logger.LogWarning("Post #{Number} was not deleted (DOM unchanged).", postNumber);
                     break;
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Exception while deleting post #{PostNumber}.", i + 1);
+                _logger.LogError(ex, "Error deleting post #{Number}.", postNumber);
                 break;
             }
+            postNumber++;
         }
+        _logger.LogInformation("No more posts found.");
     }
 
-    private async Task<bool> PostExistsAsync(WebView2 webView)
+    private async Task<bool> PostsExistAsync()
     {
-        const int maxRetries = 5;
-        const int delayInMilliseconds = 500;
-        var attempts = 0;
-
-        while (attempts < maxRetries)
+        const string js = "document.querySelector('div[data-testid=\"primaryColumn\"] section button[data-testid=\"caret\"]') !== null";
+        for (var i = 0; i < 5; i++)
         {
-            var result = await webView.ExecuteScriptAsync("document.querySelector('div[data-testid=\"primaryColumn\"] section button[data-testid=\"caret\"]') !== null");
-
-            if (result == "true")
+            if (await _webViewHostService.ExecuteScriptAsync(js) == "true")
             {
                 return true;
             }
-
-            attempts++;
-            await Task.Delay(delayInMilliseconds);
+            await Task.Delay(500);
         }
         return false;
     }
 
-    private async Task DeleteSinglePostAsync(WebView2 webView)
+    private async Task DeleteSinglePostAsync()
     {
-        const string jsScript = @"
+        const string js = """
         (() => {
-            const caret = document.querySelector('div[data-testid=""primaryColumn""] section button[data-testid=""caret""]');
-            if (!caret) {
-                window.chrome.webview.postMessage(JSON.stringify({level: ""error"", message: ""Caret button not found!""}));
-                return;
-            } else {
-                caret.click();
-            }
+            const caret = document.querySelector('div[data-testid="primaryColumn"] section button[data-testid="caret"]');
+            if (!caret) return;
 
-            const delays = [100, 200, 500, 1000];
+            caret.click();
+
+            const delays = [10, 100, 200, 500, 1000];
 
             function tryClickDelete(attempt = 0) {
                 if (attempt >= delays.length) return;
-
                 setTimeout(() => {
-                    const menu = document.querySelector('[role=""menu""]');
+                    const menu = document.querySelector('[role="menu"]');
                     if (menu && menu.style.display !== 'none') {
-                        const menuItems = document.querySelectorAll('[role=""menuitem""]');
-                        let deleteClicked = false;
-
-                        for (const item of menuItems) {
+                        const items = document.querySelectorAll('[role="menuitem"]');
+                        for (const item of items) {
                             const span = item.querySelector('span');
                             if (!span) continue;
 
                             const color = getComputedStyle(span).color;
-                            const match = color.match(/rgb\((\d+), (\d+), (\d+)\)/);
-
-                            if (match) {
-                                const [r, g, b] = match.slice(1).map(Number);
-                                if (r > 180 && g < 100 && b < 100) {
-                                    span.click();
-                                    deleteClicked = true;
-
-                                    retryConfirm();
-                                    break;
-                                }
+                            const [r, g, b] = color.match(/\d+/g).map(Number);
+                            if (r > 180 && g < 100 && b < 100) {
+                                span.click();
+                                confirmDelete();
+                                return;
                             }
                         }
-
-                        if (!deleteClicked) {
-                            tryClickDelete(attempt + 1);
-                        }
+                        tryClickDelete(attempt + 1);
                     } else {
-                        window.chrome.webview.postMessage(JSON.stringify({level: ""info"", message: ""Menu not visible yet, retrying...""}));
                         tryClickDelete(attempt + 1);
                     }
                 }, delays[attempt]);
             }
 
-            function retryConfirm(attempt = 0) {
+            function confirmDelete(attempt = 0) {
                 if (attempt >= delays.length) return;
-
                 setTimeout(() => {
-                    const confirmBtn = document.querySelector('button[data-testid=""confirmationSheetConfirm""]');
+                    const confirmBtn = document.querySelector('button[data-testid="confirmationSheetConfirm"]');
                     if (confirmBtn && confirmBtn.offsetParent !== null) {
                         confirmBtn.click();
-                        window.scrollBy(0, 300); // Force load more content
-                        window.chrome.webview.postMessage(JSON.stringify({level: ""info"", message: ""Delete confirmed.""}));
+                        window.scrollBy(0, 300);
                     } else {
-                        window.chrome.webview.postMessage(JSON.stringify({level: ""info"", message: ""Confirmation button not found or not visible, retrying...""}));
-                        retryConfirm(attempt + 1);
+                        confirmDelete(attempt + 1);
                     }
                 }, delays[attempt]);
             }
 
             tryClickDelete();
-        })();";
-        await webView.ExecuteScriptAsync(jsScript);
+        })();
+        """;
+        await _webViewHostService.ExecuteScriptAsync(js);
     }
 
-
-    private async Task<int> GetCaretCountAsync(WebView2 webView)
+    private async Task<int> GetCaretCountAsync()
     {
-        var js = @"(() => {
-            return document.querySelectorAll('div[data-testid=""primaryColumn""] section button[data-testid=""caret""]').length;
-        })()";
+        const string js = """
+        (() => document.querySelectorAll('div[data-testid="primaryColumn"] section button[data-testid="caret"]').length)()
+        """;
 
-        var result = await webView.ExecuteScriptAsync(js);
+        var result = await _webViewHostService.ExecuteScriptAsync(js);
         return int.TryParse(result?.Trim('"'), out var count) ? count : 0;
     }
 
-    private async Task<bool> WaitForPostDeletedAsync(WebView2 webView, int previousCount, int timeoutMs = 5000)
+    private async Task<bool> WaitForPostDeletedAsync(int beforeCount)
     {
-        var interval = 200;
-        var elapsed = 0;
-
-        while (elapsed < timeoutMs)
+        int elapsed = 0, interval = 200, timeout = 5000;
+        while (elapsed < timeout)
         {
-            var currentCount = await GetCaretCountAsync(webView);
-            if (currentCount < previousCount)
+            if (await GetCaretCountAsync() < beforeCount)
             {
                 return true;
             }
-
             await Task.Delay(interval);
             elapsed += interval;
         }
         return false;
+    }
+
+    private Task<bool> WaitForNavigationAsync()
+    {
+        var tcs = new TaskCompletionSource<bool>();
+
+        void Handler(object s, NavigationCompletedEventArgs e)
+        {
+            _webViewHostService.NavigationCompleted -= Handler;
+            tcs.SetResult(e.IsSuccess);
+        }
+        _webViewHostService.NavigationCompleted += Handler;
+        return tcs.Task;
     }
 }

@@ -4,8 +4,11 @@
 
 
 ## TODO
+* Confirm dialog before deletion
 * delete all tweets
-* show progressbar / update progressbar
+* delete all starred tweets
+* delete all followed persons
+* hide button bar, hideable via settings
 * unit tests, coverage > 80%
 * integration tests
     * create 10000 tweets and delete them
@@ -14,14 +17,8 @@
   * code coverage 
   * create exe in pipeline
   * run nightly integration tests
-
-### Nice to Have
-* show tweets count
-* delete all starred tweets
-* show starred tweets count
-* handle 1000 tweets
-* integration tests
-    * create and delete 10,000 starred tweets.
+* multilingual
+* bookmark bar, hideable via settings
 
 
 # 🧹 X-Tweet Cleaner

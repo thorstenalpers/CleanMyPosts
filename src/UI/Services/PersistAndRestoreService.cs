@@ -7,17 +7,11 @@ using XTweetCleaner.UI.Models;
 
 namespace XTweetCleaner.UI.Services;
 
-public class PersistAndRestoreService : IPersistAndRestoreService
+public class PersistAndRestoreService(IFileService fileService, IOptions<AppConfig> appConfig) : IPersistAndRestoreService
 {
-    private readonly IFileService _fileService;
-    private readonly AppConfig _appConfig;
+    private readonly IFileService _fileService = fileService;
+    private readonly AppConfig _appConfig = appConfig.Value;
     private readonly string _localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-
-    public PersistAndRestoreService(IFileService fileService, IOptions<AppConfig> appConfig)
-    {
-        _fileService = fileService;
-        _appConfig = appConfig.Value;
-    }
 
     public void PersistData()
     {

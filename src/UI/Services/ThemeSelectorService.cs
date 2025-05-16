@@ -1,5 +1,4 @@
 ﻿using System.Windows;
-
 using ControlzEx.Theming;
 using MahApps.Metro.Theming;
 using XTweetCleaner.UI.Contracts.Services;
@@ -11,10 +10,6 @@ public class ThemeSelectorService : IThemeSelectorService
 {
     private const string HcDarkTheme = "pack://application:,,,/Styles/Themes/HC.Dark.Blue.xaml";
     private const string HcLightTheme = "pack://application:,,,/Styles/Themes/HC.Light.Blue.xaml";
-
-    public ThemeSelectorService()
-    {
-    }
 
     public void InitializeTheme()
     {
@@ -47,10 +42,12 @@ public class ThemeSelectorService : IThemeSelectorService
         if (Application.Current.Properties.Contains("Theme"))
         {
             var themeName = Application.Current.Properties["Theme"].ToString();
-            Enum.TryParse(themeName, out AppTheme theme);
-            return theme;
+            var ok = Enum.TryParse(themeName, out AppTheme theme);
+            if (ok)
+            {
+                return theme;
+            }
         }
-
         return AppTheme.Default;
     }
 }

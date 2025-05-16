@@ -9,58 +9,54 @@ using XTweetCleaner.UI.Helpers;
 
 namespace XTweetCleaner.UI.Services;
 
-public class WindowManagerService : IWindowManagerService
+public class WindowManagerService(IServiceProvider serviceProvider, IPageService pageService) : IWindowManagerService
 {
-    private readonly IServiceProvider _serviceProvider;
-    private readonly IPageService _pageService;
-
-    public Window MainWindow
-        => Application.Current.MainWindow;
-
-    public WindowManagerService(IServiceProvider serviceProvider, IPageService pageService)
-    {
-        _serviceProvider = serviceProvider;
-        _pageService = pageService;
-    }
+    private readonly IServiceProvider _serviceProvider = serviceProvider;
+    private readonly IPageService _pageService = pageService;
+    public Window MainWindow => Application.Current.MainWindow;
 
     public void OpenInNewWindow(string key, object parameter = null)
     {
-        var window = GetWindow(key);
-        if (window != null)
+        var existingWindow = GetWindow(key);
+        if (existingWindow is not null)
         {
-            window.Activate();
+            existingWindow.Activate();
+            return;
         }
-        else
-        {
-            window = new MetroWindow()
-            {
-                Title = "XTweetCleaner",
-                Style = Application.Current.FindResource("CustomMetroWindow") as Style
-            };
-            var frame = new Frame()
-            {
-                Focusable = false,
-                NavigationUIVisibility = NavigationUIVisibility.Hidden
-            };
 
-            window.Content = frame;
-            var page = _pageService.GetPage(key);
-            window.Closed += OnWindowClosed;
-            window.Show();
-            frame.Navigated += OnNavigated;
-            var navigated = frame.Navigate(page, parameter);
-        }
+        var frame = new Frame
+        {
+            Focusable = false,
+            NavigationUIVisibility = NavigationUIVisibility.Hidden
+        };
+
+        var newWindow = new MetroWindow
+        {
+            Title = "X-Tweet-Cleaner",
+            Style = Application.Current.FindResource("CustomMetroWindow") as Style,
+            Content = frame
+        };
+
+        frame.Navigated += OnNavigated;
+        newWindow.Closed += OnWindowClosed;
+        frame.Navigate(_pageService.GetPage(key), parameter);
+        newWindow.Show();
     }
 
     public bool? OpenInDialog(string key, object parameter = null)
     {
-        var shellWindow = _serviceProvider.GetService(typeof(IShellDialogWindow)) as Window;
-        var frame = ((IShellDialogWindow)shellWindow).GetDialogFrame();
+        if (_serviceProvider.GetService(typeof(IShellDialogWindow)) is not IShellDialogWindow shellWindow)
+        {
+            return null;
+        }
+
+        var frame = shellWindow.GetDialogFrame();
         frame.Navigated += OnNavigated;
-        shellWindow.Closed += OnWindowClosed;
-        var page = _pageService.GetPage(key);
-        var navigated = frame.Navigate(page, parameter);
-        return shellWindow.ShowDialog();
+
+        ((Window)shellWindow).Closed += OnWindowClosed;
+        frame.Navigate(_pageService.GetPage(key), parameter);
+
+        return ((Window)shellWindow).ShowDialog();
     }
 
     public Window GetWindow(string key)
@@ -73,31 +69,23 @@ public class WindowManagerService : IWindowManagerService
                 return window;
             }
         }
-
         return null;
     }
 
     private void OnNavigated(object sender, NavigationEventArgs e)
     {
-        if (sender is Frame frame)
+        if (sender is Frame frame &&
+            frame.GetDataContext() is INavigationAware navigationAware)
         {
-            var dataContext = frame.GetDataContext();
-            if (dataContext is INavigationAware navigationAware)
-            {
-                navigationAware.OnNavigatedTo(e.ExtraData);
-            }
+            navigationAware.OnNavigatedTo(e.ExtraData);
         }
     }
 
     private void OnWindowClosed(object sender, EventArgs e)
     {
-        if (sender is Window window)
+        if (sender is Window window && window.Content is Frame frame)
         {
-            if (window.Content is Frame frame)
-            {
-                frame.Navigated -= OnNavigated;
-            }
-
+            frame.Navigated -= OnNavigated;
             window.Closed -= OnWindowClosed;
         }
     }

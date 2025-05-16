@@ -6,10 +6,6 @@ namespace XTweetCleaner.UI.Services;
 
 public class ApplicationInfoService : IApplicationInfoService
 {
-    public ApplicationInfoService()
-    {
-    }
-
     public Version GetVersion()
     {
         var assemblyLocation = Assembly.GetExecutingAssembly().Location;

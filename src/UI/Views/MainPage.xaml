@@ -2,57 +2,229 @@
 	x:Class="XTweetCleaner.UI.Views.MainPage"
 	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-	xmlns:controls="http://metro.mahapps.com/winfx/xaml/controls"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-	xmlns:dialogs="clr-namespace:MahApps.Metro.Controls.Dialogs;assembly=MahApps.Metro"
-	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-	xmlns:properties="clr-namespace:XTweetCleaner.UI.Properties"
+	xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+	xmlns:viewmodels="clr-namespace:XTweetCleaner.UI.ViewModels"
 	xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
-	d:DesignHeight="450"
-	d:DesignWidth="800"
-	Style="{DynamicResource MahApps.Styles.Page}"
-	mc:Ignorable="d">
-
-	<Grid dialogs:DialogParticipation.Register="{Binding}">
-
+	Style="{DynamicResource MahApps.Styles.Page}">
+	<Page.Resources>
+		<Style TargetType="ScrollBar">
+			<Style.Triggers>
+				<Trigger Property="Orientation" Value="Horizontal">
+					<Setter Property="Height" Value="8" />
+					<Setter Property="MinHeight" Value="8" />
+					<Setter Property="Margin" Value="0" />
+				</Trigger>
+			</Style.Triggers>
+		</Style>
+	</Page.Resources>
+	<Grid>
 		<Grid.RowDefinitions>
-			<RowDefinition Height="50" />
-			<RowDefinition Height="1" />
+			<RowDefinition Height="Auto" />
 			<RowDefinition Height="*" />
 		</Grid.RowDefinitions>
 
+		<!--  Navigation Bar with Background  -->
 		<Border
 			Grid.Row="0"
 			Margin="4"
-			Padding="3"
-			BorderBrush="Gray"
+			Padding="8"
+			Background="#FFF5F5F5"
+			BorderBrush="LightGray"
 			BorderThickness="1"
 			CornerRadius="3">
-			<Grid VerticalAlignment="Center">
-				<Grid.ColumnDefinitions>
-					<ColumnDefinition Width="Auto" />
-					<ColumnDefinition Width="Auto" />
-					<ColumnDefinition Width="*" />
-				</Grid.ColumnDefinitions>
-
-				<TextBlock
-					Grid.Column="0"
-					Margin="10,0,10,0"
+			<!--  ScrollViewer wraps the horizontal StackPanel  -->
+			<ScrollViewer
+				Focusable="False"
+				HorizontalScrollBarVisibility="Auto"
+				VerticalScrollBarVisibility="Disabled">
+				<StackPanel
+					HorizontalAlignment="Left"
 					VerticalAlignment="Center"
-					FontSize="15">
-					Delete all posts
-				</TextBlock>
-				<Button
-					Grid.Column="1"
-					Margin="0,0,10,0"
-					Command="{Binding DeleteAllPostsCommand}"
-					Content="Delete"
-					FontSize="12"
-					IsEnabled="{Binding IsDeleteButtonEnabled}" />
-			</Grid>
+					Orientation="Horizontal">
+
+					<!--  Posts Section  -->
+					<StackPanel
+						MinHeight="38"
+						Margin="0,0,30,0"
+						VerticalAlignment="Center"
+						Orientation="Horizontal">
+						<TextBlock
+							Margin="0,0,10,0"
+							VerticalAlignment="Center"
+							FontSize="14"
+							FontWeight="Bold"
+							Text="Posts:" />
+						<UniformGrid
+							HorizontalAlignment="Left"
+							VerticalAlignment="Center"
+							Columns="2"
+							Rows="1">
+							<Button
+								MinWidth="80"
+								Margin="0,0,10,0"
+								Padding="6,3"
+								Command="{Binding ShowAllPostsCommand}"
+								IsEnabled="{Binding AreButtonsEnabled}"
+								ToolTip="Show All Posts">
+								<StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+									<iconPacks:PackIconMaterial
+										Width="16"
+										Height="16"
+										VerticalAlignment="Center"
+										Kind="Eye" />
+									<TextBlock
+										Margin="6,0,0,0"
+										VerticalAlignment="Center"
+										FontSize="12"
+										Text="Show" />
+								</StackPanel>
+							</Button>
+							<Button
+								MinWidth="80"
+								Padding="6,3"
+								Command="{Binding DeleteAllPostsCommand}"
+								IsEnabled="{Binding AreButtonsEnabled}"
+								ToolTip="Delete All Posts">
+								<StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+									<iconPacks:PackIconMaterial
+										Width="16"
+										Height="16"
+										VerticalAlignment="Center"
+										Kind="Delete" />
+									<TextBlock
+										Margin="6,0,0,0"
+										VerticalAlignment="Center"
+										FontSize="12"
+										Text="Delete" />
+								</StackPanel>
+							</Button>
+						</UniformGrid>
+					</StackPanel>
+
+					<!--  Starred Section  -->
+					<StackPanel
+						MinHeight="38"
+						Margin="0,0,30,0"
+						VerticalAlignment="Center"
+						Orientation="Horizontal">
+						<TextBlock
+							Margin="0,0,10,0"
+							VerticalAlignment="Center"
+							FontSize="14"
+							FontWeight="Bold"
+							Text="Starred:" />
+						<UniformGrid
+							HorizontalAlignment="Left"
+							VerticalAlignment="Center"
+							Columns="2"
+							Rows="1">
+							<Button
+								MinWidth="80"
+								Margin="0,0,10,0"
+								Padding="6,3"
+								Command="{Binding ShowStarredPostsCommand}"
+								IsEnabled="{Binding AreButtonsEnabled}"
+								ToolTip="Show Starred Posts">
+								<StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+									<iconPacks:PackIconMaterial
+										Width="16"
+										Height="16"
+										VerticalAlignment="Center"
+										Kind="Eye" />
+									<TextBlock
+										Margin="6,0,0,0"
+										VerticalAlignment="Center"
+										FontSize="12"
+										Text="Show" />
+								</StackPanel>
+							</Button>
+							<Button
+								MinWidth="80"
+								Padding="6,3"
+								Command="{Binding DeleteStarredPostsCommand}"
+								IsEnabled="{Binding AreButtonsEnabled}"
+								ToolTip="Delete Starred Posts">
+								<StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+									<iconPacks:PackIconMaterial
+										Width="16"
+										Height="16"
+										VerticalAlignment="Center"
+										Kind="Delete" />
+									<TextBlock
+										Margin="6,0,0,0"
+										VerticalAlignment="Center"
+										FontSize="12"
+										Text="Delete" />
+								</StackPanel>
+							</Button>
+						</UniformGrid>
+					</StackPanel>
+
+					<!--  Followed Section  -->
+					<StackPanel
+						MinHeight="38"
+						VerticalAlignment="Center"
+						Orientation="Horizontal">
+						<TextBlock
+							Margin="0,0,10,0"
+							VerticalAlignment="Center"
+							FontSize="14"
+							FontWeight="Bold"
+							Text="Followed:" />
+						<UniformGrid
+							HorizontalAlignment="Left"
+							VerticalAlignment="Center"
+							Columns="2"
+							Rows="1">
+							<Button
+								MinWidth="80"
+								Margin="0,0,10,0"
+								Padding="6,3"
+								Command="{Binding ShowFollowedCommand}"
+								IsEnabled="{Binding AreButtonsEnabled}"
+								ToolTip="Show Followed">
+								<StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+									<iconPacks:PackIconMaterial
+										Width="16"
+										Height="16"
+										VerticalAlignment="Center"
+										Kind="Eye" />
+									<TextBlock
+										Margin="6,0,0,0"
+										VerticalAlignment="Center"
+										FontSize="12"
+										Text="Show" />
+								</StackPanel>
+							</Button>
+							<Button
+								MinWidth="80"
+								Padding="6,3"
+								Command="{Binding DeleteFollowedCommand}"
+								IsEnabled="{Binding AreButtonsEnabled}"
+								ToolTip="Delete Followed">
+								<StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+									<iconPacks:PackIconMaterial
+										Width="16"
+										Height="16"
+										VerticalAlignment="Center"
+										Kind="Delete" />
+									<TextBlock
+										Margin="6,0,0,0"
+										VerticalAlignment="Center"
+										FontSize="12"
+										Text="Delete" />
+								</StackPanel>
+							</Button>
+						</UniformGrid>
+					</StackPanel>
+
+				</StackPanel>
+			</ScrollViewer>
 		</Border>
 
-		<Grid Grid.Row="2" ClipToBounds="True">
+		<!--  WebView2 fills the rest  -->
+		<Grid Grid.Row="1" ClipToBounds="True">
 			<wv2:WebView2
 				x:Name="webView"
 				HorizontalAlignment="Stretch"

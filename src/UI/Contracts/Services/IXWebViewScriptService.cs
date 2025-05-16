@@ -1,10 +1,7 @@
-﻿
-using Microsoft.Web.WebView2.Wpf;
-
-namespace XTweetCleaner.UI.Contracts.Services;
+﻿namespace XTweetCleaner.UI.Contracts.Services;
 
 public interface IXWebViewScriptService
 {
-    Task DeleteAllPostsAsync(WebView2 webView);
-    Task<string> GetUserNameAsync(WebView2 webView);
+    Task DeleteAllPostsAsync();
+    Task<string> GetUserNameAsync();
 }

@@ -11,8 +11,9 @@ public partial class MainPage : Page
     public MainPage(MainViewModel viewModel)
     {
         InitializeComponent();
-        DataContext = viewModel;
         _viewModel = viewModel;
+
+        DataContext = viewModel;
         Loaded += MainPage_LoadedAsync;
     }
 

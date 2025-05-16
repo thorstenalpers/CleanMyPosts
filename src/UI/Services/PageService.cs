@@ -5,15 +5,17 @@ using XTweetCleaner.UI.ViewModels;
 using XTweetCleaner.UI.Views;
 
 namespace XTweetCleaner.UI.Services;
+
 public class PageService : IPageService
 {
-    private readonly Dictionary<string, Type> _pages = new();
+    private readonly Dictionary<string, Type> _pages = [];
     private readonly IServiceProvider _serviceProvider;
 
     public PageService(IServiceProvider serviceProvider)
     {
         _serviceProvider = serviceProvider;
         Configure<MainViewModel, MainPage>();
+        Configure<LogViewModel, LogPage>();
         Configure<SettingsViewModel, SettingsPage>();
     }
 
@@ -27,7 +29,6 @@ public class PageService : IPageService
                 throw new ArgumentException($"Page not found: {key}. Did you forget to call PageService.Configure?");
             }
         }
-
         return pageType;
     }
 
@@ -54,7 +55,6 @@ public class PageService : IPageService
             {
                 throw new ArgumentException($"This type is already configured with key {_pages.First(p => p.Value == type).Key}");
             }
-
             _pages.Add(key, type);
         }
     }

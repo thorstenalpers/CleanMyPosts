@@ -1,82 +1,89 @@
 ﻿using System.Collections.ObjectModel;
-using System.Windows.Input;
+using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MahApps.Metro.Controls;
+using MahApps.Metro.IconPacks;
 using XTweetCleaner.UI.Contracts.Services;
 using XTweetCleaner.UI.Properties;
 
 namespace XTweetCleaner.UI.ViewModels;
 
-public class ShellViewModel : ObservableObject
+public partial class ShellViewModel : ObservableObject, IDisposable
 {
     private readonly INavigationService _navigationService;
-    private HamburgerMenuItem _selectedMenuItem;
-    private HamburgerMenuItem _selectedOptionsMenuItem;
-    private RelayCommand _goBackCommand;
-    private ICommand _menuItemInvokedCommand;
-    private ICommand _optionsMenuItemInvokedCommand;
-    private ICommand _loadedCommand;
-    private ICommand _unloadedCommand;
+    private readonly IAppSettingsService _appSettingsService;
+    private readonly HamburgerMenuItem _logMenuItem;
 
-    public HamburgerMenuItem SelectedMenuItem
-    {
-        get { return _selectedMenuItem; }
-        set { SetProperty(ref _selectedMenuItem, value); }
-    }
-
-    public HamburgerMenuItem SelectedOptionsMenuItem
-    {
-        get { return _selectedOptionsMenuItem; }
-        set { SetProperty(ref _selectedOptionsMenuItem, value); }
-    }
-
-    public ObservableCollection<HamburgerMenuItem> MenuItems { get; } = new ObservableCollection<HamburgerMenuItem>()
-    {
-        new HamburgerMenuGlyphItem() { Label = Resources.MainPage, Glyph = "\uE10F", TargetPageType = typeof(MainViewModel) },
-    };
-
-    public ObservableCollection<HamburgerMenuItem> OptionMenuItems { get; } = new ObservableCollection<HamburgerMenuItem>()
-    {
-        new HamburgerMenuGlyphItem() { Label = Resources.ShellSettingsPage, Glyph = "\uE713", TargetPageType = typeof(SettingsViewModel) }
-    };
-
-    public RelayCommand GoBackCommand => _goBackCommand ?? (_goBackCommand = new RelayCommand(OnGoBack, CanGoBack));
-
-    public ICommand MenuItemInvokedCommand => _menuItemInvokedCommand ?? (_menuItemInvokedCommand = new RelayCommand(OnMenuItemInvoked));
-
-    public ICommand OptionsMenuItemInvokedCommand => _optionsMenuItemInvokedCommand ?? (_optionsMenuItemInvokedCommand = new RelayCommand(OnOptionsMenuItemInvoked));
-
-    public ICommand LoadedCommand => _loadedCommand ?? (_loadedCommand = new RelayCommand(OnLoaded));
-
-    public ICommand UnloadedCommand => _unloadedCommand ?? (_unloadedCommand = new RelayCommand(OnUnloaded));
-
-    public ShellViewModel(INavigationService navigationService)
+    public ShellViewModel(INavigationService navigationService, IAppSettingsService appSettingsService)
     {
         _navigationService = navigationService;
+        _appSettingsService = appSettingsService;
+
+        MenuItems =
+        [
+            new HamburgerMenuGlyphItem { Label = Resources.MainPage, Glyph = "\uE80F", TargetPageType = typeof(MainViewModel) },
+        ];
+
+        _logMenuItem = new HamburgerMenuIconItem
+        {
+            Label = Resources.LogPage,
+            Icon = new PackIconMaterial { Kind = PackIconMaterialKind.MathLog },
+            TargetPageType = typeof(LogViewModel)
+        };
+
+        if (_appSettingsService.GetShowLogs())
+        {
+            MenuItems.Add(_logMenuItem);
+        }
+
+        OptionMenuItems =
+        [
+            new HamburgerMenuGlyphItem { Label = Resources.ShellSettingsPage, Glyph = "\uE713", TargetPageType = typeof(SettingsViewModel) }
+        ];
+        _appSettingsService.SettingChanged += OnAppSettingChanged;
     }
 
-    private void OnLoaded()
+    [ObservableProperty]
+    private HamburgerMenuItem _selectedMenuItem;
+
+    [ObservableProperty]
+    private HamburgerMenuItem _selectedOptionsMenuItem;
+
+    public ObservableCollection<HamburgerMenuItem> MenuItems { get; }
+    public ObservableCollection<HamburgerMenuItem> OptionMenuItems { get; }
+
+    [RelayCommand]
+    public void OnLoaded()
     {
         _navigationService.Navigated += OnNavigated;
     }
 
-    private void OnUnloaded()
+    [RelayCommand]
+    public void OnUnloaded()
     {
         _navigationService.Navigated -= OnNavigated;
     }
 
-    private bool CanGoBack()
-        => _navigationService.CanGoBack;
+    [RelayCommand(CanExecute = nameof(CanGoBack))]
+    private void GoBack()
+    {
+        _navigationService.GoBack();
+    }
 
-    private void OnGoBack()
-        => _navigationService.GoBack();
+    private bool CanGoBack() => _navigationService.CanGoBack;
 
-    private void OnMenuItemInvoked()
-        => NavigateTo(SelectedMenuItem.TargetPageType);
+    [RelayCommand]
+    private void MenuItemInvoked()
+    {
+        NavigateTo(SelectedMenuItem?.TargetPageType);
+    }
 
-    private void OnOptionsMenuItemInvoked()
-        => NavigateTo(SelectedOptionsMenuItem.TargetPageType);
+    [RelayCommand]
+    private void OptionsMenuItemInvoked()
+    {
+        NavigateTo(SelectedOptionsMenuItem?.TargetPageType);
+    }
 
     private void NavigateTo(Type targetViewModel)
     {
@@ -88,20 +95,38 @@ public class ShellViewModel : ObservableObject
 
     private void OnNavigated(object sender, string viewModelName)
     {
-        var item = MenuItems
-                    .OfType<HamburgerMenuItem>()
-                    .FirstOrDefault(i => viewModelName == i.TargetPageType?.FullName);
-        if (item != null)
+        SelectedMenuItem = MenuItems.FirstOrDefault(i => viewModelName == i.TargetPageType?.FullName);
+        if (SelectedMenuItem == null)
         {
-            SelectedMenuItem = item;
+            SelectedOptionsMenuItem = OptionMenuItems.FirstOrDefault(i => viewModelName == i.TargetPageType?.FullName);
         }
-        else
-        {
-            SelectedOptionsMenuItem = OptionMenuItems
-                    .OfType<HamburgerMenuItem>()
-                    .FirstOrDefault(i => viewModelName == i.TargetPageType?.FullName);
-        }
-
         GoBackCommand.NotifyCanExecuteChanged();
+    }
+
+    private void OnAppSettingChanged(object sender, string key)
+    {
+        if (key == "ShowLogs")
+        {
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                if (_appSettingsService.GetShowLogs())
+                {
+                    if (!MenuItems.Contains(_logMenuItem))
+                    {
+                        MenuItems.Insert(1, _logMenuItem!);
+                    }
+                }
+                else
+                {
+                    MenuItems.Remove(_logMenuItem!);
+                }
+            });
+        }
+    }
+    public void Dispose()
+    {
+        _appSettingsService.SettingChanged -= OnAppSettingChanged;
+        _navigationService.Navigated -= OnNavigated;
+        GC.SuppressFinalize(this);
     }
 }

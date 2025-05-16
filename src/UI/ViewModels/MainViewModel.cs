@@ -83,7 +83,7 @@ public partial class MainViewModel : ObservableObject
                 attempts++;
                 await Task.Delay(delayMs);
             }
-            _logger.LogWarning("No username found.");
+            _logger.LogWarning("User not logged in.");
         }
     }
 

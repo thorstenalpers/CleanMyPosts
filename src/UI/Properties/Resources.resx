@@ -169,7 +169,7 @@
     <value>Home</value>
   </data>
   <data name="MainPageTitle" xml:space="preserve">
-    <value>Home</value>
+    <value>X-Tweet Cleaner</value>
   </data>
   <data name="ShellGoBackButton" xml:space="preserve">
     <value>Go back</value>
@@ -179,5 +179,8 @@
   </data>
   <data name="AppDisplayName" xml:space="preserve">
     <value>X-Tweet Cleaner</value>
+  </data>
+  <data name="LogPage" xml:space="preserve">
+    <value>Log</value>
   </data>
 </root>

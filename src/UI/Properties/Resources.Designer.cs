@@ -70,6 +70,15 @@ namespace XTweetCleaner.UI.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Log.
+        /// </summary>
+        public static string LogPage {
+            get {
+                return ResourceManager.GetString("LogPage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Home.
         /// </summary>
         public static string MainPage {
@@ -79,7 +88,7 @@ namespace XTweetCleaner.UI.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Home.
+        ///   Looks up a localized string similar to X-Tweet Cleaner.
         /// </summary>
         public static string MainPageTitle {
             get {

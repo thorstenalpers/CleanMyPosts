@@ -6,6 +6,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
 	<RootNamespace>XTweetCleaner.Core</RootNamespace>
  	<DefaultNamespace>XTweetCleaner.Core</DefaultNamespace>
+ 	<AnalysisLevel>latest</AnalysisLevel>
+ 	<EnableNETAnalyzers>True</EnableNETAnalyzers>
  </PropertyGroup>
 
   <ItemGroup>

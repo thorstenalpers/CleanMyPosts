@@ -5,15 +5,15 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 using NUnit.Framework;
-using XTweetCleaner.Core.Contracts.Services;
-using XTweetCleaner.Core.Services;
-using XTweetCleaner.UI.Contracts.Services;
-using XTweetCleaner.UI.Models;
-using XTweetCleaner.UI.Services;
-using XTweetCleaner.UI.ViewModels;
-using XTweetCleaner.UI.Views;
+using CleanMyPosts.Core.Contracts.Services;
+using CleanMyPosts.Core.Services;
+using CleanMyPosts.UI.Contracts.Services;
+using CleanMyPosts.UI.Models;
+using CleanMyPosts.UI.Services;
+using CleanMyPosts.UI.ViewModels;
+using CleanMyPosts.UI.Views;
 
-namespace XTweetCleaner.Tests;
+namespace CleanMyPosts.Tests;
 
 [Category("Unit")]
 public class PagesTests

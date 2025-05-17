@@ -1,11 +1,10 @@
-﻿using Moq;
-
+﻿using CleanMyPosts.UI.Contracts.Services;
+using CleanMyPosts.UI.Models;
+using CleanMyPosts.UI.ViewModels;
+using Moq;
 using NUnit.Framework;
-using XTweetCleaner.UI.Contracts.Services;
-using XTweetCleaner.UI.Models;
-using XTweetCleaner.UI.ViewModels;
 
-namespace XTweetCleaner.Tests;
+namespace CleanMyPosts.Tests;
 
 [Category("Unit")]
 public class SettingsViewModelTests
@@ -40,7 +39,7 @@ public class SettingsViewModelTests
         var settingsVm = new SettingsViewModel(mockThemeSelectorService.Object, mockApplicationInfoService.Object, mockAppSettingsService.Object);
         settingsVm.OnNavigatedTo(null);
 
-        Assert.That($"XTweetCleaner - {testVersion}", Is.EqualTo(settingsVm.VersionDescription));
+        Assert.That($"CleanMyPosts - {testVersion}", Is.EqualTo(settingsVm.VersionDescription));
     }
 
     [Test]

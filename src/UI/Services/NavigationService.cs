@@ -1,10 +1,10 @@
 ﻿using System.Windows.Controls;
 using System.Windows.Navigation;
-using XTweetCleaner.UI.Contracts.Services;
-using XTweetCleaner.UI.Contracts.ViewModels;
-using XTweetCleaner.UI.Helpers;
+using CleanMyPosts.UI.Contracts.Services;
+using CleanMyPosts.UI.Contracts.ViewModels;
+using CleanMyPosts.UI.Helpers;
 
-namespace XTweetCleaner.UI.Services;
+namespace CleanMyPosts.UI.Services;
 
 public class NavigationService(IPageService pageService) : INavigationService
 {

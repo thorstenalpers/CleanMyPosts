@@ -1,4 +1,4 @@
-﻿namespace XTweetCleaner.UI.Contracts.ViewModels;
+﻿namespace CleanMyPosts.UI.Contracts.ViewModels;
 
 public interface INavigationAware
 {

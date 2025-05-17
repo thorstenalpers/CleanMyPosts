@@ -1,8 +1,8 @@
 ﻿using Serilog.Core;
 using Serilog.Events;
-using XTweetCleaner.UI.ViewModels;
+using CleanMyPosts.UI.ViewModels;
 
-namespace XTweetCleaner.UI.Helpers;
+namespace CleanMyPosts.UI.Helpers;
 
 public class LogViewModelSink(LogViewModel logViewModel) : ILogEventSink
 {

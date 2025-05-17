@@ -1,7 +1,7 @@
 ﻿using System.Windows;
 using System.Windows.Input;
 
-namespace XTweetCleaner.UI.Views;
+namespace CleanMyPosts.UI.Views;
 /// <summary>
 /// Interaction logic for OverlayWindow.xaml
 /// </summary>

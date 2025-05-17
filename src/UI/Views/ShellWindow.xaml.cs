@@ -1,9 +1,9 @@
 ﻿using System.Windows.Controls;
 using MahApps.Metro.Controls;
-using XTweetCleaner.UI.Contracts.Views;
-using XTweetCleaner.UI.ViewModels;
+using CleanMyPosts.UI.Contracts.Views;
+using CleanMyPosts.UI.ViewModels;
 
-namespace XTweetCleaner.UI.Views;
+namespace CleanMyPosts.UI.Views;
 
 public partial class ShellWindow : MetroWindow, IShellWindow
 {

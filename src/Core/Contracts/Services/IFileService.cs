@@ -1,4 +1,4 @@
-﻿namespace XTweetCleaner.Core.Contracts.Services;
+﻿namespace CleanMyPosts.Core.Contracts.Services;
 
 public interface IFileService
 {

@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace XTweetCleaner.UI.Properties {
+namespace CleanMyPosts.UI.Properties {
     using System;
     
     
@@ -39,7 +39,7 @@ namespace XTweetCleaner.UI.Properties {
         public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("XTweetCleaner.UI.Properties.Resources", typeof(Resources).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("CleanMyPosts.UI.Properties.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -61,7 +61,7 @@ namespace XTweetCleaner.UI.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to X-Tweet Cleaner.
+        ///   Looks up a localized string similar to CleanMyPosts.
         /// </summary>
         public static string AppDisplayName {
             get {
@@ -88,7 +88,7 @@ namespace XTweetCleaner.UI.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to X-Tweet Cleaner.
+        ///   Looks up a localized string similar to CleanMyPosts.
         /// </summary>
         public static string MainPageTitle {
             get {

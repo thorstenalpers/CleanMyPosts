@@ -5,7 +5,8 @@
     <IsPackable>false</IsPackable>
     <AssetTargetFallback>uap10.0.18362</AssetTargetFallback>
     <Platforms>x64;x86;AnyCPU</Platforms>
-    <RootNamespace>XTweetCleaner.Tests</RootNamespace>
+    <RootNamespace>CleanMyPosts.Tests</RootNamespace>
+	<DefaultNamespace>CleanMyPosts.UI</DefaultNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 

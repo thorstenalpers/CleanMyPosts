@@ -3,11 +3,11 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using Microsoft.Web.WebView2.Wpf;
-using XTweetCleaner.UI.Contracts.Services;
-using XTweetCleaner.UI.Models;
-using XTweetCleaner.UI.Views;
+using CleanMyPosts.UI.Contracts.Services;
+using CleanMyPosts.UI.Models;
+using CleanMyPosts.UI.Views;
 
-namespace XTweetCleaner.UI.ViewModels;
+namespace CleanMyPosts.UI.ViewModels;
 
 public partial class MainViewModel : ObservableObject
 {

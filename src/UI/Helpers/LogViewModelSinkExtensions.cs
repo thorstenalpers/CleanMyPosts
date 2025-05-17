@@ -1,8 +1,8 @@
 ﻿using Serilog;
 using Serilog.Configuration;
-using XTweetCleaner.UI.ViewModels;
+using CleanMyPosts.UI.ViewModels;
 
-namespace XTweetCleaner.UI.Helpers;
+namespace CleanMyPosts.UI.Helpers;
 
 public static class LogViewModelSinkExtensions
 {

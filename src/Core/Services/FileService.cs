@@ -1,8 +1,8 @@
 ﻿using System.Text;
 using Newtonsoft.Json;
-using XTweetCleaner.Core.Contracts.Services;
+using CleanMyPosts.Core.Contracts.Services;
 
-namespace XTweetCleaner.Core.Services;
+namespace CleanMyPosts.Core.Services;
 
 public class FileService : IFileService
 {

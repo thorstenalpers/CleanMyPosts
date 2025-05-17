@@ -1,5 +1,5 @@
 ﻿<controls:MetroWindow
-	x:Class="XTweetCleaner.UI.Views.ShellWindow"
+	x:Class="CleanMyPosts.UI.Views.ShellWindow"
 	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:controls="http://metro.mahapps.com/winfx/xaml/controls"
@@ -7,8 +7,8 @@
 	xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
 	xmlns:material="http://metro.mahapps.com/winfx/xaml/iconpacks/material"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-	xmlns:properties="clr-namespace:XTweetCleaner.UI.Properties"
-	xmlns:templateSelectors="clr-namespace:XTweetCleaner.UI.TemplateSelectors"
+	xmlns:properties="clr-namespace:CleanMyPosts.UI.Properties"
+	xmlns:templateSelectors="clr-namespace:CleanMyPosts.UI.TemplateSelectors"
 	Title="{x:Static properties:Resources.AppDisplayName}"
 	Width="860"
 	Height="600"

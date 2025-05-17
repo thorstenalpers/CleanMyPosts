@@ -1,10 +1,10 @@
 ﻿using System.Windows.Controls;
 using CommunityToolkit.Mvvm.ComponentModel;
-using XTweetCleaner.UI.Contracts.Services;
-using XTweetCleaner.UI.ViewModels;
-using XTweetCleaner.UI.Views;
+using CleanMyPosts.UI.Contracts.Services;
+using CleanMyPosts.UI.ViewModels;
+using CleanMyPosts.UI.Views;
 
-namespace XTweetCleaner.UI.Services;
+namespace CleanMyPosts.UI.Services;
 
 public class PageService : IPageService
 {

@@ -1,7 +1,7 @@
 ﻿using System.Windows;
-using XTweetCleaner.UI.Contracts.Services;
+using CleanMyPosts.UI.Contracts.Services;
 
-namespace XTweetCleaner.UI.Services;
+namespace CleanMyPosts.UI.Services;
 
 public class AppSettingsService : IAppSettingsService
 {

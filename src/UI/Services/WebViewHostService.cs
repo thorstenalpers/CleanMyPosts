@@ -1,8 +1,8 @@
 ﻿using Microsoft.Web.WebView2.Wpf;
-using XTweetCleaner.UI.Contracts.Services;
-using XTweetCleaner.UI.Models;
+using CleanMyPosts.UI.Contracts.Services;
+using CleanMyPosts.UI.Models;
 
-namespace XTweetCleaner.UI.Services;
+namespace CleanMyPosts.UI.Services;
 
 public class WebViewHostService : IWebViewHostService
 {

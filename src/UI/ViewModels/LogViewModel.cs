@@ -2,7 +2,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
-namespace XTweetCleaner.UI.ViewModels;
+namespace CleanMyPosts.UI.ViewModels;
 
 public partial class LogViewModel : ObservableObject
 {

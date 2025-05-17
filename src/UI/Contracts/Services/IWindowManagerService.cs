@@ -1,6 +1,6 @@
 ﻿using System.Windows;
 
-namespace XTweetCleaner.UI.Contracts.Services;
+namespace CleanMyPosts.UI.Contracts.Services;
 
 public interface IWindowManagerService
 {

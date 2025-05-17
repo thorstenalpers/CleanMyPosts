@@ -4,8 +4,8 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <LangVersion>latest</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
-	<RootNamespace>XTweetCleaner.Core</RootNamespace>
- 	<DefaultNamespace>XTweetCleaner.Core</DefaultNamespace>
+	<RootNamespace>CleanMyPosts.Core</RootNamespace>
+ 	<DefaultNamespace>CleanMyPosts.Core</DefaultNamespace>
  	<AnalysisLevel>latest</AnalysisLevel>
  	<EnableNETAnalyzers>True</EnableNETAnalyzers>
  </PropertyGroup>

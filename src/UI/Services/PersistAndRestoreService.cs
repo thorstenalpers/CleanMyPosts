@@ -1,11 +1,11 @@
 ﻿using System.Collections;
 using System.IO;
 using Microsoft.Extensions.Options;
-using XTweetCleaner.Core.Contracts.Services;
-using XTweetCleaner.UI.Contracts.Services;
-using XTweetCleaner.UI.Models;
+using CleanMyPosts.Core.Contracts.Services;
+using CleanMyPosts.UI.Contracts.Services;
+using CleanMyPosts.UI.Models;
 
-namespace XTweetCleaner.UI.Services;
+namespace CleanMyPosts.UI.Services;
 
 public class PersistAndRestoreService(IFileService fileService, IOptions<AppConfig> appConfig) : IPersistAndRestoreService
 {

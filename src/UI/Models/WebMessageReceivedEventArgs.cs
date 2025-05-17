@@ -1,4 +1,4 @@
-﻿namespace XTweetCleaner.UI.Models;
+﻿namespace CleanMyPosts.UI.Models;
 
 public class WebMessageReceivedEventArgs : EventArgs
 {

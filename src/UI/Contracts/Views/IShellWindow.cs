@@ -1,6 +1,6 @@
 ﻿using System.Windows.Controls;
 
-namespace XTweetCleaner.UI.Contracts.Views;
+namespace CleanMyPosts.UI.Contracts.Views;
 
 public interface IShellWindow
 {

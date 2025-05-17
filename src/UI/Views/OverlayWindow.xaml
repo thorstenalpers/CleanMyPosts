@@ -1,4 +1,4 @@
-﻿<Window x:Class="XTweetCleaner.UI.Views.OverlayWindow"
+﻿<Window x:Class="CleanMyPosts.UI.Views.OverlayWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         WindowStyle="None"

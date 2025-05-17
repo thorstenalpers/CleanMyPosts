@@ -1,8 +1,8 @@
 ﻿using System.Diagnostics;
 using System.Reflection;
-using XTweetCleaner.UI.Contracts.Services;
+using CleanMyPosts.UI.Contracts.Services;
 
-namespace XTweetCleaner.UI.Services;
+namespace CleanMyPosts.UI.Services;
 
 public class ApplicationInfoService : IApplicationInfoService
 {

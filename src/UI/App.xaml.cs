@@ -1,23 +1,21 @@
-﻿using System.IO;
-using System.Reflection;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Threading;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Serilog;
-using XTweetCleaner.Core.Contracts.Services;
-using XTweetCleaner.Core.Services;
-using XTweetCleaner.UI.Contracts.Services;
-using XTweetCleaner.UI.Contracts.Views;
-using XTweetCleaner.UI.Helpers;
-using XTweetCleaner.UI.Models;
-using XTweetCleaner.UI.Services;
-using XTweetCleaner.UI.ViewModels;
-using XTweetCleaner.UI.Views;
+using CleanMyPosts.Core.Contracts.Services;
+using CleanMyPosts.Core.Services;
+using CleanMyPosts.UI.Contracts.Services;
+using CleanMyPosts.UI.Contracts.Views;
+using CleanMyPosts.UI.Helpers;
+using CleanMyPosts.UI.Models;
+using CleanMyPosts.UI.Services;
+using CleanMyPosts.UI.ViewModels;
+using CleanMyPosts.UI.Views;
 
-namespace XTweetCleaner.UI;
+namespace CleanMyPosts.UI;
 
 public partial class App : Application
 {
@@ -30,11 +28,11 @@ public partial class App : Application
 
     private async void OnStartup(object sender, StartupEventArgs e)
     {
-        var appLocation = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+        var appLocation = AppContext.BaseDirectory;
 
         var config = new ConfigurationBuilder()
             .SetBasePath(appLocation)
-            .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+            .AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
             .AddEnvironmentVariables()
             .Build();
 

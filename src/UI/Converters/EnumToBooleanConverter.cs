@@ -1,7 +1,7 @@
 using System.Globalization;
 using System.Windows.Data;
 
-namespace XTweetCleaner.UI.Converters;
+namespace CleanMyPosts.UI.Converters;
 
 public class EnumToBooleanConverter : IValueConverter
 {

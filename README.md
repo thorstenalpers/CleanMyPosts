@@ -1,4 +1,4 @@
-﻿# X-Tweet Cleaner
+﻿# CleanMyPosts
 
 > ⚠️ **Warning:** Development in progress – the application has not been released.
 
@@ -21,9 +21,9 @@
 * bookmark bar, hideable via settings
 
 
-# 🧹 X-Tweet Cleaner
+# 🧹 CleanMyPosts
 
-**X-Tweet Cleaner** is a lightweight Windows desktop application that securely deletes all tweets from your X (formerly Twitter) account in bulk. Designed for privacy-focused users, social media managers, or anyone looking to start fresh.
+**CleanMyPosts** is a lightweight Windows desktop application that securely deletes all tweets from your X (formerly Twitter) account in bulk. Designed for privacy-focused users, social media managers, or anyone looking to start fresh.
 
 ---
 
@@ -60,7 +60,7 @@
 To build from source:
 
 ```bash
-git clone https://github.com/thorstenalpers/x-tweet-cleaner.git
-cd x-tweet-cleaner
+git clone https://github.com/thorstenalpers/CleanMyPosts.git
+cd CleanMyPosts
 cd src
 dotnet build

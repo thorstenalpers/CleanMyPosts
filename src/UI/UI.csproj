@@ -6,9 +6,10 @@
     <UseWPF>true</UseWPF>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ImplicitUsings>enable</ImplicitUsings>
-	<RootNamespace>XTweetCleaner.UI</RootNamespace>
+	<RootNamespace>CleanMyPosts.UI</RootNamespace>
+	<DefaultNamespace>CleanMyPosts.UI</DefaultNamespace>
 	<ApplicationIcon>Assets\logo.ico</ApplicationIcon>
-	<AssemblyName>X-Tweet-Cleaner</AssemblyName>
+	<AssemblyName>CleanMyPosts</AssemblyName>
  	<AnalysisLevel>latest</AnalysisLevel>
  	<EnableNETAnalyzers>True</EnableNETAnalyzers>
   </PropertyGroup>
@@ -62,8 +63,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="appsettings.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
+	<None Update="appsettings.json">
+	  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+	</None>
   </ItemGroup>
 </Project>

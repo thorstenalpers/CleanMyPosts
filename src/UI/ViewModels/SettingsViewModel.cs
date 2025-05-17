@@ -1,10 +1,10 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using XTweetCleaner.UI.Contracts.Services;
-using XTweetCleaner.UI.Contracts.ViewModels;
-using XTweetCleaner.UI.Models;
+using CleanMyPosts.UI.Contracts.Services;
+using CleanMyPosts.UI.Contracts.ViewModels;
+using CleanMyPosts.UI.Models;
 
-namespace XTweetCleaner.UI.ViewModels;
+namespace CleanMyPosts.UI.ViewModels;
 
 public partial class SettingsViewModel(IThemeSelectorService themeSelectorService,
     IApplicationInfoService applicationInfoService,

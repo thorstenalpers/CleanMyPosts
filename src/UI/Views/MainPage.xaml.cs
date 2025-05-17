@@ -1,8 +1,8 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
-using XTweetCleaner.UI.ViewModels;
+using CleanMyPosts.UI.ViewModels;
 
-namespace XTweetCleaner.UI.Views;
+namespace CleanMyPosts.UI.Views;
 
 public partial class MainPage : Page
 {

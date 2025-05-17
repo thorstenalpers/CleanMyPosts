@@ -1,13 +1,13 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Navigation;
+using CleanMyPosts.UI.Contracts.Services;
+using CleanMyPosts.UI.Contracts.ViewModels;
+using CleanMyPosts.UI.Contracts.Views;
+using CleanMyPosts.UI.Helpers;
 using MahApps.Metro.Controls;
-using XTweetCleaner.UI.Contracts.Services;
-using XTweetCleaner.UI.Contracts.ViewModels;
-using XTweetCleaner.UI.Contracts.Views;
-using XTweetCleaner.UI.Helpers;
 
-namespace XTweetCleaner.UI.Services;
+namespace CleanMyPosts.UI.Services;
 
 public class WindowManagerService(IServiceProvider serviceProvider, IPageService pageService) : IWindowManagerService
 {
@@ -32,7 +32,7 @@ public class WindowManagerService(IServiceProvider serviceProvider, IPageService
 
         var newWindow = new MetroWindow
         {
-            Title = "X-Tweet-Cleaner",
+            Title = "CleanMyPosts",
             Style = Application.Current.FindResource("CustomMetroWindow") as Style,
             Content = frame
         };

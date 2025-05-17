@@ -1,7 +1,7 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
 
-namespace XTweetCleaner.UI.Helpers;
+namespace CleanMyPosts.UI.Helpers;
 
 public static class WindowExtensions
 {

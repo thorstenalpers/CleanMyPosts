@@ -1,4 +1,4 @@
-﻿namespace XTweetCleaner.UI.Contracts.Activation;
+﻿namespace CleanMyPosts.UI.Contracts.Activation;
 
 public interface IActivationHandler
 {

@@ -4,10 +4,10 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MahApps.Metro.Controls;
 using MahApps.Metro.IconPacks;
-using XTweetCleaner.UI.Contracts.Services;
-using XTweetCleaner.UI.Properties;
+using CleanMyPosts.UI.Contracts.Services;
+using CleanMyPosts.UI.Properties;
 
-namespace XTweetCleaner.UI.ViewModels;
+namespace CleanMyPosts.UI.ViewModels;
 
 public partial class ShellViewModel : ObservableObject, IDisposable
 {

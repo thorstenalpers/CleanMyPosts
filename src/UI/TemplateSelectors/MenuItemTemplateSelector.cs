@@ -2,7 +2,7 @@
 using System.Windows.Controls;
 using MahApps.Metro.Controls;
 
-namespace XTweetCleaner.UI.TemplateSelectors;
+namespace CleanMyPosts.UI.TemplateSelectors;
 
 public class MenuItemTemplateSelector : DataTemplateSelector
 {

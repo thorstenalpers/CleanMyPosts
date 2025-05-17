@@ -1,10 +1,10 @@
 ﻿using Microsoft.Extensions.Hosting;
-using XTweetCleaner.UI.Contracts.Activation;
-using XTweetCleaner.UI.Contracts.Services;
-using XTweetCleaner.UI.Contracts.Views;
-using XTweetCleaner.UI.ViewModels;
+using CleanMyPosts.UI.Contracts.Activation;
+using CleanMyPosts.UI.Contracts.Services;
+using CleanMyPosts.UI.Contracts.Views;
+using CleanMyPosts.UI.ViewModels;
 
-namespace XTweetCleaner.UI.Services;
+namespace CleanMyPosts.UI.Services;
 
 public class ApplicationHostService(IServiceProvider serviceProvider,
                                     IEnumerable<IActivationHandler> activationHandlers,

@@ -1,8 +1,9 @@
 ﻿using System.Net;
-using Microsoft.Extensions.Logging;
+using Ardalis.GuardClauses;
 using CleanMyPosts.UI.Contracts.Services;
 using CleanMyPosts.UI.Helpers;
 using CleanMyPosts.UI.Models;
+using Microsoft.Extensions.Logging;
 
 namespace CleanMyPosts.UI.Services;
 
@@ -12,36 +13,39 @@ public class XWebViewScriptService(ILogger<XWebViewScriptService> logger, IWebVi
     private readonly IWebViewHostService _webViewHostService = webViewHostService;
     private string _userName;
 
-    public async Task<string> GetUserNameAsync()
+    public async Task ShowPostsAsync()
     {
-        const string jsScript = @"
-        (() => { 
-            const el = document.querySelector('a[data-testid=""AppTabBar_Profile_Link""]');
-            const href = el?.getAttribute('href');
-            return href?.split('/')[1] ?? '';
-        })()";
-        var userName = await _webViewHostService.ExecuteScriptAsync(jsScript);
-        _userName = Helper.CleanJsonResult(userName);
-        return _userName;
-    }
+        Guard.Against.Null(_userName, nameof(_userName));
 
-    public async Task DeleteAllPostsAsync()
-    {
-        var userName = await GetUserNameAsync();
-        if (string.IsNullOrWhiteSpace(userName))
-        {
-            _logger.LogWarning("Unable to retrieve username.");
-            return;
-        }
-
-        var searchQuery = $"from:{userName} since:2000-01-01";
+        //var searchQuery = $"from:{_userName} since:2000-01-01";
+        var searchQuery = $"from:{_userName}";
         var encodedQuery = WebUtility.UrlEncode(searchQuery);
         var url = new Uri($"https://x.com/search?q={encodedQuery}&src=typed_query");
 
         if (_webViewHostService.Source != url)
         {
             _webViewHostService.Source = url;
-            if (!await WaitForNavigationAsync())
+            if (!await WaitForFullDocumentReadyAsync())
+            {
+                _logger.LogWarning("Navigation to {url} failed.", url);
+                return;
+            }
+        }
+    }
+
+    public async Task DeletePostsAsync()
+    {
+        Guard.Against.Null(_userName, nameof(_userName));
+
+        //var searchQuery = $"from:{_userName} since:2000-01-01";
+        var searchQuery = $"from:{_userName}";
+        var encodedQuery = WebUtility.UrlEncode(searchQuery);
+        var url = new Uri($"https://x.com/search?q={encodedQuery}&src=typed_query");
+
+        if (_webViewHostService.Source != url)
+        {
+            _webViewHostService.Source = url;
+            if (!await WaitForFullDocumentReadyAsync())
             {
                 _logger.LogWarning("Navigation to search page failed.");
                 return;
@@ -76,6 +80,49 @@ public class XWebViewScriptService(ILogger<XWebViewScriptService> logger, IWebVi
             postNumber++;
         }
         _logger.LogInformation("No more posts found.");
+    }
+
+
+    public async Task ShowLikesAsync()
+    {
+        Guard.Against.Null(_userName, nameof(_userName));
+
+        var url = new Uri($"https://x.com/{WebUtility.UrlEncode(_userName)}/likes");
+        if (_webViewHostService.Source != url)
+        {
+            _webViewHostService.Source = url;
+            if (!await WaitForFullDocumentReadyAsync())
+            {
+                _logger.LogWarning("Navigation to {url} failed.", url);
+                return;
+            }
+        }
+    }
+
+    public Task DeleteStarredAsync()
+    {
+        throw new NotImplementedException();
+    }
+
+    public async Task ShowFollowingAsync()
+    {
+        Guard.Against.Null(_userName, nameof(_userName));
+
+        var url = new Uri($"https://x.com/{WebUtility.UrlEncode(_userName)}/following");
+        if (_webViewHostService.Source != url)
+        {
+            _webViewHostService.Source = url;
+            if (!await WaitForFullDocumentReadyAsync())
+            {
+                _logger.LogWarning("Navigation to {url} failed.", url);
+                return;
+            }
+        }
+    }
+
+    public Task DeleteFollowingAsync()
+    {
+        throw new NotImplementedException();
     }
 
     private async Task<bool> PostsExistAsync()
@@ -172,16 +219,63 @@ public class XWebViewScriptService(ILogger<XWebViewScriptService> logger, IWebVi
         return false;
     }
 
+    public async Task<string> GetUserNameAsync()
+    {
+        const string jsScript = @"
+        (() => { 
+            const el = document.querySelector('a[data-testid=""AppTabBar_Profile_Link""]');
+            const href = el?.getAttribute('href');
+            return href?.split('/')[1] ?? '';
+        })()";
+        var userName = await _webViewHostService.ExecuteScriptAsync(jsScript);
+        _userName = Helper.CleanJsonResult(userName);
+        return _userName;
+    }
+
     private Task<bool> WaitForNavigationAsync()
     {
         var tcs = new TaskCompletionSource<bool>();
 
-        void Handler(object s, NavigationCompletedEventArgs e)
+        async void Handler(object s, NavigationCompletedEventArgs e)
         {
             _webViewHostService.NavigationCompleted -= Handler;
             tcs.SetResult(e.IsSuccess);
+            await Task.Delay(TimeSpan.FromMilliseconds(300));
         }
         _webViewHostService.NavigationCompleted += Handler;
         return tcs.Task;
+    }
+
+    private async Task<bool> WaitForFullDocumentReadyAsync()
+    {
+        if (!await WaitForNavigationAsync())
+        {
+            return false;
+        }
+
+        const int maxAttempts = 50;
+        const int delayMs = 100;
+
+        for (var i = 0; i < maxAttempts; i++)
+        {
+            try
+            {
+                var readyStateJson = await _webViewHostService.ExecuteScriptAsync("document.readyState");
+                var readyState = readyStateJson?.Trim('"').ToLowerInvariant();
+
+                if (readyState == "complete")
+                {
+                    await Task.Delay(TimeSpan.FromMilliseconds(500));
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Error checking document.readyState.");
+            }
+            await Task.Delay(delayMs);
+        }
+        _logger.LogWarning("Timed out waiting for document.readyState = complete.");
+        return false;
     }
 }

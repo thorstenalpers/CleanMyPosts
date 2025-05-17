@@ -10,6 +10,8 @@
 	xmlns:properties="clr-namespace:CleanMyPosts.UI.Properties"
 	xmlns:templateSelectors="clr-namespace:CleanMyPosts.UI.TemplateSelectors"
 	Title="{x:Static properties:Resources.AppDisplayName}"
+	Icon="../Assets/logo.ico"
+	ShowIconOnTitleBar="False"
 	Width="860"
 	Height="600"
 	MinWidth="300"
@@ -24,7 +26,15 @@
 			<i:InvokeCommandAction Command="{Binding UnloadedCommand}" />
 		</i:EventTrigger>
 	</i:Interaction.Triggers>
-	<controls:MetroWindow.Resources>
+	<controls:MetroWindow.LeftWindowCommands>
+		<controls:WindowCommands>
+				<Image Source="../Assets/logo.ico"
+                   Width="24"
+                   Height="24"
+                   Margin="12,0,12,0" />
+		</controls:WindowCommands>
+	</controls:MetroWindow.LeftWindowCommands>
+	<controls:MetroWindow.Resources>		
 		<templateSelectors:MenuItemTemplateSelector x:Key="MenuItemTemplateSelector">
 			<templateSelectors:MenuItemTemplateSelector.GlyphDataTemplate>
 				<DataTemplate DataType="{x:Type controls:HamburgerMenuGlyphItem}">

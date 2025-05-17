@@ -21,6 +21,9 @@
 				<RowDefinition Height="48" />
 				<RowDefinition Height="*" />
 			</Grid.RowDefinitions>
+
+
+
 			<TextBlock Style="{StaticResource PageTitleStyle}" Text="{x:Static properties:Resources.SettingsPageTitle}" />
 			<StackPanel
 				x:Name="ContentArea"
@@ -73,8 +76,8 @@
 						<CheckBox
 							Margin="{StaticResource MediumTopMargin}"
 							Content="Show Logs"
-							IsChecked="{Binding ShowLogs, Mode=TwoWay}"
-							FontSize="{StaticResource MediumFontSize}" />
+							FontSize="{StaticResource MediumFontSize}"
+							IsChecked="{Binding ShowLogs, Mode=TwoWay}" />
 					</StackPanel>
 				</StackPanel>
 
@@ -82,10 +85,23 @@
 					Margin="{StaticResource SmallTopMargin}"
 					Style="{StaticResource SubtitleTextStyle}"
 					Text="{x:Static properties:Resources.SettingsPageAboutTitle}" />
-				<TextBlock
-					Margin="{StaticResource XSmallTopMargin}"
-					Style="{StaticResource BodyTextStyle}"
-					Text="{Binding VersionDescription, Mode=OneWay}" />
+
+				<StackPanel
+					Margin="{StaticResource SmallTopMargin}"
+					VerticalAlignment="Center"
+					Orientation="Horizontal">
+					<Image
+						Width="20"
+						Height="20"
+						Margin="0,8,8,0"
+						VerticalAlignment="Center"
+						Source="../Assets/logo.ico" />
+					<TextBlock
+						Margin="{StaticResource XSmallTopMargin}"
+						Style="{StaticResource BodyTextStyle}"
+						Text="{Binding VersionDescription, Mode=OneWay}" />
+				</StackPanel>
+
 				<TextBlock
 					Margin="{StaticResource XSmallTopMargin}"
 					Style="{StaticResource BodyTextStyle}"

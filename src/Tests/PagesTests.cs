@@ -1,10 +1,4 @@
 ﻿using System.Reflection;
-
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-
-using NUnit.Framework;
 using CleanMyPosts.Core.Contracts.Services;
 using CleanMyPosts.Core.Services;
 using CleanMyPosts.UI.Contracts.Services;
@@ -12,6 +6,10 @@ using CleanMyPosts.UI.Models;
 using CleanMyPosts.UI.Services;
 using CleanMyPosts.UI.ViewModels;
 using CleanMyPosts.UI.Views;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using NUnit.Framework;
 
 namespace CleanMyPosts.Tests;
 
@@ -43,7 +41,7 @@ public class PagesTests
         services.AddSingleton<INavigationService, NavigationService>();
 
         // ViewModels
-        services.AddTransient<MainViewModel>();
+        services.AddTransient<XViewModel>();
         services.AddTransient<SettingsViewModel>();
 
         // Configuration
@@ -53,7 +51,7 @@ public class PagesTests
     [Test]
     public void TestWebViewViewModelCreation()
     {
-        var vm = _host.Services.GetService(typeof(MainViewModel));
+        var vm = _host.Services.GetService(typeof(XViewModel));
         Assert.That(vm, Is.Not.Null);
     }
 
@@ -62,8 +60,8 @@ public class PagesTests
     {
         if (_host.Services.GetService(typeof(IPageService)) is IPageService pageService)
         {
-            var pageType = pageService.GetPageType(typeof(MainViewModel).FullName);
-            Assert.That(typeof(MainPage), Is.EqualTo(pageType));
+            var pageType = pageService.GetPageType(typeof(XViewModel).FullName);
+            Assert.That(typeof(XPage), Is.EqualTo(pageType));
         }
         else
         {

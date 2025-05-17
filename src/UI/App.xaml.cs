@@ -1,10 +1,5 @@
 ﻿using System.Windows;
 using System.Windows.Threading;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using Serilog;
 using CleanMyPosts.Core.Contracts.Services;
 using CleanMyPosts.Core.Services;
 using CleanMyPosts.UI.Contracts.Services;
@@ -14,6 +9,11 @@ using CleanMyPosts.UI.Models;
 using CleanMyPosts.UI.Services;
 using CleanMyPosts.UI.ViewModels;
 using CleanMyPosts.UI.Views;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Serilog;
 
 namespace CleanMyPosts.UI;
 
@@ -94,8 +94,8 @@ public partial class App : Application
         services.AddTransient<ShellViewModel>();
         services.AddSingleton<LogPage>();
         services.AddSingleton<LogViewModel>();
-        services.AddSingleton<MainViewModel>();
-        services.AddSingleton<MainPage>();
+        services.AddSingleton<XViewModel>();
+        services.AddSingleton<XPage>();
 
         services.AddTransient<SettingsViewModel>();
         services.AddTransient<SettingsPage>();

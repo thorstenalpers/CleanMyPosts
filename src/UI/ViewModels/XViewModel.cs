@@ -1,20 +1,20 @@
 ﻿using System.Windows;
+using CleanMyPosts.UI.Contracts.Services;
+using CleanMyPosts.UI.Models;
+using CleanMyPosts.UI.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using Microsoft.Web.WebView2.Wpf;
-using CleanMyPosts.UI.Contracts.Services;
-using CleanMyPosts.UI.Models;
-using CleanMyPosts.UI.Views;
 
 namespace CleanMyPosts.UI.ViewModels;
 
-public partial class MainViewModel : ObservableObject
+public partial class XViewModel : ObservableObject
 {
     private readonly IWebViewHostService _webViewHostService;
-    private readonly ILogger<MainViewModel> _logger;
+    private readonly ILogger<XViewModel> _logger;
     private readonly IXWebViewScriptService _xWebViewScriptService;
-    private readonly IWindowManagerService _windowManagerService;
+    //private readonly IWindowManagerService _windowManagerService;
     private OverlayWindow _overlayWindow;
 
     private const string XBaseUrl = "https://x.com";
@@ -23,16 +23,17 @@ public partial class MainViewModel : ObservableObject
     private bool _areButtonsEnabled;
 
     private bool _isInitialized = false;
+    private string _userName;
 
-    public MainViewModel(ILogger<MainViewModel> logger,
-                         IWindowManagerService windowManagerService,
+    public XViewModel(ILogger<XViewModel> logger,
+                         //IWindowManagerService windowManagerService,
                          IWebViewHostService webViewHostService,
                          IXWebViewScriptService xWebViewScriptService)
     {
         _webViewHostService = webViewHostService ?? throw new ArgumentNullException(nameof(webViewHostService));
         _xWebViewScriptService = xWebViewScriptService ?? throw new ArgumentNullException(nameof(xWebViewScriptService));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _windowManagerService = windowManagerService ?? throw new ArgumentNullException(nameof(windowManagerService));
+        //_windowManagerService = windowManagerService ?? throw new ArgumentNullException(nameof(windowManagerService));
         _xWebViewScriptService = xWebViewScriptService ?? throw new ArgumentNullException(nameof(xWebViewScriptService));
         _webViewHostService.NavigationCompleted += OnNavigationCompleted;
         _webViewHostService.WebMessageReceived += OnWebMessageReceived;
@@ -67,14 +68,19 @@ public partial class MainViewModel : ObservableObject
     {
         if (e.IsSuccess)
         {
+            if (!string.IsNullOrEmpty(_userName))
+            {
+                return;
+            }
+
             const int maxRetries = 5;
             const int delayMs = 500;
 
             var attempts = 0;
             while (attempts < maxRetries)
             {
-                var userName = await _xWebViewScriptService.GetUserNameAsync();
-                if (!string.IsNullOrEmpty(userName))
+                _userName = await _xWebViewScriptService.GetUserNameAsync();
+                if (!string.IsNullOrEmpty(_userName))
                 {
                     _logger.LogInformation("User logged in.");
                     AreButtonsEnabled = true;
@@ -146,22 +152,15 @@ public partial class MainViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private async Task ShowAllPosts()
+    private async Task ShowPosts()
     {
-        var result = _windowManagerService.OpenInDialog(typeof(SettingsViewModel).FullName);
-        if (result.HasValue)
-        {
-            return;
-        }
-
         EnableUserInteractions(false);
-        await Task.Delay(10000);
-        //await _xWebViewScriptService.DeleteAllPostsAsync(_webView);
+        await _xWebViewScriptService.ShowPostsAsync();
         EnableUserInteractions(true);
     }
 
     [RelayCommand]
-    private async Task DeleteAllPosts()
+    private async Task DeletePosts()
     {
         EnableUserInteractions(false);
         await Task.Delay(10000);
@@ -170,7 +169,15 @@ public partial class MainViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private async Task ShowStarredPosts()
+    private async Task ShowLikes()
+    {
+        EnableUserInteractions(false);
+        await _xWebViewScriptService.ShowLikesAsync();
+        EnableUserInteractions(true);
+    }
+
+    [RelayCommand]
+    private async Task DeleteLikes()
     {
         EnableUserInteractions(false);
         await Task.Delay(10000);
@@ -179,25 +186,15 @@ public partial class MainViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private async Task DeleteStarredPosts()
+    private async Task ShowFollowing()
     {
         EnableUserInteractions(false);
-        await Task.Delay(10000);
-        //await _xWebViewScriptService.DeleteAllPostsAsync(_webView);
+        await _xWebViewScriptService.ShowFollowingAsync();
         EnableUserInteractions(true);
     }
 
     [RelayCommand]
-    private async Task ShowFollowed()
-    {
-        EnableUserInteractions(false);
-        await Task.Delay(10000);
-        //await _xWebViewScriptService.DeleteAllPostsAsync(_webView);
-        EnableUserInteractions(true);
-    }
-
-    [RelayCommand]
-    private async Task DeleteFollowed()
+    private async Task DeleteFollowing()
     {
         EnableUserInteractions(false);
         await Task.Delay(10000);

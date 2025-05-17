@@ -1,8 +1,8 @@
 ﻿using System.Windows.Controls;
-using CommunityToolkit.Mvvm.ComponentModel;
 using CleanMyPosts.UI.Contracts.Services;
 using CleanMyPosts.UI.ViewModels;
 using CleanMyPosts.UI.Views;
+using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace CleanMyPosts.UI.Services;
 
@@ -14,7 +14,7 @@ public class PageService : IPageService
     public PageService(IServiceProvider serviceProvider)
     {
         _serviceProvider = serviceProvider;
-        Configure<MainViewModel, MainPage>();
+        Configure<XViewModel, XPage>();
         Configure<LogViewModel, LogPage>();
         Configure<SettingsViewModel, SettingsPage>();
     }

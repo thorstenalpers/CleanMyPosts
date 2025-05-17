@@ -144,8 +144,8 @@
   <data name="SettingsPageRadioButtonWindowsDefaultTheme" xml:space="preserve">
     <value>Default</value>
   </data>
-  <data name="MainPage" xml:space="preserve">
-    <value>Home</value>
+  <data name="XPage" xml:space="preserve">
+    <value>X</value>
   </data>
   <data name="WebViewPageBackButtonTooltip" xml:space="preserve">
     <value>Back (Alt + Left)</value>
@@ -164,9 +164,6 @@
   </data>
   <data name="WebViewPageOpenInBrowserButtonTooltip" xml:space="preserve">
     <value>Open in browser (Ctrl + T)</value>
-  </data>
-  <data name="ShellMainPage" xml:space="preserve">
-    <value>Home</value>
   </data>
   <data name="ShellGoBackButton" xml:space="preserve">
     <value>Go back</value>

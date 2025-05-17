@@ -6,16 +6,17 @@
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 	xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
 	xmlns:material="http://metro.mahapps.com/winfx/xaml/iconpacks/material"
+	xmlns:fa="http://metro.mahapps.com/winfx/xaml/iconpacks/fontawesome"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 	xmlns:properties="clr-namespace:CleanMyPosts.UI.Properties"
 	xmlns:templateSelectors="clr-namespace:CleanMyPosts.UI.TemplateSelectors"
 	Title="{x:Static properties:Resources.AppDisplayName}"
-	Icon="../Assets/logo.ico"
-	ShowIconOnTitleBar="False"
 	Width="860"
 	Height="600"
 	MinWidth="300"
 	MinHeight="300"
+	Icon="../Assets/logo.ico"
+	ShowIconOnTitleBar="False"
 	Style="{StaticResource CustomMetroWindow}"
 	mc:Ignorable="d">
 	<i:Interaction.Triggers>
@@ -28,13 +29,14 @@
 	</i:Interaction.Triggers>
 	<controls:MetroWindow.LeftWindowCommands>
 		<controls:WindowCommands>
-				<Image Source="../Assets/logo.ico"
-                   Width="24"
-                   Height="24"
-                   Margin="12,0,12,0" />
+			<Image
+				Width="24"
+				Height="24"
+				Margin="12,0,12,0"
+				Source="../Assets/logo.ico" />
 		</controls:WindowCommands>
 	</controls:MetroWindow.LeftWindowCommands>
-	<controls:MetroWindow.Resources>		
+	<controls:MetroWindow.Resources>
 		<templateSelectors:MenuItemTemplateSelector x:Key="MenuItemTemplateSelector">
 			<templateSelectors:MenuItemTemplateSelector.GlyphDataTemplate>
 				<DataTemplate DataType="{x:Type controls:HamburgerMenuGlyphItem}">

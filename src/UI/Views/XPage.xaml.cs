@@ -4,20 +4,20 @@ using CleanMyPosts.UI.ViewModels;
 
 namespace CleanMyPosts.UI.Views;
 
-public partial class MainPage : Page
+public partial class XPage : Page
 {
-    private readonly MainViewModel _viewModel;
+    private readonly XViewModel _viewModel;
 
-    public MainPage(MainViewModel viewModel)
+    public XPage(XViewModel viewModel)
     {
         InitializeComponent();
         _viewModel = viewModel;
 
         DataContext = viewModel;
-        Loaded += MainPage_LoadedAsync;
+        Loaded += Page_LoadedAsync;
     }
 
-    private async void MainPage_LoadedAsync(object sender, RoutedEventArgs e)
+    private async void Page_LoadedAsync(object sender, RoutedEventArgs e)
     {
         await _viewModel.InitializeAsync(webView);
     }

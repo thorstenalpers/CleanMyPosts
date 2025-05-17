@@ -79,15 +79,6 @@ namespace CleanMyPosts.UI.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Home.
-        /// </summary>
-        public static string MainPage {
-            get {
-                return ResourceManager.GetString("MainPage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Todo.
         /// </summary>
         public static string SettingsPageAboutText {
@@ -178,15 +169,6 @@ namespace CleanMyPosts.UI.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Home.
-        /// </summary>
-        public static string ShellMainPage {
-            get {
-                return ResourceManager.GetString("ShellMainPage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Settings.
         /// </summary>
         public static string ShellSettingsPage {
@@ -246,6 +228,15 @@ namespace CleanMyPosts.UI.Properties {
         public static string WebViewPageRefreshButtonTooltip {
             get {
                 return ResourceManager.GetString("WebViewPageRefreshButtonTooltip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to X.
+        /// </summary>
+        public static string XPage {
+            get {
+                return ResourceManager.GetString("XPage", resourceCulture);
             }
         }
     }

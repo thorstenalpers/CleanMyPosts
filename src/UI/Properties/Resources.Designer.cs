@@ -61,7 +61,7 @@ namespace CleanMyPosts.UI.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to CleanMyPosts.
+        ///   Looks up a localized string similar to Clean My Posts.
         /// </summary>
         public static string AppDisplayName {
             get {
@@ -84,15 +84,6 @@ namespace CleanMyPosts.UI.Properties {
         public static string MainPage {
             get {
                 return ResourceManager.GetString("MainPage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to CleanMyPosts.
-        /// </summary>
-        public static string MainPageTitle {
-            get {
-                return ResourceManager.GetString("MainPageTitle", resourceCulture);
             }
         }
         

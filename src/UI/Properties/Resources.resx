@@ -168,9 +168,6 @@
   <data name="ShellMainPage" xml:space="preserve">
     <value>Home</value>
   </data>
-  <data name="MainPageTitle" xml:space="preserve">
-    <value>CleanMyPosts</value>
-  </data>
   <data name="ShellGoBackButton" xml:space="preserve">
     <value>Go back</value>
   </data>
@@ -178,7 +175,7 @@
     <value>Open or close navigation</value>
   </data>
   <data name="AppDisplayName" xml:space="preserve">
-    <value>CleanMyPosts</value>
+    <value>Clean My Posts</value>
   </data>
   <data name="LogPage" xml:space="preserve">
     <value>Log</value>

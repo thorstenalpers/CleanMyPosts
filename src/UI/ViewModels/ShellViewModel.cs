@@ -1,11 +1,11 @@
 ﻿using System.Collections.ObjectModel;
 using System.Windows;
+using CleanMyPosts.UI.Contracts.Services;
+using CleanMyPosts.UI.Properties;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MahApps.Metro.Controls;
 using MahApps.Metro.IconPacks;
-using CleanMyPosts.UI.Contracts.Services;
-using CleanMyPosts.UI.Properties;
 
 namespace CleanMyPosts.UI.ViewModels;
 
@@ -22,7 +22,12 @@ public partial class ShellViewModel : ObservableObject, IDisposable
 
         MenuItems =
         [
-            new HamburgerMenuGlyphItem { Label = Resources.MainPage, Glyph = "\uE80F", TargetPageType = typeof(MainViewModel) },
+            new HamburgerMenuIconItem
+            {
+                Label = Resources.XPage,
+                Icon = new PackIconFontAwesome  { Kind = PackIconFontAwesomeKind.XTwitterBrands },
+                TargetPageType = typeof(XViewModel)
+            },
         ];
 
         _logMenuItem = new HamburgerMenuIconItem

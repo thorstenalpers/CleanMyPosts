@@ -42,9 +42,6 @@
 	<Resource Include="Assets\logo.ico">
 	  <CopyToOutputDirectory>Never</CopyToOutputDirectory>
 	</Resource>
-	<Resource Include="Assets\logo.png">
-	  <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-	</Resource>
   </ItemGroup>
 
   <ItemGroup>

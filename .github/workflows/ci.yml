@@ -67,10 +67,11 @@ jobs:
           --logger "console;verbosity=detailed"
 
         # Generate coverage reports
-        dotnet tool run dotnet-reportgenerator `
+        dotnet tool run reportgenerator `
           -reports:TestResults/**/coverage.cobertura.xml `
           -targetdir:TestResults/Reports `
-          -reporttypes:"Html;lcov;SonarQube;Cobertura"
+          -reporttypes:"SonarQube" `
+          -reportfile:"SonarQube.xml"
 
         dotnet tool run dotnet-sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
 

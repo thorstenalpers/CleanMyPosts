@@ -29,7 +29,7 @@
 			Grid.Row="0"
 			Margin="4"
 			Padding="8"
-			Background="#FFF5F5F5"
+			Background="{DynamicResource MahApps.Brushes.Control.Background}"
 			BorderBrush="LightGray"
 			BorderThickness="1"
 			CornerRadius="3">
@@ -53,7 +53,6 @@
 							Margin="0,0,10,0"
 							VerticalAlignment="Center"
 							FontSize="14"
-							FontWeight="Bold"
 							Text="Posts:" />
 						<UniformGrid
 							HorizontalAlignment="Left"
@@ -66,6 +65,7 @@
 								Padding="6,3"
 								Command="{Binding ShowPostsCommand}"
 								IsEnabled="{Binding AreButtonsEnabled}"
+								Foreground="{DynamicResource MahApps.Brushes.Text}"
 								ToolTip="Show Posts">
 								<StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
 									<iconPacks:PackIconMaterial
@@ -111,7 +111,7 @@
 							Margin="0,0,10,0"
 							VerticalAlignment="Center"
 							FontSize="14"
-							FontWeight="Bold"
+							Foreground="{DynamicResource MahApps.Brushes.Text}"		
 							Text="Likes:" />
 						<UniformGrid
 							HorizontalAlignment="Left"
@@ -143,6 +143,7 @@
 								Padding="6,3"
 								Command="{Binding DeleteLikesCommand}"
 								IsEnabled="{Binding AreButtonsEnabled}"
+								Foreground="{DynamicResource MahApps.Brushes.Text}"		
 								ToolTip="Clean Likes">
 								<StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
 									<iconPacks:PackIconMaterial
@@ -168,7 +169,6 @@
 							Margin="0,0,10,0"
 							VerticalAlignment="Center"
 							FontSize="14"
-							FontWeight="Bold"
 							Text="Following:" />
 						<UniformGrid
 							HorizontalAlignment="Left"

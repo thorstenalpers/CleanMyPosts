@@ -52,7 +52,6 @@ public partial class App : Application
             })
             .Build();
 
-            // 🔧 LogViewModel must be resolved **after** the host is built
             var logViewModel = _host.Services.GetRequiredService<LogViewModel>();
 
             Log.Logger = new LoggerConfiguration()

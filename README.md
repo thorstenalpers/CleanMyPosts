@@ -1,4 +1,6 @@
 ﻿![Banner](./src/UI/Assets/banner.png)
+
+
 [![Windows](https://img.shields.io/badge/platform-Windows-blue)](#)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=thorstenalpers_CleanMyPosts&metric=alert_status)](https://sonarcloud.io/project/issues?issueStatuses=OPEN%2CCONFIRMED&id=thorstenalpers_CleanMyPosts)

@@ -149,6 +149,14 @@ jobs:
         git tag -a "v${{ env.VERSION }}" -m "Release v${{ env.VERSION }}"
         git push origin "v${{ env.VERSION }}"
 
+    - name: Checkout main for release notes
+      uses: actions/checkout@v4
+      with:
+        ref: main
+        sparse-checkout: |
+          release-notes/
+        sparse-checkout-cone-mode: false
+
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v1
       with:

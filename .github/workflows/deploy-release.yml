@@ -98,6 +98,7 @@ jobs:
         $baseUrl = "https://github.com/$repo/releases/download/v$version"
         $installerUrl = "$baseUrl/CleanMyPosts-Setup-$version.exe"
         $changelogUrl = "https://github.com/$repo/releases/tag/v$version"
+
         $xmlContent = @"
 <?xml version='1.0' encoding='utf-8'?>
 <updates>
@@ -109,7 +110,9 @@ jobs:
     </application>
 </updates>
 "@
+
         $xmlContent | Set-Content -Path "artifacts/update.xml" -Encoding UTF8
+
 
 
     - name: Configure Git Credentials

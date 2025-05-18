@@ -38,7 +38,7 @@ public partial class App : Application
                 c.SetBasePath(appLocation);
                 c.AddConfiguration(config);
             })
-            .ConfigureServices(ConfigureServices)
+            .ConfigureServices((context, services) => services.AddCleanMyPosts(context.Configuration))
             .ConfigureLogging(loggingBuilder =>
             {
                 loggingBuilder.ClearProviders();
@@ -64,11 +64,6 @@ public partial class App : Application
             Log.Fatal(ex, "Application start-up failed.");
             throw new CleanMyPostsException("Application start-up failed.", ex);
         }
-    }
-
-    internal static void ConfigureServices(HostBuilderContext context, IServiceCollection services)
-    {
-        services.AddCleanMyPosts(context.Configuration);
     }
 
     private async void OnExit(object sender, ExitEventArgs e)

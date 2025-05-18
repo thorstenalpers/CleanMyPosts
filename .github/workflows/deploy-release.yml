@@ -69,7 +69,6 @@ jobs:
         mkdir artifacts\installer
         copy installer\Output\CleanMyPosts-Installer-${{ env.VERSION }}-x64.exe artifacts\installer\
 
-
     - name: Clone update-feed branch to separate folder
       run: |
         git clone --branch update-feed --single-branch https://github.com/${{ github.repository }} update-feed || mkdir update-feed

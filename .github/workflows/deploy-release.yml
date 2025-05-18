@@ -83,6 +83,21 @@ jobs:
         mkdir artifacts\standalone
         copy artifacts\publish-single\CleanMyPosts.exe artifacts\standalone\CleanMyPosts-${{ env.VERSION }}-win-x64.exe
 
+    # --- NetSparkle Signing Step ---
+    - name: Save DSA Private Key
+      run: echo "${{ secrets.NETSPARKLE_PRIVATE_KEY }}" > sparkle_dsa_priv.pem
+
+    - name: Sign Standalone EXE for NetSparkle
+      run: |
+        netsparkle-generate-appcast sign --input artifacts/standalone/CleanMyPosts-${{ env.VERSION }}-win-x64.exe --private-key-file sparkle_dsa_priv.pem --output signature.sig
+
+    - name: Read Signature to Env Variable
+      id: read_sig
+      run: |
+        $sig = Get-Content signature.sig -Raw
+        echo "SIGNATURE=$sig" >> $GITHUB_ENV
+      shell: pwsh
+
     - name: Clone update-feed branch to separate folder
       run: |
         git clone --branch update-feed --single-branch https://github.com/${{ github.repository }} update-feed || mkdir update-feed
@@ -102,20 +117,24 @@ jobs:
         $originalUrl = "https://raw.githubusercontent.com/thorstenalpers/CleanMyPosts/update-feed/update-original.xml"
         Invoke-RestMethod -Uri $originalUrl -OutFile "update.xml"
 
-    - name: Generate update.xml from template
+    - name: Generate update.xml from template with signature
       shell: pwsh
       run: |
         $version = "${{ env.VERSION }}"
         $repo = "${{ github.repository }}"
         $baseUrl = "https://github.com/$repo/releases/download/v$version"
         $installerUrl = "$baseUrl/CleanMyPosts-Installer-$version-win-x64.exe"
+        $standaloneUrl = "$baseUrl/CleanMyPosts-$version-win-x64.exe"
         $changelogUrl = "https://github.com/$repo/releases/tag/v$version"
+        $signature = "${{ env.SIGNATURE }}"
 
         $template = Get-Content "update.xml" -Raw
         $xmlContent = $template `
           -replace "{{VERSION}}", $version `
           -replace "{{INSTALLER_URL}}", $installerUrl `
-          -replace "{{CHANGELOG_URL}}", $changelogUrl
+          -replace "{{STANDALONE_URL}}", $standaloneUrl `
+          -replace "{{CHANGELOG_URL}}", $changelogUrl `
+          -replace "{{SIGNATURE}}", $signature
 
         if (-not (Test-Path "artifacts")) {
           New-Item -ItemType Directory -Path "artifacts" | Out-Null
@@ -160,6 +179,5 @@ jobs:
         files: |
           artifacts/installer/CleanMyPosts-Installer-${{ env.VERSION }}-win-x64.exe
           artifacts/standalone/CleanMyPosts-${{ env.VERSION }}-win-x64.exe
-
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -362,4 +362,9 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 
-clean.cmd
+# local cmd files
+*.cmd
+
+# Installer releases 
+installer/Output
+/publish.cmd

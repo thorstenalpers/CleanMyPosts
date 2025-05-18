@@ -1,7 +1,10 @@
-﻿namespace CleanMyPosts.UI.Models;
+﻿using NetSparkleUpdater.Enums;
+
+namespace CleanMyPosts.UI.Models;
 
 public class UpdaterOptions
 {
     public string AppCastUrl { get; set; }
-    public string SecurityMode { get; set; }
+    public SecurityMode SecurityMode { get; set; }
+    public string IconUri { get; set; }
 }

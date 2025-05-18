@@ -1,14 +1,7 @@
 ﻿using System.Windows;
 using System.Windows.Threading;
-using CleanMyPosts.Core.Contracts.Services;
-using CleanMyPosts.Core.Services;
-using CleanMyPosts.UI.Contracts.Services;
-using CleanMyPosts.UI.Contracts.Views;
 using CleanMyPosts.UI.Helpers;
-using CleanMyPosts.UI.Models;
-using CleanMyPosts.UI.Services;
 using CleanMyPosts.UI.ViewModels;
-using CleanMyPosts.UI.Views;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -52,13 +45,12 @@ public partial class App : Application
             })
             .Build();
 
-            // 🔧 LogViewModel must be resolved **after** the host is built
             var logViewModel = _host.Services.GetRequiredService<LogViewModel>();
 
             Log.Logger = new LoggerConfiguration()
                 .ReadFrom.Configuration(config)
                 .WriteTo.Debug()
-                .WriteTo.LogViewModelSink(logViewModel) // custom sink
+                .WriteTo.LogViewModelSink(logViewModel)
                 .CreateLogger();
 
             await _host.StartAsync();
@@ -75,39 +67,7 @@ public partial class App : Application
 
     internal static void ConfigureServices(HostBuilderContext context, IServiceCollection services)
     {
-        // Your existing registrations
-        services.AddHostedService<ApplicationHostService>();
-
-        services.AddSingleton<IFileService, FileService>();
-        services.AddSingleton<IAppSettingsService, AppSettingsService>();
-
-        services.AddSingleton<IWindowManagerService, WindowManagerService>();
-        services.AddSingleton<IApplicationInfoService, ApplicationInfoService>();
-        services.AddSingleton<IPersistAndRestoreService, PersistAndRestoreService>();
-        services.AddSingleton<IThemeSelectorService, ThemeSelectorService>();
-        services.AddSingleton<IPageService, PageService>();
-        services.AddSingleton<INavigationService, NavigationService>();
-        services.AddSingleton<IXWebViewScriptService, XWebViewScriptService>();
-        services.AddSingleton<IWebViewHostService, WebViewHostService>();
-        services.AddSingleton<IUpdateService, UpdateService>();
-
-        services.AddTransient<IShellWindow, ShellWindow>();
-        services.AddTransient<ShellViewModel>();
-        services.AddSingleton<LogPage>();
-        services.AddSingleton<LogViewModel>();
-        services.AddSingleton<XViewModel>();
-        services.AddSingleton<XPage>();
-
-        services.AddTransient<SettingsViewModel>();
-        services.AddTransient<SettingsPage>();
-
-        services.AddTransient<IShellDialogWindow, ShellDialogWindow>();
-        services.AddTransient<ShellDialogViewModel>();
-
-        services.AddHttpClient();
-
-        services.Configure<AppConfig>(context.Configuration.GetSection(nameof(AppConfig)));
-        services.Configure<UpdaterOptions>(context.Configuration.GetSection("UpdateSettings"));
+        services.AddCleanMyPosts(context.Configuration);
     }
 
     private async void OnExit(object sender, ExitEventArgs e)

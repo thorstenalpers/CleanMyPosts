@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 
-namespace CleanMyPosts.Tests;
+namespace CleanMyPosts.UnitTests;
 
 [Category("Unit")]
 public class SettingsViewModelTests

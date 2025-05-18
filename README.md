@@ -2,7 +2,7 @@
 
 
 [![Windows](https://img.shields.io/badge/platform-Windows-blue)](#)
-[![License](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE.txt)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=thorstenalpers_CleanMyPosts&metric=alert_status)](https://sonarcloud.io/project/issues?issueStatuses=OPEN%2CCONFIRMED&id=thorstenalpers_CleanMyPosts)
 [![CI Tests](https://github.com/thorstenalpers/CleanMyPosts/actions/workflows/ci.yml/badge.svg)](https://github.com/thorstenalpers/CleanMyPosts/actions/workflows/ci.yml)
 [![Coverage Status](https://coveralls.io/repos/github/thorstenalpers/CleanMyPosts/badge.svg?branch=develop)](https://coveralls.io/github/thorstenalpers/CleanMyPosts?branch=develop)

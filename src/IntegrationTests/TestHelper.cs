@@ -1,7 +1,10 @@
 ﻿using CleanMyPosts.UI.Helpers;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Moq;
+using NetSparkleUpdater.Interfaces;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
@@ -20,8 +23,9 @@ internal static class TestHelper
         var cfgBuilder = new ConfigurationBuilder();
         cfgBuilder.AddInMemoryCollection(new Dictionary<string, string>
         {
-            ["UpdateSettings:AppCastUrl"] = "https://example.com/appcast.xml",
-            ["UpdateSettings:SecurityMode"] = "Unsafe"
+            ["Updater:AppCastUrl"] = "https://example.com/appcast.xml",
+            ["Updater:SecurityMode"] = "Unsafe",
+            ["Updater:IconUri"] = "https://raw.githubusercontent.com/thorstenalpers/CleanMyPosts/refs/heads/main/src/UI/Assets/logo.ico"
         });
         cfgBuilder.AddUserSecrets<PagesTests>();
         cfgBuilder.AddEnvironmentVariables();
@@ -30,11 +34,13 @@ internal static class TestHelper
         var host = Host.CreateDefaultBuilder()
             .ConfigureAppConfiguration((context, config) =>
             {
-                config.AddConfiguration(cfg); // reuse custom config
+                config.AddConfiguration(cfg);
             })
             .ConfigureServices((context, services) =>
             {
-                services.AddCleanMyPosts(cfg); // your custom DI setup
+                services.AddCleanMyPosts(cfg);
+                var mockUIFactory = new Mock<IUIFactory>();
+                services.AddSingleton(mockUIFactory.Object);
             })
             .ConfigureLogging(logging =>
             {

@@ -1,4 +1,6 @@
-﻿using CleanMyPosts.Core.Contracts.Services;
+﻿using System.Windows;
+using System.Windows.Media.Imaging;
+using CleanMyPosts.Core.Contracts.Services;
 using CleanMyPosts.Core.Services;
 using CleanMyPosts.UI.Contracts.Services;
 using CleanMyPosts.UI.Contracts.Views;
@@ -8,6 +10,9 @@ using CleanMyPosts.UI.ViewModels;
 using CleanMyPosts.UI.Views;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+using NetSparkleUpdater.Interfaces;
+using NetSparkleUpdater.UI.WPF;
 
 namespace CleanMyPosts.UI.Helpers;
 
@@ -19,6 +24,18 @@ public static class ServiceCollectionExtensions
 
         services.AddSingleton<IFileService, FileService>();
         services.AddSingleton<IAppSettingsService, AppSettingsService>();
+        services.AddSingleton<IUIFactory>(sp =>
+        {
+            UIFactory factory = null;
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                var options = sp.GetRequiredService<IOptions<UpdaterOptions>>().Value;
+                var uri = new Uri(options.IconUri, UriKind.Absolute);
+                var imageSource = new BitmapImage(uri);
+                factory = new UIFactory(imageSource);
+            });
+            return factory;
+        });
 
         services.AddSingleton<IWindowManagerService, WindowManagerService>();
         services.AddSingleton<IApplicationInfoService, ApplicationInfoService>();

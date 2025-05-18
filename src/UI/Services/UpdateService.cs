@@ -1,10 +1,10 @@
-﻿using System.Windows.Media.Imaging;
+﻿using Ardalis.GuardClauses;
 using CleanMyPosts.UI.Contracts.Services;
 using CleanMyPosts.UI.Models;
 using Microsoft.Extensions.Options;
 using NetSparkleUpdater;
+using NetSparkleUpdater.Interfaces;
 using NetSparkleUpdater.SignatureVerifiers;
-using NetSparkleUpdater.UI.WPF;
 
 namespace CleanMyPosts.UI.Services;
 
@@ -12,15 +12,18 @@ public class UpdateService : IUpdateService
 {
     private readonly SparkleUpdater _sparkle;
 
-    public UpdateService(IOptions<UpdaterOptions> options)
+    public UpdateService(IOptions<UpdaterOptions> options, IUIFactory uIFactory)
     {
-        var uri = new Uri(options.Value.IconUri, UriKind.Absolute);
-        var imageSource = new BitmapImage(uri);
+        var opts = options.Value;
 
-        var verifier = new DSAChecker(options.Value.SecurityMode);
-        _sparkle = new SparkleUpdater(options.Value.AppCastUrl, verifier)
+        Guard.Against.Null(opts, nameof(options));
+        Guard.Against.NullOrWhiteSpace(opts.AppCastUrl, nameof(opts.AppCastUrl));
+        Guard.Against.NullOrWhiteSpace(opts.SecurityMode.ToString(), nameof(opts.SecurityMode));
+
+        var verifier = new DSAChecker(opts.SecurityMode);
+        _sparkle = new SparkleUpdater(opts.AppCastUrl, verifier)
         {
-            UIFactory = new UIFactory(imageSource),
+            UIFactory = uIFactory,
             RelaunchAfterUpdate = true,
             UseNotificationToast = true
         };

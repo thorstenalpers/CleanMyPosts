@@ -15,9 +15,8 @@ public class XWebViewScriptService(ILogger<XWebViewScriptService> logger, IWebVi
 
     public async Task ShowPostsAsync()
     {
-        Guard.Against.Null(_userName, nameof(_userName));
+        Guard.Against.Null(_userName);
 
-        //var searchQuery = $"from:{_userName} since:2000-01-01";
         var searchQuery = $"from:{_userName}";
         var encodedQuery = WebUtility.UrlEncode(searchQuery);
         var url = new Uri($"https://x.com/search?q={encodedQuery}&src=typed_query");
@@ -27,17 +26,15 @@ public class XWebViewScriptService(ILogger<XWebViewScriptService> logger, IWebVi
             _webViewHostService.Source = url;
             if (!await WaitForFullDocumentReadyAsync())
             {
-                _logger.LogWarning("Navigation to {url} failed.", url);
-                return;
+                _logger.LogWarning("Navigation to {Url} failed.", url);
             }
         }
     }
 
     public async Task DeletePostsAsync()
     {
-        Guard.Against.Null(_userName, nameof(_userName));
+        Guard.Against.Null(_userName);
 
-        //var searchQuery = $"from:{_userName} since:2000-01-01";
         var searchQuery = $"from:{_userName}";
         var encodedQuery = WebUtility.UrlEncode(searchQuery);
         var url = new Uri($"https://x.com/search?q={encodedQuery}&src=typed_query");
@@ -85,7 +82,7 @@ public class XWebViewScriptService(ILogger<XWebViewScriptService> logger, IWebVi
 
     public async Task ShowLikesAsync()
     {
-        Guard.Against.Null(_userName, nameof(_userName));
+        Guard.Against.Null(_userName);
 
         var url = new Uri($"https://x.com/{WebUtility.UrlEncode(_userName)}/likes");
         if (_webViewHostService.Source != url)
@@ -93,8 +90,7 @@ public class XWebViewScriptService(ILogger<XWebViewScriptService> logger, IWebVi
             _webViewHostService.Source = url;
             if (!await WaitForFullDocumentReadyAsync())
             {
-                _logger.LogWarning("Navigation to {url} failed.", url);
-                return;
+                _logger.LogWarning("Navigation to {Url} failed.", url);
             }
         }
     }
@@ -106,7 +102,7 @@ public class XWebViewScriptService(ILogger<XWebViewScriptService> logger, IWebVi
 
     public async Task ShowFollowingAsync()
     {
-        Guard.Against.Null(_userName, nameof(_userName));
+        Guard.Against.Null(_userName);
 
         var url = new Uri($"https://x.com/{WebUtility.UrlEncode(_userName)}/following");
         if (_webViewHostService.Source != url)
@@ -114,8 +110,7 @@ public class XWebViewScriptService(ILogger<XWebViewScriptService> logger, IWebVi
             _webViewHostService.Source = url;
             if (!await WaitForFullDocumentReadyAsync())
             {
-                _logger.LogWarning("Navigation to {url} failed.", url);
-                return;
+                _logger.LogWarning("Navigation to {Url} failed.", url);
             }
         }
     }

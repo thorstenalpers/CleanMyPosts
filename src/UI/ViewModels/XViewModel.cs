@@ -5,6 +5,7 @@ using CleanMyPosts.UI.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.Web.WebView2.Wpf;
 
 namespace CleanMyPosts.UI.ViewModels;
@@ -14,10 +15,9 @@ public partial class XViewModel : ObservableObject
     private readonly IWebViewHostService _webViewHostService;
     private readonly ILogger<XViewModel> _logger;
     private readonly IXWebViewScriptService _xWebViewScriptService;
-    //private readonly IWindowManagerService _windowManagerService;
     private OverlayWindow _overlayWindow;
 
-    private const string XBaseUrl = "https://x.com";
+    private readonly string xBaseUrl;
 
     [ObservableProperty]
     private bool _areButtonsEnabled;
@@ -26,16 +26,16 @@ public partial class XViewModel : ObservableObject
     private string _userName;
 
     public XViewModel(ILogger<XViewModel> logger,
-                         //IWindowManagerService windowManagerService,
                          IWebViewHostService webViewHostService,
+                         IOptions<AppConfig> options,
                          IXWebViewScriptService xWebViewScriptService)
     {
         _webViewHostService = webViewHostService ?? throw new ArgumentNullException(nameof(webViewHostService));
         _xWebViewScriptService = xWebViewScriptService ?? throw new ArgumentNullException(nameof(xWebViewScriptService));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        //_windowManagerService = windowManagerService ?? throw new ArgumentNullException(nameof(windowManagerService));
         _webViewHostService.NavigationCompleted += OnNavigationCompleted;
         _webViewHostService.WebMessageReceived += OnWebMessageReceived;
+        xBaseUrl = options.Value.XBaseUrl;
     }
 
     public async Task InitializeAsync(WebView2 webView)
@@ -47,7 +47,7 @@ public partial class XViewModel : ObservableObject
 
         await _webViewHostService.InitializeAsync(webView);
 
-        _webViewHostService.Source = new Uri(XBaseUrl);
+        _webViewHostService.Source = new Uri(xBaseUrl);
 
         var jsScript = @"
                 window.onerror = function(message, source, lineno, colno, error) {
@@ -162,8 +162,7 @@ public partial class XViewModel : ObservableObject
     private async Task DeletePosts()
     {
         EnableUserInteractions(false);
-        await Task.Delay(10000);
-        //await _xWebViewScriptService.DeleteAllPostsAsync(_webView);
+        await _xWebViewScriptService.DeletePostsAsync();
         EnableUserInteractions(true);
     }
 
@@ -179,8 +178,7 @@ public partial class XViewModel : ObservableObject
     private async Task DeleteLikes()
     {
         EnableUserInteractions(false);
-        await Task.Delay(10000);
-        //await _xWebViewScriptService.DeleteAllPostsAsync(_webView);
+        await Task.Delay(10002);
         EnableUserInteractions(true);
     }
 
@@ -196,8 +194,7 @@ public partial class XViewModel : ObservableObject
     private async Task DeleteFollowing()
     {
         EnableUserInteractions(false);
-        await Task.Delay(10000);
-        //await _xWebViewScriptService.DeleteAllPostsAsync(_webView);
+        await Task.Delay(10001);
         EnableUserInteractions(true);
     }
 

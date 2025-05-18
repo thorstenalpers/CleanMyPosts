@@ -16,9 +16,9 @@ public class UpdateService : IUpdateService
     {
         var opts = options.Value;
 
-        Guard.Against.Null(opts, nameof(options));
-        Guard.Against.NullOrWhiteSpace(opts.AppCastUrl, nameof(opts.AppCastUrl));
-        Guard.Against.NullOrWhiteSpace(opts.SecurityMode.ToString(), nameof(opts.SecurityMode));
+        Guard.Against.Null(opts);
+        Guard.Against.NullOrWhiteSpace(opts.AppCastUrl);
+        Guard.Against.NullOrWhiteSpace(opts.SecurityMode.ToString());
 
         var verifier = new DSAChecker(opts.SecurityMode);
         _sparkle = new SparkleUpdater(opts.AppCastUrl, verifier)

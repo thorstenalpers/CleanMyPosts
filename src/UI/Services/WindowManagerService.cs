@@ -15,9 +15,9 @@ public class WindowManagerService(IServiceProvider serviceProvider, IPageService
     private readonly IPageService _pageService = pageService;
     public Window MainWindow => Application.Current.MainWindow;
 
-    public void OpenInNewWindow(string key, object parameter = null)
+    public void OpenInNewWindow(string pageKey, object parameter = null)
     {
-        var existingWindow = GetWindow(key);
+        var existingWindow = GetWindow(pageKey);
         if (existingWindow is not null)
         {
             existingWindow.Activate();
@@ -39,11 +39,11 @@ public class WindowManagerService(IServiceProvider serviceProvider, IPageService
 
         frame.Navigated += OnNavigated;
         newWindow.Closed += OnWindowClosed;
-        frame.Navigate(_pageService.GetPage(key), parameter);
+        frame.Navigate(_pageService.GetPage(pageKey), parameter);
         newWindow.Show();
     }
 
-    public bool? OpenInDialog(string key, object parameter = null)
+    public bool? OpenInDialog(string pageKey, object parameter = null)
     {
         if (_serviceProvider.GetService(typeof(IShellDialogWindow)) is not IShellDialogWindow shellWindow)
         {
@@ -54,17 +54,17 @@ public class WindowManagerService(IServiceProvider serviceProvider, IPageService
         frame.Navigated += OnNavigated;
 
         ((Window)shellWindow).Closed += OnWindowClosed;
-        frame.Navigate(_pageService.GetPage(key), parameter);
+        frame.Navigate(_pageService.GetPage(pageKey), parameter);
 
         return ((Window)shellWindow).ShowDialog();
     }
 
-    public Window GetWindow(string key)
+    public Window GetWindow(string pageKey)
     {
         foreach (Window window in Application.Current.Windows)
         {
             var dataContext = window.GetDataContext();
-            if (dataContext?.GetType().FullName == key)
+            if (dataContext?.GetType().FullName == pageKey)
             {
                 return window;
             }
@@ -72,7 +72,7 @@ public class WindowManagerService(IServiceProvider serviceProvider, IPageService
         return null;
     }
 
-    private void OnNavigated(object sender, NavigationEventArgs e)
+    private static void OnNavigated(object sender, NavigationEventArgs e)
     {
         if (sender is Frame frame &&
             frame.GetDataContext() is INavigationAware navigationAware)

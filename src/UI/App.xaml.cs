@@ -1,5 +1,6 @@
 ﻿using System.Windows;
 using System.Windows.Threading;
+using CleanMyPosts.Core.Exception;
 using CleanMyPosts.UI.Helpers;
 using CleanMyPosts.UI.ViewModels;
 using Microsoft.Extensions.Configuration;
@@ -61,7 +62,7 @@ public partial class App : Application
         catch (Exception ex)
         {
             Log.Fatal(ex, "Application start-up failed.");
-            throw;
+            throw new CleanMyPostsException("Application start-up failed.", ex);
         }
     }
 

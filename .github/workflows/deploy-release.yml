@@ -73,13 +73,16 @@ jobs:
         $dst = "artifacts/single-exe/CleanMyPosts-standalone.exe"
 
         if (-Not (Test-Path $src)) {
-          Write-Error "File $src not found!"
+          Write-Error "Source file not found: $src"
           exit 1
         }
+
         if (Test-Path $dst) {
           Remove-Item $dst -Force
         }
-        Rename-Item -Path $src -NewName $dst
+
+        $destFileName = [System.IO.Path]::GetFileName($dst)
+        Rename-Item -Path $src -NewName $destFileName
 
     - name: Build Setup EXE
       run: |

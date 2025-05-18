@@ -101,12 +101,12 @@ jobs:
         $xmlContent = @"
 <?xml version='1.0' encoding='utf-8'?>
 <updates>
-	<application>
-		<name>CleanMyPosts</name>
-		<version>$version</version>
-		<url>$installerUrl</url>
-		<changelog>$changelogUrl</changelog>
-	</application>
+    <application>
+        <name>CleanMyPosts</name>
+        <version>$version</version>
+        <url>$installerUrl</url>
+        <changelog>$changelogUrl</changelog>
+    </application>
 </updates>
 "@
         $xmlContent | Set-Content -Path "artifacts/update.xml" -Encoding UTF8

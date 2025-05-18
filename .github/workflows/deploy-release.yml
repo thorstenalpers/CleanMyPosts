@@ -63,9 +63,6 @@ jobs:
           /p:EnableCompressionInSingleFile=true `
           -o artifacts/single-exe
 
-    - name: List published files
-      run: dir artifacts/single-exe
-
     - name: Rename Standalone EXE for Release
       shell: pwsh
       run: |
@@ -102,17 +99,18 @@ jobs:
         $installerUrl = "$baseUrl/CleanMyPosts-Setup-$version.exe"
         $changelogUrl = "https://github.com/$repo/releases/tag/v$version"
         $xmlContent = @"
-            <?xml version='1.0' encoding='utf-8'?>
-            <updates>
-              <application>
-                <name>CleanMyPosts</name>
-                <version>$version</version>
-                <url>$installerUrl</url>
-                <changelog>$changelogUrl</changelog>
-              </application>
-            </updates>
-            "@
+<?xml version='1.0' encoding='utf-8'?>
+<updates>
+	<application>
+		<name>CleanMyPosts</name>
+		<version>$version</version>
+		<url>$installerUrl</url>
+		<changelog>$changelogUrl</changelog>
+	</application>
+</updates>
+"@
         $xmlContent | Set-Content -Path "artifacts/update.xml" -Encoding UTF8
+
 
     - name: Configure Git Credentials
       run: |

@@ -367,4 +367,3 @@ FodyWeavers.xsd
 
 # Installer releases 
 installer/Output
-/publish.cmd

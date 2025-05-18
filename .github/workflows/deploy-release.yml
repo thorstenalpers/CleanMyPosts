@@ -60,6 +60,15 @@ jobs:
         dotnet publish "${{ env.UI_Project }}" -c Release -r win-x64 --self-contained true `
           -o artifacts/publish-x64
 
+    - name: Publish Single-File x64
+      run: |
+        dotnet publish "${{ env.UI_Project }}" `
+          -c Release -r win-x64 --self-contained true `
+          /p:PublishSingleFile=true `
+          /p:IncludeNativeLibrariesForSelfExtract=true `
+          /p:PublishTrimmed=false `
+          -o artifacts/publish-single
+
     - name: Build Installer x64
       run: |
         iscc "/DMyAppVersion=${{ env.VERSION }}" "/DMyAppExePath=..\\artifacts\\publish-x64\\*" "${{ env.Installer_Script }}"
@@ -68,6 +77,11 @@ jobs:
       run: |
         mkdir artifacts\installer
         copy installer\Output\CleanMyPosts-Installer-${{ env.VERSION }}-win-x64.exe artifacts\installer\
+
+    - name: Copy Standalone Single-File EXE to Artifacts
+      run: |
+        mkdir artifacts\standalone
+        copy artifacts\publish-single\CleanMyPosts.exe artifacts\standalone\CleanMyPosts-${{ env.VERSION }}-win-x64.exe
 
     - name: Clone update-feed branch to separate folder
       run: |
@@ -145,5 +159,7 @@ jobs:
         body_path: ./release-notes/v${{ env.VERSION }}.md
         files: |
           artifacts/installer/CleanMyPosts-Installer-${{ env.VERSION }}-win-x64.exe
+          artifacts/standalone/CleanMyPosts-${{ env.VERSION }}-win-x64.exe
+
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

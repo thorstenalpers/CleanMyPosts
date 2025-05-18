@@ -158,6 +158,5 @@ jobs:
         files: |
           artifacts/single-exe/CleanMyPosts-standalone.exe
           artifacts/setup/CleanMyPosts-Setup-${{ env.VERSION }}.exe
-          artifacts/update.xml
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

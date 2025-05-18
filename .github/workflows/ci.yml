@@ -38,7 +38,7 @@ jobs:
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       run: |
-        ./dotnet-sonarscanner begin `
+        dotnet tool run dotnet-sonarscanner begin `
           /k:"thorstenalpers_CleanMyPosts" `
           /o:"thorstenalpers" `
           /d:sonar.token="${{ secrets.SONAR_TOKEN }}" `
@@ -58,12 +58,12 @@ jobs:
           --logger "console;verbosity=detailed" `
           --filter "TestCategory!=Long-Running"
 
-        ./dotnet-reportgenerator `
+        dotnet tool run dotnet-reportgenerator `
           -reports:./TestResults/Tests/**/coverage.cobertura.xml `
           -targetdir:./TestResults/Reports `
           -reporttypes:"Html;lcov;SonarQube;Cobertura"
 
-        ./dotnet-sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
+        dotnet tool run dotnet-sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
 
     - name: Upload to Coveralls
       uses: coverallsapp/github-action@v2

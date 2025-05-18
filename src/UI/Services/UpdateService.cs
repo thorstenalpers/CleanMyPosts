@@ -31,10 +31,9 @@ public class UpdateService : IUpdateService
         {
             UIFactory = uIFactory,
             RelaunchAfterUpdate = true,
-            UseNotificationToast = true
+            UseNotificationToast = true,
+            LogWriter = netSparkleLogger
         };
-
-        _sparkle.LogWriter = netSparkleLogger;
     }
 
     public async Task CheckForUpdatesAsync()

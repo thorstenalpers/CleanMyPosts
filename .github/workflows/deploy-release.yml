@@ -67,7 +67,7 @@ jobs:
     - name: Copy Installer Exe to Artifacts
       run: |
         mkdir artifacts\installer
-        copy installer\Output\CleanMyPosts-Installer-${{ env.VERSION }}-x64.exe artifacts\installer\
+        copy installer\Output\CleanMyPosts-Installer-${{ env.VERSION }}-win-x64.exe artifacts\installer\
 
     - name: Clone update-feed branch to separate folder
       run: |

@@ -5,8 +5,8 @@
     <IsPackable>false</IsPackable>
     <AssetTargetFallback>uap10.0.18362</AssetTargetFallback>
     <Platforms>x64;x86;AnyCPU</Platforms>
-    <RootNamespace>CleanMyPosts.Tests</RootNamespace>
-	<DefaultNamespace>CleanMyPosts.UI</DefaultNamespace>
+    <RootNamespace>CleanMyPosts.IntegrationTests</RootNamespace>
+	<DefaultNamespace>CleanMyPosts.IntegrationTests</DefaultNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 

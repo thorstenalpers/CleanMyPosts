@@ -10,7 +10,8 @@ jobs:
     env:
       Solution: "src/CleanMyPosts.sln"
       UI_Project: "src/UI/UI.csproj"
-      Test_Project: "src/Tests/Tests.csproj"
+      UnitTest_Project: "src/UnitTests/UnitTests.csproj"
+      IntegrationTest_Project: "src/IntegrationTests/IntegrationTests.csproj"
       Installer_Script: "installer/Installer.iss"
       FORCE_COLOR: "true"
       DOTNET_LOGGING__CONSOLE__COLORBEHAVIOR: Enabled
@@ -30,8 +31,11 @@ jobs:
     - name: Build
       run: dotnet build "${{ env.Solution }}" --configuration Release --no-restore
 
-    - name: Run tests
-      run: dotnet test "${{ env.Test_Project }}" --configuration Release --logger "console;verbosity=detailed" --filter "TestCategory!=Long-Running"
+    - name: Run Unit Tests
+      run: dotnet test "${{ env.UnitTest_Project }}" --configuration Release --logger "console;verbosity=detailed" --filter "TestCategory!=Long-Running"
+
+    - name: Run Integration Tests
+      run: dotnet test "${{ env.IntegrationTest_Project }}" --configuration Release --logger "console;verbosity=detailed"
 
     - name: Extract Version
       id: get_version

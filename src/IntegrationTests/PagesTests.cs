@@ -13,7 +13,7 @@ using NUnit.Framework;
 
 namespace CleanMyPosts.Tests;
 
-[Category("Unit")]
+[Category("Integration")]
 public class PagesTests
 {
     private IHost _host;

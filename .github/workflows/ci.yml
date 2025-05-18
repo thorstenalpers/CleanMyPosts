@@ -10,7 +10,8 @@ jobs:
 
     env:
       Solution: "src/CleanMyPosts.sln"
-      Test_Project: "src/Tests/Tests.csproj"
+      UnitTest_Project: "src/UnitTests/UnitTests.csproj"
+      IntegrationTest_Project: "src/IntegrationTests/IntegrationTests.csproj"
       FORCE_COLOR: "true"
       DOTNET_LOGGING__CONSOLE__COLORBEHAVIOR: Enabled
 
@@ -44,23 +45,31 @@ jobs:
           /d:sonar.token="${{ secrets.SONAR_TOKEN }}" `
           /d:sonar.host.url="https://sonarcloud.io" `
           /d:sonar.sources="src" `
-          /d:sonar.tests="src/Tests" `
-          /d:sonar.test.inclusions="src/Tests/**/*.cs" `
-          /d:sonar.exclusions="**/*.html" `
-          /d:sonar.coverageReportPaths="./TestResults/Reports/SonarQube.xml"
+          /d:sonar.tests="src/UnitTests;src/IntegrationTests" `
+          /d:sonar.test.inclusions="**/*Tests.cs" `
+          /d:sonar.coverageReportPaths="TestResults/Reports/SonarQube.xml"
 
         dotnet build "${{ env.Solution }}" --configuration Release --no-restore
 
-        dotnet test "${{ env.Test_Project }}" `
+        # Run Unit Tests
+        dotnet test "${{ env.UnitTest_Project }}" `
           --collect:"XPlat Code Coverage" `
-          --results-directory ./TestResults/Tests `
+          --results-directory TestResults/UnitTests `
           --configuration Release `
           --logger "console;verbosity=detailed" `
           --filter "TestCategory!=Long-Running"
 
+        # Run Integration Tests
+        dotnet test "${{ env.IntegrationTest_Project }}" `
+          --collect:"XPlat Code Coverage" `
+          --results-directory TestResults/IntegrationTests `
+          --configuration Release `
+          --logger "console;verbosity=detailed"
+
+        # Generate coverage reports
         dotnet tool run dotnet-reportgenerator `
-          -reports:./TestResults/Tests/**/coverage.cobertura.xml `
-          -targetdir:./TestResults/Reports `
+          -reports:TestResults/**/coverage.cobertura.xml `
+          -targetdir:TestResults/Reports `
           -reporttypes:"Html;lcov;SonarQube;Cobertura"
 
         dotnet tool run dotnet-sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
@@ -68,12 +77,12 @@ jobs:
     - name: Upload to Coveralls
       uses: coverallsapp/github-action@v2
       with:
-        path-to-lcov: ./TestResults/Reports/lcov.info
+        path-to-lcov: TestResults/Reports/lcov.info
       env:
         COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
 
     - name: Upload Test Coverage Report
       uses: actions/upload-artifact@v4
       with:
-        name: unit-test-coverage-report
-        path: ./TestResults/Reports
+        name: test-coverage-report
+        path: TestResults/Reports

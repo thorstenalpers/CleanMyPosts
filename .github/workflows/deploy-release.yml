@@ -17,7 +17,7 @@ jobs:
       DOTNET_LOGGING__CONSOLE__COLORBEHAVIOR: Enabled
 
     steps:
-    - name: Checkout
+    - name: Checkout main
       uses: actions/checkout@v4
       with:
         fetch-depth: 0 
@@ -90,11 +90,18 @@ jobs:
         mkdir -p artifacts/setup
         copy installer\Output\CleanMyPosts-Setup-${{ env.VERSION }}.exe artifacts\setup\
 
-    - name: Fetch update.xml template from update-feed branch
+    - name: Clone update-feed branch to separate folder
+      run: |
+        git clone --branch update-feed --single-branch https://github.com/${{ github.repository }} update-feed || mkdir update-feed
+
+    - name: Copy update.xml from update-feed or fallback
       shell: pwsh
       run: |
-        git fetch origin update-feed:update-feed
-        git checkout update-feed -- update.xml
+        if (Test-Path "update-feed/update.xml") {
+          Copy-Item "update-feed/update.xml" "update.xml"
+        } else {
+          "No update.xml found in update-feed branch." | Out-File update.xml
+        }
 
     - name: Generate update.xml from template
       shell: pwsh
@@ -116,25 +123,19 @@ jobs:
         }
         $xmlContent | Set-Content -Path "artifacts/update.xml" -Encoding UTF8
 
-    - name: Configure Git Credentials
+    - name: Configure Git Credentials for update-feed push
       run: |
         echo "https://${{ secrets.GH_APIKEY }}@github.com" > $env:USERPROFILE\.git-credentials
         git config --global credential.helper store
         git config --global user.name "github-actions"
         git config --global user.email "actions@github.com"
 
-    - name: Push update.xml to update-feed branch
-      shell: bash
+    - name: Commit and push update.xml to update-feed branch from separate folder
       run: |
-        git fetch origin update-feed || echo "No update-feed branch yet"
-        if git show-ref --verify --quiet refs/heads/update-feed; then
-          git checkout update-feed
-        else
-          git checkout --orphan update-feed
-          git rm -rf .
-        fi
-
-        cp artifacts/update.xml update.xml
+        cd update-feed
+        git config user.name "github-actions"
+        git config user.email "actions@github.com"
+        cp ../artifacts/update.xml update.xml
         git add update.xml
 
         if git diff --cached --quiet; then
@@ -143,19 +144,15 @@ jobs:
           git commit -m "Update appcast for version ${{ env.VERSION }}"
           git push origin update-feed --force
         fi
+      shell: bash
 
     - name: Create Git Tag
       run: |
         git tag -a "v${{ env.VERSION }}" -m "Release v${{ env.VERSION }}"
         git push origin "v${{ env.VERSION }}"
 
-    - name: Checkout main for release notes
-      uses: actions/checkout@v4
-      with:
-        ref: main
-        sparse-checkout: |
-          release-notes/
-        sparse-checkout-cone-mode: false
+    - name: Debug artifacts folder
+      run: dir artifacts /s
 
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v1

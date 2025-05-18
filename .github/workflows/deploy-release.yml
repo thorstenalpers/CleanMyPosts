@@ -90,7 +90,7 @@ jobs:
         mkdir -p artifacts/setup
         copy installer\Output\CleanMyPosts-Setup-${{ env.VERSION }}.exe artifacts\setup\
 
-    - name: Generate update.xml
+    - name: Generate update.xml from template
       shell: pwsh
       run: |
         $version = "${{ env.VERSION }}"
@@ -99,21 +99,16 @@ jobs:
         $installerUrl = "$baseUrl/CleanMyPosts-Setup-$version.exe"
         $changelogUrl = "https://github.com/$repo/releases/tag/v$version"
 
-        $xmlContent = @"
-<?xml version='1.0' encoding='utf-8'?>
-<updates>
-    <application>
-        <name>CleanMyPosts</name>
-        <version>$version</version>
-        <url>$installerUrl</url>
-        <changelog>$changelogUrl</changelog>
-    </application>
-</updates>
-"@
+        $template = Get-Content "update.xml" -Raw
+        $xmlContent = $template `
+          -replace "{{VERSION}}", $version `
+          -replace "{{INSTALLER_URL}}", $installerUrl `
+          -replace "{{CHANGELOG_URL}}", $changelogUrl
 
+        if (-not (Test-Path "artifacts")) {
+          New-Item -ItemType Directory -Path "artifacts" | Out-Null
+        }
         $xmlContent | Set-Content -Path "artifacts/update.xml" -Encoding UTF8
-
-
 
     - name: Configure Git Credentials
       run: |

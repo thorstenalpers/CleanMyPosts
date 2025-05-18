@@ -20,7 +20,7 @@ jobs:
     - name: Checkout main
       uses: actions/checkout@v4
       with:
-        fetch-depth: 0 
+        fetch-depth: 0
         ref: main
 
     - name: Install .NET
@@ -38,7 +38,7 @@ jobs:
       run: dotnet build "${{ env.Solution }}" --configuration Release --no-restore
 
     - name: Run Unit Tests
-      run: dotnet test "${{ env.UnitTest_Project }}" --configuration Release --logger "console;verbosity=detailed" --filter "TestCategory!=Long-Running"
+      run: dotnet test "${{ env.UnitTest_Project }}" --configuration Release --logger "console;verbosity=detailed"
 
     - name: Run Integration Tests
       run: dotnet test "${{ env.IntegrationTest_Project }}" --configuration Release --logger "console;verbosity=detailed"
@@ -55,40 +55,20 @@ jobs:
           throw "Version not found in project file"
         }
 
-    - name: Publish Single EXE
+    - name: Publish x64
       run: |
         dotnet publish "${{ env.UI_Project }}" -c Release -r win-x64 --self-contained true `
-          /p:PublishSingleFile=true `
-          /p:IncludeAllContentForSelfExtract=true `
-          /p:EnableCompressionInSingleFile=true `
-          -o artifacts/single-exe
+          -o artifacts/publish-x64
 
-    - name: Rename Standalone EXE for Release
-      shell: pwsh
+    - name: Build Installer x64
       run: |
-        $src = "artifacts/single-exe/CleanMyPosts.exe"
-        $dst = "artifacts/single-exe/CleanMyPosts-standalone.exe"
+        iscc "/DMyAppVersion=${{ env.VERSION }}" "/DMyAppExePath=..\\artifacts\\publish-x64\\CleanMyPosts.exe" "${{ env.Installer_Script }}"
 
-        if (-Not (Test-Path $src)) {
-          Write-Error "Source file not found: $src"
-          exit 1
-        }
-
-        if (Test-Path $dst) {
-          Remove-Item $dst -Force
-        }
-
-        $destFileName = [System.IO.Path]::GetFileName($dst)
-        Rename-Item -Path $src -NewName $destFileName
-
-    - name: Build Setup EXE
+    - name: Copy Installer Exes to Artifacts
       run: |
-        iscc "/DMyAppVersion=${{ env.VERSION }}" "/DMyAppExePath=..\\artifacts\\single-exe\\*" "${{ env.Installer_Script }}"
+        mkdir artifacts\installer
+        copy installer\Output\CleanMyPosts-Installer-${{ env.VERSION }}-x64.exe artifacts\installer\
 
-    - name: Copy Setup EXE to Artifacts
-      run: |
-        mkdir -p artifacts/setup
-        copy installer\Output\CleanMyPosts-Setup-${{ env.VERSION }}.exe artifacts\setup\
 
     - name: Clone update-feed branch to separate folder
       run: |
@@ -109,7 +89,7 @@ jobs:
         $version = "${{ env.VERSION }}"
         $repo = "${{ github.repository }}"
         $baseUrl = "https://github.com/$repo/releases/download/v$version"
-        $installerUrl = "$baseUrl/CleanMyPosts-Setup-$version.exe"
+        $installerUrl = "$baseUrl/CleanMyPosts-Installer-$version-x64.exe"
         $changelogUrl = "https://github.com/$repo/releases/tag/v$version"
 
         $template = Get-Content "update.xml" -Raw
@@ -159,7 +139,6 @@ jobs:
         name: "CleanMyPosts ${{ env.VERSION }}"
         body_path: ./release-notes/v${{ env.VERSION }}.md
         files: |
-          artifacts/single-exe/CleanMyPosts-standalone.exe
-          artifacts/setup/CleanMyPosts-Setup-${{ env.VERSION }}.exe
+          artifacts/installer/CleanMyPosts-Installer-${{ env.VERSION }}-x64.exe
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

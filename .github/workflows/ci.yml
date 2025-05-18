@@ -70,8 +70,7 @@ jobs:
         dotnet tool run reportgenerator `
           -reports:TestResults/**/coverage.cobertura.xml `
           -targetdir:TestResults/Reports `
-          -reporttypes:"SonarQube" `
-          -reportfile:"SonarQube.xml"
+          -reporttypes:"Html;lcov;SonarQube;Cobertura" `
 
         dotnet tool run dotnet-sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
 

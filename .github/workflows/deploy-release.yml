@@ -20,7 +20,8 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
       with:
-        fetch-depth: 0  # Important to fetch full history for git tag and branches
+        fetch-depth: 0 
+        ref: main
 
     - name: Install .NET
       uses: actions/setup-dotnet@v4
@@ -43,9 +44,9 @@ jobs:
       id: get_version
       shell: pwsh
       run: |
-        $content = Get-Content "${{ env.UI_Project }}"
-        if ($content -match '<Version>(.+)</Version>') {
-          $version = $matches[1]
+        $content = Get-Content "${{ env.UI_Project }}" -Raw
+        if ($content -match '<Version>\s*(.+?)\s*</Version>') {
+          $version = $matches[1].Trim()
           echo "VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Append
         } else {
           throw "Version not found in project file"

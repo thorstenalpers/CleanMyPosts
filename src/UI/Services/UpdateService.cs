@@ -23,11 +23,14 @@ public class UpdateService : IUpdateService
         var opts = options.Value;
 
         Guard.Against.Null(opts);
-        Guard.Against.NullOrWhiteSpace(opts.AppCastUrl);
+        Guard.Against.NullOrWhiteSpace(opts.AppCastUrlSingle);
+        Guard.Against.NullOrWhiteSpace(opts.AppCastUrlInstaller);
         Guard.Against.NullOrWhiteSpace(opts.SecurityMode.ToString());
-
+        var isSingleFile = AppContext.GetData("IsSingleFile") as bool? ?? false;
+        var url = isSingleFile ? opts.AppCastUrlSingle : opts.AppCastUrlInstaller;
         var verifier = new DSAChecker(opts.SecurityMode);
-        _sparkle = new SparkleUpdater(opts.AppCastUrl, verifier)
+
+        _sparkle = new SparkleUpdater(url, verifier)
         {
             UIFactory = uIFactory,
             RelaunchAfterUpdate = true,

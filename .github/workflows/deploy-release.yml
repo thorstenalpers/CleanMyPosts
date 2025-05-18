@@ -102,27 +102,42 @@ jobs:
         $originalUrl = "https://raw.githubusercontent.com/thorstenalpers/CleanMyPosts/update-feed/update-original.xml"
         Invoke-RestMethod -Uri $originalUrl -OutFile "update.xml"
 
-    - name: Generate update.xml from template with signature
+    - name: Generate update-installer.xml
       shell: pwsh
       run: |
         $version = "${{ env.VERSION }}"
         $repo = "${{ github.repository }}"
         $baseUrl = "https://github.com/$repo/releases/download/v$version"
         $installerUrl = "$baseUrl/CleanMyPosts-Installer-$version-win-x64.exe"
-        $standaloneUrl = "$baseUrl/CleanMyPosts-$version-win-x64.exe"
         $changelogUrl = "https://github.com/$repo/releases/tag/v$version"
 
-        $template = Get-Content "update.xml" -Raw
+        $template = Get-Content "update-installer.xml" -Raw
         $xmlContent = $template `
           -replace "{{VERSION}}", $version `
           -replace "{{INSTALLER_URL}}", $installerUrl `
-          -replace "{{STANDALONE_URL}}", $standaloneUrl `
-          -replace "{{CHANGELOG_URL}}", $changelogUrl `
+          -replace "{{CHANGELOG_URL}}", $changelogUrl
 
         if (-not (Test-Path "artifacts")) {
           New-Item -ItemType Directory -Path "artifacts" | Out-Null
         }
-        $xmlContent | Set-Content -Path "artifacts/update.xml" -Encoding UTF8
+        $xmlContent | Set-Content -Path "artifacts/update-installer.xml" -Encoding UTF8
+
+    - name: Generate update-single.xml
+      shell: pwsh
+      run: |
+        $version = "${{ env.VERSION }}"
+        $repo = "${{ github.repository }}"
+        $baseUrl = "https://github.com/$repo/releases/download/v$version"
+        $standaloneUrl = "$baseUrl/CleanMyPosts-$version-win-x64.exe"
+        $changelogUrl = "https://github.com/$repo/releases/tag/v$version"
+
+        $template = Get-Content "update-single.xml" -Raw
+        $xmlContent = $template `
+          -replace "{{VERSION}}", $version `
+          -replace "{{STANDALONE_URL}}", $standaloneUrl `
+          -replace "{{CHANGELOG_URL}}", $changelogUrl
+
+        $xmlContent | Set-Content -Path "artifacts/update-single.xml" -Encoding UTF8
 
     - name: Configure Git Credentials for update-feed push
       run: |
@@ -131,20 +146,19 @@ jobs:
         git config --global user.name "github-actions"
         git config --global user.email "actions@github.com"
 
-    - name: Commit and push update.xml to update-feed branch from separate folder
+    - name: Commit and push update files to update-feed branch
       shell: bash
       run: |
         cd update-feed
-        git config user.name "github-actions"
-        git config user.email "actions@github.com"
+        cp ../artifacts/update-installer.xml update-installer.xml
+        cp ../artifacts/update-single.xml update-single.xml
 
-        cp ../artifacts/update.xml update.xml
-        git add update.xml
+        git add update-installer.xml update-single.xml
 
         if git diff --cached --quiet; then
-          echo "No changes in update.xml; skipping commit"
+          echo "No changes in update files; skipping commit"
         else
-          git commit -m "Update appcast for version ${{ env.VERSION }}"
+          git commit -m "Update appcast files for version ${{ env.VERSION }}"
           git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} update-feed --force
         fi
 

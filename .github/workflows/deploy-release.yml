@@ -90,6 +90,12 @@ jobs:
         mkdir -p artifacts/setup
         copy installer\Output\CleanMyPosts-Setup-${{ env.VERSION }}.exe artifacts\setup\
 
+    - name: Fetch update.xml template from update-feed branch
+      shell: pwsh
+      run: |
+        git fetch origin update-feed:update-feed
+        git checkout update-feed -- update.xml
+
     - name: Generate update.xml from template
       shell: pwsh
       run: |

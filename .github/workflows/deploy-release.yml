@@ -82,6 +82,12 @@ jobs:
           "No update.xml found in update-feed branch." | Out-File update.xml
         }
 
+    - name: Fetch and override update.xml from update-original.xml
+      shell: pwsh
+      run: |
+        $originalUrl = "https://raw.githubusercontent.com/thorstenalpers/CleanMyPosts/update-feed/update-original.xml"
+        Invoke-RestMethod -Uri $originalUrl -OutFile "update.xml"
+
     - name: Generate update.xml from template
       shell: pwsh
       run: |

@@ -54,8 +54,7 @@ jobs:
           -o artifacts/single-exe
 
     - name: Install Inno Setup
-      run: |
-        choco install innosetup --yes
+      run: choco install innosetup --yes
 
     - name: Build Setup EXE
       run: |
@@ -68,7 +67,28 @@ jobs:
 
     - name: Rename Standalone EXE for Release
       run: |
-        Rename-Item "artifacts/single-exe/CleanMyPosts.exe" "CleanMyPosts-standalone.exe"
+        Rename-Item "artifacts/single-exe/CleanMyPosts.exe" "artifacts/single-exe/CleanMyPosts-standalone.exe"
+
+    - name: Generate update.xml
+      shell: pwsh
+      run: |
+        $version = "${{ env.VERSION }}"
+        $repo = "${{ github.repository }}"
+        $baseUrl = "https://github.com/$repo/releases/download/v$version"
+        $installerUrl = "$baseUrl/CleanMyPosts-Setup-$version.exe"
+        $changelogUrl = "https://github.com/$repo/releases/tag/v$version"
+        $xmlContent = @"
+            <?xml version="1.0" encoding="utf-8"?>
+            <updates>
+              <application>
+                <name>CleanMyPosts</name>
+                <version>$version</version>
+                <url>$installerUrl</url>
+                <changelog>$changelogUrl</changelog>
+              </application>
+            </updates>
+            "@
+        $xmlContent | Set-Content -Path "artifacts/update.xml" -Encoding UTF8
 
     - name: Configure Git Credentials
       run: |
@@ -91,5 +111,6 @@ jobs:
         files: |
           artifacts/single-exe/CleanMyPosts-standalone.exe
           artifacts/setup/CleanMyPosts-Setup-${{ env.VERSION }}.exe
+          artifacts/update.xml
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

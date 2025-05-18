@@ -16,7 +16,8 @@ public class UpdateService : IUpdateService
 
     public UpdateService(IOptions<UpdaterOptions> options,
                          IUIFactory uIFactory,
-                         ILogger<UpdateService> logger)
+                         ILogger<UpdateService> logger,
+                         NetSparkleUpdater.Interfaces.ILogger netSparkleLogger)
     {
         _logger = logger;
         var opts = options.Value;
@@ -32,6 +33,8 @@ public class UpdateService : IUpdateService
             RelaunchAfterUpdate = true,
             UseNotificationToast = true
         };
+
+        _sparkle.LogWriter = netSparkleLogger;
     }
 
     public async Task CheckForUpdatesAsync()

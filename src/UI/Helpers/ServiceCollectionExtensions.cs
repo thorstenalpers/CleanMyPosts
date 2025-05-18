@@ -23,6 +23,7 @@ public static class ServiceCollectionExtensions
         services.AddHostedService<ApplicationHostService>();
 
         services.AddSingleton<IFileService, FileService>();
+        services.AddTransient<NetSparkleUpdater.Interfaces.ILogger, NetSparkleLogger>();
         services.AddSingleton<IAppSettingsService, AppSettingsService>();
         services.AddSingleton<IUIFactory>(sp =>
         {

@@ -63,6 +63,24 @@ jobs:
           /p:EnableCompressionInSingleFile=true `
           -o artifacts/single-exe
 
+    - name: List published files
+      run: dir artifacts/single-exe
+
+    - name: Rename Standalone EXE for Release
+      shell: pwsh
+      run: |
+        $src = "artifacts/single-exe/CleanMyPosts.exe"
+        $dst = "artifacts/single-exe/CleanMyPosts-standalone.exe"
+
+        if (-Not (Test-Path $src)) {
+          Write-Error "File $src not found!"
+          exit 1
+        }
+        if (Test-Path $dst) {
+          Remove-Item $dst -Force
+        }
+        Rename-Item -Path $src -NewName $dst
+
     - name: Build Setup EXE
       run: |
         iscc "/DMyAppVersion=${{ env.VERSION }}" "/DMyAppExePath=..\\artifacts\\single-exe\\*" "${{ env.Installer_Script }}"
@@ -71,10 +89,6 @@ jobs:
       run: |
         mkdir -p artifacts/setup
         copy installer\Output\CleanMyPosts-Setup-${{ env.VERSION }}.exe artifacts\setup\
-
-    - name: Rename Standalone EXE for Release
-      run: |
-        Rename-Item "artifacts/single-exe/CleanMyPosts.exe" "artifacts/single-exe/CleanMyPosts-standalone.exe"
 
     - name: Generate update.xml
       shell: pwsh

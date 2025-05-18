@@ -65,7 +65,7 @@ jobs:
 
     - name: Build Setup EXE
       run: |
-        iscc "/DMyAppVersion=${{ env.VERSION }}" "/DMyAppExePath=artifacts\\single-exe\\*" "${{ env.Installer_Script }}"
+        iscc "/DMyAppVersion=${{ env.VERSION }}" "/DMyAppExePath=..\\artifacts\\single-exe\\*" "${{ env.Installer_Script }}"
 
     - name: Copy Setup EXE to Artifacts
       run: |

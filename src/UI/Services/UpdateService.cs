@@ -1,6 +1,7 @@
 ﻿using Ardalis.GuardClauses;
 using CleanMyPosts.UI.Contracts.Services;
 using CleanMyPosts.UI.Models;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NetSparkleUpdater;
 using NetSparkleUpdater.Interfaces;
@@ -11,9 +12,13 @@ namespace CleanMyPosts.UI.Services;
 public class UpdateService : IUpdateService
 {
     private readonly SparkleUpdater _sparkle;
+    private readonly ILogger<UpdateService> _logger;
 
-    public UpdateService(IOptions<UpdaterOptions> options, IUIFactory uIFactory)
+    public UpdateService(IOptions<UpdaterOptions> options,
+                         IUIFactory uIFactory,
+                         ILogger<UpdateService> logger)
     {
+        _logger = logger;
         var opts = options.Value;
 
         Guard.Against.Null(opts);
@@ -31,6 +36,13 @@ public class UpdateService : IUpdateService
 
     public async Task CheckForUpdatesAsync()
     {
-        await _sparkle.CheckForUpdatesAtUserRequest();
+        try
+        {
+            await _sparkle.CheckForUpdatesAtUserRequest();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error while checking for updates.");
+        }
     }
 }

@@ -8,8 +8,7 @@ public class NetSparkleLogger(ILogger<NetSparkleLogger> logger) : NetSparkleUpda
 
     public void PrintMessage(string message, params object[] arguments)
     {
-#pragma warning disable CA2254 // Template should be a static expression
-        _logger.LogInformation(message: message);
-#pragma warning restore CA2254 // Template should be a static expression
+        var formattedMessage = string.Format(message, arguments);
+        _logger.LogInformation("{NetSparkleMessage}", formattedMessage);
     }
 }

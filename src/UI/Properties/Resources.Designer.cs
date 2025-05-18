@@ -106,6 +106,15 @@ namespace CleanMyPosts.UI.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Diagnostics.
+        /// </summary>
+        public static string SettingsPageDiagnostics {
+            get {
+                return ResourceManager.GetString("SettingsPageDiagnostics", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Personalization.
         /// </summary>
         public static string SettingsPagePersonalizationTitle {

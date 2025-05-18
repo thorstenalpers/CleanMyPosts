@@ -89,6 +89,7 @@ public partial class App : Application
         services.AddSingleton<INavigationService, NavigationService>();
         services.AddSingleton<IXWebViewScriptService, XWebViewScriptService>();
         services.AddSingleton<IWebViewHostService, WebViewHostService>();
+        services.AddSingleton<IUpdateService, UpdateService>();
 
         services.AddTransient<IShellWindow, ShellWindow>();
         services.AddTransient<ShellViewModel>();
@@ -106,6 +107,7 @@ public partial class App : Application
         services.AddHttpClient();
 
         services.Configure<AppConfig>(context.Configuration.GetSection(nameof(AppConfig)));
+        services.Configure<UpdaterOptions>(context.Configuration.GetSection("UpdateSettings"));
     }
 
     private async void OnExit(object sender, ExitEventArgs e)

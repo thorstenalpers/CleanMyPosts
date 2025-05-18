@@ -177,4 +177,7 @@
   <data name="LogPage" xml:space="preserve">
     <value>Log</value>
   </data>
+  <data name="SettingsPageDiagnostics" xml:space="preserve">
+    <value>Diagnostics</value>
+  </data>
 </root>

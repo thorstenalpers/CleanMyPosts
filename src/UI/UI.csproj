@@ -10,7 +10,9 @@
 	<DefaultNamespace>CleanMyPosts.UI</DefaultNamespace>
 	<ApplicationIcon>Assets\logo.ico</ApplicationIcon>
 	<AssemblyName>CleanMyPosts</AssemblyName>
- 	<AnalysisLevel>latest</AnalysisLevel>
+	<Version>0.0.1</Version>
+	<FileVersion>0.0.1.0</FileVersion>
+	<AnalysisLevel>latest</AnalysisLevel>
  	<EnableNETAnalyzers>True</EnableNETAnalyzers>
   </PropertyGroup>
     
@@ -22,6 +24,8 @@
     <PackageReference Include="MahApps.Metro.IconPacks.Material" Version="5.1.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.4" />
     <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3179.45" />
+    <PackageReference Include="NetSparkleUpdater.SparkleUpdater" Version="3.0.2" />
+    <PackageReference Include="NetSparkleUpdater.UI.WPF" Version="3.0.2" />
     <PackageReference Include="Serilog.Extensions.Hosting" Version="9.0.0" />
     <PackageReference Include="Serilog.Extensions.Logging" Version="9.0.1" />
     <PackageReference Include="Serilog.Settings.Configuration" Version="9.0.0" />

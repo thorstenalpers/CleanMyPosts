@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using System.Reflection;
+﻿using System.Reflection;
 using CleanMyPosts.UI.Contracts.Services;
 
 namespace CleanMyPosts.UI.Services;
@@ -8,8 +7,8 @@ public class ApplicationInfoService : IApplicationInfoService
 {
     public Version GetVersion()
     {
-        var assemblyLocation = Assembly.GetExecutingAssembly().Location;
-        var version = FileVersionInfo.GetVersionInfo(assemblyLocation).FileVersion;
-        return new Version(version);
+        var version = Assembly.GetExecutingAssembly().GetName().Version;
+        var shortVersion = $"{version.Major}.{version.Minor}.{version.Build}";
+        return new Version(shortVersion);
     }
 }

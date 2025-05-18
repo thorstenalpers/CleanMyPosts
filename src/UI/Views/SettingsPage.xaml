@@ -72,35 +72,57 @@
 								</i:EventTrigger>
 							</i:Interaction.Triggers>
 						</RadioButton>
-
-						<CheckBox
-							Margin="{StaticResource MediumTopMargin}"
-							Content="Show Logs"
-							FontSize="{StaticResource MediumFontSize}"
-							IsChecked="{Binding ShowLogs, Mode=TwoWay}" />
 					</StackPanel>
 				</StackPanel>
 
 				<TextBlock
 					Margin="{StaticResource SmallTopMargin}"
 					Style="{StaticResource SubtitleTextStyle}"
+					Text="{x:Static properties:Resources.SettingsPageDiagnostics}" />
+
+				<StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+					<CheckBox
+						Margin="{StaticResource SmallTopMargin}"
+						Content="Show Logs"
+						FontSize="{StaticResource MediumFontSize}"
+						IsChecked="{Binding ShowLogs, Mode=TwoWay}" />
+				</StackPanel>
+
+				<TextBlock
+					Margin="{StaticResource MediumTopMargin}"
+					Style="{StaticResource SubtitleTextStyle}"
 					Text="{x:Static properties:Resources.SettingsPageAboutTitle}" />
 
-				<StackPanel
-					Margin="{StaticResource SmallTopMargin}"
-					VerticalAlignment="Center"
-					Orientation="Horizontal">
+				<Grid Margin="{StaticResource SmallTopMargin}">
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="Auto" />
+						<ColumnDefinition Width="Auto" />
+						<ColumnDefinition Width="Auto" />
+						<ColumnDefinition Width="*" />
+					</Grid.ColumnDefinitions>
+
 					<Image
+						Grid.Column="0"
 						Width="20"
 						Height="20"
 						Margin="0,8,8,0"
 						VerticalAlignment="Center"
 						Source="../Assets/logo.ico" />
+
 					<TextBlock
+						Grid.Column="1"
 						Margin="{StaticResource XSmallTopMargin}"
+						VerticalAlignment="Center"
 						Style="{StaticResource BodyTextStyle}"
 						Text="{Binding VersionDescription, Mode=OneWay}" />
-				</StackPanel>
+
+					<Button
+						Grid.Column="2"
+						Margin="{StaticResource SmallLeftMargin}"
+						VerticalAlignment="Center"
+						Command="{Binding CheckUpdatesCommand}"
+						Content="Check for Updates" />
+				</Grid>
 
 				<TextBlock
 					Margin="{StaticResource XSmallTopMargin}"

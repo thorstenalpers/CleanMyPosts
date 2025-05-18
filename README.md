@@ -17,17 +17,11 @@
 * delete all tweets
 * delete all starred tweets
 * delete all followed persons
-* hide button bar, hideable via settings
 * unit tests, coverage > 80%
 * integration tests
     * create 10000 tweets and delete them
 * docu
-* pipeline
-  * code coverage 
-  * create exe in pipeline
-  * run nightly integration tests
 * multilingual
-* bookmark bar, hideable via settings
 
 
 ---

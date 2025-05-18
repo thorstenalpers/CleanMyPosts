@@ -1,4 +1,11 @@
-﻿# CleanMyPosts
+﻿![Banner](./src/UI/Assets/logo.png)
+[![Windows](https://img.shields.io/badge/platform-Windows-blue)](#)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=thorstenalpers_CleanMyPosts&metric=alert_status)](https://sonarcloud.io/project/issues?issueStatuses=OPEN%2CCONFIRMED&id=thorstenalpers_CleanMyPosts)
+[![CI Tests](https://github.com/thorstenalpers/CleanMyPosts/actions/workflows/ci.yml/badge.svg)](https://github.com/thorstenalpers/CleanMyPosts/actions/workflows/ci.yml)
+[![Coverage Status](https://coveralls.io/repos/github/thorstenalpers/CleanMyPosts/badge.svg?branch=develop)](https://coveralls.io/github/thorstenalpers/CleanMyPosts?branch=develop)
+[![Star this repo](https://img.shields.io/github/stars/thorstenalpers/CleanMyPosts.svg?style=social&label=Star&maxAge=60)](https://github.com/thorstenalpers/CleanMyPosts)
+
 
 > ⚠️ **Warning:** Development in progress – the application has not been released.
 
@@ -21,7 +28,7 @@
 * bookmark bar, hideable via settings
 
 
-# 🧹 CleanMyPosts
+---
 
 **CleanMyPosts** is a lightweight Windows desktop application that securely deletes all tweets from your X (formerly Twitter) account in bulk. Designed for privacy-focused users, social media managers, or anyone looking to start fresh.
 

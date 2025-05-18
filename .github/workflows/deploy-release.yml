@@ -19,6 +19,8 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Important to fetch full history for git tag and branches
 
     - name: Install .NET
       uses: actions/setup-dotnet@v4
@@ -82,7 +84,7 @@ jobs:
         $installerUrl = "$baseUrl/CleanMyPosts-Setup-$version.exe"
         $changelogUrl = "https://github.com/$repo/releases/tag/v$version"
         $xmlContent = @"
-            <?xml version="1.0" encoding="utf-8"?>
+            <?xml version='1.0' encoding='utf-8'?>
             <updates>
               <application>
                 <name>CleanMyPosts</name>
@@ -98,8 +100,28 @@ jobs:
       run: |
         echo "https://${{ secrets.GH_APIKEY }}@github.com" > $env:USERPROFILE\.git-credentials
         git config --global credential.helper store
-        git config --global user.name "GitHub Actions"
+        git config --global user.name "github-actions"
         git config --global user.email "actions@github.com"
+
+    - name: Push update.xml to update-feed branch
+      run: |
+        git fetch origin update-feed || echo "No update-feed branch yet"
+        if git show-ref --verify --quiet refs/heads/update-feed; then
+          git checkout update-feed
+        else
+          git checkout --orphan update-feed
+          git rm -rf .
+        fi
+
+        cp artifacts/update.xml update.xml
+        git add update.xml
+
+        if git diff --cached --quiet; then
+          echo "No changes in update.xml; skipping commit"
+        else
+          git commit -m "Update appcast for version ${{ env.VERSION }}"
+          git push origin update-feed --force
+        fi
 
     - name: Create Git Tag
       run: |

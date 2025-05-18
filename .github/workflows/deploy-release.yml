@@ -124,6 +124,7 @@ jobs:
         git config --global user.email "actions@github.com"
 
     - name: Push update.xml to update-feed branch
+      shell: bash
       run: |
         git fetch origin update-feed || echo "No update-feed branch yet"
         if git show-ref --verify --quiet refs/heads/update-feed; then

@@ -64,7 +64,7 @@ jobs:
       run: |
         iscc "/DMyAppVersion=${{ env.VERSION }}" "/DMyAppExePath=..\\artifacts\\publish-x64\\CleanMyPosts.exe" "${{ env.Installer_Script }}"
 
-    - name: Copy Installer Exes to Artifacts
+    - name: Copy Installer Exe to Artifacts
       run: |
         mkdir artifacts\installer
         copy installer\Output\CleanMyPosts-Installer-${{ env.VERSION }}-x64.exe artifacts\installer\
@@ -88,7 +88,7 @@ jobs:
         $version = "${{ env.VERSION }}"
         $repo = "${{ github.repository }}"
         $baseUrl = "https://github.com/$repo/releases/download/v$version"
-        $installerUrl = "$baseUrl/CleanMyPosts-Installer-$version-x64.exe"
+        $installerUrl = "$baseUrl/CleanMyPosts-Installer-$version-win-x64.exe"
         $changelogUrl = "https://github.com/$repo/releases/tag/v$version"
 
         $template = Get-Content "update.xml" -Raw
@@ -138,6 +138,6 @@ jobs:
         name: "CleanMyPosts ${{ env.VERSION }}"
         body_path: ./release-notes/v${{ env.VERSION }}.md
         files: |
-          artifacts/installer/CleanMyPosts-Installer-${{ env.VERSION }}-x64.exe
+          artifacts/installer/CleanMyPosts-Installer-${{ env.VERSION }}-win-x64.exe
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

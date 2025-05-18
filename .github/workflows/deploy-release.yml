@@ -62,7 +62,7 @@ jobs:
 
     - name: Build Installer x64
       run: |
-        iscc "/DMyAppVersion=${{ env.VERSION }}" "/DMyAppExePath=..\\artifacts\\publish-x64\\CleanMyPosts.exe" "${{ env.Installer_Script }}"
+        iscc "/DMyAppVersion=${{ env.VERSION }}" "/DMyAppExePath=..\\artifacts\\publish-x64\\*" "${{ env.Installer_Script }}"
 
     - name: Copy Installer Exe to Artifacts
       run: |

@@ -34,7 +34,6 @@ public partial class XViewModel : ObservableObject
         _xWebViewScriptService = xWebViewScriptService ?? throw new ArgumentNullException(nameof(xWebViewScriptService));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         //_windowManagerService = windowManagerService ?? throw new ArgumentNullException(nameof(windowManagerService));
-        _xWebViewScriptService = xWebViewScriptService ?? throw new ArgumentNullException(nameof(xWebViewScriptService));
         _webViewHostService.NavigationCompleted += OnNavigationCompleted;
         _webViewHostService.WebMessageReceived += OnWebMessageReceived;
     }

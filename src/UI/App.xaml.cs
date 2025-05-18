@@ -116,7 +116,7 @@ public partial class App : Application
         logger.LogInformation("Application is stopping.");
         await _host.StopAsync();
         _host.Dispose();
-        Log.CloseAndFlush();
+        await Log.CloseAndFlushAsync();
         _host = null;
     }
 

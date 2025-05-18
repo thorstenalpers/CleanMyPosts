@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='utf-8'?>
+<updates>
+    <application>
+        <name>CleanMyPosts</name>
+        <version>{{VERSION}}</version>
+        <url>{{INSTALLER_URL}}</url>
+        <changelog>{{CHANGELOG_URL}}</changelog>
+    </application>
+</updates>

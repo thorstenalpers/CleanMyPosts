@@ -28,6 +28,9 @@ jobs:
       with:
         dotnet-version: 9.x
 
+    - name: Install Inno Setup
+      run: choco install innosetup --yes
+
     - name: Restore
       run: dotnet restore "${{ env.Solution }}"
 
@@ -60,12 +63,9 @@ jobs:
           /p:EnableCompressionInSingleFile=true `
           -o artifacts/single-exe
 
-    - name: Install Inno Setup
-      run: choco install innosetup --yes
-
     - name: Build Setup EXE
       run: |
-        iscc "/DMyAppVersion=${{ env.VERSION }}" "/DMyAppExePath=artifacts\\single-exe\\*" "${{ env.Installer_Script }}"
+        iscc "/DMyAppVersion=${{ env.VERSION }}" "/DMyAppExePath=..\\artifacts\\single-exe\\*" "${{ env.Installer_Script }}"
 
     - name: Copy Setup EXE to Artifacts
       run: |

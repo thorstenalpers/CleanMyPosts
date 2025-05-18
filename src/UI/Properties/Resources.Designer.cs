@@ -61,7 +61,7 @@ namespace CleanMyPosts.UI.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Clean My Posts.
+        ///   Looks up a localized string similar to CleanMyPosts.
         /// </summary>
         public static string AppDisplayName {
             get {

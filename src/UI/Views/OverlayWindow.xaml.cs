@@ -22,7 +22,7 @@ public partial class OverlayWindow : Window
                 try
                 {
                     // Try dragging the main window instead
-                    ((Window)mainWindow).DragMove();
+                    mainWindow.DragMove();
                 }
                 catch (InvalidOperationException)
                 {

@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 
-namespace CleanMyPosts.Tests;
+namespace CleanMyPosts.UnitTests;
 
 [Category("Unit")]
 public class SettingsViewModelTests
@@ -40,7 +40,7 @@ public class SettingsViewModelTests
         Mock<IUpdateService> mockUpdateService = new();
         Mock<ILogger<SettingsViewModel>> mockLogger = new();
 
-        Version testVersion = new(1, 2, 3, 4);
+        Version testVersion = new(1, 2, 3);
         mockApplicationInfoService.Setup(mock => mock.GetVersion()).Returns(testVersion);
 
         var settingsVm = new SettingsViewModel(mockThemeSelectorService.Object,

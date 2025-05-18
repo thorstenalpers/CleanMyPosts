@@ -1,8 +1,8 @@
-﻿using Microsoft.Extensions.Hosting;
-using CleanMyPosts.UI.Contracts.Activation;
+﻿using CleanMyPosts.UI.Contracts.Activation;
 using CleanMyPosts.UI.Contracts.Services;
 using CleanMyPosts.UI.Contracts.Views;
 using CleanMyPosts.UI.ViewModels;
+using Microsoft.Extensions.Hosting;
 
 namespace CleanMyPosts.UI.Services;
 
@@ -17,7 +17,6 @@ public class ApplicationHostService(IServiceProvider serviceProvider,
     private readonly IPersistAndRestoreService _persistAndRestoreService = persistAndRestoreService;
     private readonly IThemeSelectorService _themeSelectorService = themeSelectorService;
     private readonly IEnumerable<IActivationHandler> _activationHandlers = activationHandlers;
-    private IShellWindow _shellWindow;
     private bool _isInitialized;
 
     public async Task StartAsync(CancellationToken cancellationToken)
@@ -65,9 +64,9 @@ public class ApplicationHostService(IServiceProvider serviceProvider,
 
         if (!System.Windows.Application.Current.Windows.OfType<IShellWindow>().Any())
         {
-            _shellWindow = _serviceProvider.GetService(typeof(IShellWindow)) as IShellWindow;
-            _navigationService.Initialize(_shellWindow.GetNavigationFrame());
-            _shellWindow.ShowWindow();
+            var shellWindow = _serviceProvider.GetService(typeof(IShellWindow)) as IShellWindow;
+            _navigationService.Initialize(shellWindow.GetNavigationFrame());
+            shellWindow.ShowWindow();
             _navigationService.NavigateTo(typeof(XViewModel).FullName);
             await Task.CompletedTask;
         }

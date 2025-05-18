@@ -1,29 +1,29 @@
-﻿using System.Windows.Media.Imaging;
+﻿using Ardalis.GuardClauses;
 using CleanMyPosts.UI.Contracts.Services;
 using CleanMyPosts.UI.Models;
 using Microsoft.Extensions.Options;
 using NetSparkleUpdater;
-using NetSparkleUpdater.Enums;
+using NetSparkleUpdater.Interfaces;
 using NetSparkleUpdater.SignatureVerifiers;
-using NetSparkleUpdater.UI.WPF;
 
 namespace CleanMyPosts.UI.Services;
 
 public class UpdateService : IUpdateService
 {
     private readonly SparkleUpdater _sparkle;
-    public UpdateService(IOptions<UpdaterOptions> options)
+
+    public UpdateService(IOptions<UpdaterOptions> options, IUIFactory uIFactory)
     {
-        var securityMode = options.Value.SecurityMode == "Strict" ? SecurityMode.Strict : SecurityMode.Unsafe;
+        var opts = options.Value;
 
-        var uri = new Uri("pack://application:,,,/CleanMyPosts;component/Assets/logo.ico", UriKind.Absolute);
-        var imageSource = new BitmapImage(uri);
+        Guard.Against.Null(opts);
+        Guard.Against.NullOrWhiteSpace(opts.AppCastUrl);
+        Guard.Against.NullOrWhiteSpace(opts.SecurityMode.ToString());
 
-
-        var verifier = new DSAChecker(securityMode);
-        _sparkle = new SparkleUpdater(options.Value.AppCastUrl, verifier)
+        var verifier = new DSAChecker(opts.SecurityMode);
+        _sparkle = new SparkleUpdater(opts.AppCastUrl, verifier)
         {
-            UIFactory = new UIFactory(imageSource),
+            UIFactory = uIFactory,
             RelaunchAfterUpdate = true,
             UseNotificationToast = true
         };

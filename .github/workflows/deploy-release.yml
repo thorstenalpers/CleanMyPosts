@@ -136,8 +136,6 @@ jobs:
         cd update-feed
         git config user.name "github-actions"
         git config user.email "actions@github.com"
-        git config credential.helper store
-        echo "https://${{ secrets.GH_APIKEY }}@github.com" > .git-credentials
 
         cp ../artifacts/update.xml update.xml
         git add update.xml
@@ -146,7 +144,7 @@ jobs:
           echo "No changes in update.xml; skipping commit"
         else
           git commit -m "Update appcast for version ${{ env.VERSION }}"
-          git push origin update-feed --force
+          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} update-feed --force
         fi
 
     - name: Create Git Tag

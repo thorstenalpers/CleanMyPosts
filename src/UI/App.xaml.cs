@@ -39,18 +39,18 @@ public partial class App : Application
         try
         {
             _host = Host.CreateDefaultBuilder(e.Args)
-                .ConfigureAppConfiguration(c =>
-                {
-                    c.SetBasePath(appLocation);
-                    c.AddConfiguration(config);
-                })
-                .ConfigureServices(ConfigureServices)
-                .ConfigureLogging(loggingBuilder =>
-                {
-                    loggingBuilder.ClearProviders();
-                    loggingBuilder.AddSerilog(dispose: true);
-                })
-                .Build();
+            .ConfigureAppConfiguration(c =>
+            {
+                c.SetBasePath(appLocation);
+                c.AddConfiguration(config);
+            })
+            .ConfigureServices(ConfigureServices)
+            .ConfigureLogging(loggingBuilder =>
+            {
+                loggingBuilder.ClearProviders();
+                loggingBuilder.AddSerilog(dispose: true);
+            })
+            .Build();
 
             // 🔧 LogViewModel must be resolved **after** the host is built
             var logViewModel = _host.Services.GetRequiredService<LogViewModel>();

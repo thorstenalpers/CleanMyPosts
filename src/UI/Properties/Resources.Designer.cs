@@ -232,7 +232,7 @@ namespace CleanMyPosts.UI.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to X.
+        ///   Looks up a localized string similar to X (Twitter).
         /// </summary>
         public static string XPage {
             get {

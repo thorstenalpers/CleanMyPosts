@@ -49,18 +49,5 @@
 1. Download the latest release from the [Releases](https://github.com/thorstenalpers/x-tweet-cleaner/releases) section.
 2. Run the installer and follow the prompts.
 3. Launch the app and authenticate with your X (Twitter) account.
-4. Start the deletion process.
+4. Start the deletion process of posts, starred and following.
 
-> ⚠️ **Warning**: This action is irreversible. Deleted tweets cannot be recovered.
-
----
-
-## 🧪 Development
-
-To build from source:
-
-```bash
-git clone https://github.com/thorstenalpers/CleanMyPosts.git
-cd CleanMyPosts
-cd src
-dotnet build

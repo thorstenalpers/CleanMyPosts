@@ -2,8 +2,8 @@
 <updates>
     <application>
         <name>CleanMyPosts</name>
-        <version>{{VERSION}}</version>
-        <url>{{INSTALLER_URL}}</url>
-        <changelog>{{CHANGELOG_URL}}</changelog>
+        <version>0.0.1</version>
+        <url>https://github.com/thorstenalpers/CleanMyPosts/releases/download/v0.0.1/CleanMyPosts-Setup-0.0.1.exe</url>
+        <changelog>https://github.com/thorstenalpers/CleanMyPosts/releases/tag/v0.0.1</changelog>
     </application>
 </updates>

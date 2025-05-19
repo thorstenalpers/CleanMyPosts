@@ -10,6 +10,7 @@
 	<DefaultNamespace>CleanMyPosts.UI</DefaultNamespace>
 	<ApplicationIcon>Assets\logo.ico</ApplicationIcon>
 	<AssemblyName>CleanMyPosts</AssemblyName>
+	<TargetFramework>net9.0-windows</TargetFramework>
 	<Version>0.0.1</Version>
 	<FileVersion>0.0.1.0</FileVersion>
 	<AnalysisLevel>latest</AnalysisLevel>

@@ -18,6 +18,7 @@
 	Icon="../Assets/logo.ico"
 	ShowIconOnTitleBar="False"
 	Style="{StaticResource CustomMetroWindow}"
+	TitleCharacterCasing="Normal"
 	mc:Ignorable="d">
 	<i:Interaction.Triggers>
 		<i:EventTrigger EventName="Loaded">

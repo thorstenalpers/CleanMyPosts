@@ -69,6 +69,11 @@ jobs:
         }
         $out | Set-Content $file -Encoding UTF8
 
+    - name: Show .csproj after injecting version info
+      shell: pwsh
+      run: |
+        Get-Content "${{ env.UI_Project }}"
+
     - name: Restore
       run: dotnet restore "${{ env.Solution }}"
 

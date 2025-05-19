@@ -88,6 +88,7 @@ jobs:
             /p:AssemblyVersion=${{ env.VERSION }} `
             /p:FileVersion=${{ env.VERSION }}.0 `
             /p:InformationalVersion=${{ env.VERSION }} `
+            /p:ContinuousIntegrationBuild=false `
             -o artifacts/publish-x64
 
     - name: Publish Single-File x64
@@ -101,6 +102,7 @@ jobs:
             /p:AssemblyVersion=${{ env.VERSION }} `
             /p:FileVersion=${{ env.VERSION }}.0 `
             /p:InformationalVersion=${{ env.VERSION }} `
+            /p:ContinuousIntegrationBuild=false `
             -o artifacts/publish-single
 
     - name: Build Installer x64

@@ -30,8 +30,8 @@ public partial class App : Application
             ["AppConfig:configurationsFolder"] = "CleanMyPosts\\Configurations",
             ["AppConfig:appPropertiesFileName"] = "AppProperties.json",
             ["AppConfig:XBaseUrl"] = "https://x.com",
-            ["Updater:AppCastUrlInstaller"] = "https://raw.githubusercontent.com/thorstenalpers/CleanMyPosts/refs/heads/update-feed/update-installer.xml",
-            ["Updater:AppCastUrlSingle"] = "https://raw.githubusercontent.com/thorstenalpers/CleanMyPosts/refs/heads/update-feed/update-single.xml",
+            ["Updater:AppCastUrlInstaller"] = "https://raw.githubusercontent.com/thorstenalpers/CleanMyPosts/refs/heads/update-feed/appcast-installer.xml",
+            ["Updater:AppCastUrlSingle"] = "https://raw.githubusercontent.com/thorstenalpers/CleanMyPosts/refs/heads/update-feed/appcast-single.xml",
             ["Updater:SecurityMode"] = "Unsafe",
             ["Updater:IconUri"] = "pack://application:,,,/CleanMyPosts;component/Assets/logo.ico"
         };

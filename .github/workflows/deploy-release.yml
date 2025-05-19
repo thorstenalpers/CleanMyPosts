@@ -49,10 +49,9 @@ jobs:
       run: |
         $content = Get-Content "${{ env.UI_Project }}" -Raw
         if ($content -match '<Version>\s*(.+?)\s*</Version>') {
-          $version = $matches[1].Trim()
-          echo "VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Append
-        } else {
-          throw "Version not found in project file"
+          $fullVersion = $matches[1].Trim()
+          $semverOnly = $fullVersion -replace '\+.*$', '' 
+          echo "VERSION=$semverOnly" | Out-File -FilePath $env:GITHUB_ENV -Append
         }
 
     - name: Publish x64

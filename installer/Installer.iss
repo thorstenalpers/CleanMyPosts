@@ -9,7 +9,7 @@
   #define MyAppVersion "0.0.1"
 #endif
 #ifndef MyAppExePath
-  #define MyAppExePath "..\src\UI\bin\Release\net9.0-windows10.0.19041.0\win-x64\publish\*"
+  #define MyAppExePath "..\src\UI\bin\Release\net9.0-windows\win-x64\publish\*"
 #endif
 
 [Setup]

@@ -35,7 +35,6 @@ public class UpdateService : IUpdateService
         {
             UIFactory = uIFactory,
             RelaunchAfterUpdate = true,
-            UseNotificationToast = true,
             LogWriter = netSparkleLogger
         };
     }

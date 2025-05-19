@@ -33,10 +33,7 @@ internal static class TestHelper
         var cfg = cfgBuilder.Build();
 
         var host = Host.CreateDefaultBuilder()
-            .ConfigureAppConfiguration((context, config) =>
-            {
-                config.AddConfiguration(cfg);
-            })
+            .ConfigureAppConfiguration((context, config) => config.AddConfiguration(cfg))
             .ConfigureServices((context, services) =>
             {
                 services.AddCleanMyPosts(cfg);

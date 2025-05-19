@@ -59,7 +59,7 @@ jobs:
         dotnet publish "${{ env.UI_Project }}" -c Release -r win-x64 --self-contained true `
             /p:Version=${{ env.VERSION }} `
             /p:AssemblyVersion=${{ env.VERSION }} `
-            /p:FileVersion=${{ env.VERSION }} `
+            /p:FileVersion=${{ env.VERSION }}.0 `
             /p:InformationalVersion=${{ env.VERSION }} `
             -o artifacts/publish-x64
 
@@ -72,7 +72,7 @@ jobs:
             /p:PublishTrimmed=false `
             /p:Version=${{ env.VERSION }} `
             /p:AssemblyVersion=${{ env.VERSION }} `
-            /p:FileVersion=${{ env.VERSION }} `
+            /p:FileVersion=${{ env.VERSION }}.0 `
             /p:InformationalVersion=${{ env.VERSION }} `
             -o artifacts/publish-single
 

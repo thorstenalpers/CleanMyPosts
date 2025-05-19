@@ -54,27 +54,32 @@ jobs:
           echo "VERSION=$semverOnly" | Out-File -FilePath $env:GITHUB_ENV -Append
         }
 
-    - name: Patch .csproj with versions
+    - name: Inject Build Versions into .csproj
       shell: pwsh
       run: |
-        $csproj = "${{ env.UI_Project }}"
-        [xml]$projXml = Get-Content $csproj
+        $file = "${{ env.UI_Project }}"
+        $version = "${{ env.VERSION }}"
+        $infoVersion = "${{ env.VERSION }}"
+        $fileVersion = "$version.0"
 
-        $pg = $projXml.Project.PropertyGroup | Where-Object { $_.Version } 
-        if (-not $pg) {
-          $pg = $projXml.CreateElement("PropertyGroup", $projXml.Project.NamespaceURI)
-          $projXml.Project.AppendChild($pg) | Out-Null
+        $csproj = Get-Content $file
+
+        $newLines = @(
+          "    <AssemblyVersion>$version</AssemblyVersion>",
+          "    <FileVersion>$fileVersion</FileVersion>",
+          "    <InformationalVersion>$infoVersion</InformationalVersion>"
+        )
+
+        $modified = $false
+        $out = @()
+        foreach ($line in $csproj) {
+          $out += $line
+          if ($line -match '<Version>.*</Version>' -and -not $modified) {
+            $out += $newLines
+            $modified = $true
+          }
         }
-
-        $pg.Version = "${{ env.VERSION }}"
-        $pg.AssemblyVersion = "${{ env.VERSION }}"
-        $pg.FileVersion = "${{ env.VERSION }}.0"
-        $pg.InformationalVersion = "${{ env.VERSION }}"
-
-        $projXml.Save($csproj)
-
-    - name: Show Version
-      run: echo "VERSION is ${{ env.VERSION }}"
+        $out | Set-Content $file -Encoding UTF8
 
     - name: Publish x64
       run: |

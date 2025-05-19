@@ -1,9 +1,0 @@
-<?xml version='1.0' encoding='utf-8'?>
-<updates>
-    <application>
-        <name>CleanMyPosts</name>
-        <version>0.0.1</version>
-        <url>https://github.com/thorstenalpers/CleanMyPosts/releases/download/v0.0.1/CleanMyPosts-Installer-0.0.1-win-x64.exe</url>
-        <changelog>https://github.com/thorstenalpers/CleanMyPosts/releases/tag/v0.0.1</changelog>
-    </application>
-</updates>

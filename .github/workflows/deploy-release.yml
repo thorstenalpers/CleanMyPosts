@@ -102,42 +102,29 @@ jobs:
         $originalUrl = "https://raw.githubusercontent.com/thorstenalpers/CleanMyPosts/update-feed/update-original.xml"
         Invoke-RestMethod -Uri $originalUrl -OutFile "update.xml"
 
-    - name: Generate update-installer.xml
+    - name: Generate update-installer.xml and update-single.xml from original
       shell: pwsh
       run: |
         $version = "${{ env.VERSION }}"
         $repo = "${{ github.repository }}"
         $baseUrl = "https://github.com/$repo/releases/download/v$version"
-        $installerUrl = "$baseUrl/CleanMyPosts-Installer-$version-win-x64.exe"
         $changelogUrl = "https://github.com/$repo/releases/tag/v$version"
 
-        $template = Get-Content "update-installer.xml" -Raw
-        $xmlContent = $template `
+        $template = Get-Content "update-original.xml" -Raw
+
+        $installerUrl = "$baseUrl/CleanMyPosts-Installer-$version-win-x64.exe"
+        $installerXml = $template `
           -replace "{{VERSION}}", $version `
           -replace "{{INSTALLER_URL}}", $installerUrl `
           -replace "{{CHANGELOG_URL}}", $changelogUrl
+        $installerXml | Set-Content -Path "artifacts/update-installer.xml" -Encoding UTF8
 
-        if (-not (Test-Path "artifacts")) {
-          New-Item -ItemType Directory -Path "artifacts" | Out-Null
-        }
-        $xmlContent | Set-Content -Path "artifacts/update-installer.xml" -Encoding UTF8
-
-    - name: Generate update-single.xml
-      shell: pwsh
-      run: |
-        $version = "${{ env.VERSION }}"
-        $repo = "${{ github.repository }}"
-        $baseUrl = "https://github.com/$repo/releases/download/v$version"
-        $standaloneUrl = "$baseUrl/CleanMyPosts-$version-win-x64.exe"
-        $changelogUrl = "https://github.com/$repo/releases/tag/v$version"
-
-        $template = Get-Content "update-single.xml" -Raw
-        $xmlContent = $template `
+        $singleUrl = "$baseUrl/CleanMyPosts-$version-win-x64.exe"
+        $singleXml = $template `
           -replace "{{VERSION}}", $version `
-          -replace "{{STANDALONE_URL}}", $standaloneUrl `
+          -replace "{{INSTALLER_URL}}", $singleUrl `
           -replace "{{CHANGELOG_URL}}", $changelogUrl
-
-        $xmlContent | Set-Content -Path "artifacts/update-single.xml" -Encoding UTF8
+        $singleXml | Set-Content -Path "artifacts/update-single.xml" -Encoding UTF8
 
     - name: Configure Git Credentials for update-feed push
       run: |

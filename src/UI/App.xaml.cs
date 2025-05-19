@@ -1,6 +1,5 @@
 ﻿using System.IO;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Threading;
 using CleanMyPosts.Core.Exception;
@@ -22,23 +21,19 @@ public partial class App : Application
     {
         DispatcherUnhandledException += OnDispatcherUnhandledException;
     }
-
+    public static bool IsSingleFile()
+    {
+        var baseDir = AppContext.BaseDirectory;
+        var assemblyLocation = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+        return !string.Equals(baseDir, assemblyLocation, StringComparison.OrdinalIgnoreCase);
+    }
     private async void OnStartup(object sender, StartupEventArgs e)
     {
-        var runtimeDir = RuntimeEnvironment.GetRuntimeDirectory();
-        var baseDir = AppContext.BaseDirectory;
-        var exeDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-
-        var isSelfContained = runtimeDir.StartsWith(baseDir, StringComparison.OrdinalIgnoreCase);
-
         MessageBox.Show(
-            $"Runtime Directory: {runtimeDir}\n" +
-            $"AppContext Base Directory: {baseDir}\n" +
-            $"Assembly Location: {exeDir}\n" +
-            $"Self-contained? {isSelfContained}",
-            "Deployment Info",
-            MessageBoxButton.OK,
-            MessageBoxImage.Information
+            $"AppContext.BaseDirectory:\n{AppContext.BaseDirectory}\n\n" +
+            $"Assembly Location:\n{Assembly.GetExecutingAssembly().Location}\n\n" +
+            $"Single File? {IsSingleFile()}",
+            "Build Info"
         );
 
         var appLocation = AppContext.BaseDirectory;

@@ -1,4 +1,6 @@
 ﻿using System.IO;
+using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Threading;
 using CleanMyPosts.Core.Exception;
@@ -23,6 +25,22 @@ public partial class App : Application
 
     private async void OnStartup(object sender, StartupEventArgs e)
     {
+        var runtimeDir = RuntimeEnvironment.GetRuntimeDirectory();
+        var baseDir = AppContext.BaseDirectory;
+        var exeDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+
+        var isSelfContained = runtimeDir.StartsWith(baseDir, StringComparison.OrdinalIgnoreCase);
+
+        MessageBox.Show(
+            $"Runtime Directory: {runtimeDir}\n" +
+            $"AppContext Base Directory: {baseDir}\n" +
+            $"Assembly Location: {exeDir}\n" +
+            $"Self-contained? {isSelfContained}",
+            "Deployment Info",
+            MessageBoxButton.OK,
+            MessageBoxImage.Information
+        );
+
         var appLocation = AppContext.BaseDirectory;
 
         var defaultSettings = new Dictionary<string, string>
@@ -30,8 +48,8 @@ public partial class App : Application
             ["AppConfig:configurationsFolder"] = "CleanMyPosts\\Configurations",
             ["AppConfig:appPropertiesFileName"] = "AppProperties.json",
             ["AppConfig:XBaseUrl"] = "https://x.com",
-            ["Updater:AppCastUrlInstaller"] = "https://.../update-installer.xml",
-            ["Updater:AppCastUrlSingle"] = "https://.../update-single.xml",
+            ["Updater:AppCastUrlInstaller"] = "https://raw.githubusercontent.com/thorstenalpers/CleanMyPosts/refs/heads/update-feed/update-installer.xml",
+            ["Updater:AppCastUrlSingle"] = "https://raw.githubusercontent.com/thorstenalpers/CleanMyPosts/refs/heads/update-feed/update-single.xml",
             ["Updater:SecurityMode"] = "Unsafe",
             ["Updater:IconUri"] = "pack://application:,,,/CleanMyPosts;component/Assets/logo.ico"
         };

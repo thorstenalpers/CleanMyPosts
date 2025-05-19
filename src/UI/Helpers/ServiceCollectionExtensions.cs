@@ -51,7 +51,6 @@ public static class ServiceCollectionExtensions
         services.AddTransient<IShellWindow, ShellWindow>();
         services.AddTransient<ShellViewModel>();
         services.AddSingleton<LogPage>();
-        services.AddSingleton<LogViewModel>();
         services.AddSingleton<XViewModel>();
         services.AddSingleton<XPage>();
 

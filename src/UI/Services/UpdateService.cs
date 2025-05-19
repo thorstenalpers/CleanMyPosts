@@ -28,7 +28,7 @@ public class UpdateService : IUpdateService
         Guard.Against.NullOrWhiteSpace(opts.SecurityMode.ToString());
         var isSingleFile = AppContext.GetData("IsSingleFile") as bool? ?? false;
         var url = isSingleFile ? opts.AppCastUrlSingle : opts.AppCastUrlInstaller;
-        var verifier = new DSAChecker(opts.SecurityMode);
+        var verifier = new DSAChecker(opts.SecurityMode.Value);
         _logger.LogInformation("Update url is {Url}.", url);
         _sparkle = new SparkleUpdater(url, verifier)
         {

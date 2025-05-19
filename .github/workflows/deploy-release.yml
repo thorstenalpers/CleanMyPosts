@@ -54,6 +54,9 @@ jobs:
           echo "VERSION=$semverOnly" | Out-File -FilePath $env:GITHUB_ENV -Append
         }
 
+    - name: Show Version
+      run: echo "VERSION is ${{ env.VERSION }}"
+
     - name: Publish x64
       run: |
         dotnet publish "${{ env.UI_Project }}" -c Release -r win-x64 --self-contained true `

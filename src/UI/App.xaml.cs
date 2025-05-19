@@ -59,6 +59,7 @@ public partial class App : Application
                     "CleanMyPosts",
                     "Logs",
                     "log-.txt"),
+                shared: true,
                 rollingInterval: RollingInterval.Day,
                 outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}")
             .WriteTo.LogViewModelSink(logViewModel)

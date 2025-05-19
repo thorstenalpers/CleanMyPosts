@@ -1,5 +1,4 @@
 ﻿using System.IO;
-using System.Reflection;
 using System.Windows;
 using System.Windows.Threading;
 using CleanMyPosts.Core.Exception;
@@ -21,21 +20,9 @@ public partial class App : Application
     {
         DispatcherUnhandledException += OnDispatcherUnhandledException;
     }
-    public static bool IsSingleFile()
-    {
-        var baseDir = AppContext.BaseDirectory;
-        var assemblyLocation = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-        return !string.Equals(baseDir, assemblyLocation, StringComparison.OrdinalIgnoreCase);
-    }
+
     private async void OnStartup(object sender, StartupEventArgs e)
     {
-        MessageBox.Show(
-            $"AppContext.BaseDirectory:\n{AppContext.BaseDirectory}\n\n" +
-            $"Assembly Location:\n{Assembly.GetExecutingAssembly().Location}\n\n" +
-            $"Single File? {IsSingleFile()}",
-            "Build Info"
-        );
-
         var appLocation = AppContext.BaseDirectory;
 
         var defaultSettings = new Dictionary<string, string>
@@ -102,7 +89,6 @@ public partial class App : Application
             throw new CleanMyPostsException($"Application start-up failed  {ex}.", ex);
         }
     }
-
 
     private async void OnExit(object sender, ExitEventArgs e)
     {

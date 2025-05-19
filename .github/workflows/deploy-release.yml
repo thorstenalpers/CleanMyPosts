@@ -31,49 +31,6 @@ jobs:
     - name: Install Inno Setup
       run: choco install innosetup --yes
 
-    - name: Extract Version
-      id: get_version
-      shell: pwsh
-      run: |
-        $content = Get-Content "${{ env.UI_Project }}" -Raw
-        if ($content -match '<Version>\s*(.+?)\s*</Version>') {
-          $fullVersion = $matches[1].Trim()
-          $semverOnly = $fullVersion -replace '\+.*$', '' 
-          echo "VERSION=$semverOnly" | Out-File -FilePath $env:GITHUB_ENV -Append
-        }
-
-    - name: Inject Build Versions into .csproj
-      shell: pwsh
-      run: |
-        $file = "${{ env.UI_Project }}"
-        $version = "${{ env.VERSION }}"
-        $infoVersion = "${{ env.VERSION }}"
-        $fileVersion = "$version.0"
-
-        $csproj = Get-Content $file
-
-        $newLines = @(
-          "    <AssemblyVersion>$version</AssemblyVersion>",
-          "    <FileVersion>$fileVersion</FileVersion>",
-          "    <InformationalVersion>$infoVersion</InformationalVersion>"
-        )
-
-        $modified = $false
-        $out = @()
-        foreach ($line in $csproj) {
-          $out += $line
-          if ($line -match '<Version>.*</Version>' -and -not $modified) {
-            $out += $newLines
-            $modified = $true
-          }
-        }
-        $out | Set-Content $file -Encoding UTF8
-
-    - name: Show .csproj after injecting version info
-      shell: pwsh
-      run: |
-        Get-Content "${{ env.UI_Project }}"
-
     - name: Restore
       run: dotnet restore "${{ env.Solution }}"
 
@@ -86,10 +43,20 @@ jobs:
     - name: Run Integration Tests
       run: dotnet test "${{ env.IntegrationTest_Project }}" --configuration Release --logger "console;verbosity=detailed"
 
+    - name: Extract Version
+      id: get_version
+      shell: pwsh
+      run: |
+        $content = Get-Content "${{ env.UI_Project }}" -Raw
+        if ($content -match '<Version>\s*(.+?)\s*</Version>') {
+          $fullVersion = $matches[1].Trim()
+          $semverOnly = $fullVersion -replace '\+.*$', '' 
+          echo "VERSION=$semverOnly" | Out-File -FilePath $env:GITHUB_ENV -Append
+        }
+
     - name: Publish x64
       run: |
         dotnet publish "${{ env.UI_Project }}" -c Release -r win-x64 --self-contained true `
-            /p:Version=${{ env.VERSION }} `
             /p:AssemblyVersion=${{ env.VERSION }} `
             /p:FileVersion=${{ env.VERSION }}.0 `
             /p:InformationalVersion=${{ env.VERSION }} `
@@ -103,7 +70,6 @@ jobs:
             /p:PublishSingleFile=true `
             /p:IncludeNativeLibrariesForSelfExtract=true `
             /p:PublishTrimmed=false `
-            /p:Version=${{ env.VERSION }} `
             /p:AssemblyVersion=${{ env.VERSION }} `
             /p:FileVersion=${{ env.VERSION }}.0 `
             /p:InformationalVersion=${{ env.VERSION }} `

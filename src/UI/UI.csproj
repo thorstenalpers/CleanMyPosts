@@ -11,6 +11,7 @@
 	<AssemblyName>CleanMyPosts</AssemblyName>
 	<TargetFramework>net9.0-windows</TargetFramework>
 	<Version>0.0.1</Version>
+	<IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
 	<AnalysisLevel>latest</AnalysisLevel>
  	<EnableNETAnalyzers>True</EnableNETAnalyzers>
   </PropertyGroup>

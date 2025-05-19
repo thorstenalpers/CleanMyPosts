@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+  <channel>
+    <title>CleanMyPosts Updates</title>
+    <link>https://github.com/thorstenalpers/CleanMyPosts/releases/download/v0.0.1/CleanMyPosts-Installer-0.0.1-win-x64.exe</link>
+    <description>Latest releases of CleanMyPosts</description>
+
+    <item>
+      <title>Version 0.0.1</title>
+      <sparkle:releaseNotesLink>https://github.com/thorstenalpers/CleanMyPosts/releases/tag/v0.0.1</sparkle:releaseNotesLink>
+      <pubDate>Mon, 19 May 2025 19:45:00 GMT</pubDate>
+      <enclosure 
+          url="https://github.com/thorstenalpers/CleanMyPosts/releases/download/v0.0.1/CleanMyPosts-Installer-0.0.1-win-x64.exe"
+          sparkle:version="0.0.1"
+          sparkle:shortVersionString="0.0.1"
+          length="{{FILE_SIZE}}"
+          type="application/octet-stream" />
+    </item>
+  </channel>
+</rss>
+

@@ -8,7 +8,7 @@
     <item>
       <title>Version 0.0.1</title>
       <sparkle:releaseNotesLink>https://github.com/thorstenalpers/CleanMyPosts/releases/tag/v0.0.1</sparkle:releaseNotesLink>
-      <pubDate>Mon, 19 May 2025 19:45:00 GMT</pubDate>
+      <pubDate>Mon, 19 May 2025 19:51:17 GMT</pubDate>
       <enclosure 
           url="https://github.com/thorstenalpers/CleanMyPosts/releases/download/v0.0.1/CleanMyPosts-Installer-0.0.1-win-x64.exe"
           sparkle:version="0.0.1"

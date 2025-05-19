@@ -54,6 +54,25 @@ jobs:
           echo "VERSION=$semverOnly" | Out-File -FilePath $env:GITHUB_ENV -Append
         }
 
+    - name: Patch .csproj with versions
+      shell: pwsh
+      run: |
+        $csproj = "${{ env.UI_Project }}"
+        [xml]$projXml = Get-Content $csproj
+
+        $pg = $projXml.Project.PropertyGroup | Where-Object { $_.Version } 
+        if (-not $pg) {
+          $pg = $projXml.CreateElement("PropertyGroup", $projXml.Project.NamespaceURI)
+          $projXml.Project.AppendChild($pg) | Out-Null
+        }
+
+        $pg.Version = "${{ env.VERSION }}"
+        $pg.AssemblyVersion = "${{ env.VERSION }}"
+        $pg.FileVersion = "${{ env.VERSION }}.0"
+        $pg.InformationalVersion = "${{ env.VERSION }}"
+
+        $projXml.Save($csproj)
+
     - name: Show Version
       run: echo "VERSION is ${{ env.VERSION }}"
 

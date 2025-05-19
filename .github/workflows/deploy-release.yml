@@ -31,18 +31,6 @@ jobs:
     - name: Install Inno Setup
       run: choco install innosetup --yes
 
-    - name: Restore
-      run: dotnet restore "${{ env.Solution }}"
-
-    - name: Build
-      run: dotnet build "${{ env.Solution }}" --configuration Release --no-restore
-
-    - name: Run Unit Tests
-      run: dotnet test "${{ env.UnitTest_Project }}" --configuration Release --logger "console;verbosity=detailed"
-
-    - name: Run Integration Tests
-      run: dotnet test "${{ env.IntegrationTest_Project }}" --configuration Release --logger "console;verbosity=detailed"
-
     - name: Extract Version
       id: get_version
       shell: pwsh
@@ -80,6 +68,18 @@ jobs:
           }
         }
         $out | Set-Content $file -Encoding UTF8
+
+    - name: Restore
+      run: dotnet restore "${{ env.Solution }}"
+
+    - name: Build
+      run: dotnet build "${{ env.Solution }}" --configuration Release --no-restore
+
+    - name: Run Unit Tests
+      run: dotnet test "${{ env.UnitTest_Project }}" --configuration Release --logger "console;verbosity=detailed"
+
+    - name: Run Integration Tests
+      run: dotnet test "${{ env.IntegrationTest_Project }}" --configuration Release --logger "console;verbosity=detailed"
 
     - name: Publish x64
       run: |

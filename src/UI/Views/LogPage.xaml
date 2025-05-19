@@ -14,75 +14,51 @@
 				<RowDefinition Height="*" />
 			</Grid.RowDefinitions>
 
-			<!--  Header  -->
-			<DockPanel Margin="0,0,0,8">
-				<TextBlock
-					VerticalAlignment="Center"
-					DockPanel.Dock="Left"
-					FontSize="20"
-					FontWeight="Bold"
-					Text="Application Log" />
-				<Button
-					HorizontalAlignment="Right"
-					VerticalAlignment="Center"
-					Command="{Binding ClearLogCommand}"
-					Content="Clear Log"
-					DockPanel.Dock="Right"
-					Style="{StaticResource MahApps.Styles.Button.Flat}" />
-			</DockPanel>
+			<TextBlock
+				Grid.Row="0"
+				Margin="0,0,0,8"
+				FontSize="20"
+				FontWeight="Bold"
+				Text="Application Log" />
 
-			<!--  Log Table  -->
 			<ListView
 				Grid.Row="1"
 				AlternationCount="2"
 				Background="Transparent"
 				BorderThickness="0"
 				ItemsSource="{Binding LogEntries}"
+				SelectedItem="{Binding SelectedLogEntry, Mode=TwoWay}"
 				SelectionMode="Single">
+
 				<ListView.ItemContainerStyle>
 					<Style TargetType="ListViewItem">
-						<!--  Disable default highlighting  -->
 						<Setter Property="Background" Value="Transparent" />
 						<Setter Property="Foreground" Value="{DynamicResource MahApps.Brushes.Text}" />
+						<Setter Property="Padding" Value="4" />
 						<Setter Property="BorderThickness" Value="0" />
 						<Setter Property="Focusable" Value="False" />
-						<Setter Property="Padding" Value="4" />
-						<Setter Property="Template">
-							<Setter.Value>
-								<ControlTemplate TargetType="ListViewItem">
-									<Border Background="{TemplateBinding Background}">
-										<ContentPresenter />
-									</Border>
-								</ControlTemplate>
-							</Setter.Value>
-						</Setter>
-
-						<!--  Alternation (striping)  -->
-						<Style.Triggers>
-							<Trigger Property="ItemsControl.AlternationIndex" Value="1">
-								<Setter Property="Background" Value="#0F000000" />
-							</Trigger>
-							<Trigger Property="IsMouseOver" Value="True">
-								<Setter Property="Background" Value="#22000000" />
-							</Trigger>
-							<Trigger Property="IsSelected" Value="True">
-								<Setter Property="Background" Value="#33007ACC" />
-							</Trigger>
-						</Style.Triggers>
 					</Style>
 				</ListView.ItemContainerStyle>
 
 				<ListView.ItemTemplate>
 					<DataTemplate>
-						<TextBlock
+						<TextBox
+							Margin="4,2"
+							Padding="0"
+							Background="Transparent"
+							BorderThickness="0"
 							FontFamily="Consolas"
 							FontSize="14"
-							Text="{Binding}"
+							Foreground="{DynamicResource MahApps.Brushes.Text}"
+							IsReadOnly="True"
+							IsReadOnlyCaretVisible="False"
+							IsTabStop="False"
+							Text="{Binding Mode=OneWay}"
 							TextWrapping="Wrap" />
 					</DataTemplate>
 				</ListView.ItemTemplate>
-			</ListView>
 
+			</ListView>
 		</Grid>
 	</Border>
 </Page>

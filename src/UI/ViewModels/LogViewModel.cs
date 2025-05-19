@@ -8,6 +8,9 @@ public partial class LogViewModel : ObservableObject
 {
     public ObservableCollection<string> LogEntries { get; } = [];
 
+    [ObservableProperty]
+    private string _selectedLogEntry;
+
     public void AppendLog(string message)
     {
         LogEntries.Add(message);

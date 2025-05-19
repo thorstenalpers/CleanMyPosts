@@ -23,7 +23,8 @@ internal static class TestHelper
         var cfgBuilder = new ConfigurationBuilder();
         cfgBuilder.AddInMemoryCollection(new Dictionary<string, string>
         {
-            ["Updater:AppCastUrl"] = "https://example.com/appcast.xml",
+            ["Updater:AppCastUrlInstaller"] = "https://example.com/appcast.xml",
+            ["Updater:AppCastUrlSingle"] = "https://example.com/appcast.xml",
             ["Updater:SecurityMode"] = "Unsafe",
             ["Updater:IconUri"] = "https://raw.githubusercontent.com/thorstenalpers/CleanMyPosts/refs/heads/main/src/UI/Assets/logo.ico"
         });

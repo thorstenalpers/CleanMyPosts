@@ -88,7 +88,7 @@ public partial class XViewModel : ObservableObject
                 attempts++;
                 await Task.Delay(delayMs);
             }
-            _logger.LogWarning("User not logged in.");
+            _logger.LogInformation("User not logged in.");
         }
     }
 

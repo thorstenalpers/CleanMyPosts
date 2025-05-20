@@ -1,74 +1,67 @@
 ﻿using CleanMyPosts.UI.Contracts.Services;
 using CleanMyPosts.UI.Models;
 using CleanMyPosts.UI.ViewModels;
+using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
-using NUnit.Framework;
+using Xunit;
 
 namespace CleanMyPosts.Tests;
 
-[Category("Unit")]
 public class SettingsViewModelTests
 {
+    private readonly Mock<IThemeSelectorService> _themeSelectorServiceMock = new();
+    private readonly Mock<IApplicationInfoService> _applicationInfoServiceMock = new();
+    private readonly Mock<IAppSettingsService> _appSettingsServiceMock = new();
+    private readonly Mock<IUpdateService> _updateServiceMock = new();
+    private readonly Mock<ILogger<SettingsViewModel>> _loggerMock = new();
 
-    [Test]
-    public void TestSettingsViewModel_SetCurrentTheme()
+    private SettingsViewModel CreateViewModel() =>
+        new(_themeSelectorServiceMock.Object,
+            _loggerMock.Object,
+            _applicationInfoServiceMock.Object,
+            _appSettingsServiceMock.Object,
+            _updateServiceMock.Object);
+
+    [Fact]
+    public void OnNavigatedTo_ShouldSetCurrentTheme_WhenThemeServiceReturnsTheme()
     {
-        Mock<IThemeSelectorService> mockThemeSelectorService = new();
-        mockThemeSelectorService.Setup(mock => mock.GetCurrentTheme()).Returns(AppTheme.Light);
-        Mock<IApplicationInfoService> mockApplicationInfoService = new();
-        Mock<IAppSettingsService> mockAppSettingsService = new();
-        Mock<IUpdateService> mockUpdateService = new();
-        Mock<ILogger<SettingsViewModel>> mockLogger = new();
+        // Arrange
+        _themeSelectorServiceMock.Setup(x => x.GetCurrentTheme()).Returns(AppTheme.Light);
+        var viewModel = CreateViewModel();
 
-        var settingsVm = new SettingsViewModel(mockThemeSelectorService.Object,
-                                               mockLogger.Object,
-                                               mockApplicationInfoService.Object,
-                                               mockAppSettingsService.Object,
-                                               mockUpdateService.Object);
-        settingsVm.OnNavigatedTo(null);
+        // Act
+        viewModel.OnNavigatedTo(null);
 
-        Assert.That(AppTheme.Light, Is.EqualTo(settingsVm.Theme));
+        // Assert
+        viewModel.Theme.Should().Be(AppTheme.Light);
     }
 
-    [Test]
-    public void TestSettingsViewModel_SetCurrentVersion()
+    [Fact]
+    public void OnNavigatedTo_ShouldSetVersionDescription_WhenVersionIsProvided()
     {
-        Mock<IThemeSelectorService> mockThemeSelectorService = new();
-        Mock<IApplicationInfoService> mockApplicationInfoService = new();
-        Mock<IAppSettingsService> mockAppSettingsService = new();
-        Mock<IUpdateService> mockUpdateService = new();
-        Mock<ILogger<SettingsViewModel>> mockLogger = new();
+        // Arrange
+        var version = new Version(1, 2, 3);
+        _applicationInfoServiceMock.Setup(x => x.GetVersion()).Returns(version);
+        var viewModel = CreateViewModel();
 
-        Version testVersion = new(1, 2, 3);
-        mockApplicationInfoService.Setup(mock => mock.GetVersion()).Returns(testVersion);
+        // Act
+        viewModel.OnNavigatedTo(null);
 
-        var settingsVm = new SettingsViewModel(mockThemeSelectorService.Object,
-                                               mockLogger.Object,
-                                               mockApplicationInfoService.Object,
-                                               mockAppSettingsService.Object,
-                                               mockUpdateService.Object);
-        settingsVm.OnNavigatedTo(null);
-
-        Assert.That($"CleanMyPosts - {testVersion}", Is.EqualTo(settingsVm.VersionDescription));
+        // Assert
+        viewModel.VersionDescription.Should().Be($"CleanMyPosts - {version}");
     }
 
-    [Test]
-    public void TestSettingsViewModel_SetThemeCommand()
+    [Fact]
+    public void SetThemeCommand_ShouldInvokeThemeService_WithCorrectTheme()
     {
-        Mock<IThemeSelectorService> mockThemeSelectorService = new();
-        Mock<IApplicationInfoService> mockApplicationInfoService = new();
-        Mock<IAppSettingsService> mockAppSettingsService = new();
-        Mock<IUpdateService> mockUpdateService = new();
-        Mock<ILogger<SettingsViewModel>> mockLogger = new();
+        // Arrange
+        var viewModel = CreateViewModel();
 
-        var settingsVm = new SettingsViewModel(mockThemeSelectorService.Object,
-                                               mockLogger.Object,
-                                               mockApplicationInfoService.Object,
-                                               mockAppSettingsService.Object,
-                                               mockUpdateService.Object);
-        settingsVm.SetThemeCommand.Execute(AppTheme.Light.ToString());
+        // Act
+        viewModel.SetThemeCommand.Execute(AppTheme.Light.ToString());
 
-        mockThemeSelectorService.Verify(mock => mock.SetTheme(AppTheme.Light));
+        // Assert
+        _themeSelectorServiceMock.Verify(x => x.SetTheme(AppTheme.Light), Times.Once);
     }
 }

@@ -1,53 +1,53 @@
 ﻿using CleanMyPosts.UI.Contracts.Services;
 using CleanMyPosts.UI.ViewModels;
 using CleanMyPosts.UI.Views;
+using FluentAssertions;
 using Microsoft.Extensions.Hosting;
-using NUnit.Framework;
+using Xunit;
 
 namespace CleanMyPosts.Tests;
 
-[Category("Integration")]
 public class PagesTests
 {
-    private IHost _host;
+    private readonly IHost _host;
 
-    [SetUp]
-    public void Setup()
+    public PagesTests()
     {
         _host = TestHelper.SetUpHost();
     }
 
-    [Test]
+    [Fact]
     public void TestWebViewViewModelCreation()
     {
         var vm = _host.Services.GetService(typeof(XViewModel));
-        Assert.That(vm, Is.Not.Null);
+        vm.Should().NotBeNull();
     }
 
-    [Test]
+    [Fact]
     public void TestGetMainPageType()
     {
         var pageService = _host.Services.GetService(typeof(IPageService)) as IPageService;
-        Assert.That(pageService, Is.Not.Null);
+        pageService.Should().NotBeNull();
 
         var pageType = pageService.GetPageType(typeof(XViewModel).FullName);
-        Assert.That(typeof(XPage), Is.EqualTo(pageType));
+        pageType.Should().Be<XPage>();
     }
 
-    [Test]
+    [Fact]
     public void TestSettingsViewModelCreation()
     {
         var vm = _host.Services.GetService(typeof(SettingsViewModel));
-        Assert.That(vm, Is.Not.Null);
+        vm.Should().NotBeNull();
     }
 
-    [Test]
+    [Fact]
     public void TestGetSettingsPageType()
     {
         var pageService = _host.Services.GetService(typeof(IPageService)) as IPageService;
-        Assert.That(pageService, Is.Not.Null);
+        pageService.Should().NotBeNull();
 
         var pageType = pageService.GetPageType(typeof(SettingsViewModel).FullName);
-        Assert.That(typeof(SettingsPage), Is.EqualTo(pageType));
+        pageType.Should().Be<SettingsPage>();
     }
 }
+

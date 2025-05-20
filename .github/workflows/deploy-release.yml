@@ -108,7 +108,7 @@ jobs:
         $pubDate = (Get-Date -Format R)
         $fileSize = "{{FILE_SIZE}}" 
 
-        $template = Get-Content "appcast-template.xml" -Raw
+        $template = Get-Content "update-feed/appcast-template.xml" -Raw
 
         $installerUrl = "$baseUrl/CleanMyPosts-Installer-$version-win-x64.exe"
         $installerXml = $template `

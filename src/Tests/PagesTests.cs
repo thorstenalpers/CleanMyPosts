@@ -7,6 +7,7 @@ using Xunit;
 
 namespace CleanMyPosts.Tests;
 
+[Trait("Category", "Integration")]
 public class PagesTests
 {
     private readonly IHost _host;

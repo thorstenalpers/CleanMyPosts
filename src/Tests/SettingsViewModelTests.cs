@@ -8,6 +8,7 @@ using Xunit;
 
 namespace CleanMyPosts.Tests;
 
+[Trait("Category", "Unit")]
 public class SettingsViewModelTests
 {
     private readonly Mock<IThemeSelectorService> _themeSelectorServiceMock = new();

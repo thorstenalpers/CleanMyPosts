@@ -4,6 +4,7 @@ using Xunit;
 
 namespace CleanMyPosts.Tests;
 
+[Trait("Category", "Unit")]
 public class LogViewModelTests
 {
     [Fact]

@@ -18,7 +18,9 @@ public partial class LogPage : Page
     private void TextBox_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
         if (sender is not TextBox tb)
+        {
             return;
+        }
 
         if (e.ClickCount == 2)
         {

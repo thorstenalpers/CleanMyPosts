@@ -94,24 +94,9 @@ jobs:
         mkdir artifacts\standalone
         copy artifacts\publish-single\CleanMyPosts.exe artifacts\standalone\CleanMyPosts-${{ env.VERSION }}-win-x64.exe
 
-    - name: Clone update-feed branch to separate folder
+    - name: Clone update-feed branch
       run: |
         git clone --branch update-feed --single-branch https://github.com/${{ github.repository }} update-feed || mkdir update-feed
-
-    - name: Copy update.xml from update-feed or fallback
-      shell: pwsh
-      run: |
-        if (Test-Path "update-feed/update.xml") {
-          Copy-Item "update-feed/update.xml" "update.xml"
-        } else {
-          "No update.xml found in update-feed branch." | Out-File update.xml
-        }
-
-    - name: Fetch appcast-template.xml from remote
-      shell: pwsh
-      run: |
-        $templateUrl = "https://raw.githubusercontent.com/thorstenalpers/CleanMyPosts/update-feed/appcast-template.xml"
-        Invoke-WebRequest -Uri $templateUrl -OutFile "appcast-template.xml"
 
     - name: Generate appcast files using template
       shell: pwsh
@@ -121,9 +106,9 @@ jobs:
         $baseUrl = "https://github.com/$repo/releases/download/v$version"
         $changelogUrl = "https://raw.githubusercontent.com/thorstenalpers/CleanMyPosts/refs/heads/main/release-notes/v$version.md"
         $pubDate = (Get-Date -Format R)
-        $fileSize = "{{FILE_SIZE}}"  # optional: calculate real size
+        $fileSize = "{{FILE_SIZE}}" 
 
-        $template = Get-Content "appcast-template.xml" -Raw
+        $template = Get-Content "update-feed/appcast-template.xml" -Raw
 
         $installerUrl = "$baseUrl/CleanMyPosts-Installer-$version-win-x64.exe"
         $installerXml = $template `
@@ -143,31 +128,37 @@ jobs:
           -replace "{{FILE_SIZE}}", $fileSize
         $singleXml | Set-Content -Path "artifacts/appcast-single.xml" -Encoding UTF8
 
-    - name: Configure Git Credentials for update-feed push
-      run: |
-        echo "https://${{ secrets.GH_APIKEY }}@github.com" > $env:USERPROFILE\.git-credentials
-        git config --global credential.helper store
-        git config --global user.name "github-actions"
-        git config --global user.email "actions@github.com"
+    - name: Create GitHub App Token
+      id: app-token
+      uses: actions/create-github-app-token@v2.0.5
+      with:
+        app-id: ${{ secrets.GH_APP_ID }}
+        private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
+        repositories: CleanMyPosts
 
-    - name: Commit and push update files to update-feed branch
+    - name: Commit and push update-feed branch
       shell: bash
       run: |
         cd update-feed
         cp ../artifacts/appcast-installer.xml appcast-installer.xml
         cp ../artifacts/appcast-single.xml appcast-single.xml
 
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+
         git add appcast-installer.xml appcast-single.xml
 
         if git diff --cached --quiet; then
-          echo "No changes in appcast files; skipping commit"
+          echo "No changes to commit"
         else
-          git commit -m "Update appcast files for version ${{ env.VERSION }}"
-          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} update-feed --force
+          git commit -m "Update appcast for ${{ env.VERSION }}"
+          git push https://x-access-token:${{ steps.app-token.outputs.token }}@github.com/${{ github.repository }} update-feed
         fi
 
     - name: Create Git Tag
       run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
         git tag -a "v${{ env.VERSION }}" -m "Release v${{ env.VERSION }}"
         git push origin "v${{ env.VERSION }}"
 

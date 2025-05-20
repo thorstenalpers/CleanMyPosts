@@ -134,13 +134,13 @@ jobs:
           -replace "{{FILE_SIZE}}", $fileSize
         $singleXml | Set-Content -Path "artifacts/appcast-single.xml" -Encoding UTF8
 
-    - name: Create GitHub App Installation Token
+    - name: Create GitHub App Token
       id: app-token
-      uses: tibdex/github-app-token@v2
+      uses: actions/create-github-app-token@v2.0.5
       with:
-        app_id: ${{ secrets.GH_APP_ID }}
-        installation_id: ${{ secrets.GH_APP_INSTALLATION_ID }}
-        private_key: ${{ secrets.GH_APP_PRIVATE_KEY }}
+        app-id: ${{ secrets.GH_APP_ID }}
+        private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
+        repositories: CleanMyPosts
 
     - name: Commit and push update-feed branch
       shell: bash

@@ -10,8 +10,7 @@ jobs:
 
     env:
       Solution: "src/CleanMyPosts.sln"
-      UnitTest_Project: "src/UnitTests/UnitTests.csproj"
-      IntegrationTest_Project: "src/IntegrationTests/IntegrationTests.csproj"
+      Test_Project: "src/Tests/Tests.csproj"
       FORCE_COLOR: "true"
       DOTNET_LOGGING__CONSOLE__COLORBEHAVIOR: Enabled
 
@@ -45,28 +44,19 @@ jobs:
           /d:sonar.token="${{ secrets.SONAR_TOKEN }}" `
           /d:sonar.host.url="https://sonarcloud.io" `
           /d:sonar.sources="src" `
-          /d:sonar.tests="src/UnitTests;src/IntegrationTests" `
+          /d:sonar.tests="src/Tests" `
           /d:sonar.test.inclusions="**/*Tests.cs" `
           /d:sonar.coverageReportPaths="TestResults/Reports/SonarQube.xml"
 
         dotnet build "${{ env.Solution }}" --configuration Release --no-restore
 
-        # Run Unit Tests
-        dotnet test "${{ env.UnitTest_Project }}" `
+        dotnet test "${{ env.Test_Project }}" `
           --collect:"XPlat Code Coverage" `
-          --results-directory TestResults/UnitTests `
+          --results-directory TestResults/Tests `
           --configuration Release `
           --logger "console;verbosity=detailed" `
           --filter "TestCategory!=Long-Running"
 
-        # Run Integration Tests
-        dotnet test "${{ env.IntegrationTest_Project }}" `
-          --collect:"XPlat Code Coverage" `
-          --results-directory TestResults/IntegrationTests `
-          --configuration Release `
-          --logger "console;verbosity=detailed"
-
-        # Generate coverage reports
         dotnet tool run reportgenerator `
           -reports:TestResults/**/coverage.cobertura.xml `
           -targetdir:TestResults/Reports `

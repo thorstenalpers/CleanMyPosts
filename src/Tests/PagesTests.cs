@@ -4,7 +4,7 @@ using CleanMyPosts.UI.Views;
 using Microsoft.Extensions.Hosting;
 using NUnit.Framework;
 
-namespace CleanMyPosts.IntegrationTests;
+namespace CleanMyPosts.Tests;
 
 [Category("Integration")]
 public class PagesTests

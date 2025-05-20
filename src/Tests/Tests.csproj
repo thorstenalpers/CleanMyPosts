@@ -1,13 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net9.0-windows10.0.19041.0</TargetFramework>
+    <TargetFramework>net9.0-windows</TargetFramework>
     <IsPackable>false</IsPackable>
-    <AssetTargetFallback>uap10.0.18362</AssetTargetFallback>
     <Platforms>x64;x86;AnyCPU</Platforms>
-    <RootNamespace>CleanMyPosts.IntegrationTests</RootNamespace>
-	<DefaultNamespace>CleanMyPosts.IntegrationTests</DefaultNamespace>
-	<AssemblyName>CleanMyPosts.IntegrationTests</AssemblyName>
+    <RootNamespace>CleanMyPosts.Tests</RootNamespace>
+	<DefaultNamespace>CleanMyPosts.Tests</DefaultNamespace>
+	<AssemblyName>CleanMyPosts.Tests</AssemblyName>
 	<ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 

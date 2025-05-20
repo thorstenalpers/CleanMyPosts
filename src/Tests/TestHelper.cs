@@ -8,7 +8,7 @@ using NetSparkleUpdater.Interfaces;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
-namespace CleanMyPosts.IntegrationTests;
+namespace CleanMyPosts.Tests;
 
 internal static class TestHelper
 {

@@ -22,8 +22,6 @@ public partial class App : Application
 
     private async void OnStartup(object sender, StartupEventArgs e)
     {
-        var appLocation = AppContext.BaseDirectory;
-
         var defaultSettings = new Dictionary<string, string>
         {
             ["AppConfig:configurationsFolder"] = "CleanMyPosts\\Configurations",
@@ -85,7 +83,7 @@ public partial class App : Application
         }
         catch (Exception ex)
         {
-            Log.Fatal(ex, $"Application start-up failed {ex}.");
+            Log.Fatal(ex, "Application start-up failed.");
             MessageBox.Show("Failed to start application.", "Startup Error", MessageBoxButton.OK, MessageBoxImage.Error);
             Environment.Exit(1);
         }

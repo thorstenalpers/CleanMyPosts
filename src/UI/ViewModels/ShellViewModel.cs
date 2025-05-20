@@ -14,6 +14,7 @@ public partial class ShellViewModel : ObservableObject, IDisposable
     private readonly INavigationService _navigationService;
     private readonly IAppSettingsService _appSettingsService;
     private readonly HamburgerMenuItem _logMenuItem;
+    private bool _disposed;
 
     public ShellViewModel(INavigationService navigationService, IAppSettingsService appSettingsService)
     {
@@ -47,6 +48,10 @@ public partial class ShellViewModel : ObservableObject, IDisposable
             new HamburgerMenuGlyphItem { Label = Resources.ShellSettingsPage, Glyph = "\uE713", TargetPageType = typeof(SettingsViewModel) }
         ];
         _appSettingsService.SettingChanged += OnAppSettingChanged;
+    }
+    ~ShellViewModel()
+    {
+        Dispose(false);
     }
 
     [ObservableProperty]
@@ -130,8 +135,22 @@ public partial class ShellViewModel : ObservableObject, IDisposable
     }
     public void Dispose()
     {
-        _appSettingsService.SettingChanged -= OnAppSettingChanged;
-        _navigationService.Navigated -= OnNavigated;
+        Dispose(true);
         GC.SuppressFinalize(this);
+    }
+    protected virtual void Dispose(bool disposing)
+    {
+        if (_disposed)
+        {
+            return;
+        }
+
+        if (disposing)
+        {
+            _appSettingsService.SettingChanged -= OnAppSettingChanged;
+            _navigationService.Navigated -= OnNavigated;
+        }
+
+        _disposed = true;
     }
 }

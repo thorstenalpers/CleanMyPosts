@@ -17,52 +17,66 @@ public partial class LogPage : Page
 
     private void TextBox_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
-        if (sender is TextBox tb)
+        if (sender is not TextBox tb)
+            return;
+
+        if (e.ClickCount == 2)
         {
-            if (e.ClickCount == 2)
-            {
-                tb.Focus();
+            HandleDoubleClick(tb, e);
+        }
+        else if (e.ClickCount == 3)
+        {
+            HandleTripleClick(tb, e);
+        }
+    }
 
-                var pt = e.GetPosition(tb);
-                var charIndex = tb.GetCharacterIndexFromPoint(pt, true);
-                if (charIndex >= 0)
-                {
-                    var text = tb.Text;
+    private void HandleDoubleClick(TextBox tb, MouseButtonEventArgs e)
+    {
+        tb.Focus();
 
-                    var start = charIndex;
-                    var end = charIndex;
+        var pt = e.GetPosition(tb);
+        var charIndex = tb.GetCharacterIndexFromPoint(pt, true);
+        if (charIndex < 0)
+        {
+            tb.SelectAll();
+        }
+        else
+        {
+            SelectWordAt(tb, charIndex);
+        }
 
-                    while (start > 0 && !char.IsWhiteSpace(text[start - 1]))
-                    {
-                        start--;
-                    }
+        e.Handled = true;
+    }
 
-                    while (end < text.Length && !char.IsWhiteSpace(text[end]))
-                    {
-                        end++;
-                    }
+    private static void SelectWordAt(TextBox tb, int charIndex)
+    {
+        var text = tb.Text;
+        var start = charIndex;
+        var end = charIndex;
 
-                    tb.Select(start, end - start);
-                }
-                else
-                {
-                    tb.SelectAll();
-                }
+        while (start > 0 && !char.IsWhiteSpace(text[start - 1]))
+        {
+            start--;
+        }
 
-                e.Handled = true;
-            }
-            else if (e.ClickCount == 3)
-            {
-                tb.Focus();
-                tb.SelectAll();
-                e.Handled = true;
+        while (end < text.Length && !char.IsWhiteSpace(text[end]))
+        {
+            end++;
+        }
 
-                var listView = FindAncestor<ListView>(tb);
-                if (listView != null)
-                {
-                    listView.SelectedItem = tb.DataContext;
-                }
-            }
+        tb.Select(start, end - start);
+    }
+
+    private static void HandleTripleClick(TextBox tb, MouseButtonEventArgs e)
+    {
+        tb.Focus();
+        tb.SelectAll();
+        e.Handled = true;
+
+        var listView = FindAncestor<ListView>(tb);
+        if (listView != null)
+        {
+            listView.SelectedItem = tb.DataContext;
         }
     }
 

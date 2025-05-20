@@ -49,25 +49,36 @@ jobs:
       run: |
         $content = Get-Content "${{ env.UI_Project }}" -Raw
         if ($content -match '<Version>\s*(.+?)\s*</Version>') {
-          $version = $matches[1].Trim()
-          echo "VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Append
+          $fullVersion = $matches[1].Trim()
+          $semverOnly = $fullVersion -replace '\+.*$', ''
+          echo "VERSION=$semverOnly" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "version=$semverOnly" >> $env:GITHUB_OUTPUT
         } else {
-          throw "Version not found in project file"
+          Write-Error "Version not found in csproj"
+          exit 1
         }
 
     - name: Publish x64
       run: |
         dotnet publish "${{ env.UI_Project }}" -c Release -r win-x64 --self-contained true `
-          -o artifacts/publish-x64
+            /p:AssemblyVersion=${{ env.VERSION }} `
+            /p:FileVersion=${{ env.VERSION }}.0 `
+            /p:InformationalVersion=${{ env.VERSION }} `
+            /p:ContinuousIntegrationBuild=false `
+            -o artifacts/publish-x64
 
     - name: Publish Single-File x64
       run: |
         dotnet publish "${{ env.UI_Project }}" `
-          -c Release -r win-x64 --self-contained true `
-          /p:PublishSingleFile=true `
-          /p:IncludeNativeLibrariesForSelfExtract=true `
-          /p:PublishTrimmed=false `
-          -o artifacts/publish-single
+            -c Release -r win-x64 --self-contained true `
+            /p:PublishSingleFile=true `
+            /p:IncludeNativeLibrariesForSelfExtract=true `
+            /p:PublishTrimmed=false `
+            /p:AssemblyVersion=${{ env.VERSION }} `
+            /p:FileVersion=${{ env.VERSION }}.0 `
+            /p:InformationalVersion=${{ env.VERSION }} `
+            /p:ContinuousIntegrationBuild=false `
+            -o artifacts/publish-single
 
     - name: Build Installer x64
       run: |
@@ -96,35 +107,41 @@ jobs:
           "No update.xml found in update-feed branch." | Out-File update.xml
         }
 
-    - name: Fetch update-original.xml from remote
+    - name: Fetch appcast-template.xml from remote
       shell: pwsh
       run: |
-        $originalUrl = "https://raw.githubusercontent.com/thorstenalpers/CleanMyPosts/update-feed/update-original.xml"
-        Invoke-WebRequest -Uri $originalUrl -OutFile "update-original.xml"
+        $templateUrl = "https://raw.githubusercontent.com/thorstenalpers/CleanMyPosts/update-feed/appcast-template.xml"
+        Invoke-WebRequest -Uri $templateUrl -OutFile "appcast-template.xml"
 
-    - name: Generate update-installer.xml and update-single.xml from original
+    - name: Generate appcast files using template
       shell: pwsh
       run: |
         $version = "${{ env.VERSION }}"
         $repo = "${{ github.repository }}"
         $baseUrl = "https://github.com/$repo/releases/download/v$version"
-        $changelogUrl = "https://github.com/$repo/releases/tag/v$version"
+        $changelogUrl = "https://raw.githubusercontent.com/thorstenalpers/CleanMyPosts/refs/heads/main/release-notes/v$version.md"
+        $pubDate = (Get-Date -Format R)
+        $fileSize = "{{FILE_SIZE}}"  # optional: calculate real size
 
-        $template = Get-Content "update-original.xml" -Raw
+        $template = Get-Content "appcast-template.xml" -Raw
 
         $installerUrl = "$baseUrl/CleanMyPosts-Installer-$version-win-x64.exe"
         $installerXml = $template `
           -replace "{{VERSION}}", $version `
           -replace "{{INSTALLER_URL}}", $installerUrl `
-          -replace "{{CHANGELOG_URL}}", $changelogUrl
-        $installerXml | Set-Content -Path "artifacts/update-installer.xml" -Encoding UTF8
+          -replace "{{CHANGELOG_URL}}", $changelogUrl `
+          -replace "{{PUB_DATE}}", $pubDate `
+          -replace "{{FILE_SIZE}}", $fileSize
+        $installerXml | Set-Content -Path "artifacts/appcast-installer.xml" -Encoding UTF8
 
         $singleUrl = "$baseUrl/CleanMyPosts-$version-win-x64.exe"
         $singleXml = $template `
           -replace "{{VERSION}}", $version `
           -replace "{{INSTALLER_URL}}", $singleUrl `
-          -replace "{{CHANGELOG_URL}}", $changelogUrl
-        $singleXml | Set-Content -Path "artifacts/update-single.xml" -Encoding UTF8
+          -replace "{{CHANGELOG_URL}}", $changelogUrl `
+          -replace "{{PUB_DATE}}", $pubDate `
+          -replace "{{FILE_SIZE}}", $fileSize
+        $singleXml | Set-Content -Path "artifacts/appcast-single.xml" -Encoding UTF8
 
     - name: Configure Git Credentials for update-feed push
       run: |
@@ -137,13 +154,13 @@ jobs:
       shell: bash
       run: |
         cd update-feed
-        cp ../artifacts/update-installer.xml update-installer.xml
-        cp ../artifacts/update-single.xml update-single.xml
+        cp ../artifacts/appcast-installer.xml appcast-installer.xml
+        cp ../artifacts/appcast-single.xml appcast-single.xml
 
-        git add update-installer.xml update-single.xml
+        git add appcast-installer.xml appcast-single.xml
 
         if git diff --cached --quiet; then
-          echo "No changes in update files; skipping commit"
+          echo "No changes in appcast files; skipping commit"
         else
           git commit -m "Update appcast files for version ${{ env.VERSION }}"
           git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} update-feed --force

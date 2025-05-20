@@ -2,7 +2,6 @@
   
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net9.0-windows10.0.19041.0</TargetFramework>
     <UseWPF>true</UseWPF>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -10,8 +9,9 @@
 	<DefaultNamespace>CleanMyPosts.UI</DefaultNamespace>
 	<ApplicationIcon>Assets\logo.ico</ApplicationIcon>
 	<AssemblyName>CleanMyPosts</AssemblyName>
+	<TargetFramework>net9.0-windows</TargetFramework>
 	<Version>0.0.1</Version>
-	<FileVersion>0.0.1.0</FileVersion>
+	<IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
 	<AnalysisLevel>latest</AnalysisLevel>
  	<EnableNETAnalyzers>True</EnableNETAnalyzers>
   </PropertyGroup>
@@ -31,6 +31,7 @@
     <PackageReference Include="Serilog.Settings.Configuration" Version="9.0.0" />
     <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
     <PackageReference Include="Serilog.Sinks.Debug" Version="3.0.0" />
+    <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
   </ItemGroup>
 
   <ItemGroup>

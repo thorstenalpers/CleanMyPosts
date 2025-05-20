@@ -1,5 +1,6 @@
 ﻿using Ardalis.GuardClauses;
 using CleanMyPosts.UI.Contracts.Services;
+using CleanMyPosts.UI.Helpers;
 using CleanMyPosts.UI.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -26,15 +27,14 @@ public class UpdateService : IUpdateService
         Guard.Against.NullOrWhiteSpace(opts.AppCastUrlSingle);
         Guard.Against.NullOrWhiteSpace(opts.AppCastUrlInstaller);
         Guard.Against.NullOrWhiteSpace(opts.SecurityMode.ToString());
-        var isSingleFile = AppContext.GetData("IsSingleFile") as bool? ?? false;
-        var url = isSingleFile ? opts.AppCastUrlSingle : opts.AppCastUrlInstaller;
-        var verifier = new DSAChecker(opts.SecurityMode);
 
+        var url = Helper.IsInstalledVersion() ? opts.AppCastUrlInstaller : opts.AppCastUrlSingle;
+        var verifier = new DSAChecker(opts.SecurityMode.Value);
+        _logger.LogInformation("Update url is {Url}.", url);
         _sparkle = new SparkleUpdater(url, verifier)
         {
             UIFactory = uIFactory,
             RelaunchAfterUpdate = true,
-            UseNotificationToast = true,
             LogWriter = netSparkleLogger
         };
     }

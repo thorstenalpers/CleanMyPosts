@@ -98,12 +98,6 @@ jobs:
       run: |
         git clone --branch update-feed --single-branch https://github.com/${{ github.repository }} update-feed || mkdir update-feed
 
-    - name: Fetch appcast-template.xml from remote
-      shell: pwsh
-      run: |
-        $templateUrl = "https://raw.githubusercontent.com/thorstenalpers/CleanMyPosts/update-feed/appcast-template.xml"
-        Invoke-WebRequest -Uri $templateUrl -OutFile "appcast-template.xml"
-
     - name: Generate appcast files using template
       shell: pwsh
       run: |

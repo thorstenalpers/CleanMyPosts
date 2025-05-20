@@ -30,7 +30,7 @@ public partial class LogPage : Page
         }
     }
 
-    private void HandleDoubleClick(TextBox tb, MouseButtonEventArgs e)
+    private static void HandleDoubleClick(TextBox tb, MouseButtonEventArgs e)
     {
         tb.Focus();
 

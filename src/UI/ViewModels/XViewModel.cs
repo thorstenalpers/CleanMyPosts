@@ -17,7 +17,7 @@ public partial class XViewModel : ObservableObject
     private readonly IXWebViewScriptService _xWebViewScriptService;
     private OverlayWindow _overlayWindow;
 
-    private readonly string xBaseUrl;
+    private readonly string _xBaseUrl;
 
     [ObservableProperty]
     private bool _areButtonsEnabled;
@@ -35,7 +35,7 @@ public partial class XViewModel : ObservableObject
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _webViewHostService.NavigationCompleted += OnNavigationCompleted;
         _webViewHostService.WebMessageReceived += OnWebMessageReceived;
-        xBaseUrl = options.Value.XBaseUrl;
+        _xBaseUrl = options.Value.XBaseUrl;
     }
 
     public async Task InitializeAsync(WebView2 webView)
@@ -47,7 +47,7 @@ public partial class XViewModel : ObservableObject
 
         await _webViewHostService.InitializeAsync(webView);
 
-        _webViewHostService.Source = new Uri(xBaseUrl);
+        _webViewHostService.Source = new Uri(_xBaseUrl);
 
         var jsScript = @"
                 window.onerror = function(message, source, lineno, colno, error) {

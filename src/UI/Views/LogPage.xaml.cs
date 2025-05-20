@@ -44,7 +44,6 @@ public partial class LogPage : Page
         {
             SelectWordAt(tb, charIndex);
         }
-
         e.Handled = true;
     }
 

@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
-namespace CleanMyPosts.Tests;
+namespace CleanMyPosts.Tests.ViewModels;
 
 [Trait("Category", "Unit")]
 public class SettingsViewModelTests

@@ -4,7 +4,7 @@ using System.Windows.Navigation;
 using CleanMyPosts.UI.Contracts.Services;
 using CleanMyPosts.UI.Contracts.ViewModels;
 using CleanMyPosts.UI.Contracts.Views;
-using CleanMyPosts.UI.Helpers;
+using CleanMyPosts.UI.Extensions;
 using MahApps.Metro.Controls;
 
 namespace CleanMyPosts.UI.Services;

@@ -2,7 +2,7 @@
 using System.Windows.Navigation;
 using CleanMyPosts.UI.Contracts.Services;
 using CleanMyPosts.UI.Contracts.ViewModels;
-using CleanMyPosts.UI.Helpers;
+using CleanMyPosts.UI.Extensions;
 
 namespace CleanMyPosts.UI.Services;
 

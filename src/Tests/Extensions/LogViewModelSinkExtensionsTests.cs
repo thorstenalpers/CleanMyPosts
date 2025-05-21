@@ -1,8 +1,9 @@
-﻿using Serilog;
-using Serilog.Configuration;
+﻿using CleanMyPosts.Tests.Helpers;
 using CleanMyPosts.UI.ViewModels;
+using Serilog;
+using Serilog.Configuration;
 
-namespace CleanMyPosts.UI.Helpers;
+namespace CleanMyPosts.Tests.Extensions;
 
 public static class LogViewModelSinkExtensions
 {

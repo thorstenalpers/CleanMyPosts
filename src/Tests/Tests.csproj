@@ -8,6 +8,10 @@
 	<DefaultNamespace>CleanMyPosts.Tests</DefaultNamespace>
 	<AssemblyName>CleanMyPosts.Tests</AssemblyName>
 	<ImplicitUsings>enable</ImplicitUsings>
+	<RunAnalyzersDuringLiveAnalysis>False</RunAnalyzersDuringLiveAnalysis>
+	<RunAnalyzersDuringBuild>False</RunAnalyzersDuringBuild>
+	<EnableNETAnalyzers>False</EnableNETAnalyzers>
+	<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
   </PropertyGroup>
 
   <ItemGroup>
@@ -27,6 +31,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Xunit.StaFact" Version="1.2.69" />
   </ItemGroup>
 
   <ItemGroup>

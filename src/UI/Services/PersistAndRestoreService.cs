@@ -1,9 +1,9 @@
 ﻿using System.Collections;
 using System.IO;
-using Microsoft.Extensions.Options;
 using CleanMyPosts.Core.Contracts.Services;
 using CleanMyPosts.UI.Contracts.Services;
 using CleanMyPosts.UI.Models;
+using Microsoft.Extensions.Options;
 
 namespace CleanMyPosts.UI.Services;
 
@@ -15,11 +15,12 @@ public class PersistAndRestoreService(IFileService fileService, IOptions<AppConf
 
     public void PersistData()
     {
-        if (System.Windows.Application.Current.Properties != null)
+        var props = System.Windows.Application.Current?.Properties;
+        if (props != null && props.Count > 0)
         {
             var folderPath = Path.Combine(_localAppData, _appConfig.ConfigurationsFolder);
             var fileName = _appConfig.AppPropertiesFileName;
-            _fileService.Save(folderPath, fileName, System.Windows.Application.Current.Properties);
+            _fileService.Save(folderPath, fileName, props);
         }
     }
 

@@ -1,6 +1,5 @@
 ﻿using Ardalis.GuardClauses;
 using CleanMyPosts.UI.Contracts.Services;
-using CleanMyPosts.UI.Helpers;
 using CleanMyPosts.UI.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -17,6 +16,7 @@ public class UpdateService : IUpdateService
 
     public UpdateService(IOptions<UpdaterOptions> options,
                          IUIFactory uIFactory,
+                         IDeploymentService deploymentService,
                          ILogger<UpdateService> logger,
                          NetSparkleUpdater.Interfaces.ILogger netSparkleLogger)
     {
@@ -28,7 +28,7 @@ public class UpdateService : IUpdateService
         Guard.Against.NullOrWhiteSpace(opts.AppCastUrlInstaller);
         Guard.Against.NullOrWhiteSpace(opts.SecurityMode.ToString());
 
-        var url = Helper.IsInstalledVersion() ? opts.AppCastUrlInstaller : opts.AppCastUrlSingle;
+        var url = deploymentService.IsRunningAsInstalled() ? opts.AppCastUrlInstaller : opts.AppCastUrlSingle;
         var verifier = new DSAChecker(opts.SecurityMode.Value);
         _logger.LogInformation("Update url is {Url}.", url);
         _sparkle = new SparkleUpdater(url, verifier)

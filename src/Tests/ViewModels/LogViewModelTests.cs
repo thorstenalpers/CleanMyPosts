@@ -2,7 +2,7 @@
 using FluentAssertions;
 using Xunit;
 
-namespace CleanMyPosts.Tests;
+namespace CleanMyPosts.Tests.ViewModels;
 
 [Trait("Category", "Unit")]
 public class LogViewModelTests

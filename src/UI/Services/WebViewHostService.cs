@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Windows;
 using CleanMyPosts.UI.Contracts.Services;
 using CleanMyPosts.UI.Models;
 using Microsoft.Web.WebView2.Core;
@@ -45,5 +46,15 @@ public class WebViewHostService : IWebViewHostService
     public Task<string> ExecuteScriptAsync(string script)
     {
         return _webView?.CoreWebView2 != null ? _webView.ExecuteScriptAsync(script) : Task.FromResult<string>(null);
+    }
+
+    public void Reload()
+    {
+        _webView.Reload();
+    }
+
+    public void Hide(bool hide)
+    {
+        _webView.Visibility = hide ? Visibility.Hidden : Visibility.Visible;
     }
 }

@@ -124,16 +124,13 @@
     <value>Settings</value>
   </data>
   <data name="SettingsPageAboutText" xml:space="preserve">
-    <value>Todo</value>
+    <value>CleanMyPosts is a lightweight Windows desktop app that securely deletes all tweets, likes, and followings from your X (formerly Twitter) account in bulk using browser automation.</value>
   </data>
   <data name="SettingsPageAboutTitle" xml:space="preserve">
-    <value>About this application</value>
+    <value>About</value>
   </data>
   <data name="SettingsPageChooseThemeText" xml:space="preserve">
     <value>Choose Theme</value>
-  </data>
-  <data name="SettingsPagePersonalizationTitle" xml:space="preserve">
-    <value>Personalization</value>
   </data>
   <data name="SettingsPageRadioButtonDarkTheme" xml:space="preserve">
     <value>Dark</value>
@@ -177,7 +174,13 @@
   <data name="LogPage" xml:space="preserve">
     <value>Log</value>
   </data>
-  <data name="SettingsPageDiagnostics" xml:space="preserve">
-    <value>Diagnostics</value>
+  <data name="SettingsPageAppSettingsTitle" xml:space="preserve">
+    <value>App Settings</value>
+  </data>
+  <data name="SettingsPageConfirmDeletion" xml:space="preserve">
+    <value>Confirm Deletion</value>
+  </data>
+  <data name="SettingsPageShowLogs" xml:space="preserve">
+    <value>Show Logs for Troubleshooting</value>
   </data>
 </root>

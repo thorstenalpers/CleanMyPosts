@@ -79,7 +79,7 @@ namespace CleanMyPosts.UI.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Todo.
+        ///   Looks up a localized string similar to CleanMyPosts is a lightweight Windows desktop app that securely deletes all tweets, likes, and followings from your X (formerly Twitter) account in bulk using browser automation..
         /// </summary>
         public static string SettingsPageAboutText {
             get {
@@ -88,11 +88,20 @@ namespace CleanMyPosts.UI.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to About this application.
+        ///   Looks up a localized string similar to About.
         /// </summary>
         public static string SettingsPageAboutTitle {
             get {
                 return ResourceManager.GetString("SettingsPageAboutTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to App Settings.
+        /// </summary>
+        public static string SettingsPageAppSettingsTitle {
+            get {
+                return ResourceManager.GetString("SettingsPageAppSettingsTitle", resourceCulture);
             }
         }
         
@@ -106,20 +115,11 @@ namespace CleanMyPosts.UI.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Diagnostics.
+        ///   Looks up a localized string similar to Confirm Deletion.
         /// </summary>
-        public static string SettingsPageDiagnostics {
+        public static string SettingsPageConfirmDeletion {
             get {
-                return ResourceManager.GetString("SettingsPageDiagnostics", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Personalization.
-        /// </summary>
-        public static string SettingsPagePersonalizationTitle {
-            get {
-                return ResourceManager.GetString("SettingsPagePersonalizationTitle", resourceCulture);
+                return ResourceManager.GetString("SettingsPageConfirmDeletion", resourceCulture);
             }
         }
         
@@ -147,6 +147,15 @@ namespace CleanMyPosts.UI.Properties {
         public static string SettingsPageRadioButtonWindowsDefaultTheme {
             get {
                 return ResourceManager.GetString("SettingsPageRadioButtonWindowsDefaultTheme", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Show Logs for Troubleshooting.
+        /// </summary>
+        public static string SettingsPageShowLogs {
+            get {
+                return ResourceManager.GetString("SettingsPageShowLogs", resourceCulture);
             }
         }
         

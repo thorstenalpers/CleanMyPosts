@@ -4,31 +4,31 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+    xmlns:mui="http://metro.mahapps.com/winfx/xaml/controls"
     xmlns:viewmodels="clr-namespace:CleanMyPosts.UI.ViewModels"
     xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
-    xmlns:mui="http://metro.mahapps.com/winfx/xaml/controls"
     Style="{DynamicResource MahApps.Styles.Page}">
 
-	<Page.Resources>
-		<Style TargetType="ScrollBar">
-			<Style.Triggers>
-				<Trigger Property="Orientation" Value="Horizontal">
-					<Setter Property="Height" Value="8" />
-					<Setter Property="MinHeight" Value="8" />
-					<Setter Property="Margin" Value="0" />
-				</Trigger>
-			</Style.Triggers>
-		</Style>
-	</Page.Resources>
+    <Page.Resources>
+        <Style TargetType="ScrollBar">
+            <Style.Triggers>
+                <Trigger Property="Orientation" Value="Horizontal">
+                    <Setter Property="Height" Value="8" />
+                    <Setter Property="MinHeight" Value="8" />
+                    <Setter Property="Margin" Value="0" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </Page.Resources>
 
-	<Grid>
-		<Grid.RowDefinitions>
-			<RowDefinition Height="Auto" />
-			<RowDefinition Height="*" />
-		</Grid.RowDefinitions>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
 
-		<!-- Navigation Bar mit Background -->
-		<Border
+        <!--  Navigation Bar mit Background  -->
+        <Border
             Grid.Row="0"
             Margin="4"
             Padding="8"
@@ -37,34 +37,34 @@
             BorderThickness="1"
             CornerRadius="3">
 
-			<Grid>
-				<!-- ScrollViewer with Buttons -->
-				<ScrollViewer
+            <Grid>
+                <!--  ScrollViewer with Buttons  -->
+                <ScrollViewer
                     Focusable="False"
                     HorizontalScrollBarVisibility="Auto"
                     VerticalScrollBarVisibility="Disabled">
-					<StackPanel
+                    <StackPanel
                         HorizontalAlignment="Left"
                         VerticalAlignment="Center"
                         Orientation="Horizontal">
 
-						<!-- Posts Section -->
-						<StackPanel
+                        <!--  Posts Section  -->
+                        <StackPanel
                             MinHeight="38"
                             Margin="0,0,30,0"
                             VerticalAlignment="Center"
                             Orientation="Horizontal">
-							<TextBlock
+                            <TextBlock
                                 Margin="0,0,10,0"
                                 VerticalAlignment="Center"
                                 FontSize="14"
                                 Text="Posts:" />
-							<UniformGrid
+                            <UniformGrid
                                 HorizontalAlignment="Left"
                                 VerticalAlignment="Center"
                                 Columns="2"
                                 Rows="1">
-								<Button
+                                <Button
                                     MinWidth="80"
                                     Margin="0,0,10,0"
                                     Padding="6,3"
@@ -72,190 +72,189 @@
                                     Foreground="{DynamicResource MahApps.Brushes.Text}"
                                     IsEnabled="{Binding AreButtonsEnabled}"
                                     ToolTip="Show Posts">
-									<StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
-										<iconPacks:PackIconMaterial
+                                    <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                                        <iconPacks:PackIconMaterial
                                             Width="16"
                                             Height="16"
                                             VerticalAlignment="Center"
                                             Kind="Eye" />
-										<TextBlock
+                                        <TextBlock
                                             Margin="6,0,0,0"
                                             VerticalAlignment="Center"
                                             FontSize="12"
                                             Text="Show" />
-									</StackPanel>
-								</Button>
-								<Button
+                                    </StackPanel>
+                                </Button>
+                                <Button
                                     MinWidth="80"
                                     Padding="6,3"
                                     Command="{Binding DeletePostsCommand}"
                                     IsEnabled="{Binding AreButtonsEnabled}"
                                     ToolTip="Delete Posts">
-									<StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
-										<iconPacks:PackIconMaterial
+                                    <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                                        <iconPacks:PackIconMaterial
                                             Width="16"
                                             Height="16"
                                             VerticalAlignment="Center"
                                             Kind="Delete" />
-										<TextBlock
+                                        <TextBlock
                                             Margin="6,0,0,0"
                                             VerticalAlignment="Center"
                                             FontSize="12"
                                             Text="Clear" />
-									</StackPanel>
-								</Button>
-							</UniformGrid>
-						</StackPanel>
+                                    </StackPanel>
+                                </Button>
+                            </UniformGrid>
+                        </StackPanel>
 
-						<!-- Likes Section -->
-						<StackPanel
+                        <!--  Likes Section  -->
+                        <StackPanel
                             MinHeight="38"
                             Margin="0,0,30,0"
                             VerticalAlignment="Center"
                             Orientation="Horizontal">
-							<TextBlock
+                            <TextBlock
                                 Margin="0,0,10,0"
                                 VerticalAlignment="Center"
                                 FontSize="14"
                                 Foreground="{DynamicResource MahApps.Brushes.Text}"
                                 Text="Likes:" />
-							<UniformGrid
+                            <UniformGrid
                                 HorizontalAlignment="Left"
                                 VerticalAlignment="Center"
                                 Columns="2"
                                 Rows="1">
-								<Button
+                                <Button
                                     MinWidth="80"
                                     Margin="0,0,10,0"
                                     Padding="6,3"
                                     Command="{Binding ShowLikesCommand}"
                                     IsEnabled="{Binding AreButtonsEnabled}"
                                     ToolTip="Show Likes">
-									<StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
-										<iconPacks:PackIconMaterial
+                                    <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                                        <iconPacks:PackIconMaterial
                                             Width="16"
                                             Height="16"
                                             VerticalAlignment="Center"
                                             Kind="Eye" />
-										<TextBlock
+                                        <TextBlock
                                             Margin="6,0,0,0"
                                             VerticalAlignment="Center"
                                             FontSize="12"
                                             Text="Show" />
-									</StackPanel>
-								</Button>
-								<Button
+                                    </StackPanel>
+                                </Button>
+                                <Button
                                     MinWidth="80"
                                     Padding="6,3"
                                     Command="{Binding DeleteLikesCommand}"
                                     Foreground="{DynamicResource MahApps.Brushes.Text}"
                                     IsEnabled="{Binding AreButtonsEnabled}"
                                     ToolTip="Clean Likes">
-									<StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
-										<iconPacks:PackIconMaterial
+                                    <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                                        <iconPacks:PackIconMaterial
                                             Width="16"
                                             Height="16"
                                             VerticalAlignment="Center"
                                             Kind="Delete" />
-										<TextBlock
+                                        <TextBlock
                                             Margin="6,0,0,0"
                                             VerticalAlignment="Center"
                                             FontSize="12"
                                             Text="Clear" />
-									</StackPanel>
-								</Button>
-							</UniformGrid>
-						</StackPanel>
+                                    </StackPanel>
+                                </Button>
+                            </UniformGrid>
+                        </StackPanel>
 
-						<!-- Following Section -->
-						<StackPanel
+                        <!--  Following Section  -->
+                        <StackPanel
                             MinHeight="38"
                             VerticalAlignment="Center"
                             Orientation="Horizontal">
-							<TextBlock
+                            <TextBlock
                                 Margin="0,0,10,0"
                                 VerticalAlignment="Center"
                                 FontSize="14"
                                 Text="Following:" />
-							<UniformGrid
+                            <UniformGrid
                                 HorizontalAlignment="Left"
                                 VerticalAlignment="Center"
                                 Columns="2"
                                 Rows="1">
-								<Button
+                                <Button
                                     MinWidth="80"
                                     Margin="0,0,10,0"
                                     Padding="6,3"
                                     Command="{Binding ShowFollowingCommand}"
                                     IsEnabled="{Binding AreButtonsEnabled}"
                                     ToolTip="Show Following">
-									<StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
-										<iconPacks:PackIconMaterial
+                                    <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                                        <iconPacks:PackIconMaterial
                                             Width="16"
                                             Height="16"
                                             VerticalAlignment="Center"
                                             Kind="Eye" />
-										<TextBlock
+                                        <TextBlock
                                             Margin="6,0,0,0"
                                             VerticalAlignment="Center"
                                             FontSize="12"
                                             Text="Show" />
-									</StackPanel>
-								</Button>
-								<Button
+                                    </StackPanel>
+                                </Button>
+                                <Button
                                     MinWidth="80"
                                     Padding="6,3"
                                     Command="{Binding DeleteFollowingCommand}"
                                     IsEnabled="{Binding AreButtonsEnabled}"
                                     ToolTip="Clean Following">
-									<StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
-										<iconPacks:PackIconMaterial
+                                    <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                                        <iconPacks:PackIconMaterial
                                             Width="16"
                                             Height="16"
                                             VerticalAlignment="Center"
                                             Kind="Delete" />
-										<TextBlock
+                                        <TextBlock
                                             Margin="6,0,0,0"
                                             VerticalAlignment="Center"
                                             FontSize="12"
                                             Text="Clear" />
-									</StackPanel>
-								</Button>
-							</UniformGrid>
-						</StackPanel>
+                                    </StackPanel>
+                                </Button>
+                            </UniformGrid>
+                        </StackPanel>
 
-					</StackPanel>
-				</ScrollViewer>
+                    </StackPanel>
+                </ScrollViewer>
 
-				<mui:Flyout
+                <mui:Flyout
                     x:Name="Notification"
-                    IsOpen="{Binding IsNotificationOpen}"
-                    Position="Top"
                     Width="400"
                     Height="50"
-                    CloseButtonVisibility="Hidden"
-                    IsModal="False"
-                    Header="{Binding NotificationMessage}"
-                    Theme="Inverse"
+                    Margin="0"
+                    Padding="10"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Top"
                     AnimateOpacity="True"
+                    Background="{DynamicResource MahApps.Brushes.Control.Background}"
+                    CloseButtonVisibility="Hidden"
+                    Header="{Binding NotificationMessage}"
+                    IsModal="False"
+                    IsOpen="{Binding IsNotificationOpen}"
                     Opacity="0.9"
-                    Padding="10"
-                    Margin="0"
-                    Background="{DynamicResource MahApps.Brushes.Control.Background}">
-				</mui:Flyout>
+                    Position="Top"
+                    Theme="Inverse" />
 
-			</Grid>
-		</Border>
+            </Grid>
+        </Border>
 
-		<!-- WebView2 fills the rest -->
-		<Grid Grid.Row="1" ClipToBounds="True">
-			<wv2:WebView2
+        <!--  WebView2 fills the rest  -->
+        <Grid Grid.Row="1" ClipToBounds="True">
+            <wv2:WebView2
                 x:Name="webView"
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Stretch"
-				IsEnabled="{Binding IsWebViewEnabled}"/>
-		</Grid>
-	</Grid>
+                IsEnabled="{Binding IsWebViewEnabled}" />
+        </Grid>
+    </Grid>
 </Page>

@@ -1,6 +1,5 @@
 ﻿![Banner](./src/UI/Assets/banner.png)
 
-
 [![Windows](https://img.shields.io/badge/platform-Windows-blue)](#)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE.txt)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=thorstenalpers_CleanMyPosts&metric=alert_status)](https://sonarcloud.io/project/issues?issueStatuses=OPEN%2CCONFIRMED&id=thorstenalpers_CleanMyPosts)
@@ -9,48 +8,55 @@
 [![Star this repo](https://img.shields.io/github/stars/thorstenalpers/CleanMyPosts.svg?style=social&label=Star&maxAge=60)](https://github.com/thorstenalpers/CleanMyPosts)
 
 
-> ⚠️ **Warning:** Development in progress – the application has not been released.
+**CleanMyPosts** is a lightweight Windows desktop app that securely deletes all tweets, likes, and followings from your X (formerly Twitter) account in bulk using browser automation.
 
-
-## TODO
-* Confirm dialog before deletion
-* delete all tweets
-* delete all starred tweets
-* delete all followed persons
-* unit tests, coverage > 80%
-* integration tests
-    * create 10000 tweets and delete them
-* docu
-* multilingual
-
-
----
-
-**CleanMyPosts** is a lightweight Windows desktop application that securely deletes all tweets from your X (formerly Twitter) account in bulk. Designed for privacy-focused users, social media managers, or anyone looking to start fresh.
-
----
 
 ## 🚀 Features
 
-- Delete **all tweets** with one click
-- Secure OAuth login via X (Twitter)
-- Progress tracking and real-time status
-- Option to **skip pinned or recent tweets**
-- All operations run **locally** — no data is stored remotely
+- Bulk delete all tweets from your X (Twitter) account
+- Remove all likes with a single click
+- Unfollow all accounts in one go
+- Secure browser automation—no credentials stored
 
----
 
 ## 🛠️ Requirements
 
 - Windows 10 or later  
-- X (Twitter) Developer API credentials (Bearer Token or OAuth Keys)
+- X (Twitter) account
 
----
 
 ## 📦 Installation
 
-1. Download the latest release from the [Releases](https://github.com/thorstenalpers/x-tweet-cleaner/releases) section.
-2. Run the installer and follow the prompts.
-3. Launch the app and authenticate with your X (Twitter) account.
-4. Start the deletion process of posts, starred and following.
+1. Download the latest version from [Releases](https://github.com/thorstenalpers/x-tweet-cleaner/releases).
+2. Run the installer or open the standalone app.
+3. Launch the app and log in with your X (formerly Twitter) account.
+4. Start deleting your posts, likes, and following list.
+
+## 🎬 See It in Action
+
+Here’s a quick look at how CleanMyPosts works:
+
+- **Login to X**  
+  ![Login to X GIF](./assets/login-to-x.gif)
+
+- **Bulk delete tweets**  
+  ![Delete Tweets GIF](./assets/delete-tweets.gif)
+
+- **Remove likes**  
+  ![Remove Likes GIF](./assets/remove-likes.gif)
+
+- **Unfollow accounts**  
+  ![Unfollow Accounts GIF](./assets/unfollow.gif)
+
+
+## ℹ️ About Browser Automation
+
+CleanMyPosts uses **browser automation** to perform bulk actions—such as deleting posts, likes, and unfollowing accounts—on your X (formerly Twitter) profile.  
+This method is used because X currently does **not offer an official feature or API** for these actions.
+
+Please keep in mind:
+- While convenient, browser automation may **not fully comply** with X’s Terms of Service.  
+- All operations are performed in your own logged-in browser session—**no credentials are stored**.
+- Since browser automation mimics real user interactions, these actions are typically **indistinguishable from manual activity**, reducing the risk of detection.
+
 

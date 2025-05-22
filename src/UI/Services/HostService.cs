@@ -7,6 +7,7 @@ using CleanMyPosts.UI.Contracts.Views;
 using CleanMyPosts.UI.Models;
 using CleanMyPosts.UI.ViewModels;
 using CleanMyPosts.UI.Views;
+using MahApps.Metro.Controls.Dialogs;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -28,9 +29,10 @@ public class HostService : IHostService
                 services.AddSingleton(logViewModel);
                 services.AddHostedService<ApplicationHostService>();
 
+                services.AddSingleton(DialogCoordinator.Instance);
                 services.AddSingleton<IFileService, FileService>();
                 services.AddTransient<NetSparkleUpdater.Interfaces.ILogger, NetSparkleLogger>();
-                services.AddSingleton<IAppSettingsService, AppSettingsService>();
+                services.AddSingleton<IUserSettingsService, UserSettingsService>();
                 services.AddSingleton<IUIFactory>(sp =>
                 {
                     UIFactory factory = null;
@@ -45,12 +47,9 @@ public class HostService : IHostService
                 });
 
                 services.AddSingleton<IWindowManagerService, WindowManagerService>();
-                services.AddSingleton<IApplicationInfoService, ApplicationInfoService>();
-                services.AddSingleton<IPersistAndRestoreService, PersistAndRestoreService>();
-                services.AddSingleton<IThemeSelectorService, ThemeSelectorService>();
                 services.AddSingleton<IPageService, PageService>();
                 services.AddSingleton<INavigationService, NavigationService>();
-                services.AddSingleton<IXWebViewScriptService, XWebViewScriptService>();
+                services.AddSingleton<IXScriptService, XScriptService>();
                 services.AddSingleton<IWebViewHostService, WebViewHostService>();
                 services.AddSingleton<IUpdateService, UpdateService>();
                 services.AddSingleton<IDeploymentService, DeploymentService>();

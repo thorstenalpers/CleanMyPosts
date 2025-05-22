@@ -12,14 +12,14 @@ namespace CleanMyPosts.UI.ViewModels;
 public partial class ShellViewModel : ObservableObject, IDisposable
 {
     private readonly INavigationService _navigationService;
-    private readonly IAppSettingsService _appSettingsService;
+    private readonly IUserSettingsService _userSettingsService;
     private readonly HamburgerMenuItem _logMenuItem;
     private bool _disposed;
 
-    public ShellViewModel(INavigationService navigationService, IAppSettingsService appSettingsService)
+    public ShellViewModel(INavigationService navigationService, IUserSettingsService userSettingsService)
     {
         _navigationService = navigationService;
-        _appSettingsService = appSettingsService;
+        _userSettingsService = userSettingsService;
 
         MenuItems =
         [
@@ -38,7 +38,7 @@ public partial class ShellViewModel : ObservableObject, IDisposable
             TargetPageType = typeof(LogViewModel)
         };
 
-        if (_appSettingsService.GetShowLogs())
+        if (_userSettingsService.GetShowLogs())
         {
             MenuItems.Add(_logMenuItem);
         }
@@ -47,7 +47,7 @@ public partial class ShellViewModel : ObservableObject, IDisposable
         [
             new HamburgerMenuGlyphItem { Label = Resources.ShellSettingsPage, Glyph = "\uE713", TargetPageType = typeof(SettingsViewModel) }
         ];
-        _appSettingsService.SettingChanged += OnAppSettingChanged;
+        _userSettingsService.SettingChanged += OnAppSettingChanged;
     }
     ~ShellViewModel()
     {
@@ -119,7 +119,7 @@ public partial class ShellViewModel : ObservableObject, IDisposable
         {
             Application.Current.Dispatcher.Invoke(() =>
             {
-                if (_appSettingsService.GetShowLogs())
+                if (_userSettingsService.GetShowLogs())
                 {
                     if (!MenuItems.Contains(_logMenuItem))
                     {
@@ -147,7 +147,7 @@ public partial class ShellViewModel : ObservableObject, IDisposable
 
         if (disposing)
         {
-            _appSettingsService.SettingChanged -= OnAppSettingChanged;
+            _userSettingsService.SettingChanged -= OnAppSettingChanged;
             _navigationService.Navigated -= OnNavigated;
         }
 

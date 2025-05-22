@@ -9,13 +9,11 @@ namespace CleanMyPosts.UI.Services;
 public class ApplicationHostService(IServiceProvider serviceProvider,
                                     IEnumerable<IActivationHandler> activationHandlers,
                                     INavigationService navigationService,
-                                    IThemeSelectorService themeSelectorService,
-                                    IPersistAndRestoreService persistAndRestoreService) : IHostedService
+                                    IUserSettingsService userSettingsService) : IHostedService
 {
     private readonly IServiceProvider _serviceProvider = serviceProvider;
     private readonly INavigationService _navigationService = navigationService;
-    private readonly IPersistAndRestoreService _persistAndRestoreService = persistAndRestoreService;
-    private readonly IThemeSelectorService _themeSelectorService = themeSelectorService;
+    private readonly IUserSettingsService _userSettingsService = userSettingsService;
     private readonly IEnumerable<IActivationHandler> _activationHandlers = activationHandlers;
     private bool _isInitialized;
 
@@ -29,7 +27,7 @@ public class ApplicationHostService(IServiceProvider serviceProvider,
 
     public async Task StopAsync(CancellationToken cancellationToken)
     {
-        _persistAndRestoreService.PersistData();
+        _userSettingsService.PersistData();
         await Task.CompletedTask;
     }
 
@@ -37,8 +35,8 @@ public class ApplicationHostService(IServiceProvider serviceProvider,
     {
         if (!_isInitialized)
         {
-            _persistAndRestoreService.RestoreData();
-            _themeSelectorService.InitializeTheme();
+            _userSettingsService.RestoreData();
+            _userSettingsService.Initialize();
             await Task.CompletedTask;
         }
     }

@@ -515,18 +515,25 @@ public class XScriptService(ILogger<XScriptService> logger, IWebViewHostService 
 
     public async Task<string> GetUserNameAsync()
     {
-        await WaitForFullDocumentReadyAsync();
-
         const string jsScript = @"
-        (() => { 
+        (async () => {
+            // Wait for document to be ready
+            if (document.readyState !== 'complete') {
+                await new Promise(resolve => {
+                    window.addEventListener('load', resolve, { once: true });
+                });
+            }
+
             const el = document.querySelector('a[data-testid=""AppTabBar_Profile_Link""]');
             const href = el?.getAttribute('href');
             return href?.split('/')[1] ?? '';
         })()";
+
         var userName = await _webViewHostService.ExecuteScriptAsync(jsScript);
         _userName = Helper.CleanJsonResult(userName);
         return _userName;
     }
+
 
     private Task<bool> WaitForNavigationAsync()
     {

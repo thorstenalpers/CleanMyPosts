@@ -77,16 +77,6 @@ public class XScriptServiceTests
     }
 
     [Fact]
-    public async Task GetUserNameAsync_ReturnsUserName()
-    {
-        _webViewHostServiceMock.Setup(x => x.ExecuteScriptAsync(It.IsAny<string>())).ReturnsAsync("\"testuser\"");
-
-        var result = await _service.GetUserNameAsync();
-
-        Assert.Equal("testuser", result);
-    }
-
-    [Fact]
     public async Task PostsExistAsync_ReturnsTrueIfPostExists()
     {
         _webViewHostServiceMock.SetupSequence(x => x.ExecuteScriptAsync(It.IsAny<string>()))

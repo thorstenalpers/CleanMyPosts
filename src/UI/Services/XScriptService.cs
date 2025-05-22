@@ -2,7 +2,6 @@
 using Ardalis.GuardClauses;
 using CleanMyPosts.UI.Contracts.Services;
 using CleanMyPosts.UI.Helpers;
-using CleanMyPosts.UI.Models;
 using Microsoft.Extensions.Logging;
 
 namespace CleanMyPosts.UI.Services;
@@ -16,6 +15,8 @@ public class XScriptService(ILogger<XScriptService> logger, IWebViewHostService 
 
     public async Task ShowPostsAsync()
     {
+
+        await EnsureUserNameAsync();
         Guard.Against.Null(_userName);
         var searchQuery = $"from:{_userName}";
         var encodedQuery = WebUtility.UrlEncode(searchQuery);
@@ -30,7 +31,7 @@ public class XScriptService(ILogger<XScriptService> logger, IWebViewHostService 
             _webViewHostService.Source = url;
         }
 
-        if (!await WaitForFullDocumentReadyAsync())
+        if (!await WaitForDocumentReadyAsync())
         {
             _logger.LogWarning("Navigation to {Url} failed.", url);
         }
@@ -40,6 +41,7 @@ public class XScriptService(ILogger<XScriptService> logger, IWebViewHostService 
 
     public async Task<int> DeletePostsAsync()
     {
+        await EnsureUserNameAsync();
         Guard.Against.Null(_userName);
 
         var searchQuery = $"from:{_userName}";
@@ -54,7 +56,7 @@ public class XScriptService(ILogger<XScriptService> logger, IWebViewHostService 
         {
             _webViewHostService.Source = url;
         }
-        if (!await WaitForFullDocumentReadyAsync())
+        if (!await WaitForDocumentReadyAsync())
         {
             _logger.LogWarning("Navigation to search page failed.");
             return 0;
@@ -94,7 +96,7 @@ public class XScriptService(ILogger<XScriptService> logger, IWebViewHostService 
             postNumber++;
         }
         _webViewHostService.Reload();
-        await WaitForFullDocumentReadyAsync();
+        await WaitForDocumentReadyAsync();
 
         _logger.LogInformation("Deleted {TotalPosts} posts.", totalPosts);
         return totalPosts;
@@ -102,6 +104,7 @@ public class XScriptService(ILogger<XScriptService> logger, IWebViewHostService 
 
     public async Task ShowLikesAsync()
     {
+        await EnsureUserNameAsync();
         Guard.Against.Null(_userName);
 
         var url = new Uri($"https://x.com/{WebUtility.UrlEncode(_userName)}/likes");
@@ -115,7 +118,7 @@ public class XScriptService(ILogger<XScriptService> logger, IWebViewHostService 
             _webViewHostService.Source = url;
         }
 
-        if (!await WaitForFullDocumentReadyAsync())
+        if (!await WaitForDocumentReadyAsync())
         {
             _logger.LogWarning("Navigation to {Url} failed.", url);
         }
@@ -125,6 +128,7 @@ public class XScriptService(ILogger<XScriptService> logger, IWebViewHostService 
 
     public async Task<int> DeleteLikesAsync()
     {
+        await EnsureUserNameAsync();
         Guard.Against.Null(_userName);
 
         var url = new Uri($"https://x.com/{WebUtility.UrlEncode(_userName)}/likes");
@@ -137,7 +141,7 @@ public class XScriptService(ILogger<XScriptService> logger, IWebViewHostService 
         {
             _webViewHostService.Source = url;
         }
-        if (!await WaitForFullDocumentReadyAsync())
+        if (!await WaitForDocumentReadyAsync())
         {
             _logger.LogWarning("Navigation to search page failed.");
             return 0;
@@ -181,7 +185,7 @@ public class XScriptService(ILogger<XScriptService> logger, IWebViewHostService 
         }
 
         _webViewHostService.Reload();
-        await WaitForFullDocumentReadyAsync();
+        await WaitForDocumentReadyAsync();
 
         _logger.LogInformation("Deleted {TotalLikes} Likes.", totalLikes);
         return totalLikes;
@@ -189,6 +193,7 @@ public class XScriptService(ILogger<XScriptService> logger, IWebViewHostService 
 
     public async Task ShowFollowingAsync()
     {
+        await EnsureUserNameAsync();
         Guard.Against.Null(_userName);
 
         var url = new Uri($"https://x.com/{WebUtility.UrlEncode(_userName)}/following");
@@ -202,7 +207,7 @@ public class XScriptService(ILogger<XScriptService> logger, IWebViewHostService 
             _webViewHostService.Source = url;
         }
 
-        if (!await WaitForFullDocumentReadyAsync())
+        if (!await WaitForDocumentReadyAsync())
         {
             _logger.LogWarning("Navigation to {Url} failed.", url);
         }
@@ -212,6 +217,7 @@ public class XScriptService(ILogger<XScriptService> logger, IWebViewHostService 
 
     public async Task<int> DeleteFollowingAsync()
     {
+        await EnsureUserNameAsync();
         Guard.Against.Null(_userName);
 
         var url = new Uri($"https://x.com/{WebUtility.UrlEncode(_userName)}/following");
@@ -224,7 +230,7 @@ public class XScriptService(ILogger<XScriptService> logger, IWebViewHostService 
         {
             _webViewHostService.Source = url;
         }
-        if (!await WaitForFullDocumentReadyAsync())
+        if (!await WaitForDocumentReadyAsync())
         {
             _logger.LogWarning("Navigation to search page failed.");
             return 0;
@@ -266,7 +272,7 @@ public class XScriptService(ILogger<XScriptService> logger, IWebViewHostService 
         }
 
         _webViewHostService.Reload();
-        await WaitForFullDocumentReadyAsync();
+        await WaitForDocumentReadyAsync();
 
         _logger.LogInformation("Deleted {TotalFollowings} Followings.", totalFollowings);
         return totalFollowings;
@@ -515,49 +521,22 @@ public class XScriptService(ILogger<XScriptService> logger, IWebViewHostService 
 
     public async Task<string> GetUserNameAsync()
     {
-        const string jsScript = @"
-        (async () => {
-            // Wait for document to be ready
-            if (document.readyState !== 'complete') {
-                await new Promise(resolve => {
-                    window.addEventListener('load', resolve, { once: true });
-                });
-            }
+        await WaitForDocumentReadyAsync();
 
-            const el = document.querySelector('a[data-testid=""AppTabBar_Profile_Link""]');
-            const href = el?.getAttribute('href');
-            return href?.split('/')[1] ?? '';
-        })()";
+        const string jsScript = @"
+            (() => {
+              const el = document.querySelector('a[data-testid=""AppTabBar_Profile_Link""]');
+              const href = el?.getAttribute('href');
+              return href?.split('/')[1] ?? '';
+            })()";
 
         var userName = await _webViewHostService.ExecuteScriptAsync(jsScript);
         _userName = Helper.CleanJsonResult(userName);
         return _userName;
     }
 
-
-    private Task<bool> WaitForNavigationAsync()
+    private async Task<bool> WaitForDocumentReadyAsync()
     {
-        var tcs = new TaskCompletionSource<bool>();
-
-        EventHandler<NavigationCompletedEventArgs> handler = null;
-        handler = async (s, e) =>
-        {
-            _webViewHostService.NavigationCompleted -= handler;
-            await Task.Delay(300);
-            tcs.TrySetResult(e.IsSuccess);
-        };
-
-        _webViewHostService.NavigationCompleted += handler;
-        return tcs.Task;
-    }
-
-    private async Task<bool> WaitForFullDocumentReadyAsync()
-    {
-        if (!await WaitForNavigationAsync())
-        {
-            return false;
-        }
-
         const int maxAttempts = 50;
         const int delayMs = 100;
         int waitAfterDocumentLoad = _userSettingsService.GetTimeoutSettings().WaitAfterDocumentLoad;
@@ -583,5 +562,13 @@ public class XScriptService(ILogger<XScriptService> logger, IWebViewHostService 
         }
         _logger.LogWarning("Timed out waiting for document.readyState = complete.");
         return false;
+    }
+
+    private async Task EnsureUserNameAsync()
+    {
+        if (string.IsNullOrEmpty(_userName))
+        {
+            await GetUserNameAsync();
+        }
     }
 }

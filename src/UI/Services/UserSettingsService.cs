@@ -126,4 +126,17 @@ public class UserSettingsService(IFileService fileService, IOptions<AppConfig> a
             _ => defaultValue
         };
     }
+
+    public WindowSettings GetWindowSettings()
+    {
+        var fileName = "WindowSettings.json";
+        var loaded = _fileService.Read<WindowSettings>(_settingsPath, fileName);
+        return loaded ?? new WindowSettings();
+    }
+
+    public void SaveWindowsSettings(WindowSettings settings)
+    {
+        var fileName = "WindowSettings.json";
+        _fileService.Save(_settingsPath, fileName, settings);
+    }
 }

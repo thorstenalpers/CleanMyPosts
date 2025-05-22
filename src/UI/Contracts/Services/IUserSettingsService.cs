@@ -22,4 +22,6 @@ public interface IUserSettingsService
     int GetWaitBetweenTryClickDeleteAttempts();
     void SetConfirmDeletion(bool value);
     bool GetConfirmDeletion();
+    WindowSettings GetWindowSettings();
+    void SaveWindowsSettings(WindowSettings settings);
 }

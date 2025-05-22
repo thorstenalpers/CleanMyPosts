@@ -1,6 +1,7 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
 using CleanMyPosts.UI.ViewModels;
+using MahApps.Metro.Controls.Dialogs;
 
 namespace CleanMyPosts.UI.Views;
 
@@ -12,8 +13,9 @@ public partial class XPage : Page
     {
         InitializeComponent();
         _viewModel = viewModel;
-
         DataContext = viewModel;
+        DialogParticipation.SetRegister(this, viewModel);
+
         Loaded += Page_LoadedAsync;
     }
 

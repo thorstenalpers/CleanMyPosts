@@ -34,17 +34,18 @@
 
 Here’s a quick look at how CleanMyPosts works:
 
-- **Login to X**  
-  ![Login to X GIF](./assets/login-to-x.gif)
+#### Bulk delete tweets 
+  <img src="./assets/delete-posts.gif" alt="Delete Tweets GIF" width="400" />
 
-- **Bulk delete tweets**  
-  ![Delete Tweets GIF](./assets/delete-tweets.gif)
+#### Remove likes 
+  <img src="./assets/delete-likes.gif" alt="Remove Likes GIF" width="400" />
 
-- **Remove likes**  
-  ![Remove Likes GIF](./assets/remove-likes.gif)
+#### Unfollow accounts
+  <img src="./assets/delete-following.gif" alt="Unfollow Accounts GIF" width="400" />
 
-- **Unfollow accounts**  
-  ![Unfollow Accounts GIF](./assets/unfollow.gif)
+#### Settings 
+  <img src="./assets/settings.png" alt="Settings" width="400" />
+
 
 
 ## ℹ️ About Browser Automation
@@ -58,3 +59,6 @@ Please keep in mind:
 - Since browser automation mimics real user interactions, these actions are typically **indistinguishable from manual activity**, reducing the risk of detection.
 
 
+### Report a Bug 🐞
+
+If you encounter any issues or bugs, please [report them here](https://github.com/thorstenalpers/CleanMyPosts/issues).

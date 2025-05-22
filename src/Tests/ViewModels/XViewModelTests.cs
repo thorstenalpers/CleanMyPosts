@@ -104,16 +104,19 @@ namespace CleanMyPosts.UI.Tests.ViewModels
         }
 
         [Fact]
-        public async Task DeletePosts_NotConfirmed_DoesNotDeletePosts()
+        public async Task DeletePosts_Confirmed_DoesDeletePosts()
         {
             var viewModel = CreateViewModel();
+            _dialogCoordinatorMock.Setup(d => d.ShowMessageAsync(
+                viewModel, It.IsAny<string>(), It.IsAny<string>(), MessageDialogStyle.AffirmativeAndNegative, null))
+                .ReturnsAsync(MessageDialogResult.Negative);
             _dialogCoordinatorMock.Setup(d => d.ShowMessageAsync(
                 viewModel, It.IsAny<string>(), It.IsAny<string>(), MessageDialogStyle.AffirmativeAndNegative, null))
                 .ReturnsAsync(MessageDialogResult.Negative);
 
             await viewModel.DeletePostsCommand.ExecuteAsync(null);
 
-            _xWebViewScriptServiceMock.Verify(x => x.DeletePostsAsync(), Times.Never);
+            _xWebViewScriptServiceMock.Verify(x => x.DeletePostsAsync(), Times.Once);
             Assert.True(viewModel.AreButtonsEnabled);
         }
 

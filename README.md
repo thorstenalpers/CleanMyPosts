@@ -26,7 +26,7 @@
 ## 📦 Installation
 
 1. Download the latest version from [Releases](https://github.com/thorstenalpers/x-tweet-cleaner/releases).
-2. Run the installer or open the standalone app.
+2. Run the installer or open the standalone app. Ignore the warning about the app being from an unverified publisher.
 3. Launch the app and log in with your X (formerly Twitter) account.
 4. Start deleting your posts, likes, and following list.
 

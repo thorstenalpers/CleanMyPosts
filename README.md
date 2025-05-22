@@ -3,7 +3,7 @@
 [![Windows](https://img.shields.io/badge/platform-Windows-blue)](#)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE.txt)
 [![CI Tests](https://github.com/thorstenalpers/CleanMyPosts/actions/workflows/ci.yml/badge.svg)](https://github.com/thorstenalpers/CleanMyPosts/actions/workflows/ci.yml)
-[![Star this repo](https://img.shields.io/github/stars/thorstenalpers/CleanMyPosts.svg?style=social&label=Star&maxAge=60)](https://github.com/thorstenalpers/CleanMyPosts/stargazers)
+[![Star this repo](https://img.shields.io/github/stars/thorstenalpers/CleanMyPosts.svg?style=social&label=Star&maxAge=60)](https://github.com/thorstenalpers/CleanMyPosts)
 
 
 **CleanMyPosts** is a lightweight Windows desktop app that securely deletes all tweets, likes, and followings from your X (formerly Twitter) account in bulk using browser automation.

@@ -59,11 +59,16 @@ public class XScriptService(ILogger<XScriptService> logger, IWebViewHostService 
             _logger.LogWarning("Navigation to search page failed.");
             return 0;
         }
-        var totalPosts = await GetPostsCountAsync();
+        var totalPosts = 0;
         var postNumber = 1;
         while (await PostsExistAsync())
         {
             var countBefore = await GetPostsCountAsync();
+            if (postNumber == 1)
+            {
+                totalPosts = countBefore;
+            }
+
             _logger.LogInformation("Found {Count} posts before deletion.", countBefore);
 
             try
@@ -138,12 +143,18 @@ public class XScriptService(ILogger<XScriptService> logger, IWebViewHostService 
             return 0;
         }
 
-        var totalLikes = await GetLikesCountAsync();
+        int totalLikes = 0;
 
         var postNumber = 1;
+
         while (await LikesExistAsync())
         {
             var countBefore = await GetLikesCountAsync();
+            if (postNumber == 1)
+            {
+                totalLikes = countBefore;
+            }
+
             _logger.LogInformation("Found {Count} likes before deletion.", countBefore);
 
             try
@@ -218,11 +229,17 @@ public class XScriptService(ILogger<XScriptService> logger, IWebViewHostService 
             _logger.LogWarning("Navigation to search page failed.");
             return 0;
         }
-        var totalFollowings = await GetFollowingCountAsync();
+
+        int totalFollowings = 0;
         var postNumber = 1;
         while (await FollowingExistAsync())
         {
             var countBefore = await GetFollowingCountAsync();
+            if (postNumber == 1)
+            {
+                totalFollowings = countBefore;
+            }
+
             _logger.LogInformation("Found {Count} following before deletion.", countBefore);
 
             try
@@ -368,10 +385,10 @@ public class XScriptService(ILogger<XScriptService> logger, IWebViewHostService 
         var js = $@"
         (() => {{
             const unlikeButton = document.querySelector('button[data-testid=""unlike""]');
-            if (!unlikeButton) return;
-
-            unlikeButton.click();
-     
+            if (unlikeButton) {{
+                unlikeButton.click();
+            }}
+            window.scrollBy(0, 300);
         }})();";
         await Task.Delay(waitBeforeTryClickDelete);
         await _webViewHostService.ExecuteScriptAsync(js);
@@ -550,6 +567,8 @@ public class XScriptService(ILogger<XScriptService> logger, IWebViewHostService 
             }
             await Task.Delay(delayMs);
         }
+        await Task.Delay(TimeSpan.FromMilliseconds(200));
+
         _logger.LogWarning("Timed out waiting for document.readyState = complete.");
         return false;
     }

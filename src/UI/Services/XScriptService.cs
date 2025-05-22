@@ -515,6 +515,8 @@ public class XScriptService(ILogger<XScriptService> logger, IWebViewHostService 
 
     public async Task<string> GetUserNameAsync()
     {
+        await WaitForFullDocumentReadyAsync();
+
         const string jsScript = @"
         (() => { 
             const el = document.querySelector('a[data-testid=""AppTabBar_Profile_Link""]');
@@ -530,13 +532,15 @@ public class XScriptService(ILogger<XScriptService> logger, IWebViewHostService 
     {
         var tcs = new TaskCompletionSource<bool>();
 
-        async void Handler(object s, NavigationCompletedEventArgs e)
+        EventHandler<NavigationCompletedEventArgs> handler = null;
+        handler = async (s, e) =>
         {
-            _webViewHostService.NavigationCompleted -= Handler;
-            tcs.SetResult(e.IsSuccess);
-            await Task.Delay(TimeSpan.FromMilliseconds(300));
-        }
-        _webViewHostService.NavigationCompleted += Handler;
+            _webViewHostService.NavigationCompleted -= handler;
+            await Task.Delay(300);
+            tcs.TrySetResult(e.IsSuccess);
+        };
+
+        _webViewHostService.NavigationCompleted += handler;
         return tcs.Task;
     }
 

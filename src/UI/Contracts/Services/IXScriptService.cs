@@ -1,15 +1,15 @@
 ﻿namespace CleanMyPosts.UI.Contracts.Services;
 
-public interface IXWebViewScriptService
+public interface IXScriptService
 {
     Task ShowPostsAsync();
-    Task DeletePostsAsync();
+    Task<int> DeletePostsAsync();
 
     Task ShowLikesAsync();
-    Task DeleteStarredAsync();
+    Task<int> DeleteLikesAsync();
 
     Task ShowFollowingAsync();
-    Task DeleteFollowingAsync();
+    Task<int> DeleteFollowingAsync();
 
     Task<string> GetUserNameAsync();
 }

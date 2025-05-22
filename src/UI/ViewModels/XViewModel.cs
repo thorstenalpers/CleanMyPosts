@@ -4,6 +4,7 @@ using CleanMyPosts.UI.Models;
 using CleanMyPosts.UI.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using MahApps.Metro.Controls.Dialogs;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Web.WebView2.Wpf;
@@ -14,7 +15,9 @@ public partial class XViewModel : ObservableObject
 {
     private readonly IWebViewHostService _webViewHostService;
     private readonly ILogger<XViewModel> _logger;
-    private readonly IXWebViewScriptService _xWebViewScriptService;
+    private readonly IXScriptService _xWebViewScriptService;
+    private readonly IDialogCoordinator _dialogCoordinator;
+    private readonly IUserSettingsService _userSettingsService;
     private OverlayWindow _overlayWindow;
 
     private readonly string _xBaseUrl;
@@ -22,20 +25,34 @@ public partial class XViewModel : ObservableObject
     [ObservableProperty]
     private bool _areButtonsEnabled;
 
+    [ObservableProperty]
+    private bool _isNotificationOpen;
+
+    [ObservableProperty]
+    private string _notificationMessage;
+
+    [ObservableProperty]
+    private bool _isWebViewEnabled = true;
+
     private bool _isInitialized = false;
     private string _userName;
 
     public XViewModel(ILogger<XViewModel> logger,
+                         IUserSettingsService userSettingsService,
                          IWebViewHostService webViewHostService,
+                         IDialogCoordinator dialogCoordinator,
                          IOptions<AppConfig> options,
-                         IXWebViewScriptService xWebViewScriptService)
+                         IXScriptService xWebViewScriptService)
     {
         _webViewHostService = webViewHostService ?? throw new ArgumentNullException(nameof(webViewHostService));
+        _userSettingsService = userSettingsService ?? throw new ArgumentNullException(nameof(userSettingsService));
+        _dialogCoordinator = dialogCoordinator ?? throw new ArgumentNullException(nameof(dialogCoordinator));
         _xWebViewScriptService = xWebViewScriptService ?? throw new ArgumentNullException(nameof(xWebViewScriptService));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+
+        _xBaseUrl = options.Value.XBaseUrl;
         _webViewHostService.NavigationCompleted += OnNavigationCompleted;
         _webViewHostService.WebMessageReceived += OnWebMessageReceived;
-        _xBaseUrl = options.Value.XBaseUrl;
     }
 
     public async Task InitializeAsync(WebView2 webView)
@@ -49,6 +66,7 @@ public partial class XViewModel : ObservableObject
 
         _webViewHostService.Source = new Uri(_xBaseUrl);
 
+        // logging JS errors and warnings to ILogger
         var jsScript = @"
                 window.onerror = function(message, source, lineno, colno, error) {
                     chrome.webview.postMessage(JSON.stringify({
@@ -161,9 +179,39 @@ public partial class XViewModel : ObservableObject
     [RelayCommand]
     private async Task DeletePosts()
     {
-        EnableUserInteractions(false);
-        await _xWebViewScriptService.DeletePostsAsync();
+        EnableUserInteractions(false, false);
+
+        if (_userSettingsService.GetConfirmDeletion())
+        {
+            _webViewHostService.Hide(true);
+            var result = await _dialogCoordinator.ShowMessageAsync(
+            this,
+            "Confirm Deletion",
+            "Are you sure you want to delete all posts?",
+            MessageDialogStyle.AffirmativeAndNegative);
+            _webViewHostService.Hide(false);
+
+            if (result == MessageDialogResult.Affirmative)
+            {
+                var deletetCnt = await _xWebViewScriptService.DeletePostsAsync();
+                await ShowNotificationAsync($"{deletetCnt} post(s) deleted successfully.", TimeSpan.FromSeconds(3));
+            }
+        }
+        else
+        {
+            var deletetCnt = await _xWebViewScriptService.DeletePostsAsync();
+            await ShowNotificationAsync($"{deletetCnt} post(s) deleted successfully.", TimeSpan.FromSeconds(3));
+        }
+
         EnableUserInteractions(true);
+    }
+
+    private async Task ShowNotificationAsync(string msg, TimeSpan delay)
+    {
+        NotificationMessage = msg;
+        IsNotificationOpen = true;
+        await Task.Delay(delay);
+        IsNotificationOpen = false;
     }
 
     [RelayCommand]
@@ -177,8 +225,29 @@ public partial class XViewModel : ObservableObject
     [RelayCommand]
     private async Task DeleteLikes()
     {
-        EnableUserInteractions(false);
-        await Task.Delay(10002);
+        EnableUserInteractions(false, false);
+
+        if (_userSettingsService.GetConfirmDeletion())
+        {
+            _webViewHostService.Hide(true);
+            var result = await _dialogCoordinator.ShowMessageAsync(
+            this,
+            "Confirm Deletion",
+            "Are you sure you want to delete all likes?",
+            MessageDialogStyle.AffirmativeAndNegative);
+            _webViewHostService.Hide(false);
+
+            if (result == MessageDialogResult.Affirmative)
+            {
+                var deletetCnt = await _xWebViewScriptService.DeleteLikesAsync();
+                await ShowNotificationAsync($"{deletetCnt} like(s) deleted successfully.", TimeSpan.FromSeconds(3));
+            }
+        }
+        else
+        {
+            var deletetCnt = await _xWebViewScriptService.DeleteLikesAsync();
+            await ShowNotificationAsync($"{deletetCnt} like(s) deleted successfully.", TimeSpan.FromSeconds(3));
+        }
         EnableUserInteractions(true);
     }
 
@@ -193,19 +262,42 @@ public partial class XViewModel : ObservableObject
     [RelayCommand]
     private async Task DeleteFollowing()
     {
-        EnableUserInteractions(false);
-        await Task.Delay(10001);
+        EnableUserInteractions(false, false);
+
+        if (_userSettingsService.GetConfirmDeletion())
+        {
+            _webViewHostService.Hide(true);
+            var result = await _dialogCoordinator.ShowMessageAsync(
+                this,
+                "Confirm Deletion",
+                "Are you sure you want to delete all following?",
+                MessageDialogStyle.AffirmativeAndNegative);
+            _webViewHostService.Hide(false);
+
+            if (result == MessageDialogResult.Affirmative)
+            {
+                var deletetCnt = await _xWebViewScriptService.DeleteFollowingAsync();
+                await ShowNotificationAsync($"{deletetCnt} following(s) deleted successfully.", TimeSpan.FromSeconds(3));
+            }
+        }
+        else
+        {
+            var deletetCnt = await _xWebViewScriptService.DeleteFollowingAsync();
+            await ShowNotificationAsync($"{deletetCnt} following(s) deleted successfully.", TimeSpan.FromSeconds(3));
+        }
+
         EnableUserInteractions(true);
     }
 
-    private void EnableUserInteractions(bool enable)
+    private void EnableUserInteractions(bool enable, bool showOverlay = true)
     {
         if (enable)
         {
+            IsWebViewEnabled = true;
             AreButtonsEnabled = true;
             if (_overlayWindow != null)
             {
-                var mainWindow = Application.Current.MainWindow;
+                var mainWindow = Application.Current?.MainWindow;
                 if (mainWindow != null)
                 {
                     mainWindow.LocationChanged -= MainWindowOnLocationOrSizeChanged;
@@ -218,17 +310,18 @@ public partial class XViewModel : ObservableObject
         }
         else
         {
+            IsWebViewEnabled = false;
             AreButtonsEnabled = false;
 
-            if (_overlayWindow == null)
+            if (showOverlay && _overlayWindow == null)
             {
                 _overlayWindow = new OverlayWindow
                 {
                     WindowStartupLocation = WindowStartupLocation.Manual,
-                    Owner = Application.Current.MainWindow
+                    Owner = Application.Current?.MainWindow
                 };
                 UpdateOverlayPosition();
-                var mainWindow = Application.Current.MainWindow;
+                var mainWindow = Application.Current?.MainWindow;
                 if (mainWindow != null)
                 {
                     mainWindow.LocationChanged += MainWindowOnLocationOrSizeChanged;
@@ -251,7 +344,7 @@ public partial class XViewModel : ObservableObject
             return;
         }
 
-        var mainWindow = Application.Current.MainWindow;
+        var mainWindow = Application.Current?.MainWindow;
         if (mainWindow == null)
         {
             return;

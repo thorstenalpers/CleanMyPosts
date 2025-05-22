@@ -14,6 +14,7 @@ jobs:
       Installer_Script: "installer/Installer.iss"
       FORCE_COLOR: "true"
       DOTNET_LOGGING__CONSOLE__COLORBEHAVIOR: Enabled
+      FA_LICENSE_MESSAGE_SUPPRESS: 1
 
     steps:
     - name: Checkout main

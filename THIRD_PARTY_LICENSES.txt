@@ -1,0 +1,173 @@
+####################################################################################################
+Package:Ardalis.GuardClauses
+Version:5.0.0
+project URL:https://github.com/ardalis/guardclauses
+Description:A simple package by @ardalis and @nimblepros with guard clause helper methods. See docs for how to extend using your own extension methods defined in your project.
+licenseUrl:https://www.nuget.org/packages/Ardalis.GuardClauses/5.0.0/License
+license Type:LICENSE
+
+####################################################################################################
+Package:CommunityToolkit.Mvvm
+Version:8.4.0
+project URL:https://github.com/CommunityToolkit/dotnet
+Description:This package includes a .NET MVVM library with helpers such as:
+      - ObservableObject: a base class for objects implementing the INotifyPropertyChanged interface.
+      - ObservableRecipient: a base class for observable objects with support for the IMessenger service.
+      - ObservableValidator: a base class for objects implementing the INotifyDataErrorInfo interface.
+      - RelayCommand: a simple delegate command implementing the ICommand interface.
+      - AsyncRelayCommand: a delegate command supporting asynchronous operations and cancellation.
+      - WeakReferenceMessenger: a messaging system to exchange messages through different loosely-coupled objects.
+      - StrongReferenceMessenger: a high-performance messaging system that trades weak references for speed.
+      - Ioc: a helper class to configure dependency injection service containers.
+licenseUrl:https://licenses.nuget.org/MIT
+license Type:MIT
+
+####################################################################################################
+Package:MahApps.Metro
+Version:2.4.10
+project URL:https://github.com/MahApps/MahApps.Metro
+Description:The goal of MahApps.Metro is to allow devs to quickly and easily cobble together a 'Modern' UI for their WPF apps (>= .Net 4.5), with minimal effort.
+licenseUrl:https://licenses.nuget.org/MIT
+license Type:MIT
+
+####################################################################################################
+Package:MahApps.Metro.IconPacks
+Version:5.1.0
+project URL:https://github.com/MahApps/MahApps.Metro.IconPacks
+Description:IconPacks for stylish awesome WPF and UWP applications.
+licenseUrl:https://licenses.nuget.org/MIT
+license Type:MIT
+
+####################################################################################################
+Package:MahApps.Metro.IconPacks.FontAwesome
+Version:5.1.0
+project URL:https://github.com/MahApps/MahApps.Metro.IconPacks
+Description:IconPacks for stylish awesome WPF and UWP applications.
+licenseUrl:https://licenses.nuget.org/MIT
+license Type:MIT
+
+####################################################################################################
+Package:MahApps.Metro.IconPacks.Material
+Version:5.1.0
+project URL:https://github.com/MahApps/MahApps.Metro.IconPacks
+Description:IconPacks for stylish awesome WPF and UWP applications.
+licenseUrl:https://licenses.nuget.org/MIT
+license Type:MIT
+
+####################################################################################################
+Package:Microsoft.CSharp
+Version:4.7.0
+project URL:https://github.com/dotnet/corefx
+Description:Provides support for compilation and code generation, including dynamic, using the C# language.
+
+Commonly Used Types:
+Microsoft.CSharp.RuntimeBinder.Binder
+Microsoft.CSharp.RuntimeBinder.RuntimeBinderException
+Microsoft.CSharp.RuntimeBinder.CSharpArgumentInfo
+Microsoft.CSharp.RuntimeBinder.CSharpArgumentInfoFlags
+Microsoft.CSharp.RuntimeBinder.CSharpBinderFlags
+ 
+When using NuGet 3.x this package requires at least version 3.4.
+licenseUrl:https://licenses.nuget.org/MIT
+license Type:MIT
+
+####################################################################################################
+Package:Microsoft.Extensions.Hosting
+Version:9.0.4
+project URL:https://dot.net/
+Description:Hosting and startup infrastructures for applications.
+licenseUrl:https://licenses.nuget.org/MIT
+license Type:MIT
+
+####################################################################################################
+Package:Microsoft.Extensions.Http
+Version:9.0.4
+project URL:https://dot.net/
+Description:The HttpClient factory is a pattern for configuring and retrieving named HttpClients in a composable way. The HttpClient factory provides extensibility to plug in DelegatingHandlers that address cross-cutting concerns such as service location, load balancing, and reliability. The default HttpClient factory provides built-in diagnostics and logging and manages the lifetimes of connections in a performant way.
+
+Commonly Used Types:
+System.Net.Http.IHttpClientFactory
+licenseUrl:https://licenses.nuget.org/MIT
+license Type:MIT
+
+####################################################################################################
+Package:Microsoft.Web.WebView2
+Version:1.0.3179.45
+project URL:https://aka.ms/webview
+Description:The WebView2 control enables you to embed web technologies (HTML, CSS, and JavaScript) in your native applications powered by Microsoft Edge (Chromium).
+This package is necessary for Win32 C/C++, WPF, and WinForms applications. To learn more about package versions checkout https://aka.ms/wv2-packageversion. To learn best practices checkout: https://aka.ms/wv2-bestpractices.
+licenseUrl:https://www.nuget.org/packages/Microsoft.Web.WebView2/1.0.3179.45/License
+license Type:LICENSE.txt
+
+####################################################################################################
+Package:NetSparkleUpdater.SparkleUpdater
+Version:3.0.2
+project URL:https://github.com/NetSparkleUpdater/NetSparkle
+Description:NetSparkleUpdater/NetSparkle is a C# .NET software update framework that allows you to easily download installer files and update your C# .NET Framework or .NET Core software. Built-in UIs are available for WinForms, WPF, and Avalonia; if you want a built-in UI, please reference a NetSparkleUpdater.UI package. You provide, somewhere on the internet, an XML appcast with software version information along with release notes in Markdown or HTML format. The NetSparkle framework then checks for an update in the background, displays the release notes to the user, and lets users download or skip the software update. The framework can also perform silent downloads so that you can present all of the UI yourself or set up your own silent software update system, as allowed by your software architecture. It was inspired by the Sparkle (https://sparkle-project.org/) project for Cocoa developers and the WinSparkle (https://winsparkle.org/) project (a Win32 port).
+licenseUrl:https://licenses.nuget.org/MIT
+license Type:MIT
+
+####################################################################################################
+Package:NetSparkleUpdater.UI.WPF
+Version:3.0.2
+project URL:https://github.com/NetSparkleUpdater/NetSparkle
+Description:NetSparkleUpdater/NetSparkle app updater framework with built-in WPF .NET Core and .NET Framework UI. NetSparkleUpdater/NetSparkle is a C# .NET software update framework that allows you to easily download installer files and update your C# .NET Framework or .NET Core software. Built-in UIs are available for WinForms, WPF, and Avalonia. You provide, somewhere on the internet, an XML appcast with software version information along with release notes in Markdown or HTML format. The NetSparkle framework then checks for an update in the background, displays the release notes to the user, and lets users download or skip the software update. The framework can also perform silent downloads so that you can present all of the UI yourself or set up your own silent software update system, as allowed by your software architecture. It was inspired by the Sparkle (https://sparkle-project.org/) project for Cocoa developers and the WinSparkle (https://winsparkle.org/) project (a Win32 port).
+licenseUrl:https://licenses.nuget.org/MIT
+license Type:MIT
+
+####################################################################################################
+Package:Newtonsoft.Json
+Version:13.0.3
+project URL:https://www.newtonsoft.com/json
+Description:Json.NET is a popular high-performance JSON framework for .NET
+licenseUrl:https://licenses.nuget.org/MIT
+license Type:MIT
+
+####################################################################################################
+Package:Serilog.Extensions.Hosting
+Version:9.0.0
+project URL:https://github.com/serilog/serilog-extensions-hosting
+Description:Serilog support for .NET Core logging in hosted services
+licenseUrl:https://licenses.nuget.org/Apache-2.0
+license Type:Apache-2.0
+
+####################################################################################################
+Package:Serilog.Extensions.Logging
+Version:9.0.1
+project URL:https://github.com/serilog/serilog-extensions-logging
+Description:Low-level Serilog provider for Microsoft.Extensions.Logging
+licenseUrl:https://licenses.nuget.org/Apache-2.0
+license Type:Apache-2.0
+
+####################################################################################################
+Package:Serilog.Settings.Configuration
+Version:9.0.0
+project URL:https://github.com/serilog/serilog-settings-configuration
+Description:Microsoft.Extensions.Configuration (appsettings.json) support for Serilog.
+licenseUrl:https://licenses.nuget.org/Apache-2.0
+license Type:Apache-2.0
+
+####################################################################################################
+Package:Serilog.Sinks.Console
+Version:6.0.0
+project URL:https://github.com/serilog/serilog-sinks-console
+Description:A Serilog sink that writes log events to the console/terminal.
+licenseUrl:https://licenses.nuget.org/Apache-2.0
+license Type:Apache-2.0
+
+####################################################################################################
+Package:Serilog.Sinks.Debug
+Version:3.0.0
+project URL:https://github.com/serilog/serilog-sinks-debug
+Description:A Serilog sink that writes log events to the debug output window.
+licenseUrl:https://licenses.nuget.org/Apache-2.0
+license Type:Apache-2.0
+
+####################################################################################################
+Package:Serilog.Sinks.File
+Version:7.0.0
+project URL:https://github.com/serilog/serilog-sinks-file
+Description:Write Serilog events to text files in plain or JSON format.
+licenseUrl:https://licenses.nuget.org/Apache-2.0
+license Type:Apache-2.0
+

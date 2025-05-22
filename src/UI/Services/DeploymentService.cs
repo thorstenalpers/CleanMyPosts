@@ -4,7 +4,7 @@ namespace CleanMyPosts.UI.Services;
 
 public class DeploymentService : IDeploymentService
 {
-    protected virtual string GetExePath() => System.Reflection.Assembly.GetExecutingAssembly().Location;
+    protected virtual string GetExePath() => AppContext.BaseDirectory;
     protected virtual string GetProgramFilesPath() => Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
     protected virtual string GetProgramFilesX86Path() => Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
 

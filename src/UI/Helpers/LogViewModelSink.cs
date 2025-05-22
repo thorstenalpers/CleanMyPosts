@@ -1,6 +1,6 @@
-﻿using Serilog.Core;
+﻿using CleanMyPosts.UI.ViewModels;
+using Serilog.Core;
 using Serilog.Events;
-using CleanMyPosts.UI.ViewModels;
 
 namespace CleanMyPosts.UI.Helpers;
 

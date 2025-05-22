@@ -1,7 +1,7 @@
 ﻿using System.Windows.Controls;
-using MahApps.Metro.Controls;
 using CleanMyPosts.UI.Contracts.Views;
 using CleanMyPosts.UI.ViewModels;
+using MahApps.Metro.Controls;
 
 namespace CleanMyPosts.UI.Views;
 

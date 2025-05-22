@@ -85,14 +85,26 @@
 
                 <StackPanel Margin="{StaticResource SmallTopBottomMargin}">
                     <StackPanel
-                        Margin="0,8,0,0"
-                        VerticalAlignment="Center"
-                        Orientation="Horizontal">
+                       Margin="0,8,0,0"
+                       VerticalAlignment="Center"
+                       Orientation="Horizontal">
                         <TextBlock
-                            Width="200"
-                            VerticalAlignment="Center"
-                            Text="Wait Before Try Click Delete:" />
-                        <TextBox Width="100" Text="{Binding WaitBeforeTryClickDelete, Mode=TwoWay}" />
+                           Width="200"
+                           VerticalAlignment="Center"
+                           Text="Wait after document loaded:" />
+                        <TextBox Width="100" Text="{Binding WaitAfterDocumentLoad, Mode=TwoWay}" />
+                        <TextBox IsReadOnly="True" Text="ms" />
+                    </StackPanel>
+
+                    <StackPanel
+                       Margin="0,8,0,0"
+                       VerticalAlignment="Center"
+                       Orientation="Horizontal">
+                        <TextBlock
+                           Width="200"
+                           VerticalAlignment="Center"
+                           Text="Wait after delete:" />
+                        <TextBox Width="100" Text="{Binding WaitAfterDelete, Mode=TwoWay}" />
                         <TextBox IsReadOnly="True" Text="ms" />
                     </StackPanel>
 
@@ -103,8 +115,8 @@
                         <TextBlock
                             Width="200"
                             VerticalAlignment="Center"
-                            Text="Wait Between Delete Attempts:" />
-                        <TextBox Width="100" Text="{Binding WaitBetweenTryClickDeleteAttempts, Mode=TwoWay}" />
+                            Text="Wait between retry delete attempts:" />
+                        <TextBox Width="100" Text="{Binding WaitBetweenRetryDeleteAttempts, Mode=TwoWay}" />
                         <TextBox IsReadOnly="True" Text="ms" />
                     </StackPanel>
                 </StackPanel>

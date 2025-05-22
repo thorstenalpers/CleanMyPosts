@@ -16,7 +16,12 @@ public class XScriptServiceTests
 
     public XScriptServiceTests()
     {
-        _userSettingsServiceMock.Setup(x => x.GetSetting<int>(It.IsAny<string>(), It.IsAny<int>())).Returns(10);
+        _userSettingsServiceMock.Setup(x => x.GetTimeoutSettings()).Returns(new TimeoutSettings
+        {
+            WaitAfterDocumentLoad = 500,
+            WaitAfterDelete = 1,
+            WaitBetweenRetryDeleteAttempts = 0
+        });
         _service = new XScriptService(_loggerMock.Object, _webViewHostServiceMock.Object, _userSettingsServiceMock.Object);
         // Set _userName via reflection for tests that require it
         typeof(XScriptService).GetField("_userName", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)

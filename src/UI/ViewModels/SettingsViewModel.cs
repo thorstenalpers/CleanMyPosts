@@ -30,10 +30,13 @@ public partial class SettingsViewModel(ILogger<SettingsViewModel> logger,
     private bool _confirmDeletion;
 
     [ObservableProperty]
-    private int _waitBeforeTryClickDelete;
+    private int _waitAfterDelete;
 
     [ObservableProperty]
-    private int _waitBetweenTryClickDeleteAttempts;
+    private int _waitAfterDocumentLoad;
+
+    [ObservableProperty]
+    private int _waitBetweenRetryDeleteAttempts;
 
     [RelayCommand]
     private void SetTheme(string themeName)
@@ -91,14 +94,34 @@ public partial class SettingsViewModel(ILogger<SettingsViewModel> logger,
         _userSettingsService.SetConfirmDeletion(value);
     }
 
-    partial void OnWaitBeforeTryClickDeleteChanged(int value)
+    partial void OnWaitAfterDeleteChanged(int value)
     {
-        _userSettingsService.SetSetting(nameof(WaitBeforeTryClickDelete), WaitBeforeTryClickDelete);
+        _userSettingsService.SaveTimeoutSettings(new TimeoutSettings
+        {
+            WaitAfterDelete = WaitAfterDelete,
+            WaitAfterDocumentLoad = WaitAfterDocumentLoad,
+            WaitBetweenRetryDeleteAttempts = WaitBetweenRetryDeleteAttempts
+        });
     }
 
-    partial void OnWaitBetweenTryClickDeleteAttemptsChanged(int value)
+    partial void OnWaitBetweenRetryDeleteAttemptsChanged(int value)
     {
-        _userSettingsService.SetSetting(nameof(WaitBetweenTryClickDeleteAttempts), WaitBetweenTryClickDeleteAttempts);
+        _userSettingsService.SaveTimeoutSettings(new TimeoutSettings
+        {
+            WaitAfterDelete = WaitAfterDelete,
+            WaitAfterDocumentLoad = WaitAfterDocumentLoad,
+            WaitBetweenRetryDeleteAttempts = WaitBetweenRetryDeleteAttempts
+        });
+    }
+
+    partial void OnWaitAfterDocumentLoadChanged(int value)
+    {
+        _userSettingsService.SaveTimeoutSettings(new TimeoutSettings
+        {
+            WaitAfterDelete = WaitAfterDelete,
+            WaitAfterDocumentLoad = WaitAfterDocumentLoad,
+            WaitBetweenRetryDeleteAttempts = WaitBetweenRetryDeleteAttempts
+        });
     }
 
     public void OnNavigatedTo(object parameter)
@@ -108,8 +131,9 @@ public partial class SettingsViewModel(ILogger<SettingsViewModel> logger,
         ShowLogs = _userSettingsService.GetShowLogs();
         ConfirmDeletion = _userSettingsService.GetConfirmDeletion();
 
-        // Ensure property setters are used so On*Changed partials are called
-        WaitBeforeTryClickDelete = _userSettingsService.GetWaitBeforeTryClickDelete();
-        WaitBetweenTryClickDeleteAttempts = _userSettingsService.GetWaitBetweenTryClickDeleteAttempts();
+        var timeoutSettings = _userSettingsService.GetTimeoutSettings();
+        WaitAfterDocumentLoad = timeoutSettings.WaitAfterDocumentLoad;
+        WaitAfterDelete = timeoutSettings.WaitAfterDelete;
+        WaitBetweenRetryDeleteAttempts = timeoutSettings.WaitBetweenRetryDeleteAttempts;
     }
 }

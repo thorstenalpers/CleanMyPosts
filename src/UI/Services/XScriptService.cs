@@ -316,8 +316,9 @@ public class XScriptService(ILogger<XScriptService> logger, IWebViewHostService 
 
     private async Task DeleteSinglePostAsync()
     {
-        var waitBeforeTryClickDelete = _userSettingsService.GetSetting("WaitBeforeTryClickDelete", 10);
-        var waitBetweenTryClickDeleteAttempts = _userSettingsService.GetSetting("WaitBetweenTryClickDeleteAttempts", 100);
+        var timeout = _userSettingsService.GetTimeoutSettings();
+        var waitAfterDelete = timeout.WaitAfterDelete;
+        var waitBetweenDeleteAttempts = timeout.WaitBetweenRetryDeleteAttempts;
 
         var js = $@"
         (() => {{
@@ -327,11 +328,11 @@ public class XScriptService(ILogger<XScriptService> logger, IWebViewHostService 
             caret.click();
 
             setTimeout(() => {{
-                const delays = [ {waitBetweenTryClickDeleteAttempts}, 
-                                {waitBetweenTryClickDeleteAttempts * 2}, 
-                                {waitBetweenTryClickDeleteAttempts * 3}, 
-                                {waitBetweenTryClickDeleteAttempts * 4}, 
-                                {waitBetweenTryClickDeleteAttempts * 5} ];
+                const delays = [ {waitBetweenDeleteAttempts}, 
+                                {waitBetweenDeleteAttempts * 2}, 
+                                {waitBetweenDeleteAttempts * 3}, 
+                                {waitBetweenDeleteAttempts * 4}, 
+                                {waitBetweenDeleteAttempts * 5} ];
 
                 function tryClickDelete(attempt = 0) {{
                     if (attempt >= delays.length) return;
@@ -373,14 +374,14 @@ public class XScriptService(ILogger<XScriptService> logger, IWebViewHostService 
                 }}
 
                 tryClickDelete();
-            }}, {waitBeforeTryClickDelete});
+            }}, {waitAfterDelete});
         }})();";
 
         await _webViewHostService.ExecuteScriptAsync(js);
     }
     private async Task DeleteSingleLikeAsync()
     {
-        var waitBeforeTryClickDelete = _userSettingsService.GetSetting<int>("WaitBeforeTryClickDelete");
+        var waitBeforeTryClickDelete = _userSettingsService.GetTimeoutSettings().WaitAfterDelete;
 
         var js = $@"
         (() => {{
@@ -396,8 +397,9 @@ public class XScriptService(ILogger<XScriptService> logger, IWebViewHostService 
 
     private async Task DeleteSingleFollowingAsync()
     {
-        var waitBeforeTryClickDelete = _userSettingsService.GetSetting<int>("WaitBeforeTryClickDelete");
-        var waitBetweenTryClickDeleteAttempts = _userSettingsService.GetSetting<int>("WaitBetweenTryClickDeleteAttempts");
+        var timeout = _userSettingsService.GetTimeoutSettings();
+        var waitBeforeTryClickDelete = timeout.WaitAfterDelete;
+        var waitBetweenTryClickDeleteAttempts = timeout.WaitBetweenRetryDeleteAttempts;
 
         var js = $@"
     (() => {{
@@ -547,6 +549,7 @@ public class XScriptService(ILogger<XScriptService> logger, IWebViewHostService 
 
         const int maxAttempts = 50;
         const int delayMs = 100;
+        int waitAfterDocumentLoad = _userSettingsService.GetTimeoutSettings().WaitAfterDocumentLoad;
 
         for (var i = 0; i < maxAttempts; i++)
         {
@@ -557,7 +560,7 @@ public class XScriptService(ILogger<XScriptService> logger, IWebViewHostService 
 
                 if (readyState == "complete")
                 {
-                    await Task.Delay(TimeSpan.FromMilliseconds(500));
+                    await Task.Delay(waitAfterDocumentLoad);
                     return true;
                 }
             }
@@ -567,8 +570,6 @@ public class XScriptService(ILogger<XScriptService> logger, IWebViewHostService 
             }
             await Task.Delay(delayMs);
         }
-        await Task.Delay(TimeSpan.FromMilliseconds(200));
-
         _logger.LogWarning("Timed out waiting for document.readyState = complete.");
         return false;
     }

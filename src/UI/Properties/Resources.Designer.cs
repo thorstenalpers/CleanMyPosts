@@ -115,7 +115,7 @@ namespace CleanMyPosts.UI.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Confirm Deletion.
+        ///   Looks up a localized string similar to Show dialog to confirm deletion.
         /// </summary>
         public static string SettingsPageConfirmDeletion {
             get {
@@ -151,7 +151,7 @@ namespace CleanMyPosts.UI.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Show Logs for Troubleshooting.
+        ///   Looks up a localized string similar to Show logs for troubleshooting.
         /// </summary>
         public static string SettingsPageShowLogs {
             get {

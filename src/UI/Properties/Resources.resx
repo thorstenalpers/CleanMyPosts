@@ -178,9 +178,9 @@
     <value>App Settings</value>
   </data>
   <data name="SettingsPageConfirmDeletion" xml:space="preserve">
-    <value>Confirm Deletion</value>
+    <value>Show dialog to confirm deletion</value>
   </data>
   <data name="SettingsPageShowLogs" xml:space="preserve">
-    <value>Show Logs for Troubleshooting</value>
+    <value>Show logs for troubleshooting</value>
   </data>
 </root>

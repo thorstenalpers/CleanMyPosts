@@ -9,19 +9,19 @@ public interface IUserSettingsService
 
     event EventHandler<string> SettingChanged;
 
+    void Initialize();
+    void RestoreData();
+    void PersistData();
+
+    void SetConfirmDeletion(bool value);
+    bool GetConfirmDeletion();
 
     void SetTheme(AppTheme theme);
     AppTheme GetCurrentTheme();
 
-    void Initialize();
-    void RestoreData();
-    void PersistData();
-    T GetSetting<T>(string key, T defaultValue = default);
-    void SetSetting<T>(string key, T value);
-    int GetWaitBeforeTryClickDelete();
-    int GetWaitBetweenTryClickDeleteAttempts();
-    void SetConfirmDeletion(bool value);
-    bool GetConfirmDeletion();
     WindowSettings GetWindowSettings();
     void SaveWindowsSettings(WindowSettings settings);
+
+    TimeoutSettings GetTimeoutSettings();
+    void SaveTimeoutSettings(TimeoutSettings settings);
 }

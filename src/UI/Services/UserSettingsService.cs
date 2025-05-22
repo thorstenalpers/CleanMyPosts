@@ -69,26 +69,6 @@ public class UserSettingsService(IFileService fileService, IOptions<AppConfig> a
         SettingChanged?.Invoke(this, nameof(_settings.ConfirmDeletion));
     }
 
-    public int GetWaitBeforeTryClickDelete() => _settings.WaitBeforeTryClickDelete;
-    public int GetWaitBetweenTryClickDeleteAttempts() => _settings.WaitBetweenTryClickDeleteAttempts;
-
-    public void SetSetting<T>(string key, T value)
-    {
-        switch (key)
-        {
-            case nameof(UserSettings.WaitBeforeTryClickDelete):
-                _settings.WaitBeforeTryClickDelete = Convert.ToInt32(value);
-                break;
-            case nameof(UserSettings.WaitBetweenTryClickDeleteAttempts):
-                _settings.WaitBetweenTryClickDeleteAttempts = Convert.ToInt32(value);
-                break;
-            default:
-                throw new ArgumentException($"Unsupported setting: {key}");
-        }
-
-        SettingChanged?.Invoke(this, key);
-    }
-
     private static void AddCustomThemes()
     {
         ThemeManager.Current.AddLibraryTheme(new LibraryTheme(
@@ -118,8 +98,6 @@ public class UserSettingsService(IFileService fileService, IOptions<AppConfig> a
     {
         return key switch
         {
-            nameof(UserSettings.WaitBeforeTryClickDelete) => (T)(object)_settings.WaitBeforeTryClickDelete,
-            nameof(UserSettings.WaitBetweenTryClickDeleteAttempts) => (T)(object)_settings.WaitBetweenTryClickDeleteAttempts,
             nameof(UserSettings.Theme) => (T)(object)_settings.Theme,
             nameof(UserSettings.ShowLogs) => (T)(object)_settings.ShowLogs,
             nameof(UserSettings.ConfirmDeletion) => (T)(object)_settings.ConfirmDeletion,
@@ -137,6 +115,19 @@ public class UserSettingsService(IFileService fileService, IOptions<AppConfig> a
     public void SaveWindowsSettings(WindowSettings settings)
     {
         var fileName = "WindowSettings.json";
+        _fileService.Save(_settingsPath, fileName, settings);
+    }
+
+    public TimeoutSettings GetTimeoutSettings()
+    {
+        var fileName = "timeoutSettings.json";
+        var loaded = _fileService.Read<TimeoutSettings>(_settingsPath, fileName);
+        return loaded ?? new TimeoutSettings();
+    }
+
+    public void SaveTimeoutSettings(TimeoutSettings settings)
+    {
+        var fileName = "timeoutSettings.json";
         _fileService.Save(_settingsPath, fileName, settings);
     }
 }

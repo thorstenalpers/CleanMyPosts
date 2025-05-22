@@ -9,13 +9,16 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="clr-namespace:CleanMyPosts.UI.Models"
     xmlns:properties="clr-namespace:CleanMyPosts.UI.Properties"
+    xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
     d:DesignHeight="450"
     d:DesignWidth="800"
     Style="{DynamicResource MahApps.Styles.Page}"
     mc:Ignorable="d">
+
     <Page.Resources>
-        <converters:EnumToBooleanConverter x:Key="EnumToBooleanConverter" EnumType="models:AppTheme" />
+        <converters:EnumToBooleanConverter x:Key="EnumToBooleanConverter" EnumType="{x:Type models:AppTheme}" />
     </Page.Resources>
+
     <ScrollViewer>
         <Grid Margin="{StaticResource SmallTopBottomMargin}">
             <Grid.RowDefinitions>
@@ -23,9 +26,8 @@
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
-
-
             <TextBlock Style="{StaticResource PageTitleStyle}" Text="{x:Static properties:Resources.SettingsPageTitle}" />
+
             <StackPanel
                 x:Name="ContentArea"
                 Grid.Row="1"
@@ -81,8 +83,6 @@
                         </i:Interaction.Triggers>
                     </RadioButton>
                 </StackPanel>
-
-
 
                 <StackPanel Margin="{StaticResource SmallTopBottomMargin}">
                     <StackPanel
@@ -142,14 +142,14 @@
                     Margin="{StaticResource MediumTopMargin}"
                     Style="{StaticResource SubtitleTextStyle}"
                     Text="{x:Static properties:Resources.SettingsPageAboutTitle}" />
-                
 
-                <Grid Margin="{StaticResource XSmallTopMargin}">
+                <Grid Margin="{StaticResource XSmallTopMargin}" Grid.IsSharedSizeScope="True">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" SharedSizeGroup="ButtonColumn" />
+                        <ColumnDefinition Width="Auto" SharedSizeGroup="ButtonColumn" />
+                        <ColumnDefinition Width="Auto" SharedSizeGroup="ButtonColumn" />
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
 
@@ -172,18 +172,35 @@
                         Grid.Column="2"
                         Margin="{StaticResource MediumLeftMargin}"
                         VerticalAlignment="Center"
-                        Command="{Binding CheckUpdatesCommand}"
-                        Content="Check for Updates" />
+                        Command="{Binding CheckUpdatesCommand}">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <iconPacks:PackIconMaterial Kind="Sync" Width="16" Height="16" Margin="0,0,5,0" VerticalAlignment="Center" />
+                            <TextBlock Text="Check for Updates" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
 
-                    <TextBlock
+                    <Button
                         Grid.Column="3"
                         Margin="{StaticResource MediumLeftMargin}"
                         VerticalAlignment="Center"
-                        Style="{StaticResource BodyTextStyle}">
-                        <Hyperlink Command="{Binding OpenHomepageCommand}">
-                            View Project on GitHub
-                        </Hyperlink>
-                    </TextBlock>
+                        Command="{Binding OpenHomepageCommand}">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <iconPacks:PackIconFontAwesome Kind="GithubAltBrands" Width="16" Height="16" Margin="0,0,5,0" VerticalAlignment="Center" />
+                            <TextBlock Text="View on GitHub" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+
+                    <Button
+                        Grid.Column="4"
+                        Margin="{StaticResource MediumLeftMargin}"
+                        VerticalAlignment="Center"
+                        Command="{Binding OpenReportBugCommand}">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <iconPacks:PackIconMaterial Kind="Bug" Width="16" Height="16" Margin="0,0,5,0" VerticalAlignment="Center" />
+                            <TextBlock Text="Report a Bug" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+
                 </Grid>
 
                 <TextBlock

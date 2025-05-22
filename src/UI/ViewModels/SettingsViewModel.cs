@@ -68,6 +68,16 @@ public partial class SettingsViewModel(ILogger<SettingsViewModel> logger,
     }
 
     [RelayCommand]
+    private void OpenReportBug()
+    {
+        Process.Start(new ProcessStartInfo
+        {
+            FileName = "https://github.com/thorstenalpers/CleanMyPosts/issues",
+            UseShellExecute = true
+        });
+    }
+
+    [RelayCommand]
     private async Task CheckUpdatesAsync()
     {
         try

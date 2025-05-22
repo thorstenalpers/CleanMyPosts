@@ -1,6 +1,6 @@
 ﻿using System.Text;
-using Newtonsoft.Json;
 using CleanMyPosts.Core.Contracts.Services;
+using Newtonsoft.Json;
 
 namespace CleanMyPosts.Core.Services;
 

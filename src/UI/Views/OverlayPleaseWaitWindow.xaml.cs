@@ -3,6 +3,11 @@ using System.Windows.Input;
 
 namespace CleanMyPosts.UI.Views;
 
+/// <summary>
+// This window does not use MVVM because WebView2 renders as a separate HWND,
+// which prevents WPF UserControls from appearing above it. A blocking overlay 
+// must remain fully interactive and visually above the WebView2 content.
+/// </summary>
 public partial class OverlayPleaseWaitWindow : Window
 {
     public OverlayPleaseWaitWindow()

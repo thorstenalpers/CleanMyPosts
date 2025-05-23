@@ -18,7 +18,7 @@ public partial class XViewModel : ObservableObject
     private readonly IXScriptService _xWebViewScriptService;
     private readonly IDialogCoordinator _dialogCoordinator;
     private readonly IUserSettingsService _userSettingsService;
-    private OverlayWindow _overlayWindow;
+    private OverlayPleaseWaitWindow _overlayPleaseWaitWindow;
 
     private readonly string _xBaseUrl;
 
@@ -187,7 +187,7 @@ public partial class XViewModel : ObservableObject
     {
         try
         {
-            EnableUserInteractions(false, false);
+            EnableUserInteractions(false, true, true);
 
             if (_userSettingsService.GetConfirmDeletion())
             {
@@ -244,7 +244,7 @@ public partial class XViewModel : ObservableObject
     {
         try
         {
-            EnableUserInteractions(false, false);
+            EnableUserInteractions(false, true, true);
             if (_userSettingsService.GetConfirmDeletion())
             {
                 _webViewHostService.Hide(true);
@@ -292,7 +292,7 @@ public partial class XViewModel : ObservableObject
     {
         try
         {
-            EnableUserInteractions(false, false);
+            EnableUserInteractions(false, true, true);
 
             if (_userSettingsService.GetConfirmDeletion())
             {
@@ -322,13 +322,13 @@ public partial class XViewModel : ObservableObject
         }
     }
 
-    private void EnableUserInteractions(bool enable, bool showOverlay = true)
+    private void EnableUserInteractions(bool enableUserInteractions, bool useOverlay = true, bool showOverlayUpdateProgress = false)
     {
-        if (enable)
+        if (enableUserInteractions)
         {
             IsWebViewEnabled = true;
             AreButtonsEnabled = true;
-            if (_overlayWindow != null)
+            if (_overlayPleaseWaitWindow != null)
             {
                 var mainWindow = Application.Current?.MainWindow;
                 if (mainWindow != null)
@@ -337,8 +337,8 @@ public partial class XViewModel : ObservableObject
                     mainWindow.SizeChanged -= MainWindowOnLocationOrSizeChanged;
                 }
 
-                _overlayWindow.Close();
-                _overlayWindow = null;
+                _overlayPleaseWaitWindow.Close();
+                _overlayPleaseWaitWindow = null;
             }
         }
         else
@@ -346,9 +346,9 @@ public partial class XViewModel : ObservableObject
             IsWebViewEnabled = false;
             AreButtonsEnabled = false;
 
-            if (showOverlay && _overlayWindow == null)
+            if (useOverlay && _overlayPleaseWaitWindow == null)
             {
-                _overlayWindow = new OverlayWindow
+                _overlayPleaseWaitWindow = new OverlayPleaseWaitWindow
                 {
                     WindowStartupLocation = WindowStartupLocation.Manual,
                     Owner = Application.Current?.MainWindow
@@ -360,7 +360,7 @@ public partial class XViewModel : ObservableObject
                     mainWindow.LocationChanged += MainWindowOnLocationOrSizeChanged;
                     mainWindow.SizeChanged += MainWindowOnLocationOrSizeChanged;
                 }
-                _overlayWindow.Show();
+                _overlayPleaseWaitWindow.ShowOverlay(showOverlayUpdateProgress);
             }
         }
     }
@@ -372,7 +372,7 @@ public partial class XViewModel : ObservableObject
 
     private void UpdateOverlayPosition()
     {
-        if (_overlayWindow == null)
+        if (_overlayPleaseWaitWindow == null)
         {
             return;
         }
@@ -391,17 +391,17 @@ public partial class XViewModel : ObservableObject
             var transform = presentationSource.CompositionTarget.TransformFromDevice;
             var topLeftInWpfUnits = transform.Transform(topLeft);
 
-            _overlayWindow.Left = topLeftInWpfUnits.X;
-            _overlayWindow.Top = topLeftInWpfUnits.Y;
-            _overlayWindow.Width = mainWindow.ActualWidth;
-            _overlayWindow.Height = mainWindow.ActualHeight;
+            _overlayPleaseWaitWindow.Left = topLeftInWpfUnits.X;
+            _overlayPleaseWaitWindow.Top = topLeftInWpfUnits.Y;
+            _overlayPleaseWaitWindow.Width = mainWindow.ActualWidth;
+            _overlayPleaseWaitWindow.Height = mainWindow.ActualHeight;
         }
         else
         {
-            _overlayWindow.Left = topLeft.X;
-            _overlayWindow.Top = topLeft.Y;
-            _overlayWindow.Width = mainWindow.ActualWidth;
-            _overlayWindow.Height = mainWindow.ActualHeight;
+            _overlayPleaseWaitWindow.Left = topLeft.X;
+            _overlayPleaseWaitWindow.Top = topLeft.Y;
+            _overlayPleaseWaitWindow.Width = mainWindow.ActualWidth;
+            _overlayPleaseWaitWindow.Height = mainWindow.ActualHeight;
         }
     }
 }

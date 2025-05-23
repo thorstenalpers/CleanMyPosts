@@ -43,11 +43,8 @@ Here’s a quick look at how CleanMyPosts works:
 
 #### Remove likes 
 
+[Demo Video anschauen](./assets/clean-likes.mp4)
 
-<video width="700" controls>
-  <source src="./assets/clean-likes.mp4" type="video/mp4">
-  Your browser does not support the video tag.
-</video>
 
 #### Unfollow people
 <video width="700" controls>

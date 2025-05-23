@@ -202,13 +202,13 @@ public partial class XViewModel : ObservableObject
                 if (result == MessageDialogResult.Affirmative)
                 {
                     var deletetCnt = await _xWebViewScriptService.DeletePostsAsync();
-                    await ShowNotificationAsync($"{deletetCnt} post(s) deleted successfully.", TimeSpan.FromSeconds(3));
+                    await ShowNotificationAsync($"{deletetCnt} post(s) cleaned successfully.", TimeSpan.FromSeconds(3));
                 }
             }
             else
             {
                 var deletetCnt = await _xWebViewScriptService.DeletePostsAsync();
-                await ShowNotificationAsync($"{deletetCnt} post(s) deleted successfully.", TimeSpan.FromSeconds(3));
+                await ShowNotificationAsync($"{deletetCnt} post(s) cleaned successfully.", TimeSpan.FromSeconds(3));
             }
         }
         finally
@@ -258,13 +258,13 @@ public partial class XViewModel : ObservableObject
                 if (result == MessageDialogResult.Affirmative)
                 {
                     var deletetCnt = await _xWebViewScriptService.DeleteLikesAsync();
-                    await ShowNotificationAsync($"{deletetCnt} like(s) deleted successfully.", TimeSpan.FromSeconds(3));
+                    await ShowNotificationAsync($"{deletetCnt} like(s) cleaned successfully.", TimeSpan.FromSeconds(3));
                 }
             }
             else
             {
                 var deletetCnt = await _xWebViewScriptService.DeleteLikesAsync();
-                await ShowNotificationAsync($"{deletetCnt} like(s) deleted successfully.", TimeSpan.FromSeconds(3));
+                await ShowNotificationAsync($"{deletetCnt} like(s) cleaned successfully.", TimeSpan.FromSeconds(3));
             }
         }
         finally
@@ -307,13 +307,13 @@ public partial class XViewModel : ObservableObject
                 if (result == MessageDialogResult.Affirmative)
                 {
                     var deletetCnt = await _xWebViewScriptService.DeleteFollowingAsync();
-                    await ShowNotificationAsync($"{deletetCnt} following(s) deleted successfully.", TimeSpan.FromSeconds(3));
+                    await ShowNotificationAsync($"{deletetCnt} following(s) cleaned successfully.", TimeSpan.FromSeconds(3));
                 }
             }
             else
             {
                 var deletetCnt = await _xWebViewScriptService.DeleteFollowingAsync();
-                await ShowNotificationAsync($"{deletetCnt} following(s) deleted successfully.", TimeSpan.FromSeconds(3));
+                await ShowNotificationAsync($"{deletetCnt} following(s) cleaned successfully.", TimeSpan.FromSeconds(3));
             }
         }
         finally

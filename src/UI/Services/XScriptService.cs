@@ -362,7 +362,7 @@ public class XScriptService(ILogger<XScriptService> logger, IWebViewHostService 
                         const confirmBtn = document.querySelector(""button[data-testid='confirmationSheetConfirm']"");
                         if (confirmBtn && confirmBtn.offsetParent !== null) {{
                             confirmBtn.click();
-                            window.scrollBy(0, 300);
+                            window.scrollBy(0, 3000);
                         }} else {{
                             confirmDelete(attempt + 1);
                         }}
@@ -385,10 +385,10 @@ public class XScriptService(ILogger<XScriptService> logger, IWebViewHostService 
             if (unlikeButton) {{
                 unlikeButton.click();
             }}
-            window.scrollBy(0, 300);
+            window.scrollBy(0, 3000);
         }})();";
-        await Task.Delay(waitBeforeTryClickDelete);
         await _webViewHostService.ExecuteScriptAsync(js);
+        await Task.Delay(waitBeforeTryClickDelete);
     }
 
     private async Task DeleteSingleFollowingAsync()
@@ -418,7 +418,7 @@ public class XScriptService(ILogger<XScriptService> logger, IWebViewHostService 
                 const confirmBtn = document.querySelector('button[data-testid=""confirmationSheetConfirm""]');
                 if (confirmBtn && confirmBtn.offsetParent !== null) {{
                     confirmBtn.click();
-                    window.scrollBy(0, 300);
+                    window.scrollBy(0, 3000);
                 }} else {{
                     tryClickConfirm(attempt + 1);
                 }}

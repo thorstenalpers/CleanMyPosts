@@ -62,6 +62,7 @@ public class XScriptService(ILogger<XScriptService> logger, IWebViewHostService 
             return 0;
         }
         var postNumber = 1;
+        var deletedItems = 0;
         while (await PostsExistAsync())
         {
             var countBefore = await GetPostsCountAsync();
@@ -76,6 +77,7 @@ public class XScriptService(ILogger<XScriptService> logger, IWebViewHostService 
                 if (await WaitForPostDeletedAsync(countBefore))
                 {
                     _logger.LogInformation("Post #{Number} deleted successfully.", postNumber);
+                    deletedItems++;
                 }
                 else
                 {
@@ -94,7 +96,7 @@ public class XScriptService(ILogger<XScriptService> logger, IWebViewHostService 
         await WaitForDocumentReadyAsync();
 
         _logger.LogInformation("Deleted {TotalPosts} posts.", postNumber);
-        return postNumber;
+        return deletedItems;
     }
 
     public async Task ShowLikesAsync()
@@ -143,6 +145,7 @@ public class XScriptService(ILogger<XScriptService> logger, IWebViewHostService 
         }
 
         var postNumber = 1;
+        var deletedItems = 0;
 
         while (await LikesExistAsync())
         {
@@ -158,6 +161,7 @@ public class XScriptService(ILogger<XScriptService> logger, IWebViewHostService 
                 if (await WaitForLikeDeletedAsync(countBefore))
                 {
                     _logger.LogInformation("Like #{Number} deleted successfully.", postNumber);
+                    deletedItems++;
                 }
                 else
                 {
@@ -177,7 +181,7 @@ public class XScriptService(ILogger<XScriptService> logger, IWebViewHostService 
         await WaitForDocumentReadyAsync();
 
         _logger.LogInformation("Deleted {TotalLikes} Likes.", postNumber);
-        return postNumber;
+        return deletedItems;
     }
 
     public async Task ShowFollowingAsync()
@@ -226,6 +230,7 @@ public class XScriptService(ILogger<XScriptService> logger, IWebViewHostService 
         }
 
         var postNumber = 1;
+        var deletedItems = 0;
         while (await FollowingExistAsync())
         {
             var countBefore = await GetFollowingCountAsync();
@@ -240,6 +245,7 @@ public class XScriptService(ILogger<XScriptService> logger, IWebViewHostService 
                 if (await WaitForFollowingDeletedAsync(countBefore))
                 {
                     _logger.LogInformation("Following #{Number} deleted successfully.", postNumber);
+                    deletedItems++;
                 }
                 else
                 {
@@ -258,8 +264,8 @@ public class XScriptService(ILogger<XScriptService> logger, IWebViewHostService 
         _webViewHostService.Reload();
         await WaitForDocumentReadyAsync();
 
-        _logger.LogInformation("Deleted {TotalFollowings} Followings.", postNumber);
-        return postNumber;
+        _logger.LogInformation("Deleted {DeletedItems} Followings.", deletedItems);
+        return deletedItems;
     }
 
     private async Task<bool> PostsExistAsync()

@@ -6,10 +6,10 @@
     xmlns:converters="clr-namespace:CleanMyPosts.UI.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+    xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="clr-namespace:CleanMyPosts.UI.Models"
     xmlns:properties="clr-namespace:CleanMyPosts.UI.Properties"
-    xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
     d:DesignHeight="450"
     d:DesignWidth="800"
     Style="{DynamicResource MahApps.Styles.Page}"
@@ -86,27 +86,33 @@
 
                 <StackPanel Margin="{StaticResource SmallTopBottomMargin}">
                     <StackPanel
-                       Margin="0,8,0,0"
-                       VerticalAlignment="Center"
-                       Orientation="Horizontal">
+                        Margin="0,8,0,0"
+                        VerticalAlignment="Center"
+                        Orientation="Horizontal">
                         <TextBlock
-                           Width="200"
-                           VerticalAlignment="Center"
-                           Text="Wait after document loaded:" />
-                        <controls:NumericUpDown Width="100" Value="{Binding WaitAfterDocumentLoad, Mode=TwoWay}" Minimum="0"/>
-                        <TextBlock Text="ms" Margin="{StaticResource SmallLeftMargin}"/>
+                            Width="200"
+                            VerticalAlignment="Center"
+                            Text="Wait after document loaded:" />
+                        <controls:NumericUpDown
+                            Width="100"
+                            Minimum="0"
+                            Value="{Binding WaitAfterDocumentLoad, Mode=TwoWay}" />
+                        <TextBlock Margin="{StaticResource SmallLeftMargin}" Text="ms" />
                     </StackPanel>
 
                     <StackPanel
-                       Margin="0,8,0,0"
-                       VerticalAlignment="Center"
-                       Orientation="Horizontal">
+                        Margin="0,8,0,0"
+                        VerticalAlignment="Center"
+                        Orientation="Horizontal">
                         <TextBlock
-                           Width="200"
-                           VerticalAlignment="Center"
-                           Text="Wait after delete:" />
-                        <controls:NumericUpDown Width="100" Value="{Binding WaitAfterDelete, Mode=TwoWay}" Minimum="0"/>
-                        <TextBlock Text="ms" Margin="{StaticResource SmallLeftMargin}"/>
+                            Width="200"
+                            VerticalAlignment="Center"
+                            Text="Wait after delete:" />
+                        <controls:NumericUpDown
+                            Width="100"
+                            Minimum="0"
+                            Value="{Binding WaitAfterDelete, Mode=TwoWay}" />
+                        <TextBlock Margin="{StaticResource SmallLeftMargin}" Text="ms" />
                     </StackPanel>
 
                     <StackPanel
@@ -117,8 +123,11 @@
                             Width="200"
                             VerticalAlignment="Center"
                             Text="Wait between retry delete attempts:" />
-                        <controls:NumericUpDown Width="100" Value="{Binding WaitBetweenRetryDeleteAttempts, Mode=TwoWay}"  Minimum="0"/>
-                        <TextBlock Text="ms" Margin="{StaticResource SmallLeftMargin}"/>
+                        <controls:NumericUpDown
+                            Width="100"
+                            Minimum="0"
+                            Value="{Binding WaitBetweenRetryDeleteAttempts, Mode=TwoWay}" />
+                        <TextBlock Margin="{StaticResource SmallLeftMargin}" Text="ms" />
                     </StackPanel>
                 </StackPanel>
 
@@ -174,9 +183,15 @@
                         Margin="{StaticResource MediumLeftMargin}"
                         VerticalAlignment="Center"
                         Command="{Binding CheckUpdatesCommand}">
-                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <iconPacks:PackIconMaterial Kind="Sync" Width="16" Height="16" Margin="0,0,5,0" VerticalAlignment="Center" Foreground="DodgerBlue" />
-                            <TextBlock Text="Check for Updates" VerticalAlignment="Center" />
+                        <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                            <iconPacks:PackIconMaterial
+                                Width="16"
+                                Height="16"
+                                Margin="0,0,5,0"
+                                VerticalAlignment="Center"
+                                Foreground="DodgerBlue"
+                                Kind="Sync" />
+                            <TextBlock VerticalAlignment="Center" Text="Check for Updates" />
                         </StackPanel>
                     </Button>
 
@@ -185,9 +200,14 @@
                         Margin="{StaticResource MediumLeftMargin}"
                         VerticalAlignment="Center"
                         Command="{Binding OpenHomepageCommand}">
-                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <iconPacks:PackIconRadixIcons Kind="GithubLogo" Width="16" Height="16" Margin="0,0,5,0" VerticalAlignment="Center" />
-                            <TextBlock Text="Project on GitHub" VerticalAlignment="Center" />
+                        <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                            <iconPacks:PackIconRadixIcons
+                                Width="16"
+                                Height="16"
+                                Margin="0,0,5,0"
+                                VerticalAlignment="Center"
+                                Kind="GithubLogo" />
+                            <TextBlock VerticalAlignment="Center" Text="Project on GitHub" />
                         </StackPanel>
                     </Button>
 
@@ -196,9 +216,15 @@
                         Margin="{StaticResource MediumLeftMargin}"
                         VerticalAlignment="Center"
                         Command="{Binding OpenReportBugCommand}">
-                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <iconPacks:PackIconMaterial Kind="Bug" Width="16" Height="16" Margin="0,0,5,0" VerticalAlignment="Center" Foreground="Firebrick"/>
-                            <TextBlock Text="Report a Bug" VerticalAlignment="Center" />
+                        <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                            <iconPacks:PackIconMaterial
+                                Width="16"
+                                Height="16"
+                                Margin="0,0,5,0"
+                                VerticalAlignment="Center"
+                                Foreground="SteelBlue"
+                                Kind="Bug" />
+                            <TextBlock VerticalAlignment="Center" Text="Report a Bug" />
                         </StackPanel>
                     </Button>
 
@@ -211,16 +237,22 @@
 
 
                 <Button
-                        Margin="{StaticResource MediumTopMargin}"
-                        VerticalAlignment="Center"
-                        HorizontalAlignment="Left"
-                        Command="{Binding OpenLicenseCommand}">
-                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                        <iconPacks:PackIconMaterial Kind="FileDocumentMultiple" Width="16" Height="16" Margin="0,0,5,0" VerticalAlignment="Center"/>
-                        <TextBlock Text="View Third-Party Licenses" VerticalAlignment="Center" />
+                    Margin="{StaticResource MediumTopMargin}"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Center"
+                    Command="{Binding OpenLicenseCommand}">
+                    <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                        <iconPacks:PackIconMaterial
+                            Width="16"
+                            Height="16"
+                            Margin="0,0,5,0"
+                            VerticalAlignment="Center"
+                            Foreground="SteelBlue"
+                            Kind="FileDocumentMultiple" />
+                        <TextBlock VerticalAlignment="Center" Text="View Third-Party Licenses" />
                     </StackPanel>
                 </Button>
-                
+
             </StackPanel>
         </Grid>
     </ScrollViewer>

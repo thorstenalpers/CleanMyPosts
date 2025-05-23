@@ -54,7 +54,7 @@ public partial class ShellWindow : MetroWindow, IShellWindow
             Left = Left,
             Width = Width,
             Height = Height,
-            WindowState = this.WindowState
+            WindowState = WindowState
         };
 
         _userSettingsService.SaveWindowsSettings(settings);

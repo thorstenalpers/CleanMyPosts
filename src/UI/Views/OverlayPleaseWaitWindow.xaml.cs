@@ -2,31 +2,40 @@
 using System.Windows.Input;
 
 namespace CleanMyPosts.UI.Views;
-/// <summary>
-/// Interaction logic for OverlayWindow.xaml
-/// </summary>
-public partial class OverlayWindow : Window
+
+public partial class OverlayPleaseWaitWindow : Window
 {
-    public OverlayWindow()
+    public OverlayPleaseWaitWindow()
     {
         InitializeComponent();
+        ShowInTaskbar = false;
+        Topmost = true;
+    }
+
+    public void ShowOverlay(bool hideOverlayUpdateProgress)
+    {
+        if (hideOverlayUpdateProgress)
+        {
+            Visibility = Visibility.Hidden;
+        }
+        Show();
+        Activate();
     }
 
     private void Window_MouseDown(object sender, MouseButtonEventArgs e)
     {
         if (e.LeftButton == MouseButtonState.Pressed)
         {
-            var mainWindow = this.Owner;
+            var mainWindow = Owner;
             if (mainWindow != null)
             {
                 try
                 {
-                    // Try dragging the main window instead
                     mainWindow.DragMove();
                 }
                 catch (InvalidOperationException)
                 {
-                    // DragMove can throw if mouse not down properly
+                    // Ignore if DragMove fails
                 }
             }
         }

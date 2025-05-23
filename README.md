@@ -40,7 +40,7 @@ Here’s a quick look at how CleanMyPosts works:
 #### Remove likes 
   <img src="./assets/delete-likes.gif" alt="Remove Likes GIF" width="400" />
 
-#### Unfollow accounts
+#### Unfollow people
   <img src="./assets/delete-following.gif" alt="Unfollow Accounts GIF" width="400" />
 
 #### Settings 

@@ -65,13 +65,6 @@ jobs:
 
         dotnet tool run dotnet-sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
 
-    - name: Upload to Coveralls
-      uses: coverallsapp/github-action@v2
-      with:
-        path-to-lcov: TestResults/Reports/lcov.info
-      env:
-        COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
-
     - name: Upload Test Coverage Report
       uses: actions/upload-artifact@v4
       with:

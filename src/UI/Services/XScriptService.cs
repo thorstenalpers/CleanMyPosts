@@ -76,7 +76,7 @@ public class XScriptService(ILogger<XScriptService> logger, IWebViewHostService 
 
                 if (await WaitForPostDeletedAsync(countBefore))
                 {
-                    _logger.LogInformation("Post #{Number} deleted successfully.", postNumber);
+                    _logger.LogInformation("Post #{Number} cleaned successfully.", postNumber);
                     deletedItems++;
                 }
                 else
@@ -160,12 +160,12 @@ public class XScriptService(ILogger<XScriptService> logger, IWebViewHostService 
 
                 if (await WaitForLikeDeletedAsync(countBefore))
                 {
-                    _logger.LogInformation("Like #{Number} deleted successfully.", postNumber);
+                    _logger.LogInformation("Like #{Number} cleaned successfully.", postNumber);
                     deletedItems++;
                 }
                 else
                 {
-                    _logger.LogWarning("Like #{Number} was not deleted (DOM unchanged).", postNumber);
+                    _logger.LogWarning("Like #{Number} was not cleaned (DOM unchanged).", postNumber);
                     break;
                 }
             }
@@ -244,12 +244,12 @@ public class XScriptService(ILogger<XScriptService> logger, IWebViewHostService 
 
                 if (await WaitForFollowingDeletedAsync(countBefore))
                 {
-                    _logger.LogInformation("Following #{Number} deleted successfully.", postNumber);
+                    _logger.LogInformation("Following #{Number} cleaned successfully.", postNumber);
                     deletedItems++;
                 }
                 else
                 {
-                    _logger.LogWarning("Following #{Number} was not deleted (DOM unchanged).", postNumber);
+                    _logger.LogWarning("Following #{Number} was not cleaned (DOM unchanged).", postNumber);
                     break;
                 }
             }
@@ -380,16 +380,54 @@ public class XScriptService(ILogger<XScriptService> logger, IWebViewHostService 
         var waitBeforeTryClickDelete = _userSettingsService.GetTimeoutSettings().WaitAfterDelete;
 
         var js = $@"
-        (() => {{
-            const unlikeButton = document.querySelector('button[data-testid=""unlike""]');
-            if (unlikeButton) {{
-                unlikeButton.click();
+(() => {{
+    console.log('Attempting to find an unlike button...');
+    const delay = ms => new Promise(res => setTimeout(res, ms));
+    async function unlike() {{
+        const unlikeButton = document.querySelector('button[data-testid=""unlike""]');
+        if (!unlikeButton) {{
+            console.log('No unlike button found.');
+            return false;
+        }}
+        console.log('Found unlike button, clicking...');
+        unlikeButton.click();
+
+        // Wait a bit to allow the UI to update
+        await delay({waitBeforeTryClickDelete});
+
+        // Check if the button disappeared (like removed)
+        const stillExists = document.querySelector('button[data-testid=""unlike""]');
+        if (stillExists) {{
+            console.log('Unlike button still present, retrying...');
+            return false;
+        }}
+
+        console.log('Unlike successful! Scrolling down...');
+        window.scrollBy(0, 3000);
+        return true;
+    }}
+
+    // Retry logic: try up to 5 times with 2 sec delay between attempts
+    async function tryUnlike(attempts = 5) {{
+        for (let i = 1; i <= attempts; i++) {{
+            const result = await unlike();
+            if (result) {{
+                console.log(`Unlike succeeded on attempt #${{i}}`);
+                return true;
             }}
-            window.scrollBy(0, 3000);
-        }})();";
+            console.log(`Attempt #${{i}} failed, waiting before retry...`);
+            await delay(2000);
+        }}
+        console.log('Failed to unlike after max attempts.');
+        return false;
+    }}
+
+    return tryUnlike();
+}})();";
+
         await _webViewHostService.ExecuteScriptAsync(js);
-        await Task.Delay(waitBeforeTryClickDelete);
     }
+
 
     private async Task DeleteSingleFollowingAsync()
     {

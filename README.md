@@ -35,16 +35,16 @@
 Here’s a quick look at how CleanMyPosts works:
 
 #### Bulk delete tweets 
-  <img src="./assets/delete-posts.gif" alt="Delete Tweets GIF" width="400" />
+  <img src="./assets/delete-posts.gif" alt="Delete Tweets GIF" width="600" />
 
 #### Remove likes 
-  <img src="./assets/delete-likes.gif" alt="Remove Likes GIF" width="400" />
+  <img src="./assets/delete-likes.gif" alt="Remove Likes GIF" width="600" />
 
 #### Unfollow people
-  <img src="./assets/delete-following.gif" alt="Unfollow Accounts GIF" width="400" />
+  <img src="./assets/delete-following.gif" alt="Unfollow Accounts GIF" width="600" />
 
 #### Settings 
-  <img src="./assets/settings.png" alt="Settings" width="400" />
+  <img src="./assets/settings.png" alt="Settings" width="600" />
 
 
 

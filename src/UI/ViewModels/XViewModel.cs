@@ -171,39 +171,50 @@ public partial class XViewModel : ObservableObject
     [RelayCommand]
     private async Task ShowPosts()
     {
-        EnableUserInteractions(false);
-        await _xWebViewScriptService.ShowPostsAsync();
-        EnableUserInteractions(true);
+        try
+        {
+            EnableUserInteractions(false);
+            await _xWebViewScriptService.ShowPostsAsync();
+        }
+        finally
+        {
+            EnableUserInteractions(true);
+        }
     }
 
     [RelayCommand]
     private async Task DeletePosts()
     {
-        EnableUserInteractions(false, false);
-
-        if (_userSettingsService.GetConfirmDeletion())
+        try
         {
-            _webViewHostService.Hide(true);
-            var result = await _dialogCoordinator.ShowMessageAsync(
-            this,
-            "Confirm Deletion",
-            "Are you sure you want to delete all posts?",
-            MessageDialogStyle.AffirmativeAndNegative);
-            _webViewHostService.Hide(false);
+            EnableUserInteractions(false, false);
 
-            if (result == MessageDialogResult.Affirmative)
+            if (_userSettingsService.GetConfirmDeletion())
+            {
+                _webViewHostService.Hide(true);
+                var result = await _dialogCoordinator.ShowMessageAsync(
+                this,
+                "Confirm Deletion",
+                "Are you sure you want to delete all posts?",
+                MessageDialogStyle.AffirmativeAndNegative);
+                _webViewHostService.Hide(false);
+
+                if (result == MessageDialogResult.Affirmative)
+                {
+                    var deletetCnt = await _xWebViewScriptService.DeletePostsAsync();
+                    await ShowNotificationAsync($"{deletetCnt} post(s) deleted successfully.", TimeSpan.FromSeconds(3));
+                }
+            }
+            else
             {
                 var deletetCnt = await _xWebViewScriptService.DeletePostsAsync();
                 await ShowNotificationAsync($"{deletetCnt} post(s) deleted successfully.", TimeSpan.FromSeconds(3));
             }
         }
-        else
+        finally
         {
-            var deletetCnt = await _xWebViewScriptService.DeletePostsAsync();
-            await ShowNotificationAsync($"{deletetCnt} post(s) deleted successfully.", TimeSpan.FromSeconds(3));
+            EnableUserInteractions(true);
         }
-
-        EnableUserInteractions(true);
     }
 
     private async Task ShowNotificationAsync(string msg, TimeSpan delay)
@@ -217,76 +228,98 @@ public partial class XViewModel : ObservableObject
     [RelayCommand]
     private async Task ShowLikes()
     {
-        EnableUserInteractions(false);
-        await _xWebViewScriptService.ShowLikesAsync();
-        EnableUserInteractions(true);
+        try
+        {
+            EnableUserInteractions(false);
+            await _xWebViewScriptService.ShowLikesAsync();
+        }
+        finally
+        {
+            EnableUserInteractions(true);
+        }
     }
 
     [RelayCommand]
     private async Task DeleteLikes()
     {
-        EnableUserInteractions(false, false);
-
-        if (_userSettingsService.GetConfirmDeletion())
+        try
         {
-            _webViewHostService.Hide(true);
-            var result = await _dialogCoordinator.ShowMessageAsync(
-            this,
-            "Confirm Deletion",
-            "Are you sure you want to delete all likes?",
-            MessageDialogStyle.AffirmativeAndNegative);
-            _webViewHostService.Hide(false);
+            EnableUserInteractions(false, false);
+            if (_userSettingsService.GetConfirmDeletion())
+            {
+                _webViewHostService.Hide(true);
+                var result = await _dialogCoordinator.ShowMessageAsync(
+                this,
+                "Confirm Deletion",
+                "Are you sure you want to delete all likes?",
+                MessageDialogStyle.AffirmativeAndNegative);
+                _webViewHostService.Hide(false);
 
-            if (result == MessageDialogResult.Affirmative)
+                if (result == MessageDialogResult.Affirmative)
+                {
+                    var deletetCnt = await _xWebViewScriptService.DeleteLikesAsync();
+                    await ShowNotificationAsync($"{deletetCnt} like(s) deleted successfully.", TimeSpan.FromSeconds(3));
+                }
+            }
+            else
             {
                 var deletetCnt = await _xWebViewScriptService.DeleteLikesAsync();
                 await ShowNotificationAsync($"{deletetCnt} like(s) deleted successfully.", TimeSpan.FromSeconds(3));
             }
         }
-        else
+        finally
         {
-            var deletetCnt = await _xWebViewScriptService.DeleteLikesAsync();
-            await ShowNotificationAsync($"{deletetCnt} like(s) deleted successfully.", TimeSpan.FromSeconds(3));
+            EnableUserInteractions(true);
         }
-        EnableUserInteractions(true);
     }
 
     [RelayCommand]
     private async Task ShowFollowing()
     {
-        EnableUserInteractions(false);
-        await _xWebViewScriptService.ShowFollowingAsync();
-        EnableUserInteractions(true);
+        try
+        {
+            EnableUserInteractions(false);
+            await _xWebViewScriptService.ShowFollowingAsync();
+        }
+        finally
+        {
+            EnableUserInteractions(true);
+        }
     }
 
     [RelayCommand]
     private async Task DeleteFollowing()
     {
-        EnableUserInteractions(false, false);
-
-        if (_userSettingsService.GetConfirmDeletion())
+        try
         {
-            _webViewHostService.Hide(true);
-            var result = await _dialogCoordinator.ShowMessageAsync(
-                this,
-                "Confirm Deletion",
-                "Are you sure you want to delete all following?",
-                MessageDialogStyle.AffirmativeAndNegative);
-            _webViewHostService.Hide(false);
+            EnableUserInteractions(false, false);
 
-            if (result == MessageDialogResult.Affirmative)
+            if (_userSettingsService.GetConfirmDeletion())
+            {
+                _webViewHostService.Hide(true);
+                var result = await _dialogCoordinator.ShowMessageAsync(
+                    this,
+                    "Confirm Deletion",
+                    "Are you sure you want to delete all following?",
+                    MessageDialogStyle.AffirmativeAndNegative);
+                _webViewHostService.Hide(false);
+
+                if (result == MessageDialogResult.Affirmative)
+                {
+                    var deletetCnt = await _xWebViewScriptService.DeleteFollowingAsync();
+                    await ShowNotificationAsync($"{deletetCnt} following(s) deleted successfully.", TimeSpan.FromSeconds(3));
+                }
+            }
+            else
             {
                 var deletetCnt = await _xWebViewScriptService.DeleteFollowingAsync();
                 await ShowNotificationAsync($"{deletetCnt} following(s) deleted successfully.", TimeSpan.FromSeconds(3));
             }
         }
-        else
+        finally
         {
-            var deletetCnt = await _xWebViewScriptService.DeleteFollowingAsync();
-            await ShowNotificationAsync($"{deletetCnt} following(s) deleted successfully.", TimeSpan.FromSeconds(3));
+            EnableUserInteractions(true);
         }
-
-        EnableUserInteractions(true);
     }
 
     private void EnableUserInteractions(bool enable, bool showOverlay = true)

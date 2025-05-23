@@ -19,8 +19,6 @@ public partial class App : Application
     {
         _appSetupService = new AppSetupService();
         _hostService = new HostService();
-
-        DispatcherUnhandledException += OnDispatcherUnhandledException;
     }
 
     private async void OnStartup(object sender, StartupEventArgs e)

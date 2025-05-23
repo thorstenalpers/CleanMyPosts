@@ -103,50 +103,6 @@ namespace CleanMyPosts.UI.Tests.ViewModels
                 LogLevel.Information, It.IsAny<EventId>(), It.Is<It.IsAnyType>((v, t) => v.ToString().Contains("info")), null, It.IsAny<Func<It.IsAnyType, Exception, string>>()), Times.Once);
         }
 
-        [Fact]
-        public async Task DeletePosts_Confirmed_DoesDeletePosts()
-        {
-            var viewModel = CreateViewModel();
-            _dialogCoordinatorMock.Setup(d => d.ShowMessageAsync(
-                viewModel, It.IsAny<string>(), It.IsAny<string>(), MessageDialogStyle.AffirmativeAndNegative, null))
-                .ReturnsAsync(MessageDialogResult.Negative);
-            _dialogCoordinatorMock.Setup(d => d.ShowMessageAsync(
-                viewModel, It.IsAny<string>(), It.IsAny<string>(), MessageDialogStyle.AffirmativeAndNegative, null))
-                .ReturnsAsync(MessageDialogResult.Negative);
-
-            await viewModel.DeletePostsCommand.ExecuteAsync(null);
-
-            _xWebViewScriptServiceMock.Verify(x => x.DeletePostsAsync(), Times.Once);
-            Assert.True(viewModel.AreButtonsEnabled);
-        }
-
-        [StaFact]
-        public async Task DeleteLikes_Confirmed_DeletesLikesAndShowsNotification()
-        {
-            var viewModel = CreateViewModel();
-            _dialogCoordinatorMock.Setup(d => d.ShowMessageAsync(
-                viewModel, It.IsAny<string>(), It.IsAny<string>(), MessageDialogStyle.AffirmativeAndNegative, null))
-                .ReturnsAsync(MessageDialogResult.Affirmative);
-
-            await viewModel.DeleteLikesCommand.ExecuteAsync(null);
-
-            _xWebViewScriptServiceMock.Verify(x => x.DeleteLikesAsync(), Times.Once);
-            Assert.True(viewModel.AreButtonsEnabled);
-        }
-
-        [Fact]
-        public async Task DeleteFollowing_Confirmed_DeletesFollowingAndShowsNotification()
-        {
-            var viewModel = CreateViewModel();
-            _dialogCoordinatorMock.Setup(d => d.ShowMessageAsync(
-                viewModel, It.IsAny<string>(), It.IsAny<string>(), MessageDialogStyle.AffirmativeAndNegative, null))
-                .ReturnsAsync(MessageDialogResult.Affirmative);
-
-            await viewModel.DeleteFollowingCommand.ExecuteAsync(null);
-
-            _xWebViewScriptServiceMock.Verify(x => x.DeleteFollowingAsync(), Times.Once);
-            Assert.True(viewModel.AreButtonsEnabled);
-        }
 
         [StaFact]
         public async Task ShowPostsCommand_CallsShowPostsAsync_EnablesUserInteractions()

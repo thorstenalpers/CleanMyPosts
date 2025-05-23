@@ -150,6 +150,7 @@
                         <ColumnDefinition Width="Auto" SharedSizeGroup="ButtonColumn" />
                         <ColumnDefinition Width="Auto" SharedSizeGroup="ButtonColumn" />
                         <ColumnDefinition Width="Auto" SharedSizeGroup="ButtonColumn" />
+                        <ColumnDefinition Width="Auto" SharedSizeGroup="ButtonColumn" />
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
 
@@ -174,7 +175,7 @@
                         VerticalAlignment="Center"
                         Command="{Binding CheckUpdatesCommand}">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <iconPacks:PackIconMaterial Kind="Sync" Width="16" Height="16" Margin="0,0,5,0" VerticalAlignment="Center" />
+                            <iconPacks:PackIconMaterial Kind="Sync" Width="16" Height="16" Margin="0,0,5,0" VerticalAlignment="Center" Foreground="DodgerBlue" />
                             <TextBlock Text="Check for Updates" VerticalAlignment="Center" />
                         </StackPanel>
                     </Button>
@@ -185,8 +186,8 @@
                         VerticalAlignment="Center"
                         Command="{Binding OpenHomepageCommand}">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <iconPacks:PackIconFontAwesome Kind="GithubAltBrands" Width="16" Height="16" Margin="0,0,5,0" VerticalAlignment="Center" />
-                            <TextBlock Text="View on GitHub" VerticalAlignment="Center" />
+                            <iconPacks:PackIconRadixIcons Kind="GithubLogo" Width="16" Height="16" Margin="0,0,5,0" VerticalAlignment="Center" />
+                            <TextBlock Text="Project on GitHub" VerticalAlignment="Center" />
                         </StackPanel>
                     </Button>
 
@@ -196,7 +197,7 @@
                         VerticalAlignment="Center"
                         Command="{Binding OpenReportBugCommand}">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <iconPacks:PackIconMaterial Kind="Bug" Width="16" Height="16" Margin="0,0,5,0" VerticalAlignment="Center" />
+                            <iconPacks:PackIconMaterial Kind="Bug" Width="16" Height="16" Margin="0,0,5,0" VerticalAlignment="Center" Foreground="Firebrick"/>
                             <TextBlock Text="Report a Bug" VerticalAlignment="Center" />
                         </StackPanel>
                     </Button>
@@ -208,11 +209,18 @@
                     Style="{StaticResource BodyTextStyle}"
                     Text="{x:Static properties:Resources.SettingsPageAboutText}" />
 
-                <TextBlock Margin="{StaticResource MediumTopMargin}" Style="{StaticResource BodyTextStyle}">
-                    <Hyperlink Command="{Binding OpenLicenseCommand}">
-                        View Third-Party Licenses
-                    </Hyperlink>
-                </TextBlock>
+
+                <Button
+                        Margin="{StaticResource MediumTopMargin}"
+                        VerticalAlignment="Center"
+                        HorizontalAlignment="Left"
+                        Command="{Binding OpenLicenseCommand}">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <iconPacks:PackIconMaterial Kind="FileDocumentMultiple" Width="16" Height="16" Margin="0,0,5,0" VerticalAlignment="Center"/>
+                        <TextBlock Text="View Third-Party Licenses" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
+                
             </StackPanel>
         </Grid>
     </ScrollViewer>

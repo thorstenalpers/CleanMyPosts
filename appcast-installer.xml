@@ -2,18 +2,17 @@
 <rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
   <channel>
     <title>CleanMyPosts Updates</title>
-    <link>https://github.com/thorstenalpers/CleanMyPosts/releases/download/v1.0.1/CleanMyPosts-Installer-1.0.1-win-x64.exe</link>
+    <link>https://github.com/thorstenalpers/CleanMyPosts/releases/download/v1.0.2/CleanMyPosts-Installer-1.0.2-win-x64.exe</link>
     <description>Latest releases of CleanMyPosts</description>
 
     <item>
-      <title>Version 1.0.1</title>
-      <sparkle:releaseNotesLink>https://raw.githubusercontent.com/thorstenalpers/CleanMyPosts/refs/heads/main/release-notes/v1.0.1.md</sparkle:releaseNotesLink>
+      <title>Version 1.0.2</title>
+      <sparkle:releaseNotesLink>https://raw.githubusercontent.com/thorstenalpers/CleanMyPosts/refs/heads/main/release-notes/v1.0.2.md</sparkle:releaseNotesLink>
       <pubDate>Fri, 23 May 2025 16:59:19 GMT</pubDate>
       <enclosure 
-          url="https://github.com/thorstenalpers/CleanMyPosts/releases/download/v1.0.1/CleanMyPosts-Installer-1.0.1-win-x64.exe"
-          sparkle:version="1.0.1"
-          sparkle:shortVersionString="1.0.1"
-          length="{{FILE_SIZE}}"
+          url="https://github.com/thorstenalpers/CleanMyPosts/releases/download/v1.0.2/CleanMyPosts-Installer-1.0.2-win-x64.exe"
+          sparkle:version="1.0.2"
+          sparkle:shortVersionString="1.0.2"
           type="application/octet-stream" />
     </item>
   </channel>

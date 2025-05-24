@@ -30,6 +30,23 @@
 3. Launch the app and log in with your X (formerly Twitter) account.
 4. Start deleting your posts, likes, and following list.
 
+
+
+## ℹ️ About Browser Automation
+
+CleanMyPosts uses **browser automation** to perform bulk actions—such as deleting posts, likes, and unfollowing accounts—on your X (formerly Twitter) profile.  
+This method is used because X currently does **not offer an official feature or API** for these actions.
+
+Please keep in mind:
+- While convenient, browser automation may **not fully comply** with X’s Terms of Service.  
+- All operations are performed in your own logged-in browser session—**no credentials are stored**.
+- Since browser automation mimics real user interactions, these actions are typically **indistinguishable from manual activity**, reducing the risk of detection.
+
+
+## Report a Bug 🐞
+
+If you encounter any issues or bugs, please [report them here](https://github.com/thorstenalpers/CleanMyPosts/issues).
+
 ## 🎬 See It in Action
 
 Here’s a quick look at how CleanMyPosts works:
@@ -46,19 +63,3 @@ Here’s a quick look at how CleanMyPosts works:
 #### Settings 
   <img src="./assets/settings.png" alt="Settings" width="700" />
 
-
-
-## ℹ️ About Browser Automation
-
-CleanMyPosts uses **browser automation** to perform bulk actions—such as deleting posts, likes, and unfollowing accounts—on your X (formerly Twitter) profile.  
-This method is used because X currently does **not offer an official feature or API** for these actions.
-
-Please keep in mind:
-- While convenient, browser automation may **not fully comply** with X’s Terms of Service.  
-- All operations are performed in your own logged-in browser session—**no credentials are stored**.
-- Since browser automation mimics real user interactions, these actions are typically **indistinguishable from manual activity**, reducing the risk of detection.
-
-
-### Report a Bug 🐞
-
-If you encounter any issues or bugs, please [report them here](https://github.com/thorstenalpers/CleanMyPosts/issues).

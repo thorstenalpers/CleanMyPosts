@@ -109,14 +109,14 @@ jobs:
         $installerXml = $template `
           -replace "{{VERSION}}", $version `
           -replace "{{INSTALLER_URL}}", $installerUrl `
-          -replace "{{CHANGELOG_URL}}", $changelogUrl `
+          -replace "{{CHANGELOG_URL}}", $changelogUrl 
         $installerXml | Set-Content -Path "artifacts/update-installer.xml" -Encoding UTF8
 
         $singleUrl = "$baseUrl/CleanMyPosts-$version-win-x64.exe"
         $singleXml = $template `
           -replace "{{VERSION}}", $version `
           -replace "{{INSTALLER_URL}}", $singleUrl `
-          -replace "{{CHANGELOG_URL}}", $changelogUrl `
+          -replace "{{CHANGELOG_URL}}", $changelogUrl 
         $singleXml | Set-Content -Path "artifacts/update-single.xml" -Encoding UTF8
 
     - name: Create GitHub App Token

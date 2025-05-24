@@ -102,8 +102,6 @@ jobs:
         $repo = "${{ github.repository }}"
         $baseUrl = "https://github.com/$repo/releases/download/v$version"
         $changelogUrl = "https://raw.githubusercontent.com/thorstenalpers/CleanMyPosts/refs/heads/main/release-notes/v$version.md"
-        $pubDate = (Get-Date -Format R)
-        $fileSize = "{{FILE_SIZE}}" 
 
         $template = Get-Content "update-feed/update-template.xml" -Raw
 

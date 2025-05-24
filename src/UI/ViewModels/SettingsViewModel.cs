@@ -113,7 +113,13 @@ public partial class SettingsViewModel(ILogger<SettingsViewModel> logger,
 
         try
         {
-            var url = _deploymentService.IsRunningAsInstalled() ? _updaterConfig.UpdateUrlInstaller : _updaterConfig.UpdateUrlSingle;
+            var isStandalone = !_deploymentService.IsRunningAsInstalled();
+
+            var url = isStandalone ? _updaterConfig.UpdateUrlInstaller : _updaterConfig.UpdateUrlSingle;
+            if (isStandalone)
+            {
+                AutoUpdater.OpenDownloadPage = true;
+            }
             AutoUpdater.CheckForUpdateEvent += AutoUpdaterOnCheckForUpdateEvent;
             AutoUpdater.Start(url);
         }

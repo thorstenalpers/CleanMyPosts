@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<item>
+  <version>{{VERSION}}</version>
+  <url>{{INSTALLER_URL}}</url>
+  <changelog>{{CHANGELOG_URL}}</changelog>
+  <mandatory>false</mandatory>
+</item>

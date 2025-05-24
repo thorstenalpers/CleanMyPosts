@@ -1,4 +1,8 @@
 ﻿using System.Diagnostics;
+using System.Drawing;
+using System.Windows;
+using System.Windows.Resources;
+using AutoUpdaterDotNET;
 using CleanMyPosts.UI.Contracts.Services;
 using CleanMyPosts.UI.Contracts.ViewModels;
 using CleanMyPosts.UI.Helpers;
@@ -10,12 +14,17 @@ using Microsoft.Extensions.Logging;
 namespace CleanMyPosts.UI.ViewModels;
 
 public partial class SettingsViewModel(ILogger<SettingsViewModel> logger,
+    UpdaterConfig updaterConfig,
+    AppConfig appConfig,
     IUserSettingsService userSettingsService,
-    IUpdateService updateService) : ObservableObject, INavigationAware
+    IDeploymentService deploymentService) : ObservableObject, INavigationAware
 {
     private readonly ILogger<SettingsViewModel> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     private readonly IUserSettingsService _userSettingsService = userSettingsService ?? throw new ArgumentNullException(nameof(userSettingsService));
-    private readonly IUpdateService _updateService = updateService ?? throw new ArgumentNullException(nameof(updateService));
+    private readonly UpdaterConfig _updaterConfig = updaterConfig ?? throw new ArgumentNullException(nameof(updaterConfig));
+    private readonly AppConfig _appConfig = appConfig ?? throw new ArgumentNullException(nameof(appConfig));
+    private readonly IDeploymentService _deploymentService = deploymentService ?? throw new ArgumentNullException(nameof(deploymentService));
+    private bool _hasCheckedForUpdates = false;
 
     [ObservableProperty]
     private string _versionDescription;
@@ -48,7 +57,7 @@ public partial class SettingsViewModel(ILogger<SettingsViewModel> logger,
     }
 
     [RelayCommand]
-    private void OpenLicense()
+    private static void OpenLicense()
     {
         Process.Start(new ProcessStartInfo
         {
@@ -62,7 +71,7 @@ public partial class SettingsViewModel(ILogger<SettingsViewModel> logger,
     {
         Process.Start(new ProcessStartInfo
         {
-            FileName = "https://github.com/thorstenalpers/CleanMyPosts/blob/main/THIRD_PARTY_LICENSES.txt",
+            FileName = _appConfig.ThirdPartyUrl,
             UseShellExecute = true
         });
     }
@@ -72,23 +81,48 @@ public partial class SettingsViewModel(ILogger<SettingsViewModel> logger,
     {
         Process.Start(new ProcessStartInfo
         {
-            FileName = "https://github.com/thorstenalpers/CleanMyPosts/issues",
+            FileName = _appConfig.ReportIssueUrl,
             UseShellExecute = true
         });
     }
 
     [RelayCommand]
-    private async Task CheckUpdatesAsync()
+    private void CheckUpdates()
     {
+        if (_hasCheckedForUpdates)
+        {
+            return;
+        }
+
         try
         {
-            await _updateService.CheckForUpdatesAsync();
+            Uri iconUri = new Uri(_updaterConfig.IconUri, UriKind.Absolute);
+            StreamResourceInfo sri = Application.GetResourceStream(iconUri);
+
+            if (sri != null)
+            {
+                using var stream = sri.Stream;
+                using var icon = new Icon(stream);
+                AutoUpdater.Icon = icon.ToBitmap();
+            }
+        }
+        catch
+        {
+            /* Ignore errors loading icon */
+        }
+
+        try
+        {
+            var url = _deploymentService.IsRunningAsInstalled() ? _updaterConfig.UpdateUrlInstaller : _updaterConfig.UpdateUrlSingle;
+            AutoUpdater.Start(url);
+            _hasCheckedForUpdates = true;
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Check for updates failed.");
         }
     }
+
     partial void OnThemeChanged(AppTheme value)
     {
         _userSettingsService.SetTheme(value);

@@ -95,7 +95,7 @@ jobs:
       run: |
         git clone --branch update-feed --single-branch https://github.com/${{ github.repository }} update-feed || mkdir update-feed
 
-    - name: Generate appcast files using template
+    - name: Generate AutoUpdater.NET files using template
       shell: pwsh
       run: |
         $version = "${{ env.VERSION }}"
@@ -105,25 +105,21 @@ jobs:
         $pubDate = (Get-Date -Format R)
         $fileSize = "{{FILE_SIZE}}" 
 
-        $template = Get-Content "update-feed/appcast-template.xml" -Raw
+        $template = Get-Content "update-feed/update-template.xml" -Raw
 
         $installerUrl = "$baseUrl/CleanMyPosts-Installer-$version-win-x64.exe"
         $installerXml = $template `
           -replace "{{VERSION}}", $version `
           -replace "{{INSTALLER_URL}}", $installerUrl `
           -replace "{{CHANGELOG_URL}}", $changelogUrl `
-          -replace "{{PUB_DATE}}", $pubDate `
-          -replace "{{FILE_SIZE}}", $fileSize
-        $installerXml | Set-Content -Path "artifacts/appcast-installer.xml" -Encoding UTF8
+        $installerXml | Set-Content -Path "artifacts/update-installer.xml" -Encoding UTF8
 
         $singleUrl = "$baseUrl/CleanMyPosts-$version-win-x64.exe"
         $singleXml = $template `
           -replace "{{VERSION}}", $version `
           -replace "{{INSTALLER_URL}}", $singleUrl `
           -replace "{{CHANGELOG_URL}}", $changelogUrl `
-          -replace "{{PUB_DATE}}", $pubDate `
-          -replace "{{FILE_SIZE}}", $fileSize
-        $singleXml | Set-Content -Path "artifacts/appcast-single.xml" -Encoding UTF8
+        $singleXml | Set-Content -Path "artifacts/update-single.xml" -Encoding UTF8
 
     - name: Create GitHub App Token
       id: app-token
@@ -137,18 +133,18 @@ jobs:
       shell: bash
       run: |
         cd update-feed
-        cp ../artifacts/appcast-installer.xml appcast-installer.xml
-        cp ../artifacts/appcast-single.xml appcast-single.xml
+        cp ../artifacts/update-installer.xml update-installer.xml
+        cp ../artifacts/update-single.xml update-single.xml
 
         git config user.name "github-actions[bot]"
         git config user.email "github-actions[bot]@users.noreply.github.com"
 
-        git add appcast-installer.xml appcast-single.xml
+        git add update-installer.xml update-single.xml
 
         if git diff --cached --quiet; then
           echo "No changes to commit"
         else
-          git commit -m "Update appcast for ${{ env.VERSION }}"
+          git commit -m "Update for ${{ env.VERSION }}"
           git push https://x-access-token:${{ steps.app-token.outputs.token }}@github.com/${{ github.repository }} update-feed
         fi
 

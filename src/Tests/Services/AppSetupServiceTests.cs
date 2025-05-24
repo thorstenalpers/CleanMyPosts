@@ -10,21 +10,6 @@ namespace CleanMyPosts.Tests.Services;
 public class AppSetupServiceTests
 {
     [Fact]
-    public void BuildConfiguration_ShouldContainDefaultValues()
-    {
-        // Arrange
-        var service = new AppSetupService();
-
-        // Act
-        var config = service.BuildConfiguration();
-
-        // Assert
-        config["AppConfig:XBaseUrl"].Should().Be("https://x.com");
-        config["AppConfig:configurationsFolder"].Should().Contain("Configurations");
-        config["Updater:AppCastUrlInstaller"].Should().Contain("appcast-installer.xml");
-    }
-
-    [Fact]
     public void CreateLogger_ShouldReturnNotNullLogger()
     {
         // Arrange

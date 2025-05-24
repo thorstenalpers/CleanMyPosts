@@ -5,17 +5,16 @@ using CleanMyPosts.UI.Contracts.Services;
 using CleanMyPosts.UI.Models;
 using ControlzEx.Theming;
 using MahApps.Metro.Theming;
-using Microsoft.Extensions.Options;
 
 namespace CleanMyPosts.UI.Services;
 
-public class UserSettingsService(IFileService fileService, IOptions<AppConfig> appConfig) : IUserSettingsService
+public class UserSettingsService(IFileService fileService, AppConfig appConfig) : IUserSettingsService
 {
     private readonly IFileService _fileService = fileService;
     private readonly string _settingsPath = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-        appConfig.Value.ConfigurationsFolder);
-    private readonly string _settingsFile = appConfig.Value.AppPropertiesFileName;
+        appConfig.ConfigurationsFolder);
+    private readonly string _settingsFile = appConfig.AppPropertiesFileName;
 
     private UserSettings _settings;
 

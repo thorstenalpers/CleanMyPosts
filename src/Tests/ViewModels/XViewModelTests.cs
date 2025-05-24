@@ -4,7 +4,6 @@ using CleanMyPosts.UI.ViewModels;
 using CommunityToolkit.Mvvm.Input;
 using MahApps.Metro.Controls.Dialogs;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Microsoft.Web.WebView2.Wpf;
 using Moq;
 using Xunit;
@@ -18,7 +17,7 @@ namespace CleanMyPosts.UI.Tests.ViewModels
         private readonly Mock<ILogger<XViewModel>> _loggerMock;
         private readonly Mock<IXScriptService> _xWebViewScriptServiceMock;
         private readonly Mock<IDialogCoordinator> _dialogCoordinatorMock;
-        private readonly IOptions<AppConfig> _options;
+        private readonly Mock<AppConfig> _appConfigMock;
 
         public XViewModelTests()
         {
@@ -27,7 +26,7 @@ namespace CleanMyPosts.UI.Tests.ViewModels
             _userSettingsServiceMock = new Mock<IUserSettingsService>();
             _xWebViewScriptServiceMock = new Mock<IXScriptService>();
             _dialogCoordinatorMock = new Mock<IDialogCoordinator>();
-            _options = Options.Create(new AppConfig { XBaseUrl = "https://test.com" });
+            _appConfigMock = new Mock<AppConfig>();
         }
 
         private XViewModel CreateViewModel()
@@ -37,7 +36,7 @@ namespace CleanMyPosts.UI.Tests.ViewModels
                 _userSettingsServiceMock.Object,
                 _webViewHostServiceMock.Object,
                 _dialogCoordinatorMock.Object,
-                _options,
+                _appConfigMock.Object,
                 _xWebViewScriptServiceMock.Object
             );
         }
@@ -53,11 +52,12 @@ namespace CleanMyPosts.UI.Tests.ViewModels
         {
             var viewModel = CreateViewModel();
             var webView = new WebView2();
+            var appConfig = new AppConfig();
 
             await viewModel.InitializeAsync(webView);
 
             _webViewHostServiceMock.Verify(s => s.InitializeAsync(webView), Times.Once);
-            _webViewHostServiceMock.VerifySet(s => s.Source = new Uri(_options.Value.XBaseUrl), Times.Once);
+            _webViewHostServiceMock.VerifySet(s => s.Source = new Uri(appConfig.XBaseUrl), Times.Once);
             _webViewHostServiceMock.Verify(s => s.ExecuteScriptAsync(It.IsAny<string>()), Times.Once);
         }
 

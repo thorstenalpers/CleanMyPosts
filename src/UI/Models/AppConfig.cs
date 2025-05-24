@@ -1,8 +1,11 @@
 ﻿namespace CleanMyPosts.UI.Models;
 
+
 public class AppConfig
 {
-    public string ConfigurationsFolder { get; set; }
-    public string AppPropertiesFileName { get; set; }
-    public string XBaseUrl { get; set; }
+    public string ConfigurationsFolder { get; init; } = "CleanMyPosts\\Configurations";
+    public string AppPropertiesFileName { get; init; } = "AppProperties.json";
+    public string XBaseUrl { get; init; } = "https://x.com";
+    public string ReportIssueUrl { get; init; } = "https://github.com/thorstenalpers/CleanMyPosts/issues";
+    public string ThirdPartyUrl { get; init; } = "https://github.com/thorstenalpers/CleanMyPosts/blob/main/THIRD_PARTY_LICENSES.txt";
 }

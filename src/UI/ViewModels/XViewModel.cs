@@ -6,7 +6,6 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MahApps.Metro.Controls.Dialogs;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Microsoft.Web.WebView2.Wpf;
 
 namespace CleanMyPosts.UI.ViewModels;
@@ -41,7 +40,7 @@ public partial class XViewModel : ObservableObject
                          IUserSettingsService userSettingsService,
                          IWebViewHostService webViewHostService,
                          IDialogCoordinator dialogCoordinator,
-                         IOptions<AppConfig> options,
+                         AppConfig appConfig,
                          IXScriptService xWebViewScriptService)
     {
         _webViewHostService = webViewHostService ?? throw new ArgumentNullException(nameof(webViewHostService));
@@ -50,7 +49,7 @@ public partial class XViewModel : ObservableObject
         _xWebViewScriptService = xWebViewScriptService ?? throw new ArgumentNullException(nameof(xWebViewScriptService));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
-        _xBaseUrl = options.Value.XBaseUrl;
+        _xBaseUrl = appConfig.XBaseUrl;
         _webViewHostService.NavigationCompleted += OnNavigationCompleted;
         _webViewHostService.WebMessageReceived += OnWebMessageReceived;
     }

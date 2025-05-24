@@ -11,35 +11,19 @@ public class AppSetupService : IAppSetupService
 {
     public IConfiguration BuildConfiguration()
     {
-        var defaultSettings = new Dictionary<string, string>
-        {
-            ["AppConfig:configurationsFolder"] = "CleanMyPosts\\Configurations",
-            ["AppConfig:appPropertiesFileName"] = "AppProperties.json",
-            ["AppConfig:XBaseUrl"] = "https://x.com",
-            ["Updater:AppCastUrlInstaller"] = "https://raw.githubusercontent.com/thorstenalpers/CleanMyPosts/refs/heads/update-feed/appcast-installer.xml",
-            ["Updater:AppCastUrlSingle"] = "https://raw.githubusercontent.com/thorstenalpers/CleanMyPosts/refs/heads/update-feed/appcast-single.xml",
-            ["Updater:SecurityMode"] = "Unsafe",
-            ["Updater:IconUri"] = "pack://application:,,,/CleanMyPosts;component/Assets/logo.ico"
-        };
+
         return new ConfigurationBuilder()
-            .AddInMemoryCollection(defaultSettings)
-            .AddJsonFile("appsettings.json", optional: true)
             .AddEnvironmentVariables()
             .Build();
     }
 
     public ILogger CreateLogger(IConfiguration config, LogViewModel logViewModel)
     {
-        var loggerConfig = new LoggerConfiguration();
-
-        var serilogSection = config.GetSection("Serilog");
-        if (serilogSection.Exists())
-        {
-            loggerConfig = loggerConfig.ReadFrom.Configuration(config);
-        }
-
-        loggerConfig
+        var loggerConfig = new LoggerConfiguration()
             .WriteTo.Console()
+            .MinimumLevel.Information()
+            .MinimumLevel.Override("Microsoft", Serilog.Events.LogEventLevel.Warning)
+            .MinimumLevel.Override("System", Serilog.Events.LogEventLevel.Warning)
             .WriteTo.File(
                 path: Path.Combine(
                     Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),

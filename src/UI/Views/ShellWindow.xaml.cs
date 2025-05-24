@@ -25,13 +25,13 @@ public partial class ShellWindow : MetroWindow, IShellWindow
         Closing += OnClosing;
     }
 
-    private double GetCenteredLeft()
+    private static double GetCenteredLeft()
     {
         var screenWidth = SystemParameters.WorkArea.Width;
         return (screenWidth - DefaultWidth) / 2;
     }
 
-    private double GetCenteredTop()
+    private static double GetCenteredTop()
     {
         var screenHeight = SystemParameters.WorkArea.Height;
         return (screenHeight - DefaultHeight) / 2;

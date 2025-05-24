@@ -24,7 +24,12 @@ public partial class SettingsViewModel(ILogger<SettingsViewModel> logger,
     private readonly UpdaterConfig _updaterConfig = updaterConfig ?? throw new ArgumentNullException(nameof(updaterConfig));
     private readonly AppConfig _appConfig = appConfig ?? throw new ArgumentNullException(nameof(appConfig));
     private readonly IDeploymentService _deploymentService = deploymentService ?? throw new ArgumentNullException(nameof(deploymentService));
-    private bool _hasCheckedForUpdates = false;
+
+    [ObservableProperty]
+    private bool _isNotificationOpen;
+
+    [ObservableProperty]
+    private string _notificationMessage;
 
     [ObservableProperty]
     private string _versionDescription;
@@ -89,11 +94,6 @@ public partial class SettingsViewModel(ILogger<SettingsViewModel> logger,
     [RelayCommand]
     private void CheckUpdates()
     {
-        if (_hasCheckedForUpdates)
-        {
-            return;
-        }
-
         try
         {
             Uri iconUri = new Uri(_updaterConfig.IconUri, UriKind.Absolute);
@@ -114,13 +114,39 @@ public partial class SettingsViewModel(ILogger<SettingsViewModel> logger,
         try
         {
             var url = _deploymentService.IsRunningAsInstalled() ? _updaterConfig.UpdateUrlInstaller : _updaterConfig.UpdateUrlSingle;
+            AutoUpdater.CheckForUpdateEvent += AutoUpdaterOnCheckForUpdateEvent;
             AutoUpdater.Start(url);
-            _hasCheckedForUpdates = true;
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Check for updates failed.");
         }
+    }
+
+    private async void AutoUpdaterOnCheckForUpdateEvent(UpdateInfoEventArgs args)
+    {
+        if (args == null)
+        {
+            _logger.LogWarning("Unable to check for updates at this time.");
+            return;
+        }
+
+        if (args.IsUpdateAvailable)
+        {
+            AutoUpdater.ShowUpdateForm(args);
+        }
+        else
+        {
+            await ShowNotificationAsync("No updates available.", TimeSpan.FromSeconds(3));
+        }
+    }
+
+    private async Task ShowNotificationAsync(string msg, TimeSpan delay)
+    {
+        NotificationMessage = msg;
+        IsNotificationOpen = true;
+        await Task.Delay(delay);
+        IsNotificationOpen = false;
     }
 
     partial void OnThemeChanged(AppTheme value)

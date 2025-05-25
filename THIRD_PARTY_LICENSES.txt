@@ -7,6 +7,15 @@ licenseUrl:https://www.nuget.org/packages/Ardalis.GuardClauses/5.0.0/License
 license Type:LICENSE
 
 ####################################################################################################
+Package:Autoupdater.NET.Official
+Version:1.9.2
+project URL:https://github.com/ravibpatel/AutoUpdater.NET
+Description:AutoUpdater.NET is a class library that allows .NET developers to easily add auto update
+            functionality to their WinForms or WPF application projects.
+licenseUrl:https://licenses.nuget.org/MIT
+license Type:MIT
+
+####################################################################################################
 Package:CommunityToolkit.Mvvm
 Version:8.4.0
 project URL:https://github.com/CommunityToolkit/dotnet
@@ -98,22 +107,6 @@ Description:The WebView2 control enables you to embed web technologies (HTML, CS
 This package is necessary for Win32 C/C++, WPF, and WinForms applications. To learn more about package versions checkout https://aka.ms/wv2-packageversion. To learn best practices checkout: https://aka.ms/wv2-bestpractices.
 licenseUrl:https://www.nuget.org/packages/Microsoft.Web.WebView2/1.0.3179.45/License
 license Type:LICENSE.txt
-
-####################################################################################################
-Package:NetSparkleUpdater.SparkleUpdater
-Version:3.0.2
-project URL:https://github.com/NetSparkleUpdater/NetSparkle
-Description:NetSparkleUpdater/NetSparkle is a C# .NET software update framework that allows you to easily download installer files and update your C# .NET Framework or .NET Core software. Built-in UIs are available for WinForms, WPF, and Avalonia; if you want a built-in UI, please reference a NetSparkleUpdater.UI package. You provide, somewhere on the internet, an XML appcast with software version information along with release notes in Markdown or HTML format. The NetSparkle framework then checks for an update in the background, displays the release notes to the user, and lets users download or skip the software update. The framework can also perform silent downloads so that you can present all of the UI yourself or set up your own silent software update system, as allowed by your software architecture. It was inspired by the Sparkle (https://sparkle-project.org/) project for Cocoa developers and the WinSparkle (https://winsparkle.org/) project (a Win32 port).
-licenseUrl:https://licenses.nuget.org/MIT
-license Type:MIT
-
-####################################################################################################
-Package:NetSparkleUpdater.UI.WPF
-Version:3.0.2
-project URL:https://github.com/NetSparkleUpdater/NetSparkle
-Description:NetSparkleUpdater/NetSparkle app updater framework with built-in WPF .NET Core and .NET Framework UI. NetSparkleUpdater/NetSparkle is a C# .NET software update framework that allows you to easily download installer files and update your C# .NET Framework or .NET Core software. Built-in UIs are available for WinForms, WPF, and Avalonia. You provide, somewhere on the internet, an XML appcast with software version information along with release notes in Markdown or HTML format. The NetSparkle framework then checks for an update in the background, displays the release notes to the user, and lets users download or skip the software update. The framework can also perform silent downloads so that you can present all of the UI yourself or set up your own silent software update system, as allowed by your software architecture. It was inspired by the Sparkle (https://sparkle-project.org/) project for Cocoa developers and the WinSparkle (https://winsparkle.org/) project (a Win32 port).
-licenseUrl:https://licenses.nuget.org/MIT
-license Type:MIT
 
 ####################################################################################################
 Package:Newtonsoft.Json

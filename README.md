@@ -13,7 +13,7 @@
 - Bulk delete all tweets from your X (Twitter) account
 - Remove all likes with a single click
 - Unfollow all accounts in one go
-- Secure browser automation—no credentials stored outside of it
+- Secure browser automation — no credentials stored
 
 
 ## 🛠️ Requirements

@@ -5,7 +5,6 @@
 [![CI Tests](https://github.com/thorstenalpers/CleanMyPosts/actions/workflows/ci.yml/badge.svg)](https://github.com/thorstenalpers/CleanMyPosts/actions/workflows/ci.yml)
 [![Star this repo](https://img.shields.io/github/stars/thorstenalpers/CleanMyPosts.svg?style=social&label=Star&maxAge=60)](https://github.com/thorstenalpers/CleanMyPosts)
 
-
 **CleanMyPosts** is a lightweight Windows desktop app that securely deletes all tweets, likes, and followings from your X (formerly Twitter) account in bulk using browser automation.
 
 
@@ -14,7 +13,7 @@
 - Bulk delete all tweets from your X (Twitter) account
 - Remove all likes with a single click
 - Unfollow all accounts in one go
-- Secure browser automation—no credentials stored
+- Secure browser automation—no credentials stored outside of it
 
 
 ## 🛠️ Requirements
@@ -39,9 +38,17 @@ This method is used because X currently does **not offer an official feature or 
 
 Please keep in mind:
 - While convenient, browser automation may **not fully comply** with X’s Terms of Service.  
-- All operations are performed in your own logged-in browser session—**no credentials are stored**.
+- All operations are performed in your own logged-in browser session—**no credentials are stored outside**.
 - Since browser automation mimics real user interactions, these actions are typically **indistinguishable from manual activity**, reducing the risk of detection.
 
+## 🧍 Still Want to Delete Manually
+Click on your profile to find your username, then use these links (replace USERNAME with your handle):
+
+* **Delete posts:** https://x.com/search?q=from%3AUSERNAME&src=typed_query&f=top → click ... on each post → Delete.
+
+* **Unlike posts:** https://x.com/USERNAME/likes → click the heart to remove the like.
+
+* **Unfollow accounts:** https://x.com/USERNAME/following → click  unfollow.
 
 ## Report a Bug 🐞
 

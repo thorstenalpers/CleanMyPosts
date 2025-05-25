@@ -44,15 +44,11 @@ Please keep in mind:
 ## 🧍 Still Want to Delete Manually
 Click on your profile to find your username, then use these links (replace USERNAME with your handle):
 
-* **Delete posts:** https://x.com/search?q=from%3AUSERNAME&src=typed_query&f=top → click ... on each post → Delete.
+* **Delete posts:** https://x.com/search?q=from%3AUSERNAME → click ... on each post → Delete.
 
 * **Unlike posts:** https://x.com/USERNAME/likes → click the heart to remove the like.
 
 * **Unfollow accounts:** https://x.com/USERNAME/following → click  unfollow.
-
-## Report a Bug 🐞
-
-If you encounter any issues or bugs, please [report them here](https://github.com/thorstenalpers/CleanMyPosts/issues).
 
 ## 🎬 See It in Action
 
@@ -70,3 +66,7 @@ Here’s a quick look at how CleanMyPosts works:
 #### Settings 
   <img src="./assets/settings.png" alt="Settings" width="700" />
 
+  
+## Report a Bug 🐞
+
+If you encounter any issues or bugs, please [report them here](https://github.com/thorstenalpers/CleanMyPosts/issues).

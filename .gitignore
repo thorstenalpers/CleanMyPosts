@@ -367,3 +367,5 @@ FodyWeavers.xsd
 
 # Installer releases 
 installer/Output
+
+github-stats.txt

@@ -48,35 +48,27 @@ Please keep in mind:
 Here’s a quick look at how CleanMyPosts works:
 
 <details>
-  <summary><strong><h3>Clean posts</h3></strong></summary>
-
-
-  <img src="./assets/clean-posts.gif" alt="Clean Tweets GIF" width="700" />
-
+	<summary><strong>Clean posts</strong></summary>
+	<br/>
+	<img src="./assets/clean-posts.gif" alt="Clean Tweets GIF" width="700" />
 </details>
 
 <details>
-  <summary><strong><h3>Clean likes</h3></strong></summary>
-
-
-  <img src="./assets/clean-likes.gif" alt="Clean Likes GIF" width="700" />
-
+	<summary><strong>Clean likes</strong></summary>
+	<br/>
+	<img src="./assets/clean-likes.gif" alt="Clean Likes GIF" width="700" />
 </details>
 
 <details>
-  <summary><strong><h3>Clean Followings</h3></strong></summary>
-
-
-  <img src="./assets/clean-following.gif" alt="Unfollow Accounts GIF" width="700" />
-
+	<summary><strong>Clean Followings</strong></summary>
+	<br/>
+	<img src="./assets/clean-following.gif" alt="Unfollow Accounts GIF" width="700" />
 </details>
 
 <details>
-  <summary><strong><h3>Settings</h3></strong></summary>
-
-
-<img src="./assets/settings.png" alt="Settings" width="700" />
-
+	<summary><strong>Settings</strong></summary>
+	<br/>
+	<img src="./assets/settings.png" alt="Settings" width="700" />
 </details>
 
 ## 🧍 Still Want to Delete Manually

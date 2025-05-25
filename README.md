@@ -41,6 +41,44 @@ Please keep in mind:
 - All operations are performed in your own logged-in browser session—**no credentials are stored outside**.
 - Since browser automation mimics real user interactions, these actions are typically **indistinguishable from manual activity**, reducing the risk of detection.
 
+
+
+## 🎬 See It in Action
+
+Here’s a quick look at how CleanMyPosts works:
+
+<details>
+  <summary><strong><h3>Clean posts</h3></strong></summary>
+
+
+  <img src="./assets/clean-posts.gif" alt="Clean Tweets GIF" width="700" />
+
+</details>
+
+<details>
+  <summary><strong><h3>Clean likes</h3></strong></summary>
+
+
+  <img src="./assets/clean-likes.gif" alt="Clean Likes GIF" width="700" />
+
+</details>
+
+<details>
+  <summary><strong><h3>Clean Followings</h3></strong></summary>
+
+
+  <img src="./assets/clean-following.gif" alt="Unfollow Accounts GIF" width="700" />
+
+</details>
+
+<details>
+  <summary><strong><h3>Settings</h3></strong></summary>
+
+
+<img src="./assets/settings.png" alt="Settings" width="700" />
+
+</details>
+
 ## 🧍 Still Want to Delete Manually
 Click on your profile to find your username, then use these links (replace USERNAME with your handle):
 
@@ -50,23 +88,7 @@ Click on your profile to find your username, then use these links (replace USERN
 
 * **Unfollow accounts:** https://x.com/USERNAME/following → click  unfollow.
 
-## 🎬 See It in Action
 
-Here’s a quick look at how CleanMyPosts works:
-
-#### Bulk clean tweets 
-  <img src="./assets/clean-posts.gif" alt="Clean Tweets GIF" width="700" />
-
-#### Remove likes 
-  <img src="./assets/clean-likes.gif" alt="Clean Likes GIF" width="700" />
-
-#### Unfollow people
-  <img src="./assets/clean-following.gif" alt="Unfollow Accounts GIF" width="700" />
-
-#### Settings 
-  <img src="./assets/settings.png" alt="Settings" width="700" />
-
-  
 ## Report a Bug 🐞
 
 If you encounter any issues or bugs, please [report them here](https://github.com/thorstenalpers/CleanMyPosts/issues).

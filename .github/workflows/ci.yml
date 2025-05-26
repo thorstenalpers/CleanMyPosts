@@ -30,25 +30,12 @@ jobs:
       run: |
         dotnet new tool-manifest
         dotnet tool install dotnet-reportgenerator-globaltool
-        dotnet tool install dotnet-sonarscanner
 
     - name: Restore
       run: dotnet restore "${{ env.Solution }}"
 
-    - name: Build and Test with SonarQube
-      env:
-        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+    - name: Build and Test
       run: |
-        dotnet tool run dotnet-sonarscanner begin `
-          /k:"thorstenalpers_CleanMyPosts" `
-          /o:"thorstenalpers" `
-          /d:sonar.token="${{ secrets.SONAR_TOKEN }}" `
-          /d:sonar.host.url="https://sonarcloud.io" `
-          /d:sonar.sources="src" `
-          /d:sonar.tests="src/Tests" `
-          /d:sonar.test.inclusions="**/*Tests.cs" `
-          /d:sonar.coverageReportPaths="TestResults/Reports/SonarQube.xml"
-
         dotnet build "${{ env.Solution }}" --configuration Release --no-restore
 
         dotnet test "${{ env.Test_Project }}" `
@@ -61,9 +48,7 @@ jobs:
         dotnet tool run reportgenerator `
           -reports:TestResults/**/coverage.cobertura.xml `
           -targetdir:TestResults/Reports `
-          -reporttypes:"Html;lcov;SonarQube;Cobertura" `
-
-        dotnet tool run dotnet-sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
+          -reporttypes:"Html;lcov;Cobertura" `
 
     - name: Upload Test Coverage Report
       uses: actions/upload-artifact@v4

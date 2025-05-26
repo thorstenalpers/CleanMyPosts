@@ -32,7 +32,8 @@ public class WebViewHostService : IWebViewHostService
 
         Directory.CreateDirectory(userDataFolder);
 
-        var env = await CoreWebView2Environment.CreateAsync(null, userDataFolder);
+        var options = new CoreWebView2EnvironmentOptions(null, language: "en-US");
+        var env = await CoreWebView2Environment.CreateAsync(null, userDataFolder, options);
 
         await _webView.EnsureCoreWebView2Async(env);
 

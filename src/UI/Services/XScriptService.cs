@@ -63,7 +63,8 @@ public class XScriptService(ILogger<XScriptService> logger, IWebViewHostService 
         }
         var postNumber = 1;
         var deletedItems = 0;
-        while (await PostsExistAsync())
+        var retryCount = 0;
+        while (await PostsExistAsync() || retryCount < 3)
         {
             var countBefore = await GetPostsCountAsync();
 
@@ -78,17 +79,18 @@ public class XScriptService(ILogger<XScriptService> logger, IWebViewHostService 
                 {
                     _logger.LogInformation("Post #{Number} cleaned successfully.", postNumber);
                     deletedItems++;
+                    retryCount = 0;
                 }
                 else
                 {
                     _logger.LogWarning("Post #{Number} was not deleted (DOM unchanged).", postNumber);
-                    break;
+                    retryCount++;
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error deleting post #{Number}.", postNumber);
-                break;
+                retryCount++;
             }
             postNumber++;
         }
@@ -146,8 +148,9 @@ public class XScriptService(ILogger<XScriptService> logger, IWebViewHostService 
 
         var postNumber = 1;
         var deletedItems = 0;
+        var retryCount = 0;
 
-        while (await LikesExistAsync())
+        while (await LikesExistAsync() || retryCount < 3)
         {
             var countBefore = await GetLikesCountAsync();
 
@@ -162,17 +165,18 @@ public class XScriptService(ILogger<XScriptService> logger, IWebViewHostService 
                 {
                     _logger.LogInformation("Like #{Number} cleaned successfully.", postNumber);
                     deletedItems++;
+                    retryCount = 0;
                 }
                 else
                 {
                     _logger.LogWarning("Like #{Number} was not cleaned (DOM unchanged).", postNumber);
-                    break;
+                    retryCount++;
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error deleting like #{Number}.", postNumber);
-                break;
+                retryCount++;
             }
             postNumber++;
         }
@@ -231,7 +235,8 @@ public class XScriptService(ILogger<XScriptService> logger, IWebViewHostService 
 
         var postNumber = 1;
         var deletedItems = 0;
-        while (await FollowingExistAsync())
+        var retryCount = 0;
+        while (await FollowingExistAsync() || retryCount < 3)
         {
             var countBefore = await GetFollowingCountAsync();
 
@@ -246,17 +251,18 @@ public class XScriptService(ILogger<XScriptService> logger, IWebViewHostService 
                 {
                     _logger.LogInformation("Following #{Number} cleaned successfully.", postNumber);
                     deletedItems++;
+                    retryCount = 0;
                 }
                 else
                 {
                     _logger.LogWarning("Following #{Number} was not cleaned (DOM unchanged).", postNumber);
-                    break;
+                    retryCount++;
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error deleting following #{Number}.", postNumber);
-                break;
+                retryCount++;
             }
             postNumber++;
         }
@@ -271,13 +277,15 @@ public class XScriptService(ILogger<XScriptService> logger, IWebViewHostService 
     private async Task<bool> PostsExistAsync()
     {
         const string js = "document.querySelector('div[data-testid=\"primaryColumn\"] section button[data-testid=\"caret\"]') !== null";
+        var timeout = _userSettingsService.GetTimeoutSettings();
+        var waitAfterDocumentLoad = timeout.WaitAfterDocumentLoad;
         for (var i = 0; i < 5; i++)
         {
+            await Task.Delay(waitAfterDocumentLoad);
             if (await _webViewHostService.ExecuteScriptAsync(js) == "true")
             {
                 return true;
             }
-            await Task.Delay(500);
         }
         return false;
     }
@@ -285,13 +293,15 @@ public class XScriptService(ILogger<XScriptService> logger, IWebViewHostService 
     private async Task<bool> FollowingExistAsync()
     {
         const string js = "document.querySelector('button[data-testid$=\"unfollow\"]') !== null";
+        var timeout = _userSettingsService.GetTimeoutSettings();
+        var waitAfterDocumentLoad = timeout.WaitAfterDocumentLoad;
         for (var i = 0; i < 5; i++)
         {
+            await Task.Delay(waitAfterDocumentLoad);
             if (await _webViewHostService.ExecuteScriptAsync(js) == "true")
             {
                 return true;
             }
-            await Task.Delay(500);
         }
         return false;
     }
@@ -299,13 +309,16 @@ public class XScriptService(ILogger<XScriptService> logger, IWebViewHostService 
     private async Task<bool> LikesExistAsync()
     {
         const string js = "document.querySelector('button[data-testid=\"unlike\"]') !== null";
+        var timeout = _userSettingsService.GetTimeoutSettings();
+        var waitAfterDocumentLoad = timeout.WaitAfterDocumentLoad;
+        await Task.Delay(500);
         for (var i = 0; i < 5; i++)
         {
+            await Task.Delay(waitAfterDocumentLoad);
             if (await _webViewHostService.ExecuteScriptAsync(js) == "true")
             {
                 return true;
             }
-            await Task.Delay(500);
         }
         return false;
     }

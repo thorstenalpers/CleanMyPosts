@@ -63,7 +63,7 @@ public class XScriptService(ILogger<XScriptService> logger, IWebViewHostService 
         var postNumber = 1;
         var deletedItems = 0;
         var retryCount = 0;
-        while (await PostsExistAsync() || retryCount < 3)
+        while (!await IsEmptyStatePresentAsync() && retryCount < 3)
         {
             var countBefore = await GetPostsCountAsync();
 
@@ -149,7 +149,7 @@ public class XScriptService(ILogger<XScriptService> logger, IWebViewHostService 
         var deletedItems = 0;
         var retryCount = 0;
 
-        while (await LikesExistAsync() || retryCount < 3)
+        while (!await IsEmptyStatePresentAsync() && retryCount < 3)
         {
             var countBefore = await GetLikesCountAsync();
 
@@ -235,7 +235,7 @@ public class XScriptService(ILogger<XScriptService> logger, IWebViewHostService 
         var postNumber = 1;
         var deletedItems = 0;
         var retryCount = 0;
-        while (await FollowingExistAsync() || retryCount < 3)
+        while (!await IsEmptyStatePresentAsync() && retryCount < 3)
         {
             var countBefore = await GetFollowingCountAsync();
 
@@ -273,53 +273,19 @@ public class XScriptService(ILogger<XScriptService> logger, IWebViewHostService 
         return deletedItems;
     }
 
-    private async Task<bool> PostsExistAsync()
+    private async Task<bool> IsEmptyStatePresentAsync()
     {
-        const string js = "document.querySelector('div[data-testid=\"primaryColumn\"] section button[data-testid=\"caret\"]') !== null";
-        var timeout = _userSettingsService.GetTimeoutSettings();
-        var waitAfterDocumentLoad = timeout.WaitAfterDocumentLoad;
-        for (var i = 0; i < 5; i++)
-        {
-            await Task.Delay(waitAfterDocumentLoad);
-            if (await _webViewHostService.ExecuteScriptAsync(js) == "true")
-            {
-                return true;
-            }
-        }
-        return false;
-    }
+        var script = @"
+        (function() {
+            return document.querySelector('[data-testid=""emptyState""]') !== null;
+        })();";
 
-    private async Task<bool> FollowingExistAsync()
-    {
-        const string js = "document.querySelector('button[data-testid$=\"unfollow\"]') !== null";
-        var timeout = _userSettingsService.GetTimeoutSettings();
-        var waitAfterDocumentLoad = timeout.WaitAfterDocumentLoad;
-        for (var i = 0; i < 5; i++)
+        var result = await _webViewHostService.ExecuteScriptAsync(script) == "true";
+        if (result)
         {
-            await Task.Delay(waitAfterDocumentLoad);
-            if (await _webViewHostService.ExecuteScriptAsync(js) == "true")
-            {
-                return true;
-            }
+            _logger.LogInformation("Empty state present, nothing more to delete.");
         }
-        return false;
-    }
-
-    private async Task<bool> LikesExistAsync()
-    {
-        const string js = "document.querySelector('button[data-testid=\"unlike\"]') !== null";
-        var timeout = _userSettingsService.GetTimeoutSettings();
-        var waitAfterDocumentLoad = timeout.WaitAfterDocumentLoad;
-        await Task.Delay(500);
-        for (var i = 0; i < 5; i++)
-        {
-            await Task.Delay(waitAfterDocumentLoad);
-            if (await _webViewHostService.ExecuteScriptAsync(js) == "true")
-            {
-                return true;
-            }
-        }
-        return false;
+        return result;
     }
 
     private async Task DeleteSinglePostAsync()

@@ -625,11 +625,11 @@ public class XScriptService(ILogger<XScriptService> logger, IWebViewHostService 
             _logger.LogInformation("Username is null {Username}, posssible because of not fully loaded html", userName);
             return;
         }
-        if (userName == _userName)
+        var newUserName = Helper.CleanJsonResult(userName);
+        if (userName != newUserName)
         {
-            return;
+            _logger.LogInformation("Username has changed to {Username}", userName);
+            _userName = newUserName;
         }
-        _logger.LogInformation("Username has changed to {Username}", userName);
-        _userName = Helper.CleanJsonResult(userName);
     }
 }

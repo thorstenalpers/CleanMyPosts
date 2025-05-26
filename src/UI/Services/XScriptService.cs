@@ -374,7 +374,7 @@ public class XScriptService(ILogger<XScriptService> logger, IWebViewHostService 
                         const confirmBtn = document.querySelector(""button[data-testid='confirmationSheetConfirm']"");
                         if (confirmBtn && confirmBtn.offsetParent !== null) {{
                             confirmBtn.click();
-                            window.scrollBy(0, 3000);
+                            window.scrollBy(0, 1000);
                         }} else {{
                             confirmDelete(attempt + 1);
                         }}
@@ -415,7 +415,7 @@ public class XScriptService(ILogger<XScriptService> logger, IWebViewHostService 
         }}
 
         console.log('Unlike successful! Scrolling down...');
-        window.scrollBy(0, 3000);
+        window.scrollBy(0, 1000);
         return true;
     }}
 
@@ -468,7 +468,7 @@ public class XScriptService(ILogger<XScriptService> logger, IWebViewHostService 
                 const confirmBtn = document.querySelector('button[data-testid=""confirmationSheetConfirm""]');
                 if (confirmBtn && confirmBtn.offsetParent !== null) {{
                     confirmBtn.click();
-                    window.scrollBy(0, 3000);
+                    window.scrollBy(0, 1000);
                 }} else {{
                     tryClickConfirm(attempt + 1);
                 }}

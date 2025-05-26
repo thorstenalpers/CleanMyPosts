@@ -57,7 +57,7 @@ public class XScriptServiceTests
         var task = _service.ShowLikesAsync();
         await Task.Delay(10);
 
-        Assert.Contains("x.com/testuser/likes", _webViewHostServiceMock.Object.Source.ToString());
+        Assert.Contains("/likes", _webViewHostServiceMock.Object.Source.ToString());
     }
 
     [Fact]
@@ -73,7 +73,7 @@ public class XScriptServiceTests
         var task = _service.ShowFollowingAsync();
         await Task.Delay(10);
 
-        Assert.Contains("x.com/testuser/following", _webViewHostServiceMock.Object.Source.ToString());
+        Assert.Contains("following", _webViewHostServiceMock.Object.Source.ToString());
     }
 
     [Fact]

@@ -15,7 +15,6 @@ public class XScriptService(ILogger<XScriptService> logger, IWebViewHostService 
 
     public async Task ShowPostsAsync()
     {
-
         await EnsureUserNameAsync();
         Guard.Against.Null(_userName);
         var searchQuery = $"from:{_userName}";
@@ -611,5 +610,26 @@ public class XScriptService(ILogger<XScriptService> logger, IWebViewHostService 
         {
             await GetUserNameAsync();
         }
+
+        // check for updated username due to login of other account
+        const string jsScript = @"
+            (() => {
+              const el = document.querySelector('a[data-testid=""AppTabBar_Profile_Link""]');
+              const href = el?.getAttribute('href');
+              return href?.split('/')[1] ?? '';
+            })()";
+
+        var userName = await _webViewHostService.ExecuteScriptAsync(jsScript);
+        if (string.IsNullOrEmpty(userName))
+        {
+            _logger.LogInformation("Username is null {Username}, posssible because of not fully loaded html", userName);
+            return;
+        }
+        if (userName == _userName)
+        {
+            return;
+        }
+        _logger.LogInformation("Username has changed to {Username}", userName);
+        _userName = Helper.CleanJsonResult(userName);
     }
 }

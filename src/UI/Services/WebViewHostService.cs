@@ -2,14 +2,16 @@
 using System.Windows;
 using CleanMyPosts.UI.Contracts.Services;
 using CleanMyPosts.UI.Models;
+using Microsoft.Extensions.Logging;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.Wpf;
 
 namespace CleanMyPosts.UI.Services;
 
-public class WebViewHostService : IWebViewHostService
+public class WebViewHostService(ILogger<WebViewHostService> logger) : IWebViewHostService
 {
     private WebView2 _webView;
+    private readonly ILogger<WebViewHostService> _logger = logger;
 
     public event EventHandler<NavigationCompletedEventArgs> NavigationCompleted;
     public event EventHandler<WebMessageReceivedEventArgs> WebMessageReceived;
@@ -52,6 +54,7 @@ public class WebViewHostService : IWebViewHostService
     public void Reload()
     {
         _webView.Reload();
+        _logger.LogInformation("Page reloaded");
     }
 
     public void Hide(bool hide)

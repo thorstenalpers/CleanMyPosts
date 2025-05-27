@@ -63,4 +63,23 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
+
+	  <ItemGroup>
+		  <Content Include="Scripts\delete-all-posts.js">
+			  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		  </Content>
+		  <Content Include="Scripts\delete-all-replies.js">
+			  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		  </Content>
+		  <Content Include="Scripts\delete-all-reposts.js">
+			  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		  </Content>
+		  <Content Include="Scripts\delete-all-likes.js">
+			  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		  </Content>
+		  <Content Include="Scripts\delete-all-following.js">
+			  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		  </Content>
+  </ItemGroup>
+  
 </Project>

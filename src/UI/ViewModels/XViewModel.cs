@@ -64,26 +64,51 @@ public partial class XViewModel : ObservableObject
         await _webViewHostService.InitializeAsync(webView);
 
         _webViewHostService.Source = new Uri(_xBaseUrl);
-
-        // logging JS errors and warnings to ILogger
-        var jsScript = @"
-                window.onerror = function(message, source, lineno, colno, error) {
-                    chrome.webview.postMessage(JSON.stringify({
-                        level: 'error',
-                        message: `JS Error: ${message} at ${source}:${lineno}:${colno}`
-                    }));
-                };
-            ";
-
-        await _webViewHostService.ExecuteScriptAsync(jsScript);
-
-        _isInitialized = true;
     }
 
     private async void OnNavigationCompleted(object sender, NavigationCompletedEventArgs e)
     {
         if (e.IsSuccess)
         {
+            var jsLoggerPatch = @"
+                (() => {
+                  const originalConsole = {
+                    log: console.log,
+                    warn: console.warn,
+                    error: console.error,
+                  };
+
+                  function sendLog(level, args) {
+                    chrome.webview.postMessage(JSON.stringify({
+                      level,
+                      message: args.map(a => (typeof a === 'object' ? JSON.stringify(a) : a)).join(' ')
+                    }));
+                  }
+
+                  console.log = function (...args) {
+                    sendLog('info', args);
+                    originalConsole.log.apply(console, args);
+                  };
+
+                  console.warn = function (...args) {
+                    sendLog('warn', args);
+                    originalConsole.warn.apply(console, args);
+                  };
+
+                  console.error = function (...args) {
+                    sendLog('error', args);
+                    originalConsole.error.apply(console, args);
+                  };
+
+                  window.onerror = function (message, source, lineno, colno, error) {
+                    sendLog('error', [`JS Error: ${message} at ${source}:${lineno}:${colno}`]);
+                  };
+                })();
+                ";
+
+            await _webViewHostService.ExecuteScriptAsync(jsLoggerPatch);
+
+            _isInitialized = true;
             if (!string.IsNullOrEmpty(_userName))
             {
                 return;
@@ -256,14 +281,14 @@ public partial class XViewModel : ObservableObject
 
                 if (result == MessageDialogResult.Affirmative)
                 {
-                    var deletetCnt = await _xWebViewScriptService.DeleteLikesAsync();
-                    await ShowNotificationAsync($"{deletetCnt} like(s) cleaned successfully.", TimeSpan.FromSeconds(3));
+                    var deletedItems = await _xWebViewScriptService.DeleteLikesAsync();
+                    await ShowNotificationAsync($"{deletedItems} like(s) cleaned.", TimeSpan.FromSeconds(3));
                 }
             }
             else
             {
-                var deletetCnt = await _xWebViewScriptService.DeleteLikesAsync();
-                await ShowNotificationAsync($"{deletetCnt} like(s) cleaned successfully.", TimeSpan.FromSeconds(3));
+                var deletedItems = await _xWebViewScriptService.DeleteLikesAsync();
+                await ShowNotificationAsync($"{deletedItems} like(s) cleaned.", TimeSpan.FromSeconds(3));
             }
         }
         finally
@@ -313,6 +338,106 @@ public partial class XViewModel : ObservableObject
             {
                 var deletetCnt = await _xWebViewScriptService.DeleteFollowingAsync();
                 await ShowNotificationAsync($"{deletetCnt} following(s) cleaned successfully.", TimeSpan.FromSeconds(3));
+            }
+        }
+        finally
+        {
+            EnableUserInteractions(true);
+        }
+    }
+
+
+    [RelayCommand]
+    private async Task ShowReposts()
+    {
+        try
+        {
+            EnableUserInteractions(false);
+            await _xWebViewScriptService.ShowRepostsAsync();
+        }
+        finally
+        {
+            EnableUserInteractions(true);
+        }
+    }
+
+    [RelayCommand]
+    private async Task DeleteReposts()
+    {
+        try
+        {
+            EnableUserInteractions(false, true, true);
+
+            if (_userSettingsService.GetConfirmDeletion())
+            {
+                _webViewHostService.Hide(true);
+                var result = await _dialogCoordinator.ShowMessageAsync(
+                    this,
+                    "Confirm Deletion",
+                    "Are you sure you want to delete all reposts?",
+                    MessageDialogStyle.AffirmativeAndNegative);
+                _webViewHostService.Hide(false);
+
+                if (result == MessageDialogResult.Affirmative)
+                {
+                    var deletetCnt = await _xWebViewScriptService.DeleteRepostsAsync();
+                    await ShowNotificationAsync($"{deletetCnt} repost(s) cleaned successfully.", TimeSpan.FromSeconds(3));
+                }
+            }
+            else
+            {
+                var deletetCnt = await _xWebViewScriptService.DeleteRepostsAsync();
+                await ShowNotificationAsync($"{deletetCnt} repost(s) cleaned successfully.", TimeSpan.FromSeconds(3));
+            }
+        }
+        finally
+        {
+            EnableUserInteractions(true);
+        }
+    }
+
+
+    [RelayCommand]
+    private async Task ShowReplies()
+    {
+        try
+        {
+            EnableUserInteractions(false);
+            await _xWebViewScriptService.ShowRepliesAsync();
+        }
+        finally
+        {
+            EnableUserInteractions(true);
+        }
+    }
+
+    [RelayCommand]
+    private async Task DeleteReplies()
+    {
+        try
+        {
+            EnableUserInteractions(false, true, true);
+
+            if (_userSettingsService.GetConfirmDeletion())
+            {
+                _webViewHostService.Hide(true);
+                var result = await _dialogCoordinator.ShowMessageAsync(
+                    this,
+                    "Confirm Deletion",
+                    "Are you sure you want to delete all replies?",
+                    MessageDialogStyle.AffirmativeAndNegative);
+                _webViewHostService.Hide(false);
+
+                if (result == MessageDialogResult.Affirmative)
+                {
+                    var deletetCnt = await _xWebViewScriptService.DeleteRepliesAsync();
+                    await ShowNotificationAsync($"{deletetCnt} replie(s) cleaned successfully.", TimeSpan.FromSeconds(3));
+                }
+            }
+            else
+            {
+                var deletetCnt = await _xWebViewScriptService.DeleteFollowingAsync();
+                await ShowNotificationAsync($"{deletetCnt} replie(s) cleaned successfully.", TimeSpan.FromSeconds(3));
             }
         }
         finally

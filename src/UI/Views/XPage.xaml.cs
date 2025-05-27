@@ -11,6 +11,10 @@ public partial class XPage : Page
 
     public XPage(XViewModel viewModel)
     {
+        foreach (var key in Application.Current.Resources.Keys)
+        {
+            Console.WriteLine(key);
+        }
         InitializeComponent();
         _viewModel = viewModel;
         DataContext = viewModel;

@@ -79,7 +79,7 @@ namespace CleanMyPosts.UI.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to CleanMyPosts is a lightweight Windows desktop app that securely deletes all tweets, likes, and followings from your X (formerly Twitter) account in bulk using browser automation..
+        ///   Looks up a localized string similar to CleanMyPosts is a lightweight Windows desktop app that securely deletes all posts, reposts, replies, likes, and followings from your X (formerly Twitter) account in bulk using browser automation..
         /// </summary>
         public static string SettingsPageAboutText {
             get {

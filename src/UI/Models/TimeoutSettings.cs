@@ -2,7 +2,7 @@
 
 public class TimeoutSettings
 {
-    public int WaitAfterDelete { get; set; } = 100;
-    public int WaitBetweenRetryDeleteAttempts { get; set; } = 1000;
-    public int WaitAfterDocumentLoad { get; set; } = 500;
+    public int WaitAfterDelete { get; set; } = 500;
+    public int WaitBetweenRetryDeleteAttempts { get; set; } = 500;
+    public int WaitAfterDocumentLoad { get; set; } = 3000;
 }

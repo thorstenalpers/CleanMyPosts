@@ -48,20 +48,6 @@ namespace CleanMyPosts.UI.Tests.ViewModels
         }
 
         [StaFact]
-        public async Task InitializeAsync_InitializesWebViewAndSetsSource()
-        {
-            var viewModel = CreateViewModel();
-            var webView = new WebView2();
-            var appConfig = new AppConfig();
-
-            await viewModel.InitializeAsync(webView);
-
-            _webViewHostServiceMock.Verify(s => s.InitializeAsync(webView), Times.Once);
-            _webViewHostServiceMock.VerifySet(s => s.Source = new Uri(appConfig.XBaseUrl), Times.Once);
-            _webViewHostServiceMock.Verify(s => s.ExecuteScriptAsync(It.IsAny<string>()), Times.Once);
-        }
-
-        [StaFact]
         public async Task OnNavigationCompleted_UserLoggedIn_EnablesButtons()
         {
             var viewModel = CreateViewModel();

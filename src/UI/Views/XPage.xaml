@@ -31,201 +31,300 @@
         <Border
             Grid.Row="0"
             Margin="4"
-            Padding="8"
+            Padding="4"
             Background="{DynamicResource MahApps.Brushes.Control.Background}"
             BorderBrush="LightGray"
             BorderThickness="1"
             CornerRadius="3">
 
+
+
             <Grid>
-                <!--  ScrollViewer with Buttons  -->
+
                 <ScrollViewer
                     Focusable="False"
                     HorizontalScrollBarVisibility="Auto"
                     VerticalScrollBarVisibility="Disabled">
+
                     <StackPanel
+                        Margin="4"
                         HorizontalAlignment="Left"
-                        VerticalAlignment="Center"
+                        VerticalAlignment="Top"
                         Orientation="Horizontal">
 
-                        <!--  Posts Section  -->
-                        <StackPanel
-                            MinHeight="38"
-                            Margin="0,0,30,0"
-                            VerticalAlignment="Center"
-                            Orientation="Horizontal">
-                            <TextBlock
-                                Margin="0,0,10,0"
-                                VerticalAlignment="Center"
-                                FontSize="14"
-                                Text="Posts:" />
-                            <UniformGrid
-                                HorizontalAlignment="Left"
-                                VerticalAlignment="Center"
-                                Columns="2"
-                                Rows="1">
-                                <Button
-                                    MinWidth="80"
-                                    Margin="0,0,10,0"
-                                    Padding="6,3"
-                                    Command="{Binding ShowPostsCommand}"
-                                    Foreground="{DynamicResource MahApps.Brushes.Text}"
-                                    IsEnabled="{Binding AreButtonsEnabled}"
-                                    ToolTip="Show Posts">
-                                    <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
-                                        <iconPacks:PackIconMaterial
-                                            Width="16"
-                                            Height="16"
-                                            VerticalAlignment="Center"
-                                            Kind="FormatListBulleted" />
-                                        <TextBlock
-                                            Margin="6,0,0,0"
-                                            VerticalAlignment="Center"
-                                            FontSize="12"
-                                            Text="Show" />
-                                    </StackPanel>
-                                </Button>
-                                <Button
-                                    MinWidth="80"
-                                    Padding="6,3"
-                                    Command="{Binding DeletePostsCommand}"
-                                    IsEnabled="{Binding AreButtonsEnabled}"
-                                    ToolTip="Delete Posts">
-                                    <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
-                                        <iconPacks:PackIconMaterial
-                                            Width="16"
-                                            Height="16"
-                                            VerticalAlignment="Center"
-                                            Kind="Delete" />
-                                        <TextBlock
-                                            Margin="6,0,0,0"
-                                            VerticalAlignment="Center"
-                                            FontSize="12"
-                                            Text="Clean" />
-                                    </StackPanel>
-                                </Button>
-                            </UniformGrid>
-                        </StackPanel>
+                        <!--  POSTS GROUP  -->
+                        <Border
+                            Margin="0,0,10,0"
+                            Padding="8"
+                            BorderBrush="{DynamicResource MahApps.Brushes.Gray9}"
+                            BorderThickness="1"
+                            CornerRadius="4">
+                            <StackPanel>
+                                <TextBlock
+                                    Margin="0,0,0,6"
+                                    FontSize="14"
+                                    FontWeight="Bold"
+                                    Text="Posts" />
+                                <UniformGrid Columns="2" Rows="1">
+                                    <Button
+                                        MinWidth="80"
+                                        Margin="0,0,10,6"
+                                        Padding="6,3"
+                                        Command="{Binding ShowPostsCommand}"
+                                        IsEnabled="{Binding AreButtonsEnabled}"
+                                        ToolTip="View Posts">
+                                        <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                                            <iconPacks:PackIconMaterial
+                                                Width="16"
+                                                Height="16"
+                                                Kind="FormatListBulleted" />
+                                            <TextBlock
+                                                Margin="6,0,0,0"
+                                                FontSize="12"
+                                                Text="Show" />
+                                        </StackPanel>
+                                    </Button>
+                                    <Button
+                                        MinWidth="80"
+                                        Margin="0,0,10,6"
+                                        Padding="6,3"
+                                        Command="{Binding DeletePostsCommand}"
+                                        IsEnabled="{Binding AreButtonsEnabled}"
+                                        ToolTip="Delete Posts">
+                                        <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                                            <iconPacks:PackIconMaterial
+                                                Width="16"
+                                                Height="16"
+                                                Kind="Delete" />
+                                            <TextBlock
+                                                Margin="6,0,0,0"
+                                                FontSize="12"
+                                                Text="Delete" />
+                                        </StackPanel>
+                                    </Button>
+                                </UniformGrid>
+                            </StackPanel>
+                        </Border>
 
-                        <!--  Likes Section  -->
-                        <StackPanel
-                            MinHeight="38"
-                            Margin="0,0,30,0"
-                            VerticalAlignment="Center"
-                            Orientation="Horizontal">
-                            <TextBlock
-                                Margin="0,0,10,0"
-                                VerticalAlignment="Center"
-                                FontSize="14"
-                                Foreground="{DynamicResource MahApps.Brushes.Text}"
-                                Text="Likes:" />
-                            <UniformGrid
-                                HorizontalAlignment="Left"
-                                VerticalAlignment="Center"
-                                Columns="2"
-                                Rows="1">
-                                <Button
-                                    MinWidth="80"
-                                    Margin="0,0,10,0"
-                                    Padding="6,3"
-                                    Command="{Binding ShowLikesCommand}"
-                                    IsEnabled="{Binding AreButtonsEnabled}"
-                                    ToolTip="Show Likes">
-                                    <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
-                                        <iconPacks:PackIconMaterial
-                                            Width="16"
-                                            Height="16"
-                                            VerticalAlignment="Center"
-                                            Kind="FormatListBulleted" />
-                                        <TextBlock
-                                            Margin="6,0,0,0"
-                                            VerticalAlignment="Center"
-                                            FontSize="12"
-                                            Text="Show" />
-                                    </StackPanel>
-                                </Button>
-                                <Button
-                                    MinWidth="80"
-                                    Padding="6,3"
-                                    Command="{Binding DeleteLikesCommand}"
-                                    Foreground="{DynamicResource MahApps.Brushes.Text}"
-                                    IsEnabled="{Binding AreButtonsEnabled}"
-                                    ToolTip="Clean Likes">
-                                    <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
-                                        <iconPacks:PackIconMaterial
-                                            Width="16"
-                                            Height="16"
-                                            VerticalAlignment="Center"
-                                            Kind="Delete" />
-                                        <TextBlock
-                                            Margin="6,0,0,0"
-                                            VerticalAlignment="Center"
-                                            FontSize="12"
-                                            Text="Clean" />
-                                    </StackPanel>
-                                </Button>
-                            </UniformGrid>
-                        </StackPanel>
+                        <!--  REPLIES GROUP  -->
+                        <Border
+                            Margin="0,0,10,0"
+                            Padding="8"
+                            BorderBrush="{DynamicResource MahApps.Brushes.Gray9}"
+                            BorderThickness="1"
+                            CornerRadius="4">
+                            <StackPanel>
+                                <TextBlock
+                                    Margin="0,0,0,6"
+                                    FontSize="14"
+                                    FontWeight="Bold"
+                                    Text="Replies" />
+                                <UniformGrid Columns="2" Rows="1">
+                                    <Button
+                                        MinWidth="80"
+                                        Margin="0,0,10,6"
+                                        Padding="6,3"
+                                        Command="{Binding ShowRepliesCommand}"
+                                        IsEnabled="{Binding AreButtonsEnabled}"
+                                        ToolTip="View Replies">
+                                        <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                                            <iconPacks:PackIconMaterial
+                                                Width="16"
+                                                Height="16"
+                                                Kind="FormatListBulleted" />
+                                            <TextBlock
+                                                Margin="6,0,0,0"
+                                                FontSize="12"
+                                                Text="Show" />
+                                        </StackPanel>
+                                    </Button>
+                                    <Button
+                                        MinWidth="80"
+                                        Margin="0,0,10,6"
+                                        Padding="6,3"
+                                        Command="{Binding DeleteRepliesCommand}"
+                                        IsEnabled="{Binding AreButtonsEnabled}"
+                                        ToolTip="Delete Replies">
+                                        <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                                            <iconPacks:PackIconMaterial
+                                                Width="16"
+                                                Height="16"
+                                                Kind="Delete" />
+                                            <TextBlock
+                                                Margin="6,0,0,0"
+                                                FontSize="12"
+                                                Text="Delete" />
+                                        </StackPanel>
+                                    </Button>
+                                </UniformGrid>
+                            </StackPanel>
+                        </Border>
 
-                        <!--  Following Section  -->
-                        <StackPanel
-                            MinHeight="38"
-                            VerticalAlignment="Center"
-                            Orientation="Horizontal">
-                            <TextBlock
-                                Margin="0,0,10,0"
-                                VerticalAlignment="Center"
-                                FontSize="14"
-                                Text="Following:" />
-                            <UniformGrid
-                                HorizontalAlignment="Left"
-                                VerticalAlignment="Center"
-                                Columns="2"
-                                Rows="1">
-                                <Button
-                                    MinWidth="80"
-                                    Margin="0,0,10,0"
-                                    Padding="6,3"
-                                    Command="{Binding ShowFollowingCommand}"
-                                    IsEnabled="{Binding AreButtonsEnabled}"
-                                    ToolTip="Show Following">
-                                    <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
-                                        <iconPacks:PackIconMaterial
-                                            Width="16"
-                                            Height="16"
-                                            VerticalAlignment="Center"
-                                            Kind="FormatListBulleted" />
-                                        <TextBlock
-                                            Margin="6,0,0,0"
-                                            VerticalAlignment="Center"
-                                            FontSize="12"
-                                            Text="Show" />
-                                    </StackPanel>
-                                </Button>
-                                <Button
-                                    MinWidth="80"
-                                    Padding="6,3"
-                                    Command="{Binding DeleteFollowingCommand}"
-                                    IsEnabled="{Binding AreButtonsEnabled}"
-                                    ToolTip="Clean Following">
-                                    <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
-                                        <iconPacks:PackIconMaterial
-                                            Width="16"
-                                            Height="16"
-                                            VerticalAlignment="Center"
-                                            Kind="Delete" />
-                                        <TextBlock
-                                            Margin="6,0,0,0"
-                                            VerticalAlignment="Center"
-                                            FontSize="12"
-                                            Text="Clean" />
-                                    </StackPanel>
-                                </Button>
-                            </UniformGrid>
-                        </StackPanel>
+                        <!--  REPOSTS GROUP  -->
+                        <Border
+                            Margin="0,0,10,0"
+                            Padding="8"
+                            BorderBrush="{DynamicResource MahApps.Brushes.Gray9}"
+                            BorderThickness="1"
+                            CornerRadius="4">
+                            <StackPanel>
+                                <TextBlock
+                                    Margin="0,0,0,6"
+                                    FontSize="14"
+                                    FontWeight="Bold"
+                                    Text="Reposts" />
+                                <UniformGrid Columns="2" Rows="1">
+                                    <Button
+                                        MinWidth="80"
+                                        Margin="0,0,10,6"
+                                        Padding="6,3"
+                                        Command="{Binding ShowRepostsCommand}"
+                                        IsEnabled="{Binding AreButtonsEnabled}"
+                                        ToolTip="View Reposts">
+                                        <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                                            <iconPacks:PackIconMaterial
+                                                Width="16"
+                                                Height="16"
+                                                Kind="FormatListBulleted" />
+                                            <TextBlock
+                                                Margin="6,0,0,0"
+                                                FontSize="12"
+                                                Text="Show" />
+                                        </StackPanel>
+                                    </Button>
+                                    <Button
+                                        MinWidth="80"
+                                        Margin="0,0,10,6"
+                                        Padding="6,3"
+                                        Command="{Binding DeleteRepostsCommand}"
+                                        IsEnabled="{Binding AreButtonsEnabled}"
+                                        ToolTip="Delete Reposts">
+                                        <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                                            <iconPacks:PackIconMaterial
+                                                Width="16"
+                                                Height="16"
+                                                Kind="Delete" />
+                                            <TextBlock
+                                                Margin="6,0,0,0"
+                                                FontSize="12"
+                                                Text="Delete" />
+                                        </StackPanel>
+                                    </Button>
+                                </UniformGrid>
+                            </StackPanel>
+                        </Border>
+
+                        <!--  LIKES GROUP  -->
+                        <Border
+                            Margin="0,0,10,0"
+                            Padding="8"
+                            BorderBrush="{DynamicResource MahApps.Brushes.Gray9}"
+                            BorderThickness="1"
+                            CornerRadius="4">
+                            <StackPanel>
+                                <TextBlock
+                                    Margin="0,0,0,6"
+                                    FontSize="14"
+                                    FontWeight="Bold"
+                                    Text="Likes" />
+                                <UniformGrid Columns="2" Rows="1">
+                                    <Button
+                                        MinWidth="80"
+                                        Margin="0,0,10,6"
+                                        Padding="6,3"
+                                        Command="{Binding ShowLikesCommand}"
+                                        IsEnabled="{Binding AreButtonsEnabled}"
+                                        ToolTip="View Likes">
+                                        <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                                            <iconPacks:PackIconMaterial
+                                                Width="16"
+                                                Height="16"
+                                                Kind="FormatListBulleted" />
+                                            <TextBlock
+                                                Margin="6,0,0,0"
+                                                FontSize="12"
+                                                Text="Show" />
+                                        </StackPanel>
+                                    </Button>
+                                    <Button
+                                        MinWidth="80"
+                                        Margin="0,0,10,6"
+                                        Padding="6,3"
+                                        Command="{Binding DeleteLikesCommand}"
+                                        IsEnabled="{Binding AreButtonsEnabled}"
+                                        ToolTip="Delete Likes">
+                                        <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                                            <iconPacks:PackIconMaterial
+                                                Width="16"
+                                                Height="16"
+                                                Kind="Delete" />
+                                            <TextBlock
+                                                Margin="6,0,0,0"
+                                                FontSize="12"
+                                                Text="Delete" />
+                                        </StackPanel>
+                                    </Button>
+                                </UniformGrid>
+                            </StackPanel>
+                        </Border>
+
+                        <!--  FOLLOWING GROUP  -->
+                        <Border
+                            Padding="8"
+                            BorderBrush="{DynamicResource MahApps.Brushes.Gray9}"
+                            BorderThickness="1"
+                            CornerRadius="4">
+                            <StackPanel>
+                                <TextBlock
+                                    Margin="0,0,0,6"
+                                    FontSize="14"
+                                    FontWeight="Bold"
+                                    Text="Following" />
+                                <UniformGrid Columns="2" Rows="1">
+                                    <Button
+                                        MinWidth="80"
+                                        Margin="0,0,10,6"
+                                        Padding="6,3"
+                                        Command="{Binding ShowFollowingCommand}"
+                                        IsEnabled="{Binding AreButtonsEnabled}"
+                                        ToolTip="View Following">
+                                        <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                                            <iconPacks:PackIconMaterial
+                                                Width="16"
+                                                Height="16"
+                                                Kind="FormatListBulleted" />
+                                            <TextBlock
+                                                Margin="6,0,0,0"
+                                                FontSize="12"
+                                                Text="Show" />
+                                        </StackPanel>
+                                    </Button>
+                                    <Button
+                                        MinWidth="80"
+                                        Margin="0,0,10,6"
+                                        Padding="6,3"
+                                        Command="{Binding DeleteFollowingCommand}"
+                                        IsEnabled="{Binding AreButtonsEnabled}"
+                                        ToolTip="Delete Following">
+                                        <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                                            <iconPacks:PackIconMaterial
+                                                Width="16"
+                                                Height="16"
+                                                Kind="Delete" />
+                                            <TextBlock
+                                                Margin="6,0,0,0"
+                                                FontSize="12"
+                                                Text="Delete" />
+                                        </StackPanel>
+                                    </Button>
+                                </UniformGrid>
+                            </StackPanel>
+                        </Border>
 
                     </StackPanel>
                 </ScrollViewer>
+
+
 
                 <mui:Flyout
                     x:Name="Notification"

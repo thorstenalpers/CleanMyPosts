@@ -10,12 +10,12 @@
 
 ## 🚀 Features
 
-- Bulk delete all posts
-- Bulk delete all reposts
-- Bulk delete all replies
-- Remove all likes with a single click
-- Unfollow all accounts in one go
-- Secure browser automation — no credentials stored
+- Bulk delete **all posts**  
+- Bulk delete **all reposts**  
+- Bulk delete **all replies**  
+- Remove **all likes** with a single click  
+- Unfollow **all accounts** at once  
+- Secure browser automation — **no credentials are stored externally**
 
 
 ## 🛠️ Requirements
@@ -29,7 +29,7 @@
 1. Download the latest version from [Releases](https://github.com/thorstenalpers/x-tweet-cleaner/releases).
 2. Run the installer or open the standalone app. Ignore the warning about the app being from an unverified publisher.
 3. Launch the app and log in with your X (formerly Twitter) account.
-4. Start deleting your posts, likes, and following list.
+4. Start bulk deleting your posts, likes, and following list easily.
 
 
 
@@ -68,15 +68,15 @@ Here’s a quick look at how CleanMyPosts works:
 </details>
 
 <details>
-	<summary><strong>Clean likes</strong></summary>
+	<summary><strong>Delete likes</strong></summary>
 	<br/>
-	<img src="./assets/clean-likes.gif" alt="Delete Likes GIF" width="700" />
+	<img src="./assets/clean-likes.gif" alt="Clean Likes GIF" width="700" />
 </details>
 
 <details>
-	<summary><strong>Clean Followings</strong></summary>
+	<summary><strong>Delete Followings</strong></summary>
 	<br/>
-	<img src="./assets/clean-following.gif" alt="Unfollow Accounts GIF" width="700" />
+	<img src="./assets/delete-following.gif" alt="Unfollow Accounts GIF" width="700" />
 </details>
 
 <details>

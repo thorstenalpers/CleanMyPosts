@@ -32,19 +32,6 @@
 4. Start bulk deleting your posts, likes, and following list easily.
 
 
-
-## ℹ️ About Browser Automation
-
-CleanMyPosts uses **browser automation** to perform bulk actions—such as deleting posts, likes, and unfollowing accounts—on your X (formerly Twitter) profile.  
-This method is used because X currently does **not offer an official feature or API** for these actions.
-
-Please keep in mind:
-- While convenient, browser automation may **not fully comply** with X’s Terms of Service.  
-- All operations are performed in your own logged-in browser session—**no credentials are stored outside**.
-- Since browser automation mimics real user interactions, these actions are typically **indistinguishable from manual activity**, reducing the risk of detection.
-
-
-
 ## 🎬 See It in Action
 
 Here’s a quick look at how CleanMyPosts works:
@@ -97,6 +84,16 @@ Click on your profile to find your username, then use these links (replace USERN
 * **Unlike posts:** https://x.com/USERNAME/likes → click the heart to remove the like.
 
 * **Unfollow accounts:** https://x.com/USERNAME/following → click  unfollow.
+
+## ℹ️ About Browser Automation
+
+CleanMyPosts uses **browser automation** to perform bulk actions—such as deleting posts, likes, and unfollowing accounts—on your X (formerly Twitter) profile.  
+This method is used because X currently does **not offer an official feature or API** for these actions.
+
+Please keep in mind:
+- While convenient, browser automation may **not fully comply** with X’s Terms of Service.  
+- All operations are performed in your own logged-in browser session—**no credentials are stored outside**.
+- Since browser automation mimics real user interactions, these actions are typically **indistinguishable from manual activity**, reducing the risk of detection.
 
 
 ## Report a Bug 🐞

@@ -70,7 +70,7 @@ Here’s a quick look at how CleanMyPosts works:
 <details>
 	<summary><strong>Delete likes</strong></summary>
 	<br/>
-	<img src="./assets/clean-likes.gif" alt="Clean Likes GIF" width="700" />
+	<img src="./assets/delete-likes.gif" alt="Delete Likes GIF" width="700" />
 </details>
 
 <details>

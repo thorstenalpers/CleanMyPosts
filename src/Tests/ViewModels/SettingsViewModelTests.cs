@@ -13,15 +13,13 @@ public class SettingsViewModelTests
     private readonly Mock<IUserSettingsService> _userSettingsServiceMock = new();
     private readonly Mock<UpdaterConfig> _updaterConfigMock = new();
     private readonly Mock<AppConfig> _appConfigMock = new();
-    private readonly Mock<IDeploymentService> _deploymentServiceMock = new();
     private readonly Mock<ILogger<SettingsViewModel>> _loggerMock = new();
 
     private SettingsViewModel CreateViewModel() =>
         new(_loggerMock.Object,
             _updaterConfigMock.Object,
             _appConfigMock.Object,
-            _userSettingsServiceMock.Object,
-            _deploymentServiceMock.Object);
+            _userSettingsServiceMock.Object);
 
     [Fact]
     public void SetThemeCommand_ShouldInvokeThemeService_WithCorrectTheme()

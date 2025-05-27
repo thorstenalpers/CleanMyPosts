@@ -33,7 +33,6 @@ public class HostService : IHostService
                 services.AddSingleton<INavigationService, NavigationService>();
                 services.AddSingleton<IXScriptService, XScriptService>();
                 services.AddSingleton<IWebViewHostService, WebViewHostService>();
-                services.AddSingleton<IDeploymentService, DeploymentService>();
 
                 services.AddTransient<IShellWindow, ShellWindow>();
                 services.AddTransient<ShellViewModel>();

@@ -7,7 +7,7 @@ async function DeleteAllPosts(waitAfterDelete, waitBetweenDeleteAttempts) {
         console.log(`[${new Date().toLocaleTimeString()}] ${msg}`);
     }
 
-    async function waitForDeleteButton(selector, maxWait = 8000, interval = 300) {
+    async function waitForDeleteButton(selector, maxWait = 3000, interval = 200) {
         const start = Date.now();
         while (true) {
             const caret = document.querySelector(selector);
@@ -29,7 +29,6 @@ async function DeleteAllPosts(waitAfterDelete, waitBetweenDeleteAttempts) {
 
     async function clickDeleteOnPost() {
         log("[clickDeleteOnPost] Searching for caret button...");
-
         const caretButton = document.querySelector("div[data-testid='primaryColumn'] section button[data-testid='caret']");
         if (!caretButton) {
             log("[clickDeleteOnPost] Caret button not found.");
@@ -39,7 +38,7 @@ async function DeleteAllPosts(waitAfterDelete, waitBetweenDeleteAttempts) {
         caretButton.click();
         await delay(waitBetweenDeleteAttempts);
 
-        const delays = [1, 2, 3, 4, 5].map(i => i * waitBetweenDeleteAttempts);
+        const delays = [100, 200, 300]; // 3 short retries
 
         async function tryClickDelete(attempt = 0) {
             if (attempt >= delays.length) {
@@ -75,7 +74,7 @@ async function DeleteAllPosts(waitAfterDelete, waitBetweenDeleteAttempts) {
 
         async function confirmDelete(attempt = 0) {
             if (attempt >= delays.length) {
-                log("[confirmDelete] Confirm delete button not found after retries.");
+                log("[confirmDelete] Confirm button not found after retries.");
                 return false;
             }
 
@@ -104,25 +103,33 @@ async function DeleteAllPosts(waitAfterDelete, waitBetweenDeleteAttempts) {
 
     window.postsDeletionDone = false;
     window.deletedPosts = 0;
-
     log("[DeleteAllPosts] Starting deletion loop...");
 
     let failures = 0;
-    const maxFailures = 3;
+    const maxFailures = 1;
     let postNumber = 1;
 
     while (failures < maxFailures) {
-        const found = await waitForDeleteButton("div[data-testid='primaryColumn'] section button[data-testid='caret']", 8000, 300);
+        const found = await waitForDeleteButton("div[data-testid='primaryColumn'] section button[data-testid='caret']", 3000, 200);
         if (!found) {
             failures++;
-            log(`[DeleteAllPosts] No post found (failure #${failures}). Scrolling up for retry...`);
+            log(`[DeleteAllPosts] No post found (failure #${failures}). Scrolling up...`);
+
+            const prevScroll = window.scrollY;
             window.scrollTo(0, 0);
-            await delay(500);
+            await delay(400);
+
+            if (window.scrollY === prevScroll) {
+                log("[DeleteAllPosts] No scroll change. Assuming no more posts.");
+                break;
+            }
+
             continue;
         }
 
         log(`[DeleteAllPosts] Deleting post #${postNumber}...`);
         const success = await clickDeleteOnPost();
+
         if (success) {
             window.deletedPosts++;
             log(`[DeleteAllPosts] Deleted post #${postNumber}`);
@@ -132,7 +139,7 @@ async function DeleteAllPosts(waitAfterDelete, waitBetweenDeleteAttempts) {
         } else {
             failures++;
             log(`[DeleteAllPosts] Failed to delete post #${postNumber} (failure #${failures})`);
-            await delay(500);
+            await delay(300);
         }
     }
 

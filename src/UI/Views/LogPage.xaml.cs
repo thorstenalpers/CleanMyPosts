@@ -15,6 +15,7 @@ public partial class LogPage : Page
     private string _currentBackgroundColor = "#FFFAFA";
     private string _currentTextColor = "black";
     private string _currentBorderColor = "#EEE";
+    private CoreWebView2Environment _env;
 
     public LogPage(LogViewModel viewModel)
     {
@@ -57,14 +58,23 @@ public partial class LogPage : Page
 
     private async void LogPage_Loaded(object sender, RoutedEventArgs e)
     {
-        var userDataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), System.Reflection.Assembly.GetExecutingAssembly().GetName().Name, "WebView-LogPage");
+        if (LogWebView.CoreWebView2 != null)
+        {
+            // Already initialized, no need to reinit
+            return;
+        }
+        if (_env == null)
+        {
+            var userDataFolder = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                System.Reflection.Assembly.GetExecutingAssembly().GetName().Name,
+                "WebView-LogPage");
+            Directory.CreateDirectory(userDataFolder);
+            var options = new CoreWebView2EnvironmentOptions(null, language: "en-US");
+            _env = await CoreWebView2Environment.CreateAsync(null, userDataFolder, options);
+        }
 
-        Directory.CreateDirectory(userDataFolder);
-
-        var options = new CoreWebView2EnvironmentOptions(null, language: "en-US");
-        var env = await CoreWebView2Environment.CreateAsync(null, userDataFolder, options);
-
-        await LogWebView.EnsureCoreWebView2Async(env);
+        await LogWebView.EnsureCoreWebView2Async(_env);
 
         LogWebView.CoreWebView2.Settings.IsScriptEnabled = true;
 

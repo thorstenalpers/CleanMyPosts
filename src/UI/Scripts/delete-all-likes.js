@@ -1,16 +1,18 @@
 async function DeleteAllLikes(waitTime) {
-    // Simple delay helper returning a Promise
     function delay(ms) {
         return new Promise(resolve => setTimeout(resolve, ms));
     }
 
-    // Wait for unlike button to appear, scrolling every interval until maxTotalTime
-    async function waitForUnlikeButton(selector, maxTotalTime, interval) {
-        const start = Date.now();
+    function isVisible(el) {
+        return el && el.offsetParent !== null;
+    }
 
+    async function waitForUnlikeButton(selector, maxTotalTime = 5000, interval = 200) {
+        const start = Date.now();
         while (true) {
-            if (document.querySelector(selector)) {
-                console.log("[waitForUnlikeButton] Found unlike button");
+            const btn = document.querySelector(selector);
+            if (btn && isVisible(btn)) {
+                console.log("[waitForUnlikeButton] Found visible unlike button");
                 return true;
             }
 
@@ -20,30 +22,29 @@ async function DeleteAllLikes(waitTime) {
                 return false;
             }
 
-            console.log("[waitForUnlikeButton] scroll down");
+            console.log("[waitForUnlikeButton] Scrolling down...");
             window.scrollBy(0, 500);
             await delay(interval);
         }
     }
 
-    // Click the unlike button and wait for waitTime ms, then check if button disappeared
     async function clickUnlikeButton() {
         const btn = document.querySelector('button[data-testid="unlike"]');
-        if (!btn) {
-            console.log("[clickUnlikeButton] No unlike button found");
+        if (!btn || !isVisible(btn)) {
+            console.log("[clickUnlikeButton] No visible unlike button found");
             return false;
         }
 
         console.log("[clickUnlikeButton] Clicking unlike button");
         btn.click();
-
         await delay(waitTime);
-        const stillThere = !!document.querySelector('button[data-testid="unlike"]');
-        console.log(`[clickUnlikeButton] Unlike button present after wait? ${stillThere}`);
-        return !stillThere;
+
+        const stillPresent = document.querySelector('button[data-testid="unlike"]');
+        const success = !stillPresent;
+        console.log(`[clickUnlikeButton] Unlike button still present after delay? ${!!stillPresent}`);
+        return success;
     }
 
-    // Try clicking unlike button maxTries times before giving up
     async function tryUnlike(maxTries) {
         for (let attempt = 1; attempt <= maxTries; attempt++) {
             console.log(`[tryUnlike] Attempt #${attempt}`);
@@ -52,43 +53,44 @@ async function DeleteAllLikes(waitTime) {
                 console.log(`[tryUnlike] Success on attempt #${attempt}`);
                 return true;
             }
+
             if (attempt < maxTries) {
-                console.log(`[tryUnlike] Failed attempt #${attempt}, retrying...`);
-                await delay(1000);
+                const backoff = 500 + 500 * attempt;
+                console.log(`[tryUnlike] Failed attempt #${attempt}, retrying in ${backoff}ms...`);
+                await delay(backoff);
             }
         }
+
         console.log(`[tryUnlike] Failed after ${maxTries} attempts`);
         return false;
     }
 
-    // Main delete loop
     let postNumber = 1;
     window.likesDeletionDone = false;
     window.deletedLikes = 0;
 
-    if (!document.querySelector('button[data-testid="unlike"]')) {
-        console.log("[deleteAll] No unlike buttons present on page. Aborting.");
-        window.likesDeletionDone = true;
-        return;
-    }
+    console.log("[DeleteAllLikes] Starting unlike loop...");
 
     while (true) {
         const found = await waitForUnlikeButton('button[data-testid="unlike"]', 5000, 200);
         if (!found) {
-            console.log("[deleteAll] No unlike buttons found after timeout. Stopping.");
-            window.likesDeletionDone = true;
+            console.log("[DeleteAllLikes] No unlike buttons found. Ending.");
             break;
         }
 
-        const deleted = await tryUnlike(10);
-        if (deleted) {
-            console.log(`[deleteAll] Deleted like #${postNumber}`);
-            window.deletedLikes++;
+        const success = await tryUnlike(5);
+        if (success) {
+            console.log(`[DeleteAllLikes] Deleted like #${postNumber}`);
             postNumber++;
+            window.deletedLikes++;
         } else {
-            console.log(`[deleteAll] Failed to delete like #${postNumber}, stopping.`);
-            window.likesDeletionDone = true;
+            console.log(`[DeleteAllLikes] Failed to delete like #${postNumber}, stopping.`);
             break;
         }
+
+        await delay(waitTime);
     }
+
+    window.likesDeletionDone = true;
+    console.log(`[DeleteAllLikes] Completed. Total likes removed: ${window.deletedLikes}`);
 }

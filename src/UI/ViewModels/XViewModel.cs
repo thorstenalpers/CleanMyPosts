@@ -71,7 +71,8 @@ public partial class XViewModel : ObservableObject
         if (e.IsSuccess)
         {
             var jsLoggerPatch = @"
-                (() => {
+              (() => {
+                function attachLogger() {
                   const originalConsole = {
                     log: console.log,
                     warn: console.warn,
@@ -79,9 +80,16 @@ public partial class XViewModel : ObservableObject
                   };
 
                   function sendLog(level, args) {
+                    const message = args.map(a => (typeof a === 'object' ? JSON.stringify(a) : a)).join(' ');
+
+                    // Optional: filter out unwanted logs here
+                    if (message.includes('[GSI_LOGGER]')) {
+                      return; // Skip unwanted logs
+                    }
+
                     chrome.webview.postMessage(JSON.stringify({
                       level,
-                      message: args.map(a => (typeof a === 'object' ? JSON.stringify(a) : a)).join(' ')
+                      message
                     }));
                   }
 
@@ -103,8 +111,16 @@ public partial class XViewModel : ObservableObject
                   window.onerror = function (message, source, lineno, colno, error) {
                     sendLog('error', [`JS Error: ${message} at ${source}:${lineno}:${colno}`]);
                   };
-                })();
-                ";
+                }
+
+                if (document.readyState === 'complete' || document.readyState === 'interactive') {
+                  attachLogger();
+                } else {
+                  document.addEventListener('DOMContentLoaded', attachLogger);
+                }
+              })();
+            ";
+
 
             await _webViewHostService.ExecuteScriptAsync(jsLoggerPatch);
 

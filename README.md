@@ -5,12 +5,14 @@
 [![CI Tests](https://github.com/thorstenalpers/CleanMyPosts/actions/workflows/ci.yml/badge.svg)](https://github.com/thorstenalpers/CleanMyPosts/actions/workflows/ci.yml)
 [![Star this repo](https://img.shields.io/github/stars/thorstenalpers/CleanMyPosts.svg?style=social&label=Star&maxAge=60)](https://github.com/thorstenalpers/CleanMyPosts)
 
-**CleanMyPosts** is a lightweight Windows desktop app that securely deletes all tweets, likes, and followings from your X (formerly Twitter) account in bulk using browser automation.
+**CleanMyPosts** is a lightweight Windows desktop app that securely deletes all posts, reposts, replies, likes, and followings from your X (formerly Twitter) account in bulk using browser automation.
 
 
 ## 🚀 Features
 
-- Bulk delete all tweets from your X (Twitter) account
+- Bulk delete all posts
+- Bulk delete all reposts
+- Bulk delete all replies
 - Remove all likes with a single click
 - Unfollow all accounts in one go
 - Secure browser automation — no credentials stored
@@ -48,15 +50,27 @@ Please keep in mind:
 Here’s a quick look at how CleanMyPosts works:
 
 <details>
-	<summary><strong>Clean posts</strong></summary>
+	<summary><strong>Delete posts</strong></summary>
 	<br/>
-	<img src="./assets/clean-posts.gif" alt="Clean Tweets GIF" width="700" />
+	<img src="./assets/delete-posts.gif" alt="Delete posts GIF" width="700" />
+</details>
+
+<details>
+	<summary><strong>Delete reposts</strong></summary>
+	<br/>
+	<img src="./assets/delete-reposts.gif" alt="Delete reposts GIF" width="700" />
+</details>
+
+<details>
+	<summary><strong>Delete replies</strong></summary>
+	<br/>
+	<img src="./assets/delete-replies.gif" alt="Delete replies GIF" width="700" />
 </details>
 
 <details>
 	<summary><strong>Clean likes</strong></summary>
 	<br/>
-	<img src="./assets/clean-likes.gif" alt="Clean Likes GIF" width="700" />
+	<img src="./assets/clean-likes.gif" alt="Delete Likes GIF" width="700" />
 </details>
 
 <details>
@@ -75,6 +89,10 @@ Here’s a quick look at how CleanMyPosts works:
 Click on your profile to find your username, then use these links (replace USERNAME with your handle):
 
 * **Delete posts:** https://x.com/search?q=from%3AUSERNAME → click ... on each post → Delete.
+
+* **Delete reposts:** https://x.com/USERNAME → click ... on each repost icon → Delete.
+
+* **Delete replies:** https://x.com/USERNAME/with_replies → click ... on each post → Delete.
 
 * **Unlike posts:** https://x.com/USERNAME/likes → click the heart to remove the like.
 

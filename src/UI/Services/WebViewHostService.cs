@@ -15,6 +15,7 @@ public class WebViewHostService(ILogger<WebViewHostService> logger) : IWebViewHo
 
     public event EventHandler<NavigationCompletedEventArgs> NavigationCompleted;
     public event EventHandler<WebMessageReceivedEventArgs> WebMessageReceived;
+    private CoreWebView2Environment _env;
 
     public Uri Source
     {
@@ -24,20 +25,30 @@ public class WebViewHostService(ILogger<WebViewHostService> logger) : IWebViewHo
 
     public async Task InitializeAsync(WebView2 webView)
     {
+        if (_webView != null && _webView == webView && _webView.CoreWebView2 != null)
+        {
+            return;
+        }
+
         _webView = webView ?? throw new ArgumentNullException(nameof(webView));
 
         _webView.NavigationCompleted += (_, e) =>
             NavigationCompleted?.Invoke(this, new NavigationCompletedEventArgs { IsSuccess = e.IsSuccess });
 
-        var userDataFolder = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), System.Reflection.Assembly.GetExecutingAssembly().GetName().Name, "WebView-XPage");
+        if (_env == null)
+        {
+            var userDataFolder = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                System.Reflection.Assembly.GetExecutingAssembly().GetName().Name,
+                "WebView-XPage");
 
-        Directory.CreateDirectory(userDataFolder);
+            Directory.CreateDirectory(userDataFolder);
 
-        var options = new CoreWebView2EnvironmentOptions(null, language: "en-US");
-        var env = await CoreWebView2Environment.CreateAsync(null, userDataFolder, options);
+            var options = new CoreWebView2EnvironmentOptions(null, language: "en-US");
+            _env = await CoreWebView2Environment.CreateAsync(null, userDataFolder, options);
+        }
 
-        await _webView.EnsureCoreWebView2Async(env);
+        await _webView.EnsureCoreWebView2Async(_env);
 
         _webView.CoreWebView2.WebMessageReceived += (_, msgEvent) =>
         {

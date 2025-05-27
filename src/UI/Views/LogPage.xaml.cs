@@ -60,9 +60,9 @@ public partial class LogPage : Page
     {
         if (LogWebView.CoreWebView2 != null)
         {
-            // Already initialized, no need to reinit
             return;
         }
+
         if (_env == null)
         {
             var userDataFolder = Path.Combine(
@@ -75,8 +75,6 @@ public partial class LogPage : Page
         }
 
         await LogWebView.EnsureCoreWebView2Async(_env);
-
-        LogWebView.CoreWebView2.Settings.IsScriptEnabled = true;
 
         // Define JS function for runtime use
         var jsFunc = @"

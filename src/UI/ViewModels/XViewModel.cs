@@ -64,6 +64,7 @@ public partial class XViewModel : ObservableObject
         await _webViewHostService.InitializeAsync(webView);
 
         _webViewHostService.Source = new Uri(_xBaseUrl);
+        _isInitialized = true;
     }
 
     private async void OnNavigationCompleted(object sender, NavigationCompletedEventArgs e)
@@ -124,7 +125,6 @@ public partial class XViewModel : ObservableObject
 
             await _webViewHostService.ExecuteScriptAsync(jsLoggerPatch);
 
-            _isInitialized = true;
             if (!string.IsNullOrEmpty(_userName))
             {
                 return;

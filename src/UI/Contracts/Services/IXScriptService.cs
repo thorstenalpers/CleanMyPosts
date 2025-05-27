@@ -12,4 +12,8 @@ public interface IXScriptService
     Task<int> DeleteFollowingAsync();
 
     Task<string> GetUserNameAsync();
+    Task ShowRepostsAsync();
+    Task ShowRepliesAsync();
+    Task<int> DeleteRepliesAsync();
+    Task<int> DeleteRepostsAsync();
 }

@@ -6,6 +6,7 @@
     xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
     xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
     xmlns:viewmodels="clr-namespace:CleanMyPosts.UI.ViewModels"
+    xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
     Style="{DynamicResource MahApps.Styles.Page}">
 
     <Border Padding="16" Background="{DynamicResource MahApps.Brushes.Background}">
@@ -15,67 +16,38 @@
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
-            <TextBlock
-                Grid.Row="0"
-                Margin="0,0,0,16"
-                FontSize="20"
-                FontWeight="Bold"
-                Text="Application Log" />
+            <Grid Grid.Row="0" Margin="0,0,0,16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
 
-            <ListView
+                <TextBlock
+                    VerticalAlignment="Center"
+                    FontSize="20"
+                    FontWeight="Bold"
+                    Text="Application Log" />
+
+                <Button
+                    Grid.Column="1"
+                    Margin="8,0,0,0"
+                    Padding="8,4"
+                    VerticalAlignment="Center"
+                    Command="{Binding ClearLogCommand}"
+                    Content="Clear Log"
+                    Style="{StaticResource MahApps.Styles.Button}" />
+            </Grid>
+
+            <Border
                 Grid.Row="1"
-                AlternationCount="2"
-                Background="Transparent"
-                BorderThickness="0"
-                ItemsSource="{Binding LogEntries}"
-                SelectedItem="{Binding SelectedLogEntry, Mode=TwoWay}"
-                SelectionMode="Single">
-
-                <ListView.ItemContainerStyle>
-                    <Style TargetType="ListViewItem">
-                        <Setter Property="Background" Value="Transparent" />
-                        <Setter Property="Foreground" Value="{DynamicResource MahApps.Brushes.Text}" />
-                        <Setter Property="Padding" Value="2" />
-                        <Setter Property="BorderThickness" Value="0" />
-                        <Setter Property="Template">
-                            <Setter.Value>
-                                <ControlTemplate TargetType="ListViewItem">
-                                    <Border Background="{TemplateBinding Background}">
-                                        <ContentPresenter />
-                                    </Border>
-                                </ControlTemplate>
-                            </Setter.Value>
-                        </Setter>
-                        <Style.Triggers>
-                            <Trigger Property="ItemsControl.AlternationIndex" Value="1">
-                                <Setter Property="Background" Value="#33808080" />
-                            </Trigger>
-                        </Style.Triggers>
-                    </Style>
-
-                </ListView.ItemContainerStyle>
-
-                <ListView.ItemTemplate>
-                    <DataTemplate>
-                        <TextBox
-                            Padding="0"
-                            VerticalContentAlignment="Center"
-                            Background="Transparent"
-                            BorderThickness="0"
-                            Focusable="True"
-                            FontFamily="Consolas"
-                            FontSize="14"
-                            Foreground="{DynamicResource MahApps.Brushes.Text}"
-                            IsReadOnly="True"
-                            IsReadOnlyCaretVisible="False"
-                            IsTabStop="False"
-                            PreviewMouseLeftButtonDown="TextBox_PreviewMouseLeftButtonDown"
-                            Text="{Binding Mode=OneWay}"
-                            TextWrapping="Wrap" />
-                    </DataTemplate>
-                </ListView.ItemTemplate>
-
-            </ListView>
+                Margin="0"
+                BorderBrush="Gray"
+                BorderThickness="1">
+                <wv2:WebView2
+                    x:Name="LogWebView"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Stretch" />
+            </Border>
         </Grid>
     </Border>
 </Page>

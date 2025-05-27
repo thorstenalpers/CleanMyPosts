@@ -1,9 +1,11 @@
 ﻿using System.Collections.Specialized;
+using System.IO;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using CleanMyPosts.UI.ViewModels;
 using ControlzEx.Theming;
+using Microsoft.Web.WebView2.Core;
 
 namespace CleanMyPosts.UI.Views;
 
@@ -55,7 +57,15 @@ public partial class LogPage : Page
 
     private async void LogPage_Loaded(object sender, RoutedEventArgs e)
     {
-        await LogWebView.EnsureCoreWebView2Async();
+        var userDataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), System.Reflection.Assembly.GetExecutingAssembly().GetName().Name, "WebView-LogPage");
+
+        Directory.CreateDirectory(userDataFolder);
+
+        var options = new CoreWebView2EnvironmentOptions(null, language: "en-US");
+        var env = await CoreWebView2Environment.CreateAsync(null, userDataFolder, options);
+
+        await LogWebView.EnsureCoreWebView2Async(env);
+
         LogWebView.CoreWebView2.Settings.IsScriptEnabled = true;
 
         // Define JS function for runtime use

@@ -30,7 +30,7 @@ public class WebViewHostService(ILogger<WebViewHostService> logger) : IWebViewHo
             NavigationCompleted?.Invoke(this, new NavigationCompletedEventArgs { IsSuccess = e.IsSuccess });
 
         var userDataFolder = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), System.Reflection.Assembly.GetExecutingAssembly().GetName().Name, "WebView2");
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), System.Reflection.Assembly.GetExecutingAssembly().GetName().Name, "WebView-XPage");
 
         Directory.CreateDirectory(userDataFolder);
 

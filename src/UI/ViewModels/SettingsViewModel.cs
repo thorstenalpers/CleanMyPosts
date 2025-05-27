@@ -16,14 +16,12 @@ namespace CleanMyPosts.UI.ViewModels;
 public partial class SettingsViewModel(ILogger<SettingsViewModel> logger,
     UpdaterConfig updaterConfig,
     AppConfig appConfig,
-    IUserSettingsService userSettingsService,
-    IDeploymentService deploymentService) : ObservableObject, INavigationAware
+    IUserSettingsService userSettingsService) : ObservableObject, INavigationAware
 {
     private readonly ILogger<SettingsViewModel> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     private readonly IUserSettingsService _userSettingsService = userSettingsService ?? throw new ArgumentNullException(nameof(userSettingsService));
     private readonly UpdaterConfig _updaterConfig = updaterConfig ?? throw new ArgumentNullException(nameof(updaterConfig));
     private readonly AppConfig _appConfig = appConfig ?? throw new ArgumentNullException(nameof(appConfig));
-    private readonly IDeploymentService _deploymentService = deploymentService ?? throw new ArgumentNullException(nameof(deploymentService));
 
     [ObservableProperty]
     private bool _isNotificationOpen;
@@ -113,13 +111,7 @@ public partial class SettingsViewModel(ILogger<SettingsViewModel> logger,
 
         try
         {
-            var isStandalone = !_deploymentService.IsRunningAsInstalled();
-
-            var url = isStandalone ? _updaterConfig.UpdateUrlInstaller : _updaterConfig.UpdateUrlSingle;
-            if (isStandalone)
-            {
-                AutoUpdater.OpenDownloadPage = true;
-            }
+            var url = _updaterConfig.UpdateUrl;
             AutoUpdater.CheckForUpdateEvent += AutoUpdaterOnCheckForUpdateEvent;
             AutoUpdater.Start(url);
         }

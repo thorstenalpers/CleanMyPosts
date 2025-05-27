@@ -17,6 +17,11 @@ public class FileService : IFileService
         return default;
     }
 
+    public string ReadFile(string filePath)
+    {
+        return File.ReadAllText(filePath);
+    }
+
     public void Save<T>(string folderPath, string fileName, T content)
     {
         if (!Directory.Exists(folderPath))

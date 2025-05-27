@@ -1,153 +1,141 @@
-async function DeleteAllReplies(userName, waitAfterDelete, waitBetweenDeleteAttempts) {
+async function DeleteAllPosts(waitAfterDelete, waitBetweenDeleteAttempts) {
     function delay(ms) {
         return new Promise(resolve => setTimeout(resolve, ms));
     }
 
-    function isVisible(elem) {
-        return elem && elem.offsetParent !== null && !elem.disabled;
+    function log(msg) {
+        console.log(`[${new Date().toLocaleTimeString()}] ${msg}`);
     }
 
-    async function findVisibleCaretWithRetry(article, maxRetries = 7, delayMs = 300) {
-        for (let attempt = 0; attempt < maxRetries; attempt++) {
-            const caret = article.querySelector("button[data-testid='caret']");
-            if (caret && isVisible(caret)) {
-                return caret;
-            }
-            await delay(delayMs);
-        }
-        return null;
-    }
-
-    async function clickCaretWithScrollRetry() {
-        const maxScrollAttempts = 6;
-        const scrollDelay = 1000; // ms
-        for (let scrollAttempt = 0; scrollAttempt < maxScrollAttempts; scrollAttempt++) {
-            const articles = Array.from(document.querySelectorAll("article[data-testid='tweet']"));
-            const target = articles.find(article => article.querySelector(`a[href*="/${userName}"]`));
-
-            if (target) {
-                const caret = await findVisibleCaretWithRetry(target, 7, 300);
-                if (!caret) {
-                    console.log("[clickCaretWithScrollRetry] Caret found but not visible after retries.");
-                    return false;
-                }
-                caret.click();
+    async function waitForDeleteButton(selector, maxWait = 8000, interval = 300) {
+        const start = Date.now();
+        while (true) {
+            const caret = document.querySelector(selector);
+            if (caret) {
+                log("[waitForDeleteButton] Found caret button.");
                 return true;
             }
 
-            // Not found yet: scroll to load more replies and wait
-            console.log(`[clickCaretWithScrollRetry] Caret not found, scrolling attempt ${scrollAttempt + 1}...`);
-            window.scrollBy(0, 1500);
-            await delay(scrollDelay);
+            const elapsed = Date.now() - start;
+            if (elapsed > maxWait) {
+                log(`[waitForDeleteButton] Timeout after ${elapsed}ms.`);
+                return false;
+            }
+
+            window.scrollBy(0, 400);
+            await delay(interval);
         }
-        console.log("[clickCaretWithScrollRetry] Caret not found after scrolling attempts.");
-        return false;
     }
 
-    async function tryClickDelete(attempt = 0) {
-        const delays = [
-            waitBetweenDeleteAttempts,
-            waitBetweenDeleteAttempts * 2,
-            waitBetweenDeleteAttempts * 3,
-            waitBetweenDeleteAttempts * 4,
-            waitBetweenDeleteAttempts * 5,
-        ];
+    async function clickDeleteOnPost() {
+        log("[clickDeleteOnPost] Searching for caret button...");
 
-        if (attempt >= delays.length) return false;
+        const caretButton = document.querySelector("div[data-testid='primaryColumn'] section button[data-testid='caret']");
+        if (!caretButton) {
+            log("[clickDeleteOnPost] Caret button not found.");
+            return false;
+        }
 
-        await delay(delays[attempt]);
+        caretButton.click();
+        await delay(waitBetweenDeleteAttempts);
 
-        const menu = document.querySelector("[role='menu']");
-        if (menu && menu.style.display !== "none") {
-            const items = document.querySelectorAll("[role='menuitem']");
+        const delays = [1, 2, 3, 4, 5].map(i => i * waitBetweenDeleteAttempts);
+
+        async function tryClickDelete(attempt = 0) {
+            if (attempt >= delays.length) {
+                log("[tryClickDelete] Delete option not found after retries.");
+                return false;
+            }
+
+            await delay(delays[attempt]);
+
+            const menu = document.querySelector("[role='menu']");
+            if (!menu || menu.style.display === "none") {
+                log(`[tryClickDelete] Menu not visible (attempt #${attempt + 1})`);
+                return tryClickDelete(attempt + 1);
+            }
+
+            const items = menu.querySelectorAll("[role='menuitem']");
             for (const item of items) {
                 const span = item.querySelector("span");
                 if (!span) continue;
 
                 const color = getComputedStyle(span).color;
-                const rgb = color.match(/\d+/g).map(Number);
-                const [r, g, b] = rgb;
-
+                const [r, g, b] = color.match(/\d+/g).map(Number);
                 if (r > 180 && g < 100 && b < 100) {
                     span.click();
+                    log("[tryClickDelete] Clicked delete option.");
                     return true;
                 }
             }
-            return tryClickDelete(attempt + 1);
-        } else {
+
+            log(`[tryClickDelete] Delete option not found (attempt #${attempt + 1})`);
             return tryClickDelete(attempt + 1);
         }
-    }
 
-    async function confirmDelete(attempt = 0) {
-        const delays = [
-            waitBetweenDeleteAttempts,
-            waitBetweenDeleteAttempts * 2,
-            waitBetweenDeleteAttempts * 3,
-            waitBetweenDeleteAttempts * 4,
-            waitBetweenDeleteAttempts * 5,
-        ];
+        async function confirmDelete(attempt = 0) {
+            if (attempt >= delays.length) {
+                log("[confirmDelete] Confirm delete button not found after retries.");
+                return false;
+            }
 
-        if (attempt >= delays.length) return false;
+            await delay(delays[attempt]);
 
-        await delay(delays[attempt]);
+            const confirmBtn = document.querySelector("button[data-testid='confirmationSheetConfirm']");
+            if (confirmBtn && confirmBtn.offsetParent !== null) {
+                confirmBtn.click();
+                log(`[confirmDelete] Clicked confirm (attempt #${attempt + 1})`);
+                return true;
+            }
 
-        const confirmBtn = document.querySelector("button[data-testid='confirmationSheetConfirm']");
-        if (confirmBtn && confirmBtn.offsetParent !== null) {
-            confirmBtn.click();
-            return true;
-        } else {
+            log(`[confirmDelete] Confirm button not visible (attempt #${attempt + 1})`);
             return confirmDelete(attempt + 1);
         }
-    }
 
-    async function waitForReplyCaret(maxWait, interval) {
-        const start = Date.now();
-        while (true) {
-            const caret = document.querySelector("article[data-testid='tweet'] button[data-testid='caret']");
-            if (caret) return true;
-
-            if ((Date.now() - start) > maxWait) return false;
-
-            window.scrollBy(0, 500);
-            await delay(interval);
-        }
-    }
-
-    window.repliesDeletionDone = false;
-    window.deletedReplies = 0;
-
-    while (true) {
-        const found = await waitForReplyCaret(5000, 200);
-        if (!found) {
-            console.log("[DeleteAllReplies] No more replies found.");
-            break;
-        }
-
-        const caretClicked = await clickCaretWithScrollRetry();
-        if (!caretClicked) {
-            console.log("[DeleteAllReplies] Failed to find and click caret.");
-            break;
-        }
-
-        await delay(waitBetweenDeleteAttempts);
-
-        const clickedDelete = await tryClickDelete();
-        if (!clickedDelete) {
-            console.log("[DeleteAllReplies] Failed to click delete option.");
-            break;
-        }
+        const deleteClicked = await tryClickDelete();
+        if (!deleteClicked) return false;
 
         const confirmed = await confirmDelete();
-        if (!confirmed) {
-            console.log("[DeleteAllReplies] Failed to confirm delete.");
-            break;
-        }
+        if (!confirmed) return false;
 
-        window.deletedReplies++;
-        await delay(waitAfterDelete);
+        log("[clickDeleteOnPost] Post deleted.");
+        return true;
     }
 
-    window.repliesDeletionDone = true;
-    console.log(`[DeleteAllReplies] Completed. Total replies deleted: ${window.deletedReplies}`);
+    window.postsDeletionDone = false;
+    window.deletedPosts = 0;
+
+    log("[DeleteAllPosts] Starting deletion loop...");
+
+    let failures = 0;
+    const maxFailures = 3;
+    let postNumber = 1;
+
+    while (failures < maxFailures) {
+        const found = await waitForDeleteButton("div[data-testid='primaryColumn'] section button[data-testid='caret']", 8000, 300);
+        if (!found) {
+            failures++;
+            log(`[DeleteAllPosts] No post found (failure #${failures}). Scrolling up for retry...`);
+            window.scrollTo(0, 0);
+            await delay(1000);
+            continue;
+        }
+
+        log(`[DeleteAllPosts] Deleting post #${postNumber}...`);
+        const success = await clickDeleteOnPost();
+        if (success) {
+            window.deletedPosts++;
+            log(`[DeleteAllPosts] Deleted post #${postNumber}`);
+            postNumber++;
+            failures = 0;
+            await delay(waitAfterDelete);
+        } else {
+            failures++;
+            log(`[DeleteAllPosts] Failed to delete post #${postNumber} (failure #${failures})`);
+            await delay(1000);
+        }
+    }
+
+    log(`[DeleteAllPosts] Deletion finished. Total deleted: ${window.deletedPosts}`);
+    window.postsDeletionDone = true;
 }

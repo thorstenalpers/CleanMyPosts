@@ -117,7 +117,7 @@ async function DeleteAllPosts(waitAfterDelete, waitBetweenDeleteAttempts) {
             failures++;
             log(`[DeleteAllPosts] No post found (failure #${failures}). Scrolling up for retry...`);
             window.scrollTo(0, 0);
-            await delay(1000);
+            await delay(500);
             continue;
         }
 
@@ -132,7 +132,7 @@ async function DeleteAllPosts(waitAfterDelete, waitBetweenDeleteAttempts) {
         } else {
             failures++;
             log(`[DeleteAllPosts] Failed to delete post #${postNumber} (failure #${failures})`);
-            await delay(1000);
+            await delay(500);
         }
     }
 

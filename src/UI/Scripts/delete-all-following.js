@@ -86,7 +86,7 @@ async function DeleteAllFollowing(waitBeforeTryClickDelete, waitBetweenTryClickD
             break;
         }
 
-        const success = await tryUnfollow(5);
+        const success = await tryUnfollow(10);
         if (success) {
             console.log(`[DeleteAllFollowing] Unfollowed #${unfollowCount}`);
             unfollowCount++;

@@ -38,7 +38,7 @@ async function DeleteAllPosts(waitAfterDelete, waitBetweenDeleteAttempts) {
         caretButton.click();
         await delay(waitBetweenDeleteAttempts);
 
-        const delays = [100, 200, 300]; // 3 short retries
+        const delays = [100, 200, 300, 500, 500, 500, 500, 500, 1000, 1000]; // 10 short retries
 
         async function tryClickDelete(attempt = 0) {
             if (attempt >= delays.length) {

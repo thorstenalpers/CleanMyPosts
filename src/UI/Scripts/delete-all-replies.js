@@ -9,7 +9,7 @@ async function DeleteAllReplies(userName, waitAfterDelete, waitBetweenDeleteAtte
 
     function isReplyByUser(article, userName) {
         const userLink = article.querySelector(`a[href^="/${userName}"]`);
-        const repostMarker = article.innerText.includes("Reposted");
+        const repostMarker = article.querySelector(`button[data-testid="unretweet"]`);
         return userLink && !repostMarker;
     }
 
@@ -28,7 +28,7 @@ async function DeleteAllReplies(userName, waitAfterDelete, waitBetweenDeleteAtte
 
     async function findCaretWithRetry(article, maxRetries = 5, delayMs = 200) {
         for (let i = 0; i < maxRetries; i++) {
-            const caret = article.querySelector("div[aria-label='More']/div > div > div");
+            const caret = article.querySelector("button[aria-label='More']");
             if (caret && isVisible(caret)) return caret;
             await delay(delayMs);
         }
@@ -55,7 +55,7 @@ async function DeleteAllReplies(userName, waitAfterDelete, waitBetweenDeleteAtte
     async function tryConfirmDelete(attempts, baseDelay) {
         for (let i = 0; i < attempts; i++) {
             await delay(baseDelay * (i + 1));
-            const confirmBtn = document.querySelector("div[role='dialog'] button[data-testid='confirmationSheetConfirm']");
+            const confirmBtn = document.querySelector("button[data-testid='confirmationSheetConfirm']");
             if (confirmBtn && isVisible(confirmBtn)) {
                 confirmBtn.click();
                 return true;

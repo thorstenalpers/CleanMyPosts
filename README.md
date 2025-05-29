@@ -123,6 +123,19 @@ You can also run the cleanup directly in your browser using JavaScript snippets:
 
 ---
 
+## 🤝 How to Contribute
+
+We welcome contributions to CleanMyPosts! If you’d like to improve the project, please:
+
+1. Check out our [contributing guidelines](CONTRIBUTING.md).
+2. Ideally, open an issue before starting work.
+3. Submit a pull request with your changes.
+
+Thank you for helping make CleanMyPosts better!
+
+
+---
+
 
 ## 🐞 Report a Bug
 

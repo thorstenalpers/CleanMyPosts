@@ -92,6 +92,7 @@ public partial class SettingsViewModel(ILogger<SettingsViewModel> logger,
     [RelayCommand]
     private void CheckUpdates()
     {
+#pragma warning disable S2696 // Instance members should not write to "static" fields
         try
         {
             Uri iconUri = new Uri(_updaterConfig.IconUri, UriKind.Absolute);
@@ -108,6 +109,7 @@ public partial class SettingsViewModel(ILogger<SettingsViewModel> logger,
         {
             /* Ignore errors loading icon */
         }
+#pragma warning restore S2696 // Instance members should not write to "static" fields
 
         try
         {

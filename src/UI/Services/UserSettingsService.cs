@@ -10,6 +10,7 @@ namespace CleanMyPosts.UI.Services;
 
 public class UserSettingsService(IFileService fileService, AppConfig appConfig) : IUserSettingsService
 {
+    private readonly AppConfig _appConfig = appConfig;
     private readonly IFileService _fileService = fileService;
     private readonly string _settingsPath = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
@@ -55,9 +56,9 @@ public class UserSettingsService(IFileService fileService, AppConfig appConfig) 
     }
 
     public bool GetShowLogs() => _settings.ShowLogs;
-    public void SetShowLogs(bool value)
+    public void SetShowLogs(bool showLogs)
     {
-        _settings.ShowLogs = value;
+        _settings.ShowLogs = showLogs;
         SettingChanged?.Invoke(this, nameof(_settings.ShowLogs));
     }
 
@@ -68,13 +69,13 @@ public class UserSettingsService(IFileService fileService, AppConfig appConfig) 
         SettingChanged?.Invoke(this, nameof(_settings.ConfirmDeletion));
     }
 
-    private static void AddCustomThemes()
+    private void AddCustomThemes()
     {
         ThemeManager.Current.AddLibraryTheme(new LibraryTheme(
-            new Uri("pack://application:,,,/Styles/Themes/HC.Dark.Blue.xaml"),
+            new Uri(_appConfig.DarkStyleUri),
             MahAppsLibraryThemeProvider.DefaultInstance));
         ThemeManager.Current.AddLibraryTheme(new LibraryTheme(
-            new Uri("pack://application:,,,/Styles/Themes/HC.Light.Blue.xaml"),
+            new Uri(_appConfig.LightStyleUri),
             MahAppsLibraryThemeProvider.DefaultInstance));
     }
 

@@ -297,7 +297,6 @@ public class XScriptService(ILogger<XScriptService> logger, IWebViewHostService 
             return 0;
         }
 
-        var timeout = _userSettingsService.GetTimeoutSettings();
         int retryCount = 0, deletedItems = 0;
 
         while ((isArticle ? await IsAnArticlePresentAsync() : !await IsEmptyMessagePresentAsync()) && retryCount++ < 5)
@@ -345,13 +344,10 @@ public class XScriptService(ILogger<XScriptService> logger, IWebViewHostService 
                     if (string.Equals(result?.ToLower(), "true"))
                     {
                         var deletedResult = await _webViewHostService.ExecuteScriptAsync($"window.{deletedVar};");
-                        if (int.TryParse(deletedResult, out var deleted))
+                        if (int.TryParse(deletedResult, out var deleted) && deleted > 0)
                         {
-                            if (deleted > 0)
-                            {
-                                retryCount = 0;
-                                deletedItems += deleted;
-                            }
+                            retryCount = 0;
+                            deletedItems += deleted;
                         }
 
                         break;

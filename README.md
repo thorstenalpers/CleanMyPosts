@@ -15,7 +15,7 @@
 - Bulk delete **all replies**  
 - Remove **all likes** with a single click  
 - Unfollow **all accounts** at once  
-- Secure browser automation — **no credentials are stored externally**
+- Secure browser automation 
 
 
 ## 🛠️ Requirements

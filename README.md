@@ -7,6 +7,7 @@
 
 **CleanMyPosts** is a lightweight Windows desktop app that securely deletes all posts, reposts, replies, likes, and followings from your X (formerly Twitter) account in bulk using browser automation.
 
+---
 
 ## 🚀 Features
 
@@ -15,14 +16,16 @@
 - Bulk delete **all replies**  
 - Remove **all likes** with a single click  
 - Unfollow **all accounts** at once  
-- Secure browser automation 
+- Secure browser automation  
 
+---
 
 ## 🛠️ Requirements
 
 - Windows 10 or later  
-- X (Twitter) account
+- X (Twitter) account  
 
+---
 
 ## 📦 Installation
 
@@ -31,61 +34,96 @@
 3. Launch the app and log in with your X (formerly Twitter) account.
 4. Start bulk deleting your posts, replies, reposts, likes, and following easily.
 
+---
 
 ## 🎬 See It in Action
 
-Here’s a quick look at how CleanMyPosts works:
-
 <details>
-	<summary><strong>Delete posts</strong></summary>
-	<br/>
-	<img src="./assets/delete-posts.gif" alt="Delete posts GIF" width="700" />
+  <summary><strong>Delete posts</strong></summary>
+  <br/>
+  <img src="./assets/delete-posts.gif" alt="Delete posts GIF" width="700" />
 </details>
 
 <details>
-	<summary><strong>Delete reposts</strong></summary>
-	<br/>
-	<img src="./assets/delete-reposts.gif" alt="Delete reposts GIF" width="700" />
+  <summary><strong>Delete reposts</strong></summary>
+  <br/>
+  <img src="./assets/delete-reposts.gif" alt="Delete reposts GIF" width="700" />
 </details>
 
 <details>
-	<summary><strong>Delete replies</strong></summary>
-	<br/>
-	<img src="./assets/delete-replies.gif" alt="Delete replies GIF" width="700" />
+  <summary><strong>Delete replies</strong></summary>
+  <br/>
+  <img src="./assets/delete-replies.gif" alt="Delete replies GIF" width="700" />
 </details>
 
 <details>
-	<summary><strong>Delete likes</strong></summary>
-	<br/>
-	<img src="./assets/delete-likes.gif" alt="Delete Likes GIF" width="700" />
+  <summary><strong>Delete likes</strong></summary>
+  <br/>
+  <img src="./assets/delete-likes.gif" alt="Delete Likes GIF" width="700" />
 </details>
 
 <details>
-	<summary><strong>Delete Followings</strong></summary>
-	<br/>
-	<img src="./assets/delete-following.gif" alt="Unfollow Accounts GIF" width="700" />
+  <summary><strong>Delete Followings</strong></summary>
+  <br/>
+  <img src="./assets/delete-following.gif" alt="Unfollow Accounts GIF" width="700" />
 </details>
 
 <details>
-	<summary><strong>Settings</strong></summary>
-	<br/>
-	<img src="./assets/settings.png" alt="Settings" width="700" />
+  <summary><strong>Settings</strong></summary>
+  <br/>
+  <img src="./assets/settings.png" alt="Settings" width="700" />
 </details>
 
-## 🧍 Still Want to Delete Manually
-Click on your profile to find your username, then use these links (replace USERNAME with your handle):
+---
 
-* **Delete posts:** https://x.com/search?q=from%3AUSERNAME → click ... on each post → Delete.
+## 🧟‍♂️ Advanced: Run Deletion Scripts Manually
 
-* **Delete reposts:** https://x.com/USERNAME → click ... on each repost icon → Delete.
+You can also run the cleanup directly in your browser using JavaScript snippets:
 
-* **Delete replies:** https://x.com/USERNAME/with_replies → click ... on each post → Delete.
+### 🔧 Steps:
 
-* **Unlike posts:** https://x.com/USERNAME/likes → click the heart to remove the like.
+1. Visit your [X profile](https://x.com/) and note your **username** (e.g., `@USERNAME`).
+2. Open **Developer Tools** in Chrome by pressing `F12`.
+3. Go to the **Sources** tab, then open the **Snippets** panel.
+4. Click **"New Snippet"** and paste the JavaScript code from the provided links.
+5. Save the snippet.
+6. Run the snippet once by right-clicking it and selecting **Run** — this loads the script into the page context.
+7. Switch to the **Console** tab.
+8. Manually execute the appropriate function call (e.g., `DeleteAllPosts(1000, 1000);`) in the console to start the deletion process.
+9. Repeat step 4 with other functions as needed.
 
-* **Unfollow accounts:** https://x.com/USERNAME/following → click  unfollow.
+
+#### Delete Posts  
+- URL: [https://x.com/search?q=from%3AUSERNAME](https://x.com/search?q=from%3AUSERNAME)  
+- Script: [delete-all-posts.js](https://raw.githubusercontent.com/thorstenalpers/CleanMyPosts/refs/heads/main/src/UI/Scripts/delete-all-posts.js)  
+- Run: `DeleteAllPosts(1000, 1000);`
 
 
-## Report a Bug 🐞
+#### Delete Reposts  
+- URL: [https://x.com/USERNAME](https://x.com/USERNAME)  
+- Script: [delete-all-reposts.js](https://raw.githubusercontent.com/thorstenalpers/CleanMyPosts/refs/heads/main/src/UI/Scripts/delete-all-reposts.js)  
+- Run: `DeleteAllRepost(1000, 1000, 5);`
+
+
+#### Delete Replies  
+- URL: [https://x.com/USERNAME/with_replies](https://x.com/USERNAME/with_replies)  
+- Script: [delete-all-replies.js](https://raw.githubusercontent.com/thorstenalpers/CleanMyPosts/refs/heads/main/src/UI/Scripts/delete-all-replies.js)  
+- Run: `DeleteAllReplies(1000, 1000, 5);`
+
+#### Unlike Posts  
+- URL: [https://x.com/USERNAME/likes](https://x.com/USERNAME/likes)  
+- Script: [delete-all-likes.js](https://raw.githubusercontent.com/thorstenalpers/CleanMyPosts/refs/heads/main/src/UI/Scripts/delete-all-likes.js)  
+- Run: `DeleteAllLike(1000)`
+
+
+#### Unfollow Accounts  
+- URL: [https://x.com/USERNAME/following](https://x.com/USERNAME/following)  
+- Script: [delete-all-following.js](https://raw.githubusercontent.com/thorstenalpers/CleanMyPosts/refs/heads/main/src/UI/Scripts/delete-all-following.js)  
+- Run: `DeleteAllFollowing(1000, 1000);`
+
+---
+
+
+## 🐞 Report a Bug
 
 If you encounter any issues or bugs, please [report them here](https://github.com/thorstenalpers/CleanMyPosts/issues).

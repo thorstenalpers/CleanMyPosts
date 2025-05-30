@@ -71,7 +71,7 @@ public class PageServiceTests
               .WithMessage($"Page not found: {unknownKey}. Did you forget to call PageService.Configure?");
     }
 
-    [Fact]
+    [StaFact]
     public void GetPage_ShouldReturnPageFromServiceProvider()
     {
         // Arrange

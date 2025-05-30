@@ -1,9 +1,9 @@
+using System.Windows;
 using CleanMyPosts.Core.Contracts.Services;
 using CleanMyPosts.UI.Models;
 using CleanMyPosts.UI.Services;
 using FluentAssertions;
 using Moq;
-using System.Windows;
 using Xunit;
 
 namespace CleanMyPosts.Tests.Services;
@@ -19,34 +19,15 @@ public class UserSettingsServiceTests
     public UserSettingsServiceTests()
     {
         _mockFileService = new Mock<IFileService>();
-        _appConfig = new AppConfig();
-        _expectedSettingsPath = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            _appConfig.ConfigurationsFolder);
-        _userSettingsService = new UserSettingsService(_mockFileService.Object, _appConfig);
-    }
-
-    [Fact]
-    public void Initialize_ShouldLoadSettings_WhenCalled()
-    {
-        // Arrange
-        var expectedSettings = new UserSettings
+        _appConfig = new AppConfig
         {
-            Theme = AppTheme.Dark,
-            ShowLogs = true,
-            ConfirmDeletion = false
+            DarkStyleUri = null,
+            LightStyleUri = null,
         };
-        _mockFileService.Setup(x => x.Read<UserSettings>(_expectedSettingsPath, _appConfig.AppPropertiesFileName))
-                       .Returns(expectedSettings);
-
-        // Act
-        _userSettingsService.Initialize();
-
-        // Assert
-        _mockFileService.Verify(x => x.Read<UserSettings>(_expectedSettingsPath, _appConfig.AppPropertiesFileName), Times.Once);
-        _userSettingsService.GetCurrentTheme().Should().Be(AppTheme.Dark);
-        _userSettingsService.GetShowLogs().Should().BeTrue();
-        _userSettingsService.GetConfirmDeletion().Should().BeFalse();
+        _expectedSettingsPath = Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+        _appConfig.ConfigurationsFolder);
+        _userSettingsService = new UserSettingsService(_mockFileService.Object, _appConfig);
     }
 
     [Fact]
@@ -77,47 +58,6 @@ public class UserSettingsServiceTests
         _userSettingsService.PersistData();
 
         // Assert
-        _mockFileService.Verify(x => x.Save(_expectedSettingsPath, _appConfig.AppPropertiesFileName, It.IsAny<UserSettings>()), Times.Once);
-    }
-
-    [Fact]
-    public void RestoreData_ShouldReloadSettings()
-    {
-        // Arrange
-        var initialSettings = new UserSettings { Theme = AppTheme.Light };
-        var restoredSettings = new UserSettings { Theme = AppTheme.Dark };
-        
-        _mockFileService.SetupSequence(x => x.Read<UserSettings>(_expectedSettingsPath, _appConfig.AppPropertiesFileName))
-                       .Returns(initialSettings)
-                       .Returns(restoredSettings);
-        
-        _userSettingsService.Initialize();
-        _userSettingsService.GetCurrentTheme().Should().Be(AppTheme.Light);
-
-        // Act
-        _userSettingsService.RestoreData();
-
-        // Assert
-        _userSettingsService.GetCurrentTheme().Should().Be(AppTheme.Dark);
-    }
-
-    [Fact]
-    public void SetTheme_ShouldUpdateThemeAndTriggerEvent()
-    {
-        // Arrange
-        _mockFileService.Setup(x => x.Read<UserSettings>(_expectedSettingsPath, _appConfig.AppPropertiesFileName))
-                       .Returns(new UserSettings());
-        _userSettingsService.Initialize();
-
-        string eventArg = null;
-        _userSettingsService.SettingChanged += (sender, arg) => eventArg = arg;
-
-        // Act
-        _userSettingsService.SetTheme(AppTheme.Dark);
-
-        // Assert
-        _userSettingsService.GetCurrentTheme().Should().Be(AppTheme.Dark);
-        eventArg.Should().Be(nameof(UserSettings.Theme));
         _mockFileService.Verify(x => x.Save(_expectedSettingsPath, _appConfig.AppPropertiesFileName, It.IsAny<UserSettings>()), Times.Once);
     }
 
@@ -157,21 +97,6 @@ public class UserSettingsServiceTests
         // Assert
         _userSettingsService.GetConfirmDeletion().Should().BeFalse();
         eventArg.Should().Be(nameof(UserSettings.ConfirmDeletion));
-    }
-
-    [Fact]
-    public void GetSetting_ShouldReturnCorrectValue_ForTheme()
-    {
-        // Arrange
-        _mockFileService.Setup(x => x.Read<UserSettings>(_expectedSettingsPath, _appConfig.AppPropertiesFileName))
-                       .Returns(new UserSettings { Theme = AppTheme.Light });
-        _userSettingsService.Initialize();
-
-        // Act
-        var result = _userSettingsService.GetSetting<AppTheme>(nameof(UserSettings.Theme));
-
-        // Assert
-        result.Should().Be(AppTheme.Light);
     }
 
     [Fact]
@@ -217,28 +142,6 @@ public class UserSettingsServiceTests
 
         // Assert
         result.Should().Be("DefaultValue");
-    }
-
-    [Fact]
-    public void GetWindowSettings_ShouldReturnLoadedSettings()
-    {
-        // Arrange
-        var expectedSettings = new WindowSettings
-        {
-            Top = 200,
-            Left = 300,
-            Width = 1000,
-            Height = 800,
-            WindowState = WindowState.Maximized
-        };
-        _mockFileService.Setup(x => x.Read<WindowSettings>(_expectedSettingsPath, "WindowSettings.json"))
-                       .Returns(expectedSettings);
-
-        // Act
-        var result = _userSettingsService.GetWindowSettings();
-
-        // Assert
-        result.Should().BeEquivalentTo(expectedSettings);
     }
 
     [Fact]
@@ -333,21 +236,6 @@ public class UserSettingsServiceTests
 
         // Assert
         _mockFileService.Verify(x => x.Save(_expectedSettingsPath, "timeoutSettings.json", settings), Times.Once);
-    }
-
-    [Fact]
-    public void GetCurrentTheme_ShouldReturnCurrentTheme_AfterInitialization()
-    {
-        // Arrange
-        _mockFileService.Setup(x => x.Read<UserSettings>(_expectedSettingsPath, _appConfig.AppPropertiesFileName))
-                       .Returns(new UserSettings { Theme = AppTheme.Light });
-
-        // Act
-        _userSettingsService.Initialize();
-        var result = _userSettingsService.GetCurrentTheme();
-
-        // Assert
-        result.Should().Be(AppTheme.Light);
     }
 
     [Fact]

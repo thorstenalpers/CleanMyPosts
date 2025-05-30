@@ -71,12 +71,19 @@ public class UserSettingsService(IFileService fileService, AppConfig appConfig) 
 
     private void AddCustomThemes()
     {
-        ThemeManager.Current.AddLibraryTheme(new LibraryTheme(
+        if (_appConfig.DarkStyleUri != null)
+        {
+            ThemeManager.Current.AddLibraryTheme(new LibraryTheme(
             new Uri(_appConfig.DarkStyleUri),
             MahAppsLibraryThemeProvider.DefaultInstance));
-        ThemeManager.Current.AddLibraryTheme(new LibraryTheme(
+        }
+
+        if (_appConfig.LightStyleUri != null)
+        {
+            ThemeManager.Current.AddLibraryTheme(new LibraryTheme(
             new Uri(_appConfig.LightStyleUri),
             MahAppsLibraryThemeProvider.DefaultInstance));
+        }
     }
 
     private static void ConfigureThemeSyncMode(AppTheme theme)

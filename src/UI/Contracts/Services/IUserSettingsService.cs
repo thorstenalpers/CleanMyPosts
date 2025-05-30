@@ -4,7 +4,7 @@ namespace CleanMyPosts.UI.Contracts.Services;
 
 public interface IUserSettingsService
 {
-    void SetShowLogs(bool show);
+    void SetShowLogs(bool showLogs);
     bool GetShowLogs();
 
     event EventHandler<string> SettingChanged;

@@ -78,7 +78,7 @@ async function DeleteAllLikes(waitTime) {
             break;
         }
 
-        const success = await tryUnlike(5);
+        const success = await tryUnlike(10);
         if (success) {
             console.log(`[DeleteAllLikes] Deleted like #${postNumber}`);
             postNumber++;

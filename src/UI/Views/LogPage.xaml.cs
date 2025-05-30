@@ -1,9 +1,11 @@
 ﻿using System.Collections.Specialized;
+using System.IO;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using CleanMyPosts.UI.ViewModels;
 using ControlzEx.Theming;
+using Microsoft.Web.WebView2.Core;
 
 namespace CleanMyPosts.UI.Views;
 
@@ -13,6 +15,7 @@ public partial class LogPage : Page
     private string _currentBackgroundColor = "#FFFAFA";
     private string _currentTextColor = "black";
     private string _currentBorderColor = "#EEE";
+    private CoreWebView2Environment _env;
 
     public LogPage(LogViewModel viewModel)
     {
@@ -55,8 +58,23 @@ public partial class LogPage : Page
 
     private async void LogPage_Loaded(object sender, RoutedEventArgs e)
     {
-        await LogWebView.EnsureCoreWebView2Async();
-        LogWebView.CoreWebView2.Settings.IsScriptEnabled = true;
+        if (LogWebView.CoreWebView2 != null)
+        {
+            return;
+        }
+
+        if (_env == null)
+        {
+            var userDataFolder = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                System.Reflection.Assembly.GetExecutingAssembly().GetName().Name,
+                "WebView-LogPage");
+            Directory.CreateDirectory(userDataFolder);
+            var options = new CoreWebView2EnvironmentOptions(null, language: "en-US");
+            _env = await CoreWebView2Environment.CreateAsync(null, userDataFolder, options);
+        }
+
+        await LogWebView.EnsureCoreWebView2Async(_env);
 
         // Define JS function for runtime use
         var jsFunc = @"

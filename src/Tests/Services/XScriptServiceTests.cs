@@ -8,6 +8,7 @@ using Xunit;
 
 namespace CleanMyPosts.UI.Tests.Services;
 
+[Trait("Category", "Unit")]
 public class XScriptServiceTests
 {
     private readonly Mock<ILogger<XScriptService>> _loggerMock = new();

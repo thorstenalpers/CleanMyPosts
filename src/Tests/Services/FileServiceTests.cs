@@ -80,6 +80,56 @@ public class FileServiceTests : IDisposable
         result.Should().BeNull();
     }
 
+    [Fact]
+    public void ReadFile_ShouldReturnFileContent()
+    {
+        // Arrange
+        var fileName = "testfile.txt";
+        var expectedContent = "This is test content\nwith multiple lines";
+        var filePath = Path.Combine(_testDirectory, fileName);
+        Directory.CreateDirectory(_testDirectory);
+        File.WriteAllText(filePath, expectedContent, Encoding.UTF8);
+
+        // Act
+        var result = _fileService.ReadFile(filePath);
+
+        // Assert
+        result.Should().Be(expectedContent);
+    }
+
+    [Fact]
+    public void Delete_ShouldNotThrow_WhenFileNameIsNull()
+    {
+        // Act & Assert
+        var action = () => _fileService.Delete(_testDirectory, null);
+        action.Should().NotThrow();
+    }
+
+    [Fact]
+    public void Delete_ShouldNotThrow_WhenFileDoesNotExist()
+    {
+        // Act & Assert
+        var action = () => _fileService.Delete(_testDirectory, "nonexistent.json");
+        action.Should().NotThrow();
+    }
+
+    [Fact]
+    public void Save_ShouldCreateDirectory_WhenItDoesNotExist()
+    {
+        // Arrange
+        var nonExistentDirectory = Path.Combine(_testDirectory, "subfolder", "nested");
+        var fileName = "test.json";
+        var testObject = new TestObject { Id = 3, Name = "DirectoryTest" };
+
+        // Act
+        _fileService.Save(nonExistentDirectory, fileName, testObject);
+
+        // Assert
+        Directory.Exists(nonExistentDirectory).Should().BeTrue();
+        var filePath = Path.Combine(nonExistentDirectory, fileName);
+        File.Exists(filePath).Should().BeTrue();
+    }
+
     public void Dispose()
     {
         Dispose(true);

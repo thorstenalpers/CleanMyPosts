@@ -299,7 +299,7 @@ public class XScriptService(ILogger<XScriptService> logger, IWebViewHostService 
 
         int retryCount = 0, deletedItems = 0;
 
-        while ((isArticle ? await IsAnArticlePresentAsync() : !await IsEmptyMessagePresentAsync()) && retryCount++ < 5)
+        while ((isArticle ? await IsAnArticlePresentAsync() : !await IsEmptyMessagePresentAsync()) && retryCount++ < 3)
         {
             try
             {

@@ -103,13 +103,13 @@ You can also run the cleanup directly in your browser using JavaScript snippets:
 #### Delete Reposts  
 - URL: [https://x.com/USERNAME](https://x.com/USERNAME)  
 - Script: [delete-all-reposts.js](https://raw.githubusercontent.com/thorstenalpers/CleanMyPosts/refs/heads/main/src/UI/Scripts/delete-all-reposts.js)  
-- Run: `DeleteAllRepost(1000, 1000, 5);`
+- Run: `DeleteAllRepost(1000);`
 
 
 #### Delete Replies  
 - URL: [https://x.com/USERNAME/with_replies](https://x.com/USERNAME/with_replies)  
 - Script: [delete-all-replies.js](https://raw.githubusercontent.com/thorstenalpers/CleanMyPosts/refs/heads/main/src/UI/Scripts/delete-all-replies.js)  
-- Run: `DeleteAllReplies(1000, 1000, 5);`
+- Run: `DeleteAllReplies('USERNAME', 1000, 5);` // replace USERNAME with yours
 
 #### Unlike Posts  
 - URL: [https://x.com/USERNAME/likes](https://x.com/USERNAME/likes)  

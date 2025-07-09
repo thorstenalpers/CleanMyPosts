@@ -3,6 +3,12 @@ name: "Deploy Release"
 on:
   workflow_dispatch: # manual trigger
 
+permissions:
+  contents: read
+  pull-requests: write
+  checks: write
+  id-token: write
+  
 jobs:
   build:
     runs-on: windows-latest

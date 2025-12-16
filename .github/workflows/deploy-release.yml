@@ -14,8 +14,8 @@ jobs:
     runs-on: windows-latest
 
     env:
-      Solution: "src/CleanMyPosts.sln"
-      UI_Project: "src/UI/UI.csproj"
+      Solution: "src/CleanMyPosts.slnx"
+      UI_Project: "src/CleanMyPosts/CleanMyPosts.csproj"
       Test_Project: "src/Tests/Tests.csproj"
       Installer_Script: "installer/Installer.iss"
       FORCE_COLOR: "true"
@@ -32,7 +32,7 @@ jobs:
     - name: Install .NET
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: 9.x
+        dotnet-version: 10.x
 
     - name: Install Inno Setup
       run: choco install innosetup --yes

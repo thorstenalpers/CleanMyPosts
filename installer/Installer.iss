@@ -2,14 +2,14 @@
 #define MyAppPublisher "Thorsten Alpers"
 #define MyAppURL "https://github.com/thorstenalpers/CleanMyPosts"
 #define MyAppExeName "CleanMyPosts.exe"
-#define MyIconPath "..\src\UI\Assets\logo.ico"
+#define MyIconPath "..\src\CleanMyPosts\Assets\logo.ico"
 
 ; dynamically set in github actions, ifndef use local values
 #ifndef MyAppVersion	
   #define MyAppVersion "0.0.1"
 #endif
 #ifndef MyAppExePath
-  #define MyAppExePath "..\src\UI\bin\Release\net9.0-windows\win-x64\publish\*"
+  #define MyAppExePath "..\src\CleanMyPosts\bin\Release\net10.0-windows\win-x64\publish\*"
 #endif
 
 [Setup]

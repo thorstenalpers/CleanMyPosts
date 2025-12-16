@@ -1,7 +1,7 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
-using CleanMyPosts.UI.Extensions;
+using CleanMyPosts.Extensions;
 using FluentAssertions;
 using Xunit;
 

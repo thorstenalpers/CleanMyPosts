@@ -1,4 +1,4 @@
-﻿using CleanMyPosts.UI.ViewModels;
+﻿using CleanMyPosts.ViewModels;
 using FluentAssertions;
 using Xunit;
 

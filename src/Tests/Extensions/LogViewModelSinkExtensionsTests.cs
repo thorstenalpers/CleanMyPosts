@@ -1,5 +1,5 @@
 ﻿using CleanMyPosts.Tests.Helpers;
-using CleanMyPosts.UI.ViewModels;
+using CleanMyPosts.ViewModels;
 using Serilog;
 using Serilog.Configuration;
 

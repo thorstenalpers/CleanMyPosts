@@ -1,0 +1,16 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path="../.editorconfig" />
+    <File Path="../.gitattributes" />
+    <File Path="../.gitignore" />
+    <File Path="../installer/Installer.iss" />
+    <File Path="../LICENSE.txt" />
+    <File Path="../README.md" />
+  </Folder>
+  <Folder Name="/Solution Items/workflows/">
+    <File Path="../.github/workflows/ci.yml" />
+    <File Path="../.github/workflows/deploy-release.yml" />
+  </Folder>
+  <Project Path="Tests/Tests.csproj" />
+  <Project Path="CleanMyPosts/CleanMyPosts.csproj" />
+</Solution>

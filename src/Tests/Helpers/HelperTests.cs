@@ -1,4 +1,4 @@
-﻿using CleanMyPosts.UI.Helpers;
+﻿using CleanMyPosts.Helpers;
 using FluentAssertions;
 using Xunit;
 

@@ -1,4 +1,4 @@
-﻿using CleanMyPosts.UI.ViewModels;
+﻿using CleanMyPosts.ViewModels;
 using Serilog.Core;
 using Serilog.Events;
 

@@ -1,0 +1,278 @@
+﻿<Page
+    x:Class="CleanMyPosts.Views.SettingsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="http://metro.mahapps.com/winfx/xaml/controls"
+    xmlns:converters="clr-namespace:CleanMyPosts.Converters"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+    xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:models="clr-namespace:CleanMyPosts.Models"
+    xmlns:mui="http://metro.mahapps.com/winfx/xaml/controls"
+    xmlns:properties="clr-namespace:CleanMyPosts.Properties"
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    Style="{DynamicResource MahApps.Styles.Page}"
+    mc:Ignorable="d">
+
+    <Page.Resources>
+        <converters:EnumToBooleanConverter x:Key="EnumToBooleanConverter" EnumType="{x:Type models:AppTheme}" />
+    </Page.Resources>
+
+    <ScrollViewer>
+        <Grid Margin="{StaticResource SmallTopBottomMargin}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="48" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <mui:Flyout
+                x:Name="Notification"
+                Width="300"
+                Height="50"
+                Margin="0"
+                Padding="10"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Top"
+                AnimateOpacity="True"
+                Background="{DynamicResource MahApps.Brushes.Control.Background}"
+                CloseButtonVisibility="Hidden"
+                Header="{Binding NotificationMessage}"
+                IsModal="False"
+                IsOpen="{Binding IsNotificationOpen}"
+                Opacity="0.9"
+                Position="Top"
+                Theme="Inverse" />
+
+            <TextBlock Style="{StaticResource PageTitleStyle}" Text="{x:Static properties:Resources.SettingsPageTitle}" />
+
+            <StackPanel
+                x:Name="ContentArea"
+                Grid.Row="1"
+                Margin="{StaticResource MediumLeftRightMargin}">
+
+                <StackPanel
+                    Margin="{StaticResource SmallTopBottomMargin}"
+                    VerticalAlignment="Center"
+                    Orientation="Horizontal">
+                    <TextBlock
+                        Margin="0,0,10,0"
+                        VerticalAlignment="Center"
+                        Style="{StaticResource BodyTextStyle}"
+                        Text="{x:Static properties:Resources.SettingsPageChooseThemeText}" />
+
+                    <RadioButton
+                        VerticalContentAlignment="Center"
+                        Content="{x:Static properties:Resources.SettingsPageRadioButtonLightTheme}"
+                        FontSize="{StaticResource MediumFontSize}"
+                        GroupName="AppTheme"
+                        IsChecked="{Binding Theme, Mode=OneWay, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Light}">
+                        <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="Checked">
+                                <i:InvokeCommandAction Command="{Binding SetThemeCommand}" CommandParameter="Light" />
+                            </i:EventTrigger>
+                        </i:Interaction.Triggers>
+                    </RadioButton>
+
+                    <RadioButton
+                        Margin="10,0,10,0"
+                        VerticalContentAlignment="Center"
+                        Content="{x:Static properties:Resources.SettingsPageRadioButtonDarkTheme}"
+                        FontSize="{StaticResource MediumFontSize}"
+                        GroupName="AppTheme"
+                        IsChecked="{Binding Theme, Mode=OneWay, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Dark}">
+                        <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="Checked">
+                                <i:InvokeCommandAction Command="{Binding SetThemeCommand}" CommandParameter="Dark" />
+                            </i:EventTrigger>
+                        </i:Interaction.Triggers>
+                    </RadioButton>
+
+                    <RadioButton
+                        VerticalContentAlignment="Center"
+                        Content="{x:Static properties:Resources.SettingsPageRadioButtonWindowsDefaultTheme}"
+                        FontSize="{StaticResource MediumFontSize}"
+                        GroupName="AppTheme"
+                        IsChecked="{Binding Theme, Mode=OneWay, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Default}">
+                        <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="Checked">
+                                <i:InvokeCommandAction Command="{Binding SetThemeCommand}" CommandParameter="Default" />
+                            </i:EventTrigger>
+                        </i:Interaction.Triggers>
+                    </RadioButton>
+                </StackPanel>
+
+                <StackPanel Margin="{StaticResource SmallTopBottomMargin}">
+                    <StackPanel
+                        Margin="0,8,0,0"
+                        VerticalAlignment="Center"
+                        Orientation="Horizontal">
+                        <TextBlock
+                            Width="200"
+                            VerticalAlignment="Center"
+                            Text="Wait after document loaded:" />
+                        <controls:NumericUpDown
+                            Width="100"
+                            Minimum="0"
+                            Value="{Binding WaitAfterDocumentLoad, Mode=TwoWay}" />
+                        <TextBlock Margin="{StaticResource SmallLeftMargin}" Text="ms" />
+                    </StackPanel>
+
+                    <StackPanel
+                        Margin="0,8,0,0"
+                        VerticalAlignment="Center"
+                        Orientation="Horizontal">
+                        <TextBlock
+                            Width="200"
+                            VerticalAlignment="Center"
+                            Text="Wait after delete:" />
+                        <controls:NumericUpDown
+                            Width="100"
+                            Minimum="0"
+                            Value="{Binding WaitAfterDelete, Mode=TwoWay}" />
+                        <TextBlock Margin="{StaticResource SmallLeftMargin}" Text="ms" />
+                    </StackPanel>
+
+                    <StackPanel
+                        Margin="0,8,0,0"
+                        VerticalAlignment="Center"
+                        Orientation="Horizontal">
+                        <TextBlock
+                            Width="200"
+                            VerticalAlignment="Center"
+                            Text="Wait between retry delete attempts:" />
+                        <controls:NumericUpDown
+                            Width="100"
+                            Minimum="0"
+                            Value="{Binding WaitBetweenRetryDeleteAttempts, Mode=TwoWay}" />
+                        <TextBlock Margin="{StaticResource SmallLeftMargin}" Text="ms" />
+                    </StackPanel>
+                </StackPanel>
+
+                <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                    <CheckBox
+                        Margin="{StaticResource SmallTopMargin}"
+                        Content="{x:Static properties:Resources.SettingsPageConfirmDeletion}"
+                        FontSize="{StaticResource MediumFontSize}"
+                        IsChecked="{Binding ConfirmDeletion, Mode=TwoWay}" />
+                </StackPanel>
+
+                <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                    <CheckBox
+                        Margin="{StaticResource SmallTopMargin}"
+                        Content="{x:Static properties:Resources.SettingsPageShowLogs}"
+                        FontSize="{StaticResource MediumFontSize}"
+                        IsChecked="{Binding ShowLogs, Mode=TwoWay}" />
+                </StackPanel>
+
+                <TextBlock
+                    Margin="{StaticResource MediumTopMargin}"
+                    Style="{StaticResource SubtitleTextStyle}"
+                    Text="{x:Static properties:Resources.SettingsPageAboutTitle}" />
+
+                <Grid Margin="{StaticResource XSmallTopMargin}" Grid.IsSharedSizeScope="True">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" SharedSizeGroup="ButtonColumn" />
+                        <ColumnDefinition Width="Auto" SharedSizeGroup="ButtonColumn" />
+                        <ColumnDefinition Width="Auto" SharedSizeGroup="ButtonColumn" />
+                        <ColumnDefinition Width="Auto" SharedSizeGroup="ButtonColumn" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <Image
+                        Grid.Column="0"
+                        Width="20"
+                        Height="20"
+                        Margin="0,8,8,0"
+                        VerticalAlignment="Center"
+                        Source="../Assets/logo.ico" />
+
+                    <TextBlock
+                        Grid.Column="1"
+                        Margin="{StaticResource XSmallTopMargin}"
+                        VerticalAlignment="Center"
+                        Style="{StaticResource BodyTextStyle}"
+                        Text="{Binding VersionDescription, Mode=OneWay}" />
+
+                    <Button
+                        Grid.Column="2"
+                        Margin="{StaticResource MediumLeftMargin}"
+                        VerticalAlignment="Center"
+                        Command="{Binding CheckUpdatesCommand}">
+                        <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                            <iconPacks:PackIconMaterial
+                                Width="16"
+                                Height="16"
+                                Margin="0,0,5,0"
+                                VerticalAlignment="Center"
+                                Foreground="DodgerBlue"
+                                Kind="Sync" />
+                            <TextBlock VerticalAlignment="Center" Text="Check for Updates" />
+                        </StackPanel>
+                    </Button>
+
+                    <Button
+                        Grid.Column="3"
+                        Margin="{StaticResource MediumLeftMargin}"
+                        VerticalAlignment="Center"
+                        Command="{Binding OpenHomepageCommand}">
+                        <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                            <iconPacks:PackIconRadixIcons
+                                Width="16"
+                                Height="16"
+                                Margin="0,0,5,0"
+                                VerticalAlignment="Center"
+                                Kind="GithubLogo" />
+                            <TextBlock VerticalAlignment="Center" Text="Project on GitHub" />
+                        </StackPanel>
+                    </Button>
+
+                    <Button
+                        Grid.Column="4"
+                        Margin="{StaticResource MediumLeftMargin}"
+                        VerticalAlignment="Center"
+                        Command="{Binding OpenReportBugCommand}">
+                        <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                            <iconPacks:PackIconMaterial
+                                Width="16"
+                                Height="16"
+                                Margin="0,0,5,0"
+                                VerticalAlignment="Center"
+                                Foreground="SteelBlue"
+                                Kind="Bug" />
+                            <TextBlock VerticalAlignment="Center" Text="Report a Bug" />
+                        </StackPanel>
+                    </Button>
+
+                </Grid>
+
+                <TextBlock
+                    Margin="{StaticResource MediumTopMargin}"
+                    Style="{StaticResource BodyTextStyle}"
+                    Text="{x:Static properties:Resources.SettingsPageAboutText}" />
+
+
+                <Button
+                    Margin="{StaticResource MediumTopMargin}"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Center"
+                    Command="{Binding OpenLicenseCommand}">
+                    <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                        <iconPacks:PackIconMaterial
+                            Width="16"
+                            Height="16"
+                            Margin="0,0,5,0"
+                            VerticalAlignment="Center"
+                            Foreground="SteelBlue"
+                            Kind="FileDocumentMultiple" />
+                        <TextBlock VerticalAlignment="Center" Text="View Third-Party Licenses" />
+                    </StackPanel>
+                </Button>
+
+            </StackPanel>
+        </Grid>
+    </ScrollViewer>
+</Page>

@@ -81,10 +81,15 @@ jobs:
         mkdir artifacts\installer
         copy installer\Output\CleanMyPosts-Installer-${{ env.VERSION }}-win-x64.exe artifacts\installer\
 
-    - name: Clone update-feed branch
+    - name: Switch to update-feed branch
+      shell: bash
       run: |
-        git fetch origin update-feed || git checkout -b update-feed
-        git switch update-feed
+        git fetch origin update-feed || echo "update-feed branch does not exist yet"
+        if git rev-parse --verify update-feed; then
+            git switch update-feed
+        else
+            git switch -c update-feed
+        fi
 
     - name: Generate AutoUpdater.NET files using template
       shell: pwsh
@@ -106,13 +111,12 @@ jobs:
     - name: Commit and push update-feed branch
       shell: bash
       run: |
-        cd update-feed
-        cp ../artifacts/update-installer.xml update-installer.xml
+        cp artifacts/update-installer.xml update-feed/update-installer.xml
 
         git config user.name "github-actions[bot]"
         git config user.email "github-actions[bot]@users.noreply.github.com"
 
-        git add update-installer.xml
+        git add update-feed/update-installer.xml
 
         if git diff --cached --quiet; then
           echo "No changes to commit"
@@ -125,13 +129,19 @@ jobs:
       run: |
         git tag -a "v${{ env.VERSION }}" -m "Release v${{ env.VERSION }}"
         git push origin "v${{ env.VERSION }}"
+    
+    - name: Get release notes from main
+      shell: bash
+      run: |
+        git fetch origin main
+        git show origin/main:release-notes/v${{ env.VERSION }}.md > artifacts/release-notes-${{ env.VERSION }}.md
 
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v1
       with:
         tag_name: "v${{ env.VERSION }}"
         name: "CleanMyPosts ${{ env.VERSION }}"
-        body_path: ./release-notes/v${{ env.VERSION }}.md
+        body_path: ./artifacts/release-notes-${{ env.VERSION }}.md
         files: |
           artifacts/installer/CleanMyPosts-Installer-${{ env.VERSION }}-win-x64.exe
       env:

@@ -1,7 +1,7 @@
 using System.Windows;
-using CleanMyPosts.Core.Contracts.Services;
-using CleanMyPosts.UI.Models;
-using CleanMyPosts.UI.Services;
+using CleanMyPosts.Contracts.Services;
+using CleanMyPosts.Models;
+using CleanMyPosts.Services;
 using FluentAssertions;
 using Moq;
 using Xunit;

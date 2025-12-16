@@ -1,12 +1,11 @@
-using CleanMyPosts.Core.Contracts.Services;
-using CleanMyPosts.UI.Contracts.Services;
-using CleanMyPosts.UI.Models;
-using CleanMyPosts.UI.Services;
+using CleanMyPosts.Contracts.Services;
+using CleanMyPosts.Models;
+using CleanMyPosts.Services;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
-namespace CleanMyPosts.UI.Tests.Services;
+namespace CleanMyPosts.Tests.Services;
 
 [Trait("Category", "Unit")]
 public class XScriptServiceTests

@@ -1,5 +1,5 @@
-﻿using CleanMyPosts.UI.Services;
-using CleanMyPosts.UI.ViewModels;
+﻿using CleanMyPosts.Services;
+using CleanMyPosts.ViewModels;
 using FluentAssertions;
 using Microsoft.Extensions.Configuration;
 using Xunit;

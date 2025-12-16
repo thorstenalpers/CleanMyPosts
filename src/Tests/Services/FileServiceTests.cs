@@ -1,5 +1,5 @@
 ﻿using System.Text;
-using CleanMyPosts.Core.Services;
+using CleanMyPosts.Services;
 using FluentAssertions;
 using Xunit;
 

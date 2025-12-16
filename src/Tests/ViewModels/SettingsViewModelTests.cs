@@ -1,6 +1,6 @@
-﻿using CleanMyPosts.UI.Contracts.Services;
-using CleanMyPosts.UI.Models;
-using CleanMyPosts.UI.ViewModels;
+﻿using CleanMyPosts.Contracts.Services;
+using CleanMyPosts.Models;
+using CleanMyPosts.ViewModels;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;

@@ -1,5 +1,5 @@
 ﻿using System.Windows;
-using CleanMyPosts.UI.TemplateSelectors;
+using CleanMyPosts.TemplateSelectors;
 using FluentAssertions;
 using MahApps.Metro.Controls;
 using Xunit;

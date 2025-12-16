@@ -1,6 +1,6 @@
-using CleanMyPosts.UI.Contracts.Services;
-using CleanMyPosts.UI.Models;
-using CleanMyPosts.UI.ViewModels;
+using CleanMyPosts.Contracts.Services;
+using CleanMyPosts.Models;
+using CleanMyPosts.ViewModels;
 using CommunityToolkit.Mvvm.Input;
 using MahApps.Metro.Controls.Dialogs;
 using Microsoft.Extensions.Logging;
@@ -8,7 +8,7 @@ using Microsoft.Web.WebView2.Wpf;
 using Moq;
 using Xunit;
 
-namespace CleanMyPosts.UI.Tests.ViewModels;
+namespace CleanMyPosts.Tests.ViewModels;
 
 [Trait("Category", "Unit")]
 public class XViewModelTests

@@ -1,0 +1,89 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <UseWPF>true</UseWPF>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ImplicitUsings>enable</ImplicitUsings>
+	<RootNamespace>CleanMyPosts</RootNamespace>
+	<DefaultNamespace>CleanMyPosts</DefaultNamespace>
+	<ApplicationIcon>Assets\logo.ico</ApplicationIcon>
+	<AssemblyName>CleanMyPosts</AssemblyName>
+	<TargetFramework>net10.0-windows</TargetFramework>
+	<Version>2.1.2</Version>
+	<IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+	<AnalysisLevel>latest</AnalysisLevel>
+ 	<EnableNETAnalyzers>True</EnableNETAnalyzers>
+  </PropertyGroup>
+    
+  <ItemGroup>
+
+	<PackageReference Include="Ardalis.GuardClauses" Version="5.0.0" />
+	<PackageReference Include="Microsoft.Extensions.Http" Version="10.0.1" />
+	<PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+    <PackageReference Include="Autoupdater.NET.Official" Version="1.9.2" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+    <PackageReference Include="MahApps.Metro" Version="2.4.11" />
+    <PackageReference Include="MahApps.Metro.IconPacks" Version="6.2.1" />
+    <PackageReference Include="MahApps.Metro.IconPacks.FontAwesome" Version="6.2.1" />
+    <PackageReference Include="MahApps.Metro.IconPacks.Material" Version="6.2.1" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.1" />
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3650.58" />
+    <PackageReference Include="Serilog.Extensions.Hosting" Version="10.0.0" />
+    <PackageReference Include="Serilog.Extensions.Logging" Version="10.0.0" />
+    <PackageReference Include="Serilog.Settings.Configuration" Version="10.0.0" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="6.1.1" />
+    <PackageReference Include="Serilog.Sinks.Debug" Version="3.0.0" />
+    <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
+    <PackageReference Include="SonarAnalyzer.CSharp" Version="10.16.1.129956">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+	<AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+	  <_Parameter1>Tests</_Parameter1>
+	</AssemblyAttribute>
+  </ItemGroup>
+  
+  <ItemGroup>
+	<Resource Include="Assets\logo.ico">
+	  <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+	</Resource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Properties\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Properties\Resources.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+
+	  <ItemGroup>
+		  <Content Include="Scripts\delete-all-posts.js">
+			  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		  </Content>
+		  <Content Include="Scripts\delete-all-replies.js">
+			  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		  </Content>
+		  <Content Include="Scripts\delete-all-reposts.js">
+			  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		  </Content>
+		  <Content Include="Scripts\delete-all-likes.js">
+			  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		  </Content>
+		  <Content Include="Scripts\delete-all-following.js">
+			  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		  </Content>
+  </ItemGroup>
+  
+</Project>

@@ -1,7 +1,7 @@
 using System.Windows.Controls;
-using CleanMyPosts.UI.Services;
-using CleanMyPosts.UI.ViewModels;
-using CleanMyPosts.UI.Views;
+using CleanMyPosts.Services;
+using CleanMyPosts.ViewModels;
+using CleanMyPosts.Views;
 using FluentAssertions;
 using Moq;
 using Xunit;

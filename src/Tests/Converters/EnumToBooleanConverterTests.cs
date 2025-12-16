@@ -1,6 +1,7 @@
 ﻿namespace CleanMyPosts.Tests.Converters;
+
 using System.Globalization;
-using CleanMyPosts.UI.Converters;
+using CleanMyPosts.Converters;
 using FluentAssertions;
 using Xunit;
 

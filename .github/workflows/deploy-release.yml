@@ -99,7 +99,13 @@ jobs:
         $baseUrl = "https://github.com/$repo/releases/download/v$version"
         $changelogUrl = "https://raw.githubusercontent.com/thorstenalpers/CleanMyPosts/refs/heads/main/release-notes/v$version.md"
 
-        $template = Get-Content "update-feed/update-template.xml" -Raw
+        Write-Host "Aktuelles Verzeichnis: $(Get-Location)"
+
+        Get-ChildItem -Path $env:GITHUB_WORKSPACE -Recurse | ForEach-Object {
+            Write-Host $_.FullName
+        }
+
+        $template = Get-Content "$env:GITHUB_WORKSPACE/update-feed/update-template.xml" -Raw
 
         $installerUrl = "$baseUrl/CleanMyPosts-Installer-$version-win-x64.exe"
         $installerXml = $template `

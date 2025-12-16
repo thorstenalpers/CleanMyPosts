@@ -72,7 +72,8 @@ jobs:
 
     - name: Build Installer x64
       run: |
-        iscc "/DMyAppVersion=${{ env.VERSION }}" "/DMyAppExePath=..\\artifacts\\publish-x64\\*" "${{ env.Installer_Script }}"
+        $exePath = "${{ github.workspace }}\artifacts\publish-x64\CleanMyPosts.exe"
+        iscc "/DMyAppVersion=${{ env.VERSION }}" "/DMyAppExePath=$exePath" "${{ env.Installer_Script }}"
 
     - name: Copy Installer Exe to Artifacts
       run: |

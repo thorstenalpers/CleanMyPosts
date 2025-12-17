@@ -11,10 +11,11 @@ public class UserSettingsService(IFileService fileService, AppConfig appConfig) 
 {
     private readonly AppConfig _appConfig = appConfig;
     private readonly IFileService _fileService = fileService;
+    private readonly string _settingsFile = appConfig.AppPropertiesFileName;
+
     private readonly string _settingsPath = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
         appConfig.ConfigurationsFolder);
-    private readonly string _settingsFile = appConfig.AppPropertiesFileName;
 
     private UserSettings _settings;
 
@@ -25,12 +26,6 @@ public class UserSettingsService(IFileService fileService, AppConfig appConfig) 
         AddCustomThemes();
         _settings = LoadSettings();
         ApplyTheme(_settings.Theme); // Applies visual theme
-    }
-
-    private UserSettings LoadSettings()
-    {
-        var loaded = _fileService.Read<UserSettings>(_settingsPath, _settingsFile);
-        return loaded ?? new UserSettings();
     }
 
     public void PersistData()
@@ -44,7 +39,11 @@ public class UserSettingsService(IFileService fileService, AppConfig appConfig) 
         ApplyTheme(_settings.Theme); // In case it needs to update UI again
     }
 
-    public AppTheme GetCurrentTheme() => _settings.Theme;
+    public AppTheme GetCurrentTheme()
+    {
+        return _settings.Theme;
+    }
+
     public void SetTheme(AppTheme theme)
     {
         ConfigureThemeSyncMode(theme);
@@ -54,18 +53,58 @@ public class UserSettingsService(IFileService fileService, AppConfig appConfig) 
         PersistData();
     }
 
-    public bool GetShowLogs() => _settings.ShowLogs;
+    public bool GetShowLogs()
+    {
+        return _settings.ShowLogs;
+    }
+
     public void SetShowLogs(bool showLogs)
     {
         _settings.ShowLogs = showLogs;
         SettingChanged?.Invoke(this, nameof(_settings.ShowLogs));
     }
 
-    public bool GetConfirmDeletion() => _settings.ConfirmDeletion;
+    public bool GetConfirmDeletion()
+    {
+        return _settings.ConfirmDeletion;
+    }
+
     public void SetConfirmDeletion(bool value)
     {
         _settings.ConfirmDeletion = value;
         SettingChanged?.Invoke(this, nameof(_settings.ConfirmDeletion));
+    }
+
+    public WindowSettings GetWindowSettings()
+    {
+        var fileName = "WindowSettings.json";
+        var loaded = _fileService.Read<WindowSettings>(_settingsPath, fileName);
+        return loaded ?? new WindowSettings();
+    }
+
+    public void SaveWindowsSettings(WindowSettings settings)
+    {
+        var fileName = "WindowSettings.json";
+        _fileService.Save(_settingsPath, fileName, settings);
+    }
+
+    public TimeoutSettings GetTimeoutSettings()
+    {
+        var fileName = "timeoutSettings.json";
+        var loaded = _fileService.Read<TimeoutSettings>(_settingsPath, fileName);
+        return loaded ?? new TimeoutSettings();
+    }
+
+    public void SaveTimeoutSettings(TimeoutSettings settings)
+    {
+        var fileName = "timeoutSettings.json";
+        _fileService.Save(_settingsPath, fileName, settings);
+    }
+
+    private UserSettings LoadSettings()
+    {
+        var loaded = _fileService.Read<UserSettings>(_settingsPath, _settingsFile);
+        return loaded ?? new UserSettings();
     }
 
     private void AddCustomThemes()
@@ -73,15 +112,15 @@ public class UserSettingsService(IFileService fileService, AppConfig appConfig) 
         if (_appConfig.DarkStyleUri != null)
         {
             ThemeManager.Current.AddLibraryTheme(new LibraryTheme(
-            new Uri(_appConfig.DarkStyleUri),
-            MahAppsLibraryThemeProvider.DefaultInstance));
+                new Uri(_appConfig.DarkStyleUri),
+                MahAppsLibraryThemeProvider.DefaultInstance));
         }
 
         if (_appConfig.LightStyleUri != null)
         {
             ThemeManager.Current.AddLibraryTheme(new LibraryTheme(
-            new Uri(_appConfig.LightStyleUri),
-            MahAppsLibraryThemeProvider.DefaultInstance));
+                new Uri(_appConfig.LightStyleUri),
+                MahAppsLibraryThemeProvider.DefaultInstance));
         }
     }
 
@@ -109,31 +148,5 @@ public class UserSettingsService(IFileService fileService, AppConfig appConfig) 
             nameof(UserSettings.ConfirmDeletion) => (T)(object)_settings.ConfirmDeletion,
             _ => defaultValue
         };
-    }
-
-    public WindowSettings GetWindowSettings()
-    {
-        var fileName = "WindowSettings.json";
-        var loaded = _fileService.Read<WindowSettings>(_settingsPath, fileName);
-        return loaded ?? new WindowSettings();
-    }
-
-    public void SaveWindowsSettings(WindowSettings settings)
-    {
-        var fileName = "WindowSettings.json";
-        _fileService.Save(_settingsPath, fileName, settings);
-    }
-
-    public TimeoutSettings GetTimeoutSettings()
-    {
-        var fileName = "timeoutSettings.json";
-        var loaded = _fileService.Read<TimeoutSettings>(_settingsPath, fileName);
-        return loaded ?? new TimeoutSettings();
-    }
-
-    public void SaveTimeoutSettings(TimeoutSettings settings)
-    {
-        var fileName = "timeoutSettings.json";
-        _fileService.Save(_settingsPath, fileName, settings);
     }
 }

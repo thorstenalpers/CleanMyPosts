@@ -11,8 +11,8 @@ namespace CleanMyPosts.Services;
 
 public class WindowManagerService(IServiceProvider serviceProvider, IPageService pageService) : IWindowManagerService
 {
-    private readonly IServiceProvider _serviceProvider = serviceProvider;
     private readonly IPageService _pageService = pageService;
+    private readonly IServiceProvider _serviceProvider = serviceProvider;
     public Window MainWindow => Application.Current.MainWindow;
 
     public void OpenInNewWindow(string pageKey, object parameter = null)
@@ -24,11 +24,7 @@ public class WindowManagerService(IServiceProvider serviceProvider, IPageService
             return;
         }
 
-        var frame = new Frame
-        {
-            Focusable = false,
-            NavigationUIVisibility = NavigationUIVisibility.Hidden
-        };
+        var frame = new Frame { Focusable = false, NavigationUIVisibility = NavigationUIVisibility.Hidden };
 
         var newWindow = new MetroWindow
         {
@@ -69,6 +65,7 @@ public class WindowManagerService(IServiceProvider serviceProvider, IPageService
                 return window;
             }
         }
+
         return null;
     }
 

@@ -15,7 +15,9 @@ public partial class ShellDialogWindow : MetroWindow, IShellDialogWindow
     }
 
     public Frame GetDialogFrame()
-        => dialogFrame;
+    {
+        return dialogFrame;
+    }
 
     private void OnSetResult(bool? result)
     {

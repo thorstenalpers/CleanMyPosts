@@ -13,7 +13,7 @@ public class ShellDialogViewModelTests
         // Arrange
         var vm = new ShellDialogViewModel();
         bool? receivedResult = null;
-        vm.SetResult = (result) => receivedResult = result;
+        vm.SetResult = result => receivedResult = result;
 
         // Act
         vm.CloseCommand.Execute(null);

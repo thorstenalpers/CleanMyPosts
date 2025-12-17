@@ -1,6 +1,5 @@
 ﻿namespace CleanMyPosts.Models;
 
-
 public class AppConfig
 {
     public string ConfigurationsFolder { get; init; } = "CleanMyPosts\\Configurations";
@@ -10,5 +9,5 @@ public class AppConfig
 
     public string XBaseUrl { get; init; } = "https://x.com";
     public string ReportIssueUrl { get; init; } = "https://github.com/thorstenalpers/CleanMyPosts/issues";
-    public string ThirdPartyUrl { get; init; } = "https://github.com/thorstenalpers/CleanMyPosts/blob/main/THIRD_PARTY_LICENSES.txt";
+    public string GitRepoUrl { get; init; } = "https://github.com/thorstenalpers/CleanMyPosts";
 }

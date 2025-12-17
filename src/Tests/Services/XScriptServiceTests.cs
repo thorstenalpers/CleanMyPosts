@@ -1,3 +1,4 @@
+using System.Reflection;
 using CleanMyPosts.Contracts.Services;
 using CleanMyPosts.Models;
 using CleanMyPosts.Services;
@@ -10,19 +11,17 @@ namespace CleanMyPosts.Tests.Services;
 [Trait("Category", "Unit")]
 public class XScriptServiceTests
 {
-    private readonly Mock<ILogger<XScriptService>> _loggerMock = new();
-    private readonly Mock<IWebViewHostService> _webViewHostServiceMock = new();
-    private readonly Mock<IUserSettingsService> _userSettingsServiceMock = new();
     private readonly Mock<IFileService> _fileServiceMock = new();
+    private readonly Mock<ILogger<XScriptService>> _loggerMock = new();
     private readonly XScriptService _service;
+    private readonly Mock<IUserSettingsService> _userSettingsServiceMock = new();
+    private readonly Mock<IWebViewHostService> _webViewHostServiceMock = new();
 
     public XScriptServiceTests()
     {
         _userSettingsServiceMock.Setup(x => x.GetTimeoutSettings()).Returns(new TimeoutSettings
         {
-            WaitAfterDocumentLoad = 10,
-            WaitAfterDelete = 1,
-            WaitBetweenRetryDeleteAttempts = 0
+            WaitAfterDocumentLoad = 10, WaitAfterDelete = 1, WaitBetweenRetryDeleteAttempts = 0
         });
 
         _webViewHostServiceMock.SetupProperty(x => x.Source);
@@ -30,7 +29,8 @@ public class XScriptServiceTests
             .ReturnsAsync("\"complete\"");
 
         // Setup ExecuteScriptAsync for username retrieval (default)
-        _webViewHostServiceMock.Setup(x => x.ExecuteScriptAsync(It.Is<string>(s => s.Contains("AppTabBar_Profile_Link"))))
+        _webViewHostServiceMock
+            .Setup(x => x.ExecuteScriptAsync(It.Is<string>(s => s.Contains("AppTabBar_Profile_Link"))))
             .ReturnsAsync("\"testuser\"");
 
         // Setup dummy for Reload (do nothing)
@@ -47,7 +47,7 @@ public class XScriptServiceTests
         );
 
         // Pre-set _userName to "testuser" to avoid fetching it from JS during most tests
-        typeof(XScriptService).GetField("_userName", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+        typeof(XScriptService).GetField("_userName", BindingFlags.NonPublic | BindingFlags.Instance)
             ?.SetValue(_service, "testuser");
     }
 
@@ -73,7 +73,8 @@ public class XScriptServiceTests
     public async Task GetUserNameAsync_ReturnsCleanUserName()
     {
         var fakeJsResult = "\"\\\"testuser\\\"\""; // double quoted JSON string
-        _webViewHostServiceMock.Setup(x => x.ExecuteScriptAsync(It.Is<string>(s => s.Contains("AppTabBar_Profile_Link"))))
+        _webViewHostServiceMock
+            .Setup(x => x.ExecuteScriptAsync(It.Is<string>(s => s.Contains("AppTabBar_Profile_Link"))))
             .ReturnsAsync(fakeJsResult);
 
         var username = await _service.GetUserNameAsync();
@@ -88,7 +89,7 @@ public class XScriptServiceTests
         _webViewHostServiceMock.Object.Source = new Uri("https://x.com/testuser");
 
         var navigateMethod = _service.GetType()
-            .GetMethod("NavigateAsync", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            .GetMethod("NavigateAsync", BindingFlags.NonPublic | BindingFlags.Instance);
 
         var result = await (Task<bool>)navigateMethod.Invoke(_service, new object[] { url });
 
@@ -117,20 +118,22 @@ public class XScriptServiceTests
     }
 
 
-
     [Fact]
     public async Task EnsureUserNameAsync_UpdatesUserNameIfChanged()
     {
-        typeof(XScriptService).GetField("_userName", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+        typeof(XScriptService).GetField("_userName", BindingFlags.NonPublic | BindingFlags.Instance)
             ?.SetValue(_service, "olduser");
 
-        _webViewHostServiceMock.Setup(x => x.ExecuteScriptAsync(It.Is<string>(s => s.Contains("AppTabBar_Profile_Link"))))
+        _webViewHostServiceMock
+            .Setup(x => x.ExecuteScriptAsync(It.Is<string>(s => s.Contains("AppTabBar_Profile_Link"))))
             .ReturnsAsync("\"newuser\"");
 
-        var method = _service.GetType().GetMethod("EnsureUserNameAsync", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        var method = _service.GetType()
+            .GetMethod("EnsureUserNameAsync", BindingFlags.NonPublic | BindingFlags.Instance);
         await (Task)method.Invoke(_service, null);
 
-        var updatedUserName = typeof(XScriptService).GetField("_userName", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+        var updatedUserName = typeof(XScriptService)
+            .GetField("_userName", BindingFlags.NonPublic | BindingFlags.Instance)
             ?.GetValue(_service);
 
         Assert.Equal("newuser", updatedUserName);
@@ -143,7 +146,8 @@ public class XScriptServiceTests
         _webViewHostServiceMock.Setup(x => x.ExecuteScriptAsync(It.Is<string>(s => s.Contains("emptyState"))))
             .ReturnsAsync("true");
 
-        var method = _service.GetType().GetMethod("IsEmptyMessagePresentAsync", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        var method = _service.GetType()
+            .GetMethod("IsEmptyMessagePresentAsync", BindingFlags.NonPublic | BindingFlags.Instance);
         var result = await (Task<bool>)method.Invoke(_service, null);
 
         Assert.True(result);
@@ -156,10 +160,10 @@ public class XScriptServiceTests
         _webViewHostServiceMock.Setup(x => x.ExecuteScriptAsync(It.Is<string>(s => s.Contains("article"))))
             .ReturnsAsync("false");
 
-        var method = _service.GetType().GetMethod("IsAnArticlePresentAsync", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        var method = _service.GetType()
+            .GetMethod("IsAnArticlePresentAsync", BindingFlags.NonPublic | BindingFlags.Instance);
         var result = await (Task<bool>)method.Invoke(_service, null);
 
         Assert.False(result);
     }
-
 }

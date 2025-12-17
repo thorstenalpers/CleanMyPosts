@@ -15,6 +15,7 @@ public partial class XPage : Page
         {
             Console.WriteLine(key);
         }
+
         InitializeComponent();
         _viewModel = viewModel;
         DataContext = viewModel;

@@ -11,10 +11,14 @@ namespace CleanMyPosts.ViewModels;
 
 public partial class ShellViewModel : ObservableObject, IDisposable
 {
+    private readonly HamburgerMenuItem _logMenuItem;
     private readonly INavigationService _navigationService;
     private readonly IUserSettingsService _userSettingsService;
-    private readonly HamburgerMenuItem _logMenuItem;
     private bool _disposed;
+
+    [ObservableProperty] private HamburgerMenuItem _selectedMenuItem;
+
+    [ObservableProperty] private HamburgerMenuItem _selectedOptionsMenuItem;
 
     public ShellViewModel(INavigationService navigationService, IUserSettingsService userSettingsService)
     {
@@ -26,9 +30,9 @@ public partial class ShellViewModel : ObservableObject, IDisposable
             new HamburgerMenuIconItem
             {
                 Label = Resources.XPage,
-                Icon = new PackIconFontAwesome  { Kind = PackIconFontAwesomeKind.XTwitterBrands },
+                Icon = new PackIconFontAwesome { Kind = PackIconFontAwesomeKind.XTwitterBrands },
                 TargetPageType = typeof(XViewModel)
-            },
+            }
         ];
 
         _logMenuItem = new HamburgerMenuIconItem
@@ -45,23 +49,27 @@ public partial class ShellViewModel : ObservableObject, IDisposable
 
         OptionMenuItems =
         [
-            new HamburgerMenuGlyphItem { Label = Resources.ShellSettingsPage, Glyph = "\uE713", TargetPageType = typeof(SettingsViewModel) }
+            new HamburgerMenuGlyphItem
+            {
+                Label = Resources.ShellSettingsPage, Glyph = "\uE713", TargetPageType = typeof(SettingsViewModel)
+            }
         ];
         _userSettingsService.SettingChanged += OnAppSettingChanged;
     }
+
+    public ObservableCollection<HamburgerMenuItem> MenuItems { get; }
+    public ObservableCollection<HamburgerMenuItem> OptionMenuItems { get; }
+
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
     ~ShellViewModel()
     {
         Dispose(false);
     }
-
-    [ObservableProperty]
-    private HamburgerMenuItem _selectedMenuItem;
-
-    [ObservableProperty]
-    private HamburgerMenuItem _selectedOptionsMenuItem;
-
-    public ObservableCollection<HamburgerMenuItem> MenuItems { get; }
-    public ObservableCollection<HamburgerMenuItem> OptionMenuItems { get; }
 
     [RelayCommand]
     public void OnLoaded()
@@ -81,7 +89,10 @@ public partial class ShellViewModel : ObservableObject, IDisposable
         _navigationService.GoBack();
     }
 
-    private bool CanGoBack() => _navigationService.CanGoBack;
+    private bool CanGoBack()
+    {
+        return _navigationService.CanGoBack;
+    }
 
     [RelayCommand]
     private void MenuItemInvoked()
@@ -110,6 +121,7 @@ public partial class ShellViewModel : ObservableObject, IDisposable
         {
             SelectedOptionsMenuItem = OptionMenuItems.FirstOrDefault(i => viewModelName == i.TargetPageType?.FullName);
         }
+
         GoBackCommand.NotifyCanExecuteChanged();
     }
 
@@ -133,11 +145,7 @@ public partial class ShellViewModel : ObservableObject, IDisposable
             });
         }
     }
-    public void Dispose()
-    {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
+
     protected virtual void Dispose(bool disposing)
     {
         if (_disposed)

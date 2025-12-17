@@ -14,6 +14,7 @@ public class EnumToBooleanConverter : IValueConverter
             var enumValue = Enum.Parse(EnumType, enumString);
             return enumValue.Equals(value);
         }
+
         return false;
     }
 

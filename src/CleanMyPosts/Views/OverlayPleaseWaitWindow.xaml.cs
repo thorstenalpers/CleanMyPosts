@@ -23,6 +23,7 @@ public partial class OverlayPleaseWaitWindow : Window
         {
             Visibility = Visibility.Hidden;
         }
+
         Show();
         Activate();
     }

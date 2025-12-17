@@ -29,6 +29,7 @@ public class PageService : IPageService
                 throw new ArgumentException($"Page not found: {key}. Did you forget to call PageService.Configure?");
             }
         }
+
         return pageType;
     }
 
@@ -53,8 +54,10 @@ public class PageService : IPageService
             var type = typeof(V);
             if (_pages.Any(p => p.Value == type))
             {
-                throw new ArgumentException($"This type is already configured with key {_pages.First(p => p.Value == type).Key}");
+                throw new ArgumentException(
+                    $"This type is already configured with key {_pages.First(p => p.Value == type).Key}");
             }
+
             _pages.Add(key, type);
         }
     }

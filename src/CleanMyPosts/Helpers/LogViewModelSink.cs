@@ -1,5 +1,4 @@
-﻿
-using System.Text;
+﻿using System.Text;
 using CleanMyPosts.ViewModels;
 using Serilog.Core;
 using Serilog.Events;
@@ -39,6 +38,7 @@ public class LogViewModelSink(LogViewModel logViewModel) : ILogEventSink
                 sb.AppendLine("Inner exception:");
             }
         }
+
         return sb.ToString();
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System.Text.Json;
+using System.Windows;
 using CleanMyPosts.Contracts.Services;
 using CleanMyPosts.Models;
 using CleanMyPosts.Views;
@@ -12,41 +13,39 @@ namespace CleanMyPosts.ViewModels;
 
 public partial class XViewModel : ObservableObject
 {
-    private readonly IWebViewHostService _webViewHostService;
-    private readonly ILogger<XViewModel> _logger;
-    private readonly IXScriptService _xWebViewScriptService;
     private readonly IDialogCoordinator _dialogCoordinator;
+    private readonly ILogger<XViewModel> _logger;
     private readonly IUserSettingsService _userSettingsService;
-    private OverlayPleaseWaitWindow _overlayPleaseWaitWindow;
+    private readonly IWebViewHostService _webViewHostService;
 
     private readonly string _xBaseUrl;
+    private readonly IXScriptService _xWebViewScriptService;
 
-    [ObservableProperty]
-    private bool _areButtonsEnabled;
+    [ObservableProperty] private bool _areButtonsEnabled;
 
-    [ObservableProperty]
-    private bool _isNotificationOpen;
+    private bool _isInitialized;
 
-    [ObservableProperty]
-    private string _notificationMessage;
+    [ObservableProperty] private bool _isNotificationOpen;
 
-    [ObservableProperty]
-    private bool _isWebViewEnabled = true;
+    [ObservableProperty] private bool _isWebViewEnabled = true;
 
-    private bool _isInitialized = false;
+    [ObservableProperty] private string _notificationMessage;
+
+    private OverlayPleaseWaitWindow _overlayPleaseWaitWindow;
     private string _userName;
 
     public XViewModel(ILogger<XViewModel> logger,
-                         IUserSettingsService userSettingsService,
-                         IWebViewHostService webViewHostService,
-                         IDialogCoordinator dialogCoordinator,
-                         AppConfig appConfig,
-                         IXScriptService xWebViewScriptService)
+        IUserSettingsService userSettingsService,
+        IWebViewHostService webViewHostService,
+        IDialogCoordinator dialogCoordinator,
+        AppConfig appConfig,
+        IXScriptService xWebViewScriptService)
     {
         _webViewHostService = webViewHostService ?? throw new ArgumentNullException(nameof(webViewHostService));
         _userSettingsService = userSettingsService ?? throw new ArgumentNullException(nameof(userSettingsService));
         _dialogCoordinator = dialogCoordinator ?? throw new ArgumentNullException(nameof(dialogCoordinator));
-        _xWebViewScriptService = xWebViewScriptService ?? throw new ArgumentNullException(nameof(xWebViewScriptService));
+        _xWebViewScriptService =
+            xWebViewScriptService ?? throw new ArgumentNullException(nameof(xWebViewScriptService));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
         _xBaseUrl = appConfig.XBaseUrl;
@@ -143,9 +142,11 @@ public partial class XViewModel : ObservableObject
                     AreButtonsEnabled = true;
                     return;
                 }
+
                 attempts++;
                 await Task.Delay(delayMs);
             }
+
             _logger.LogInformation("User not logged in.");
         }
     }
@@ -154,7 +155,7 @@ public partial class XViewModel : ObservableObject
     {
         try
         {
-            var jsonDoc = System.Text.Json.JsonDocument.Parse(e.Message);
+            var jsonDoc = JsonDocument.Parse(e.Message);
             var root = jsonDoc.RootElement;
             var level = root.GetProperty("level").GetString();
             var message = root.GetProperty("message").GetString();
@@ -198,11 +199,9 @@ public partial class XViewModel : ObservableObject
                         _webViewHostService.NavigationCompleted -= IsUserLoggedInEventHandler();
                         return;
                     }
-                    else
-                    {
-                        attempts++;
-                        await Task.Delay(delayInMilliseconds);
-                    }
+
+                    attempts++;
+                    await Task.Delay(delayInMilliseconds);
                 }
             }
         };
@@ -233,10 +232,10 @@ public partial class XViewModel : ObservableObject
             {
                 _webViewHostService.Hide(true);
                 var result = await _dialogCoordinator.ShowMessageAsync(
-                this,
-                "Confirm Deletion",
-                "Are you sure you want to delete all posts?",
-                MessageDialogStyle.AffirmativeAndNegative);
+                    this,
+                    "Confirm Deletion",
+                    "Are you sure you want to delete all posts?",
+                    MessageDialogStyle.AffirmativeAndNegative);
                 _webViewHostService.Hide(false);
 
                 if (result == MessageDialogResult.Affirmative)
@@ -289,10 +288,10 @@ public partial class XViewModel : ObservableObject
             {
                 _webViewHostService.Hide(true);
                 var result = await _dialogCoordinator.ShowMessageAsync(
-                this,
-                "Confirm Deletion",
-                "Are you sure you want to delete all likes?",
-                MessageDialogStyle.AffirmativeAndNegative);
+                    this,
+                    "Confirm Deletion",
+                    "Are you sure you want to delete all likes?",
+                    MessageDialogStyle.AffirmativeAndNegative);
                 _webViewHostService.Hide(false);
 
                 if (result == MessageDialogResult.Affirmative)
@@ -347,13 +346,15 @@ public partial class XViewModel : ObservableObject
                 if (result == MessageDialogResult.Affirmative)
                 {
                     var deletetCnt = await _xWebViewScriptService.DeleteFollowingAsync();
-                    await ShowNotificationAsync($"{deletetCnt} following(s) cleaned successfully.", TimeSpan.FromSeconds(3));
+                    await ShowNotificationAsync($"{deletetCnt} following(s) cleaned successfully.",
+                        TimeSpan.FromSeconds(3));
                 }
             }
             else
             {
                 var deletetCnt = await _xWebViewScriptService.DeleteFollowingAsync();
-                await ShowNotificationAsync($"{deletetCnt} following(s) cleaned successfully.", TimeSpan.FromSeconds(3));
+                await ShowNotificationAsync($"{deletetCnt} following(s) cleaned successfully.",
+                    TimeSpan.FromSeconds(3));
             }
         }
         finally
@@ -397,7 +398,8 @@ public partial class XViewModel : ObservableObject
                 if (result == MessageDialogResult.Affirmative)
                 {
                     var deletetCnt = await _xWebViewScriptService.DeleteRepostsAsync();
-                    await ShowNotificationAsync($"{deletetCnt} repost(s) cleaned successfully.", TimeSpan.FromSeconds(3));
+                    await ShowNotificationAsync($"{deletetCnt} repost(s) cleaned successfully.",
+                        TimeSpan.FromSeconds(3));
                 }
             }
             else
@@ -447,7 +449,8 @@ public partial class XViewModel : ObservableObject
                 if (result == MessageDialogResult.Affirmative)
                 {
                     var deletetCnt = await _xWebViewScriptService.DeleteRepliesAsync();
-                    await ShowNotificationAsync($"{deletetCnt} replie(s) cleaned successfully.", TimeSpan.FromSeconds(3));
+                    await ShowNotificationAsync($"{deletetCnt} replie(s) cleaned successfully.",
+                        TimeSpan.FromSeconds(3));
                 }
             }
             else
@@ -462,7 +465,8 @@ public partial class XViewModel : ObservableObject
         }
     }
 
-    private void EnableUserInteractions(bool enableUserInteractions, bool useOverlay = true, bool showOverlayUpdateProgress = false)
+    private void EnableUserInteractions(bool enableUserInteractions, bool useOverlay = true,
+        bool showOverlayUpdateProgress = false)
     {
         if (enableUserInteractions)
         {
@@ -490,8 +494,7 @@ public partial class XViewModel : ObservableObject
             {
                 _overlayPleaseWaitWindow = new OverlayPleaseWaitWindow
                 {
-                    WindowStartupLocation = WindowStartupLocation.Manual,
-                    Owner = Application.Current?.MainWindow
+                    WindowStartupLocation = WindowStartupLocation.Manual, Owner = Application.Current?.MainWindow
                 };
                 UpdateOverlayPosition();
                 var mainWindow = Application.Current?.MainWindow;
@@ -500,6 +503,7 @@ public partial class XViewModel : ObservableObject
                     mainWindow.LocationChanged += MainWindowOnLocationOrSizeChanged;
                     mainWindow.SizeChanged += MainWindowOnLocationOrSizeChanged;
                 }
+
                 _overlayPleaseWaitWindow.ShowOverlay(showOverlayUpdateProgress);
             }
         }

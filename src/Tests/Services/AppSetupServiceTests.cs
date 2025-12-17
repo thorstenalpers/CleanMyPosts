@@ -28,10 +28,7 @@ public class AppSetupServiceTests
     public void CreateLogger_WithSerilogSection_ShouldReturnConfiguredLogger()
     {
         // Arrange
-        var inMemorySettings = new Dictionary<string, string>
-            {
-                {"Serilog:MinimumLevel:Default", "Debug"}
-            };
+        var inMemorySettings = new Dictionary<string, string> { { "Serilog:MinimumLevel:Default", "Debug" } };
 
         var config = new ConfigurationBuilder()
             .AddInMemoryCollection(inMemorySettings)

@@ -10,12 +10,14 @@ public class FileService : IFileService
     public T Read<T>(string folderPath, string fileName)
     {
         var path = Path.Combine(folderPath, fileName);
-        if (File.Exists(path))
+        if (!File.Exists(path))
         {
-            var json = File.ReadAllText(path);
-            return JsonConvert.DeserializeObject<T>(json);
+            return default;
         }
-        return default;
+
+        var json = File.ReadAllText(path);
+        return JsonConvert.DeserializeObject<T>(json);
+
     }
 
     public string ReadFile(string filePath)
@@ -29,6 +31,7 @@ public class FileService : IFileService
         {
             Directory.CreateDirectory(folderPath);
         }
+
         var fileContent = JsonConvert.SerializeObject(content);
         File.WriteAllText(Path.Combine(folderPath, fileName), fileContent, Encoding.UTF8);
     }

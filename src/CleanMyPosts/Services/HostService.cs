@@ -56,4 +56,3 @@ public class HostService : IHostService
         return host;
     }
 }
-

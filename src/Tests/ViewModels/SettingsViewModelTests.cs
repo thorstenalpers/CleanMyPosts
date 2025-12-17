@@ -10,16 +10,18 @@ namespace CleanMyPosts.Tests.ViewModels;
 [Trait("Category", "Unit")]
 public class SettingsViewModelTests
 {
-    private readonly Mock<IUserSettingsService> _userSettingsServiceMock = new();
-    private readonly Mock<UpdaterConfig> _updaterConfigMock = new();
     private readonly Mock<AppConfig> _appConfigMock = new();
     private readonly Mock<ILogger<SettingsViewModel>> _loggerMock = new();
+    private readonly Mock<UpdaterConfig> _updaterConfigMock = new();
+    private readonly Mock<IUserSettingsService> _userSettingsServiceMock = new();
 
-    private SettingsViewModel CreateViewModel() =>
-        new(_loggerMock.Object,
+    private SettingsViewModel CreateViewModel()
+    {
+        return new SettingsViewModel(_loggerMock.Object,
             _updaterConfigMock.Object,
             _appConfigMock.Object,
             _userSettingsServiceMock.Object);
+    }
 
     [Fact]
     public void SetThemeCommand_ShouldInvokeThemeService_WithCorrectTheme()

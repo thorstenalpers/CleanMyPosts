@@ -7,12 +7,16 @@ using Microsoft.Extensions.Logging;
 
 namespace CleanMyPosts.Services;
 
-public class XScriptService(ILogger<XScriptService> logger, IWebViewHostService webViewHostService, IUserSettingsService userSettingsService, IFileService fileService) : IXScriptService
+public class XScriptService(
+    ILogger<XScriptService> logger,
+    IWebViewHostService webViewHostService,
+    IUserSettingsService userSettingsService,
+    IFileService fileService) : IXScriptService
 {
-    private readonly ILogger<XScriptService> _logger = logger;
-    private readonly IWebViewHostService _webViewHostService = webViewHostService;
-    private readonly IUserSettingsService _userSettingsService = userSettingsService;
     private readonly IFileService _fileService = fileService;
+    private readonly ILogger<XScriptService> _logger = logger;
+    private readonly IUserSettingsService _userSettingsService = userSettingsService;
+    private readonly IWebViewHostService _webViewHostService = webViewHostService;
     private string _userName;
 
     public async Task ShowRepostsAsync()
@@ -65,6 +69,7 @@ public class XScriptService(ILogger<XScriptService> logger, IWebViewHostService 
 
         await NavigateAsync(url);
     }
+
     public async Task<int> DeletePostsAsync()
     {
         await EnsureUserNameAsync();
@@ -76,11 +81,11 @@ public class XScriptService(ILogger<XScriptService> logger, IWebViewHostService 
 
         return await RunDeleteScriptAsync(
             url,
-            isArticle: true,
-            scriptName: "delete-all-posts.js",
-            scriptDoneVar: "postsDeletionDone",
-            deletedVar: "deletedPosts",
-            functionName: "DeleteAllPosts",
+            true,
+            "delete-all-posts.js",
+            "postsDeletionDone",
+            "deletedPosts",
+            "DeleteAllPosts",
             timeout.WaitAfterDelete, timeout.WaitBetweenRetryDeleteAttempts
         );
     }
@@ -96,11 +101,11 @@ public class XScriptService(ILogger<XScriptService> logger, IWebViewHostService 
 
         return await RunDeleteScriptAsync(
             url,
-            isArticle: true,
-            scriptName: "delete-all-reposts.js",
-            scriptDoneVar: "repostsDeletionDone",
-            deletedVar: "deletedReposts",
-            functionName: "DeleteAllRepost",
+            true,
+            "delete-all-reposts.js",
+            "repostsDeletionDone",
+            "deletedReposts",
+            "DeleteAllRepost",
             timeout.WaitBetweenRetryDeleteAttempts
         );
     }
@@ -115,11 +120,11 @@ public class XScriptService(ILogger<XScriptService> logger, IWebViewHostService 
 
         return await RunDeleteScriptAsync(
             url,
-            isArticle: true,
-            scriptName: "delete-all-replies.js",
-            scriptDoneVar: "repliesDeletionDone",
-            deletedVar: "deletedReplies",
-            functionName: "DeleteAllReplies",
+            true,
+            "delete-all-replies.js",
+            "repliesDeletionDone",
+            "deletedReplies",
+            "DeleteAllReplies",
             _userName, timeout.WaitAfterDelete, timeout.WaitBetweenRetryDeleteAttempts
         );
     }
@@ -134,14 +139,15 @@ public class XScriptService(ILogger<XScriptService> logger, IWebViewHostService 
 
         return await RunDeleteScriptAsync(
             url,
-            isArticle: false,
-            scriptName: "delete-all-likes.js",
-            scriptDoneVar: "likesDeletionDone",
-            deletedVar: "deletedLikes",
-            functionName: "DeleteAllLikes",
+            false,
+            "delete-all-likes.js",
+            "likesDeletionDone",
+            "deletedLikes",
+            "DeleteAllLikes",
             timeout.WaitBetweenRetryDeleteAttempts
         );
     }
+
     public async Task<int> DeleteFollowingAsync()
     {
         await EnsureUserNameAsync();
@@ -152,43 +158,13 @@ public class XScriptService(ILogger<XScriptService> logger, IWebViewHostService 
 
         return await RunDeleteScriptAsync(
             url,
-            isArticle: false,
-            scriptName: "delete-all-following.js",
-            scriptDoneVar: "followingDeletionDone",
-            deletedVar: "deletedFollowing",
-            functionName: "DeleteAllFollowing",
+            false,
+            "delete-all-following.js",
+            "followingDeletionDone",
+            "deletedFollowing",
+            "DeleteAllFollowing",
             timeout.WaitAfterDelete, timeout.WaitBetweenRetryDeleteAttempts
         );
-    }
-
-    private async Task<bool> IsEmptyMessagePresentAsync()
-    {
-        var script = @"
-        (function() {
-            return document.querySelector('[data-testid=""emptyState""]') !== null;
-        })();";
-
-        var result = await _webViewHostService.ExecuteScriptAsync(script) == "true";
-        if (result)
-        {
-            _logger.LogInformation("Empty state present, nothing more to delete.");
-        }
-        return result;
-    }
-
-    private async Task<bool> IsAnArticlePresentAsync()
-    {
-        var script = @"
-        (function() {
-            return document.querySelector('article') !== null;
-        })();";
-
-        var isAnArticlePresent = await _webViewHostService.ExecuteScriptAsync(script) == "true";
-        if (!isAnArticlePresent)
-        {
-            _logger.LogInformation("No article present, nothing more to delete.");
-        }
-        return isAnArticlePresent;
     }
 
     public async Task<string> GetUserNameAsync()
@@ -207,11 +183,43 @@ public class XScriptService(ILogger<XScriptService> logger, IWebViewHostService 
         return _userName;
     }
 
+    private async Task<bool> IsEmptyMessagePresentAsync()
+    {
+        var script = @"
+        (function() {
+            return document.querySelector('[data-testid=""emptyState""]') !== null;
+        })();";
+
+        var result = await _webViewHostService.ExecuteScriptAsync(script) == "true";
+        if (result)
+        {
+            _logger.LogInformation("Empty state present, nothing more to delete.");
+        }
+
+        return result;
+    }
+
+    private async Task<bool> IsAnArticlePresentAsync()
+    {
+        var script = @"
+        (function() {
+            return document.querySelector('article') !== null;
+        })();";
+
+        var isAnArticlePresent = await _webViewHostService.ExecuteScriptAsync(script) == "true";
+        if (!isAnArticlePresent)
+        {
+            _logger.LogInformation("No article present, nothing more to delete.");
+        }
+
+        return isAnArticlePresent;
+    }
+
     private async Task<bool> WaitForDocumentReadyAsync()
     {
         const int maxAttempts = 50;
         const int delayMs = 100;
-        int waitAfterDocumentLoad = _userSettingsService.GetTimeoutSettings().WaitAfterDocumentLoad;
+        var waitAfterDocumentLoad = _userSettingsService.GetTimeoutSettings().WaitAfterDocumentLoad;
 
         for (var i = 0; i < maxAttempts; i++)
         {
@@ -230,8 +238,10 @@ public class XScriptService(ILogger<XScriptService> logger, IWebViewHostService 
             {
                 _logger.LogWarning(ex, "Error checking document.readyState.");
             }
+
             await Task.Delay(delayMs);
         }
+
         _logger.LogWarning("Timed out waiting for document.readyState = complete.");
         return false;
     }
@@ -257,6 +267,7 @@ public class XScriptService(ILogger<XScriptService> logger, IWebViewHostService 
             _logger.LogInformation("Username is null {Username}, posssible because of not fully loaded html", userName);
             return;
         }
+
         var newUserName = Helper.CleanJsonResult(userName);
         if (_userName != newUserName)
         {
@@ -267,7 +278,7 @@ public class XScriptService(ILogger<XScriptService> logger, IWebViewHostService 
 
     private async Task<bool> NavigateAsync(Uri url)
     {
-        bool urlChanged = false;
+        var urlChanged = false;
         if (_webViewHostService.Source != url)
         {
             _webViewHostService.Source = url;
@@ -285,10 +296,12 @@ public class XScriptService(ILogger<XScriptService> logger, IWebViewHostService 
         {
             _logger.LogInformation("Navigated to {Url}", url);
         }
+
         return true;
     }
 
-    private async Task<int> RunDeleteScriptAsync(string url, bool isArticle, string scriptName, string scriptDoneVar, string deletedVar, string functionName, params object[] args)
+    private async Task<int> RunDeleteScriptAsync(string url, bool isArticle, string scriptName, string scriptDoneVar,
+        string deletedVar, string functionName, params object[] args)
     {
         var waitBetweenRetryDeleteAttempts = _userSettingsService.GetTimeoutSettings().WaitBetweenRetryDeleteAttempts;
         if (!await NavigateAsync(new Uri(url)))
@@ -302,19 +315,21 @@ public class XScriptService(ILogger<XScriptService> logger, IWebViewHostService 
         {
             try
             {
-                string scriptPath = Path.Combine(AppContext.BaseDirectory, "Scripts", scriptName);
-                string jsCode = _fileService.ReadFile(scriptPath);
+                var scriptPath = Path.Combine(AppContext.BaseDirectory, "Scripts", scriptName);
+                var jsCode = _fileService.ReadFile(scriptPath);
 
-                string argsList = string.Join(", ", args.Select(arg =>
+                var argsList = string.Join(", ", args.Select(arg =>
                 {
                     if (arg == null)
                     {
                         return "null";
                     }
+
                     if (arg is string s)
                     {
                         return $"\"{s.Replace("\"", "\\\"")}\"";
                     }
+
                     if (arg is bool b)
                     {
                         return b ? "true" : "false";
@@ -323,7 +338,7 @@ public class XScriptService(ILogger<XScriptService> logger, IWebViewHostService 
                     return arg.ToString();
                 }));
 
-                string wrappedScript = $@"
+                var wrappedScript = $@"
                 (function() {{
                     window.{scriptDoneVar} = false;
                     {jsCode}
@@ -337,7 +352,7 @@ public class XScriptService(ILogger<XScriptService> logger, IWebViewHostService 
 
                 await _webViewHostService.ExecuteScriptAsync(wrappedScript);
 
-                for (int i = 0; i < TimeSpan.FromHours(10).TotalSeconds; i++)
+                for (var i = 0; i < TimeSpan.FromHours(10).TotalSeconds; i++)
                 {
                     var result = await _webViewHostService.ExecuteScriptAsync($"window.{scriptDoneVar};");
                     if (string.Equals(result?.ToLower(), "true"))
@@ -351,6 +366,7 @@ public class XScriptService(ILogger<XScriptService> logger, IWebViewHostService 
 
                         break;
                     }
+
                     await Task.Delay(waitBetweenRetryDeleteAttempts);
                 }
 

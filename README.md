@@ -1,5 +1,4 @@
-﻿![Banner](./src/UI/Assets/banner.png)
-
+﻿![Banner](https://raw.githubusercontent.com/thorstenalpers/CleanMyPosts/main/src/CleanMyPosts/Assets/banner.png)
 [![Windows](https://img.shields.io/badge/platform-Windows-blue)](#)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE.txt)
 [![CI Tests](https://github.com/thorstenalpers/CleanMyPosts/actions/workflows/ci.yml/badge.svg)](https://github.com/thorstenalpers/CleanMyPosts/actions/workflows/ci.yml)
@@ -98,7 +97,7 @@ You can also run the cleanup directly in your browser using JavaScript snippets:
 
 - URL: [https://x.com/search?q=from%3AUSERNAME](https://x.com/search?q=from%3AUSERNAME)  
 
-- Script: [delete-all-posts.js](https://raw.githubusercontent.com/thorstenalpers/CleanMyPosts/refs/heads/main/src/UI/Scripts/delete-all-posts.js)  
+- Script: [delete-all-posts.js](https://raw.githubusercontent.com/thorstenalpers/CleanMyPosts/refs/heads/main/src/CleanMyPosts/Scripts/delete-all-posts.js)  
 
 - Run: `DeleteAllPosts(1000, 1000);`
 
@@ -107,7 +106,7 @@ You can also run the cleanup directly in your browser using JavaScript snippets:
 
 - URL: [https://x.com/USERNAME](https://x.com/USERNAME)  
 
-- Script: [delete-all-reposts.js](https://raw.githubusercontent.com/thorstenalpers/CleanMyPosts/refs/heads/main/src/UI/Scripts/delete-all-reposts.js)  
+- Script: [delete-all-reposts.js](https://raw.githubusercontent.com/thorstenalpers/CleanMyPosts/refs/heads/main/src/CleanMyPosts/Scripts/delete-all-reposts.js)  
 
 - Run: `DeleteAllRepost(1000);`
 
@@ -116,7 +115,7 @@ You can also run the cleanup directly in your browser using JavaScript snippets:
 
 - URL: [https://x.com/USERNAME/with_replies](https://x.com/USERNAME/with_replies)  
 
-- Script: [delete-all-replies.js](https://raw.githubusercontent.com/thorstenalpers/CleanMyPosts/refs/heads/main/src/UI/Scripts/delete-all-replies.js)  
+- Script: [delete-all-replies.js](https://raw.githubusercontent.com/thorstenalpers/CleanMyPosts/refs/heads/main/src/CleanMyPosts/Scripts/delete-all-replies.js)  
 
 - Run: `DeleteAllReplies('USERNAME', 1000, 5);` // replace USERNAME with yours
 
@@ -124,7 +123,7 @@ You can also run the cleanup directly in your browser using JavaScript snippets:
 
 - URL: [https://x.com/USERNAME/likes](https://x.com/USERNAME/likes)  
 
-- Script: [delete-all-likes.js](https://raw.githubusercontent.com/thorstenalpers/CleanMyPosts/refs/heads/main/src/UI/Scripts/delete-all-likes.js)  
+- Script: [delete-all-likes.js](https://raw.githubusercontent.com/thorstenalpers/CleanMyPosts/refs/heads/main/src/CleanMyPosts/Scripts/delete-all-likes.js)  
 
 - Run: `DeleteAllLike(1000)`
 
@@ -133,7 +132,7 @@ You can also run the cleanup directly in your browser using JavaScript snippets:
 
 - URL: [https://x.com/USERNAME/following](https://x.com/USERNAME/following)  
 
-- Script: [delete-all-following.js](https://raw.githubusercontent.com/thorstenalpers/CleanMyPosts/refs/heads/main/src/UI/Scripts/delete-all-following.js)  
+- Script: [delete-all-following.js](https://raw.githubusercontent.com/thorstenalpers/CleanMyPosts/refs/heads/main/src/CleanMyPosts/Scripts/delete-all-following.js)  
 
 - Run: `DeleteAllFollowing(1000, 1000);`
 

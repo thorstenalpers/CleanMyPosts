@@ -9,7 +9,7 @@ permissions:
   pull-requests: write
   checks: write
   id-token: write
-  
+
 jobs:
   build:
     runs-on: windows-latest
@@ -22,42 +22,42 @@ jobs:
       FA_LICENSE_MESSAGE_SUPPRESS: 1
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: 10.x
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.x
 
-    - name: Install .NET Tools (local)
-      run: |
-        dotnet new tool-manifest
-        dotnet tool install dotnet-reportgenerator-globaltool
+      - name: Install .NET Tools (local)
+        run: |
+          dotnet new tool-manifest
+          dotnet tool install dotnet-reportgenerator-globaltool
 
-    - name: Restore
-      run: dotnet restore "${{ env.Solution }}"
+      - name: Restore
+        run: dotnet restore "${{ env.Solution }}"
 
-    - name: Build and Test
-      run: |
-        dotnet build "${{ env.Solution }}" --configuration Release --no-restore
+      - name: Build and Test
+        run: |
+          dotnet build "${{ env.Solution }}" --configuration Release --no-restore
+          
+          dotnet test "${{ env.Test_Project }}" `
+            --collect:"XPlat Code Coverage" `
+            --results-directory TestResults/Tests `
+            --configuration Release `
+            --logger "console;verbosity=detailed" `
+            --filter "TestCategory!=Long-Running"
+          
+          dotnet tool run reportgenerator `
+            -reports:TestResults/**/coverage.cobertura.xml `
+            -targetdir:TestResults/Reports `
+            -reporttypes:"Html;lcov;Cobertura" `
 
-        dotnet test "${{ env.Test_Project }}" `
-          --collect:"XPlat Code Coverage" `
-          --results-directory TestResults/Tests `
-          --configuration Release `
-          --logger "console;verbosity=detailed" `
-          --filter "TestCategory!=Long-Running"
-
-        dotnet tool run reportgenerator `
-          -reports:TestResults/**/coverage.cobertura.xml `
-          -targetdir:TestResults/Reports `
-          -reporttypes:"Html;lcov;Cobertura" `
-
-    - name: Upload Test Coverage Report
-      uses: actions/upload-artifact@v4
-      with:
-        name: test-coverage-report
-        path: TestResults/Reports
+      - name: Upload Test Coverage Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-coverage-report
+          path: TestResults/Reports

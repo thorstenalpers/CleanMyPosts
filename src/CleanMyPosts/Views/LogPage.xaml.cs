@@ -1,5 +1,7 @@
 ﻿using System.Collections.Specialized;
 using System.IO;
+using System.Net;
+using System.Reflection;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -13,8 +15,8 @@ public partial class LogPage : Page
 {
     private readonly LogViewModel _viewModel;
     private string _currentBackgroundColor = "#FFFAFA";
-    private string _currentTextColor = "black";
     private string _currentBorderColor = "#EEE";
+    private string _currentTextColor = "black";
     private CoreWebView2Environment _env;
 
     public LogPage(LogViewModel viewModel)
@@ -67,10 +69,10 @@ public partial class LogPage : Page
         {
             var userDataFolder = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                System.Reflection.Assembly.GetExecutingAssembly().GetName().Name,
+                Assembly.GetExecutingAssembly().GetName().Name,
                 "WebView-LogPage");
             Directory.CreateDirectory(userDataFolder);
-            var options = new CoreWebView2EnvironmentOptions(null, language: "en-US");
+            var options = new CoreWebView2EnvironmentOptions(null, "en-US");
             _env = await CoreWebView2Environment.CreateAsync(null, userDataFolder, options);
         }
 
@@ -128,7 +130,7 @@ public partial class LogPage : Page
             return;
         }
 
-        string html = GenerateLogHtml();
+        var html = GenerateLogHtml();
         LogWebView.NavigateToString(html);
     }
 
@@ -162,12 +164,11 @@ public partial class LogPage : Page
 
         foreach (var entry in _viewModel.LogEntries)
         {
-            var safeEntry = System.Net.WebUtility.HtmlEncode(entry);
+            var safeEntry = WebUtility.HtmlEncode(entry);
             sb.AppendLine($"<div class=\"log-entry\">{safeEntry}</div>");
         }
 
         sb.AppendLine("</body></html>");
         return sb.ToString();
     }
-
 }

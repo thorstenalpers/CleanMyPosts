@@ -1,54 +1,63 @@
 ﻿using System.Diagnostics;
 using System.Drawing;
 using System.Windows;
-using System.Windows.Resources;
 using AutoUpdaterDotNET;
 using CleanMyPosts.Contracts.Services;
 using CleanMyPosts.Contracts.ViewModels;
 using CleanMyPosts.Helpers;
 using CleanMyPosts.Models;
+using CleanMyPosts.Properties;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 
 namespace CleanMyPosts.ViewModels;
 
-public partial class SettingsViewModel(ILogger<SettingsViewModel> logger,
+public partial class SettingsViewModel(
+    ILogger<SettingsViewModel> logger,
     UpdaterConfig updaterConfig,
     AppConfig appConfig,
     IUserSettingsService userSettingsService) : ObservableObject, INavigationAware
 {
-    private readonly ILogger<SettingsViewModel> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-    private readonly IUserSettingsService _userSettingsService = userSettingsService ?? throw new ArgumentNullException(nameof(userSettingsService));
-    private readonly UpdaterConfig _updaterConfig = updaterConfig ?? throw new ArgumentNullException(nameof(updaterConfig));
     private readonly AppConfig _appConfig = appConfig ?? throw new ArgumentNullException(nameof(appConfig));
+    private readonly ILogger<SettingsViewModel> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
-    [ObservableProperty]
-    private bool _isNotificationOpen;
+    private readonly UpdaterConfig _updaterConfig =
+        updaterConfig ?? throw new ArgumentNullException(nameof(updaterConfig));
 
-    [ObservableProperty]
-    private string _notificationMessage;
+    private readonly IUserSettingsService _userSettingsService =
+        userSettingsService ?? throw new ArgumentNullException(nameof(userSettingsService));
 
-    [ObservableProperty]
-    private string _versionDescription;
+    [ObservableProperty] private bool _confirmDeletion;
 
-    [ObservableProperty]
-    private AppTheme _theme;
+    [ObservableProperty] private bool _isNotificationOpen;
 
-    [ObservableProperty]
-    private bool _showLogs;
+    [ObservableProperty] private string _notificationMessage;
 
-    [ObservableProperty]
-    private bool _confirmDeletion;
+    [ObservableProperty] private bool _showLogs;
 
-    [ObservableProperty]
-    private int _waitAfterDelete;
+    [ObservableProperty] private AppTheme _theme;
 
-    [ObservableProperty]
-    private int _waitAfterDocumentLoad;
+    [ObservableProperty] private string _versionDescription;
 
-    [ObservableProperty]
-    private int _waitBetweenRetryDeleteAttempts;
+    [ObservableProperty] private int _waitAfterDelete;
+
+    [ObservableProperty] private int _waitAfterDocumentLoad;
+
+    [ObservableProperty] private int _waitBetweenRetryDeleteAttempts;
+
+    public void OnNavigatedTo(object parameter)
+    {
+        VersionDescription = $"{Resources.AppDisplayName} - {Helper.GetVersion()}";
+        Theme = _userSettingsService.GetCurrentTheme();
+        ShowLogs = _userSettingsService.GetShowLogs();
+        ConfirmDeletion = _userSettingsService.GetConfirmDeletion();
+
+        var timeoutSettings = _userSettingsService.GetTimeoutSettings();
+        WaitAfterDocumentLoad = timeoutSettings.WaitAfterDocumentLoad;
+        WaitAfterDelete = timeoutSettings.WaitAfterDelete;
+        WaitBetweenRetryDeleteAttempts = timeoutSettings.WaitBetweenRetryDeleteAttempts;
+    }
 
     [RelayCommand]
     private void SetTheme(string themeName)
@@ -62,31 +71,19 @@ public partial class SettingsViewModel(ILogger<SettingsViewModel> logger,
     [RelayCommand]
     private static void OpenLicense()
     {
-        Process.Start(new ProcessStartInfo
-        {
-            FileName = "license.txt",
-            UseShellExecute = true
-        });
+        Process.Start(new ProcessStartInfo { FileName = "license.txt", UseShellExecute = true });
     }
 
     [RelayCommand]
     private void OpenHomepage()
     {
-        Process.Start(new ProcessStartInfo
-        {
-            FileName = _appConfig.ThirdPartyUrl,
-            UseShellExecute = true
-        });
+        Process.Start(new ProcessStartInfo { FileName = _appConfig.GitRepoUrl, UseShellExecute = true });
     }
 
     [RelayCommand]
     private void OpenReportBug()
     {
-        Process.Start(new ProcessStartInfo
-        {
-            FileName = _appConfig.ReportIssueUrl,
-            UseShellExecute = true
-        });
+        Process.Start(new ProcessStartInfo { FileName = _appConfig.ReportIssueUrl, UseShellExecute = true });
     }
 
     [RelayCommand]
@@ -95,8 +92,8 @@ public partial class SettingsViewModel(ILogger<SettingsViewModel> logger,
 #pragma warning disable S2696 // Instance members should not write to "static" fields
         try
         {
-            Uri iconUri = new Uri(_updaterConfig.IconUri, UriKind.Absolute);
-            StreamResourceInfo sri = Application.GetResourceStream(iconUri);
+            var iconUri = new Uri(_updaterConfig.IconUri, UriKind.Absolute);
+            var sri = Application.GetResourceStream(iconUri);
 
             if (sri != null)
             {
@@ -192,18 +189,5 @@ public partial class SettingsViewModel(ILogger<SettingsViewModel> logger,
             WaitAfterDocumentLoad = WaitAfterDocumentLoad,
             WaitBetweenRetryDeleteAttempts = WaitBetweenRetryDeleteAttempts
         });
-    }
-
-    public void OnNavigatedTo(object parameter)
-    {
-        VersionDescription = $"{Properties.Resources.AppDisplayName} - {Helper.GetVersion()}";
-        Theme = _userSettingsService.GetCurrentTheme();
-        ShowLogs = _userSettingsService.GetShowLogs();
-        ConfirmDeletion = _userSettingsService.GetConfirmDeletion();
-
-        var timeoutSettings = _userSettingsService.GetTimeoutSettings();
-        WaitAfterDocumentLoad = timeoutSettings.WaitAfterDocumentLoad;
-        WaitAfterDelete = timeoutSettings.WaitAfterDelete;
-        WaitBetweenRetryDeleteAttempts = timeoutSettings.WaitBetweenRetryDeleteAttempts;
     }
 }

@@ -17,7 +17,7 @@ public class MenuItemTemplateSelector : DataTemplateSelector
             HamburgerMenuGlyphItem _ => GlyphDataTemplate,
             HamburgerMenuImageItem _ => ImageDataTemplate,
             HamburgerMenuIconItem _ => IconDataTemplate,
-            _ => base.SelectTemplate(item, container),
+            _ => base.SelectTemplate(item, container)
         };
     }
 }

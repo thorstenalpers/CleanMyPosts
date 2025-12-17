@@ -6,10 +6,9 @@ namespace CleanMyPosts.ViewModels;
 
 public partial class LogViewModel : ObservableObject
 {
-    public ObservableCollection<string> LogEntries { get; } = [];
+    [ObservableProperty] private string _selectedLogEntry;
 
-    [ObservableProperty]
-    private string _selectedLogEntry;
+    public ObservableCollection<string> LogEntries { get; } = [];
 
     public void AppendLog(string message)
     {

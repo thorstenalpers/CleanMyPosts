@@ -1,5 +1,6 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Threading;
 using CleanMyPosts.Extensions;
 using FluentAssertions;
 using Xunit;
@@ -34,12 +35,12 @@ public class FrameExtensionsTests
             frame.Content = element;
 
             // Force dispatcher to process
-            System.Windows.Threading.Dispatcher.CurrentDispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.ApplicationIdle);
+            Dispatcher.CurrentDispatcher.Invoke(() => { }, DispatcherPriority.ApplicationIdle);
 
             result = frame.GetDataContext();
 
             window.Close();
-            System.Windows.Threading.Dispatcher.CurrentDispatcher.InvokeShutdown();
+            Dispatcher.CurrentDispatcher.InvokeShutdown();
         });
 
         thread.SetApartmentState(ApartmentState.STA);

@@ -8,7 +8,7 @@ permissions:
   pull-requests: write
   checks: write
   id-token: write
-  
+
 jobs:
   build:
     runs-on: windows-latest
@@ -23,122 +23,122 @@ jobs:
       FA_LICENSE_MESSAGE_SUPPRESS: 1
 
     steps:
-    - name: Checkout main
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-        token: ${{ secrets.GITHUB_TOKEN }}
-        ref: main
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+          ref: main
 
-    - name: Install .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: 10.x
+      - name: Install .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.x
 
-    - name: Install Inno Setup
-      run: choco install innosetup --yes
+      - name: Install Inno Setup
+        run: choco install innosetup --yes
 
-    - name: Restore
-      run: dotnet restore "${{ env.Solution }}"
+      - name: Restore
+        run: dotnet restore "${{ env.Solution }}"
 
-    - name: Build
-      run: dotnet build "${{ env.Solution }}" --configuration Release --no-restore
+      - name: Build
+        run: dotnet build "${{ env.Solution }}" --configuration Release --no-restore
 
-    - name: Run Tests
-      run: dotnet test "${{ env.Test_Project }}" --configuration Release --logger "console;verbosity=detailed"
+      - name: Run Tests
+        run: dotnet test "${{ env.Test_Project }}" --configuration Release --logger "console;verbosity=detailed"
 
-    - name: Extract Version
-      id: get_version
-      shell: pwsh
-      run: |
-        $content = Get-Content "${{ env.UI_Project }}" -Raw
-        if ($content -match '<Version>\s*(.+?)\s*</Version>') {
-          $fullVersion = $matches[1].Trim()
-          $semverOnly = $fullVersion -replace '\+.*$', ''
-          echo "VERSION=$semverOnly" | Out-File -FilePath $env:GITHUB_ENV -Append
-          "version=$semverOnly" >> $env:GITHUB_OUTPUT
-        } else {
-          Write-Error "Version not found in csproj"
-          exit 1
-        }
+      - name: Extract Version
+        id: get_version
+        shell: pwsh
+        run: |
+          $content = Get-Content "${{ env.UI_Project }}" -Raw
+          if ($content -match '<Version>\s*(.+?)\s*</Version>') {
+            $fullVersion = $matches[1].Trim()
+            $semverOnly = $fullVersion -replace '\+.*$', ''
+            echo "VERSION=$semverOnly" | Out-File -FilePath $env:GITHUB_ENV -Append
+            "version=$semverOnly" >> $env:GITHUB_OUTPUT
+          } else {
+            Write-Error "Version not found in csproj"
+            exit 1
+          }
 
-    - name: Publish x64
-      run: |
-        dotnet publish "${{ env.UI_Project }}" -c Release -r win-x64 --self-contained true `
-            /p:AssemblyVersion=${{ env.VERSION }} `
-            /p:FileVersion=${{ env.VERSION }}.0 `
-            /p:InformationalVersion=${{ env.VERSION }} `
-            /p:ContinuousIntegrationBuild=false `
-            -o artifacts/publish-x64
+      - name: Publish x64
+        run: |
+          dotnet publish "${{ env.UI_Project }}" -c Release -r win-x64 --self-contained true `
+              /p:AssemblyVersion=${{ env.VERSION }} `
+              /p:FileVersion=${{ env.VERSION }}.0 `
+              /p:InformationalVersion=${{ env.VERSION }} `
+              /p:ContinuousIntegrationBuild=false `
+              -o artifacts/publish-x64
 
-    - name: Build Installer x64
-      run: |
-        $exePath = "${{ github.workspace }}\artifacts\publish-x64\CleanMyPosts.exe"
-        iscc "/DMyAppVersion=${{ env.VERSION }}" "/DMyAppExePath=$exePath" "${{ env.Installer_Script }}"
+      - name: Build Installer x64
+        run: |
+          $exePath = "${{ github.workspace }}\artifacts\publish-x64\CleanMyPosts.exe"
+          iscc "/DMyAppVersion=${{ env.VERSION }}" "/DMyAppExePath=$exePath" "${{ env.Installer_Script }}"
 
-    - name: Copy Installer Exe to Artifacts
-      run: |
-        mkdir artifacts\installer
-        copy installer\Output\CleanMyPosts-Installer-${{ env.VERSION }}-win-x64.exe artifacts\installer\
+      - name: Copy Installer Exe to Artifacts
+        run: |
+          mkdir artifacts\installer
+          copy installer\Output\CleanMyPosts-Installer-${{ env.VERSION }}-win-x64.exe artifacts\installer\
 
-    - name: Clone update-feed branch
-      run: |
-        git fetch origin update-feed || git checkout -b update-feed
-        git switch update-feed
+      - name: Clone update-feed branch
+        run: |
+          git fetch origin update-feed || git checkout -b update-feed
+          git switch update-feed
 
-    - name: Generate AutoUpdater.NET files using template
-      shell: pwsh
-      run: |
-        $version = "${{ env.VERSION }}"
-        $repo = "${{ github.repository }}"
-        $baseUrl = "https://github.com/$repo/releases/download/v$version"
-        $changelogUrl = "https://raw.githubusercontent.com/thorstenalpers/CleanMyPosts/refs/heads/main/release-notes/v$version.md"
+      - name: Generate AutoUpdater.NET files using template
+        shell: pwsh
+        run: |
+          $version = "${{ env.VERSION }}"
+          $repo = "${{ github.repository }}"
+          $baseUrl = "https://github.com/$repo/releases/download/v$version"
+          $changelogUrl = "https://raw.githubusercontent.com/thorstenalpers/CleanMyPosts/refs/heads/main/release-notes/v$version.md"
+          
+          Write-Host "Aktuelles Verzeichnis: $(Get-Location)"
+          
+          Get-ChildItem -Path $env:GITHUB_WORKSPACE -Recurse | ForEach-Object {
+              Write-Host $_.FullName
+          }
+          
+          $template = Get-Content "$env:GITHUB_WORKSPACE/update-feed/update-template.xml" -Raw
+          
+          $installerUrl = "$baseUrl/CleanMyPosts-Installer-$version-win-x64.exe"
+          $installerXml = $template `
+            -replace "{{VERSION}}", $version `
+            -replace "{{INSTALLER_URL}}", $installerUrl `
+            -replace "{{CHANGELOG_URL}}", $changelogUrl 
+          $installerXml | Set-Content -Path "artifacts/update-installer.xml" -Encoding UTF8
 
-        Write-Host "Aktuelles Verzeichnis: $(Get-Location)"
+      - name: Commit and push update-feed branch
+        shell: bash
+        run: |
+          cd update-feed
+          cp ../artifacts/update-installer.xml update-installer.xml
+          
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          git add update-installer.xml
+          
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Update for ${{ env.VERSION }}"
+            git push origin update-feed
+          fi
 
-        Get-ChildItem -Path $env:GITHUB_WORKSPACE -Recurse | ForEach-Object {
-            Write-Host $_.FullName
-        }
+      - name: Create Git Tag
+        run: |
+          git tag -a "v${{ env.VERSION }}" -m "Release v${{ env.VERSION }}"
+          git push origin "v${{ env.VERSION }}"
 
-        $template = Get-Content "$env:GITHUB_WORKSPACE/update-feed/update-template.xml" -Raw
-
-        $installerUrl = "$baseUrl/CleanMyPosts-Installer-$version-win-x64.exe"
-        $installerXml = $template `
-          -replace "{{VERSION}}", $version `
-          -replace "{{INSTALLER_URL}}", $installerUrl `
-          -replace "{{CHANGELOG_URL}}", $changelogUrl 
-        $installerXml | Set-Content -Path "artifacts/update-installer.xml" -Encoding UTF8
-
-    - name: Commit and push update-feed branch
-      shell: bash
-      run: |
-        cd update-feed
-        cp ../artifacts/update-installer.xml update-installer.xml
-
-        git config user.name "github-actions[bot]"
-        git config user.email "github-actions[bot]@users.noreply.github.com"
-
-        git add update-installer.xml
-
-        if git diff --cached --quiet; then
-          echo "No changes to commit"
-        else
-          git commit -m "Update for ${{ env.VERSION }}"
-          git push origin update-feed
-        fi
-
-    - name: Create Git Tag
-      run: |
-        git tag -a "v${{ env.VERSION }}" -m "Release v${{ env.VERSION }}"
-        git push origin "v${{ env.VERSION }}"
-
-    - name: Create GitHub Release
-      uses: softprops/action-gh-release@v1
-      with:
-        tag_name: "v${{ env.VERSION }}"
-        name: "CleanMyPosts ${{ env.VERSION }}"
-        body_path: ./release-notes/v${{ env.VERSION }}.md
-        files: |
-          artifacts/installer/CleanMyPosts-Installer-${{ env.VERSION }}-win-x64.exe
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: "v${{ env.VERSION }}"
+          name: "CleanMyPosts ${{ env.VERSION }}"
+          body_path: ./release-notes/v${{ env.VERSION }}.md
+          files: |
+            artifacts/installer/CleanMyPosts-Installer-${{ env.VERSION }}-win-x64.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

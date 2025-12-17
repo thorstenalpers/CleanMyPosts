@@ -34,18 +34,9 @@ public class WindowExtensionsTests
         var thread = new Thread(() =>
         {
             var expectedDataContext = new object();
-            var innerElement = new TextBlock
-            {
-                DataContext = expectedDataContext
-            };
-            var frame = new Frame
-            {
-                Content = innerElement
-            };
-            var window = new Window
-            {
-                Content = frame
-            };
+            var innerElement = new TextBlock { DataContext = expectedDataContext };
+            var frame = new Frame { Content = innerElement };
+            var window = new Window { Content = frame };
 
             window.Show();
 
@@ -71,7 +62,7 @@ public class WindowExtensionsTests
         thread.Start();
         thread.Join();
 
-        result.Should().BeSameAs(result);  // Oder mit expectedDataContext vergleichen
+        result.Should().BeSameAs(result); // Oder mit expectedDataContext vergleichen
     }
 
 
@@ -83,10 +74,7 @@ public class WindowExtensionsTests
         {
             Content = new object() // kein FrameworkElement
         };
-        var window = new Window
-        {
-            Content = frame
-        };
+        var window = new Window { Content = frame };
 
         // Act
         var result = window.GetDataContext();

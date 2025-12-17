@@ -4,6 +4,7 @@ using CleanMyPosts.Extensions;
 using CleanMyPosts.ViewModels;
 using Microsoft.Extensions.Configuration;
 using Serilog;
+using Serilog.Events;
 
 namespace CleanMyPosts.Services;
 
@@ -11,7 +12,6 @@ public class AppSetupService : IAppSetupService
 {
     public IConfiguration BuildConfiguration()
     {
-
         return new ConfigurationBuilder()
             .AddEnvironmentVariables()
             .Build();
@@ -22,10 +22,10 @@ public class AppSetupService : IAppSetupService
         var loggerConfig = new LoggerConfiguration()
             .WriteTo.Console()
             .MinimumLevel.Information()
-            .MinimumLevel.Override("Microsoft", Serilog.Events.LogEventLevel.Warning)
-            .MinimumLevel.Override("System", Serilog.Events.LogEventLevel.Warning)
+            .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+            .MinimumLevel.Override("System", LogEventLevel.Warning)
             .WriteTo.File(
-                path: Path.Combine(
+                Path.Combine(
                     Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                     "CleanMyPosts",
                     "Logs",

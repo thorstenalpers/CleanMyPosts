@@ -1,6 +1,7 @@
 ﻿using System.Text;
 using CleanMyPosts.Services;
 using FluentAssertions;
+using Newtonsoft.Json;
 using Xunit;
 
 namespace CleanMyPosts.Tests.Services;
@@ -8,13 +9,19 @@ namespace CleanMyPosts.Tests.Services;
 [Trait("Category", "Unit")]
 public class FileServiceTests : IDisposable
 {
-    private readonly string _testDirectory;
     private readonly FileService _fileService;
+    private readonly string _testDirectory;
 
     public FileServiceTests()
     {
         _testDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
         _fileService = new FileService();
+    }
+
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
     }
 
     [Fact]
@@ -32,7 +39,7 @@ public class FileServiceTests : IDisposable
         File.Exists(filePath).Should().BeTrue();
 
         var json = File.ReadAllText(filePath);
-        var result = Newtonsoft.Json.JsonConvert.DeserializeObject<TestObject>(json);
+        var result = JsonConvert.DeserializeObject<TestObject>(json);
 
         result.Should().BeEquivalentTo(expectedObject);
     }
@@ -43,7 +50,7 @@ public class FileServiceTests : IDisposable
         // Arrange
         var fileName = "readtest.json";
         var expectedObject = new TestObject { Id = 2, Name = "ReadTest" };
-        var json = Newtonsoft.Json.JsonConvert.SerializeObject(expectedObject);
+        var json = JsonConvert.SerializeObject(expectedObject);
         Directory.CreateDirectory(_testDirectory);
         File.WriteAllText(Path.Combine(_testDirectory, fileName), json, Encoding.UTF8);
 
@@ -128,12 +135,6 @@ public class FileServiceTests : IDisposable
         Directory.Exists(nonExistentDirectory).Should().BeTrue();
         var filePath = Path.Combine(nonExistentDirectory, fileName);
         File.Exists(filePath).Should().BeTrue();
-    }
-
-    public void Dispose()
-    {
-        Dispose(true);
-        GC.SuppressFinalize(this);
     }
 
     protected virtual void Dispose(bool disposing)

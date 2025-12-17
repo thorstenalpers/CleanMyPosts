@@ -1,3 +1,4 @@
+using System.Reflection;
 using CleanMyPosts.Contracts.Services;
 using CleanMyPosts.Models;
 using CleanMyPosts.ViewModels;
@@ -13,12 +14,12 @@ namespace CleanMyPosts.Tests.ViewModels;
 [Trait("Category", "Unit")]
 public class XViewModelTests
 {
-    private readonly Mock<IWebViewHostService> _webViewHostServiceMock;
-    private readonly Mock<IUserSettingsService> _userSettingsServiceMock;
-    private readonly Mock<ILogger<XViewModel>> _loggerMock;
-    private readonly Mock<IXScriptService> _xWebViewScriptServiceMock;
-    private readonly Mock<IDialogCoordinator> _dialogCoordinatorMock;
     private readonly Mock<AppConfig> _appConfigMock;
+    private readonly Mock<IDialogCoordinator> _dialogCoordinatorMock;
+    private readonly Mock<ILogger<XViewModel>> _loggerMock;
+    private readonly Mock<IUserSettingsService> _userSettingsServiceMock;
+    private readonly Mock<IWebViewHostService> _webViewHostServiceMock;
+    private readonly Mock<IXScriptService> _xWebViewScriptServiceMock;
 
     public XViewModelTests()
     {
@@ -44,7 +45,7 @@ public class XViewModelTests
 
     private static void InvokePrivateMethod(object obj, string methodName, params object[] parameters)
     {
-        var method = obj.GetType().GetMethod(methodName, System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        var method = obj.GetType().GetMethod(methodName, BindingFlags.NonPublic | BindingFlags.Instance);
         method.Invoke(obj, parameters);
     }
 
@@ -83,11 +84,14 @@ public class XViewModelTests
         InvokePrivateMethod(viewModel, "OnWebMessageReceived", this, infoArgs);
 
         _loggerMock.Verify(l => l.Log(
-            LogLevel.Error, It.IsAny<EventId>(), It.Is<It.IsAnyType>((v, t) => v.ToString().Contains("err")), null, It.IsAny<Func<It.IsAnyType, Exception, string>>()), Times.Once);
+            LogLevel.Error, It.IsAny<EventId>(), It.Is<It.IsAnyType>((v, t) => v.ToString().Contains("err")), null,
+            It.IsAny<Func<It.IsAnyType, Exception, string>>()), Times.Once);
         _loggerMock.Verify(l => l.Log(
-            LogLevel.Warning, It.IsAny<EventId>(), It.Is<It.IsAnyType>((v, t) => v.ToString().Contains("warn")), null, It.IsAny<Func<It.IsAnyType, Exception, string>>()), Times.Once);
+            LogLevel.Warning, It.IsAny<EventId>(), It.Is<It.IsAnyType>((v, t) => v.ToString().Contains("warn")), null,
+            It.IsAny<Func<It.IsAnyType, Exception, string>>()), Times.Once);
         _loggerMock.Verify(l => l.Log(
-            LogLevel.Information, It.IsAny<EventId>(), It.Is<It.IsAnyType>((v, t) => v.ToString().Contains("info")), null, It.IsAny<Func<It.IsAnyType, Exception, string>>()), Times.Once);
+            LogLevel.Information, It.IsAny<EventId>(), It.Is<It.IsAnyType>((v, t) => v.ToString().Contains("info")),
+            null, It.IsAny<Func<It.IsAnyType, Exception, string>>()), Times.Once);
     }
 
 

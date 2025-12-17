@@ -41,7 +41,7 @@ public class NavigationService(IPageService pageService) : INavigationService
     {
         var pageType = _pageService.GetPageType(pageKey);
 
-        if (_frame.Content?.GetType() != pageType || parameter != null && !parameter.Equals(_lastParameterUsed))
+        if (_frame.Content?.GetType() != pageType || (parameter != null && !parameter.Equals(_lastParameterUsed)))
         {
             _frame.Tag = clearNavigation;
             var page = _pageService.GetPage(pageKey);
@@ -50,13 +50,17 @@ public class NavigationService(IPageService pageService) : INavigationService
             {
                 _lastParameterUsed = parameter;
             }
+
             return navigated;
         }
+
         return false;
     }
 
     public void CleanNavigation()
-        => _frame.CleanNavigation();
+    {
+        _frame.CleanNavigation();
+    }
 
     private void OnNavigated(object sender, NavigationEventArgs e)
     {
@@ -73,6 +77,7 @@ public class NavigationService(IPageService pageService) : INavigationService
             {
                 navigationAware.OnNavigatedTo(e.ExtraData);
             }
+
             Navigated?.Invoke(sender, dataContext.GetType().FullName);
         }
     }

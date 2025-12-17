@@ -11,9 +11,9 @@ namespace CleanMyPosts;
 
 public partial class App : Application
 {
-    private IHost _host;
     private readonly AppSetupService _appSetupService;
     private readonly HostService _hostService;
+    private IHost _host;
 
     public App()
     {
@@ -37,7 +37,8 @@ public partial class App : Application
         catch (Exception ex)
         {
             Log.Fatal(ex, "Application start-up failed.");
-            MessageBox.Show("Failed to start application.", "Startup Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageBox.Show("Failed to start application.", "Startup Error", MessageBoxButton.OK,
+                MessageBoxImage.Error);
             Environment.Exit(1);
         }
     }
@@ -61,7 +62,8 @@ public partial class App : Application
     {
         var logger = _host?.Services.GetService<ILogger<App>>();
         logger?.LogError(e.Exception, "Unhandled UI exception");
-        MessageBox.Show($"Unhandled UI exception: {e.Exception.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+        MessageBox.Show($"Unhandled UI exception: {e.Exception.Message}", "Error", MessageBoxButton.OK,
+            MessageBoxImage.Error);
         e.Handled = true;
     }
 }

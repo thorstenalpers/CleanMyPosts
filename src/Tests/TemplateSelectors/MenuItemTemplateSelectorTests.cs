@@ -9,10 +9,10 @@ namespace CleanMyPosts.Tests.TemplateSelectors;
 [Trait("Category", "Unit")]
 public class MenuItemTemplateSelectorTests
 {
-    private readonly MenuItemTemplateSelector _selector;
     private readonly DataTemplate _glyphTemplate;
-    private readonly DataTemplate _imageTemplate;
     private readonly DataTemplate _iconTemplate;
+    private readonly DataTemplate _imageTemplate;
+    private readonly MenuItemTemplateSelector _selector;
 
     public MenuItemTemplateSelectorTests()
     {
@@ -22,9 +22,7 @@ public class MenuItemTemplateSelectorTests
 
         _selector = new MenuItemTemplateSelector
         {
-            GlyphDataTemplate = _glyphTemplate,
-            ImageDataTemplate = _imageTemplate,
-            IconDataTemplate = _iconTemplate
+            GlyphDataTemplate = _glyphTemplate, ImageDataTemplate = _imageTemplate, IconDataTemplate = _iconTemplate
         };
     }
 

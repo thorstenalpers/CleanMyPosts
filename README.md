@@ -107,19 +107,27 @@ You can also run the cleanup directly in your browser using JavaScript snippets:
 
 
 #### Delete Replies  
+
 - URL: [https://x.com/USERNAME/with_replies](https://x.com/USERNAME/with_replies)  
+
 - Script: [delete-all-replies.js](https://raw.githubusercontent.com/thorstenalpers/CleanMyPosts/refs/heads/main/src/UI/Scripts/delete-all-replies.js)  
+
 - Run: `DeleteAllReplies('USERNAME', 1000, 5);` // replace USERNAME with yours
 
 #### Unlike Posts  
 - URL: [https://x.com/USERNAME/likes](https://x.com/USERNAME/likes)  
+
 - Script: [delete-all-likes.js](https://raw.githubusercontent.com/thorstenalpers/CleanMyPosts/refs/heads/main/src/UI/Scripts/delete-all-likes.js)  
+
 - Run: `DeleteAllLike(1000)`
 
 
 #### Unfollow Accounts  
+
 - URL: [https://x.com/USERNAME/following](https://x.com/USERNAME/following)  
+
 - Script: [delete-all-following.js](https://raw.githubusercontent.com/thorstenalpers/CleanMyPosts/refs/heads/main/src/UI/Scripts/delete-all-following.js)  
+
 - Run: `DeleteAllFollowing(1000, 1000);`
 
 ---

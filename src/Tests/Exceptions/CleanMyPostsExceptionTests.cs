@@ -36,7 +36,7 @@ public class CleanMyPostsExceptionTests
     {
         // Arrange
         var message = "Test error message";
-        var innerException = new System.Exception("Inner exception");
+        var innerException = new Exception("Inner exception");
 
         // Act
         var exception = new CleanMyPostsException(message, innerException);

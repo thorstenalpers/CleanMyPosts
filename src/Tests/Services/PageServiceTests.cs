@@ -68,7 +68,7 @@ public class PageServiceTests
         // Act & Assert
         var action = () => _pageService.GetPageType(unknownKey);
         action.Should().Throw<ArgumentException>()
-              .WithMessage($"Page not found: {unknownKey}. Did you forget to call PageService.Configure?");
+            .WithMessage($"Page not found: {unknownKey}. Did you forget to call PageService.Configure?");
     }
 
     [StaFact]
@@ -78,7 +78,7 @@ public class PageServiceTests
         var key = typeof(XViewModel).FullName;
         var expectedPage = new Mock<Page>().Object;
         _mockServiceProvider.Setup(x => x.GetService(typeof(XPage)))
-                           .Returns(expectedPage);
+            .Returns(expectedPage);
 
         // Act
         var result = _pageService.GetPage(key);
@@ -94,7 +94,7 @@ public class PageServiceTests
         // Arrange
         var key = typeof(LogViewModel).FullName;
         _mockServiceProvider.Setup(x => x.GetService(typeof(LogPage)))
-                           .Returns(null);
+            .Returns(null);
 
         // Act
         var result = _pageService.GetPage(key);
@@ -110,7 +110,7 @@ public class PageServiceTests
         var key = typeof(SettingsViewModel).FullName;
         var nonPageObject = new object();
         _mockServiceProvider.Setup(x => x.GetService(typeof(SettingsPage)))
-                           .Returns(nonPageObject);
+            .Returns(nonPageObject);
 
         // Act
         var result = _pageService.GetPage(key);
@@ -128,7 +128,7 @@ public class PageServiceTests
         // Act & Assert
         var action = () => _pageService.GetPage(unknownKey);
         action.Should().Throw<ArgumentException>()
-              .WithMessage($"Page not found: {unknownKey}. Did you forget to call PageService.Configure?");
+            .WithMessage($"Page not found: {unknownKey}. Did you forget to call PageService.Configure?");
     }
 
     [Fact]

@@ -11,22 +11,18 @@ namespace CleanMyPosts.Tests.Services;
 [Trait("Category", "Unit")]
 public class UserSettingsServiceTests
 {
-    private readonly Mock<IFileService> _mockFileService;
     private readonly AppConfig _appConfig;
-    private readonly UserSettingsService _userSettingsService;
     private readonly string _expectedSettingsPath;
+    private readonly Mock<IFileService> _mockFileService;
+    private readonly UserSettingsService _userSettingsService;
 
     public UserSettingsServiceTests()
     {
         _mockFileService = new Mock<IFileService>();
-        _appConfig = new AppConfig
-        {
-            DarkStyleUri = null,
-            LightStyleUri = null,
-        };
+        _appConfig = new AppConfig { DarkStyleUri = null, LightStyleUri = null };
         _expectedSettingsPath = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-        _appConfig.ConfigurationsFolder);
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            _appConfig.ConfigurationsFolder);
         _userSettingsService = new UserSettingsService(_mockFileService.Object, _appConfig);
     }
 
@@ -35,7 +31,7 @@ public class UserSettingsServiceTests
     {
         // Arrange
         _mockFileService.Setup(x => x.Read<UserSettings>(_expectedSettingsPath, _appConfig.AppPropertiesFileName))
-                       .Returns((UserSettings)null);
+            .Returns((UserSettings)null);
 
         // Act
         _userSettingsService.Initialize();
@@ -51,14 +47,15 @@ public class UserSettingsServiceTests
     {
         // Arrange
         _mockFileService.Setup(x => x.Read<UserSettings>(_expectedSettingsPath, _appConfig.AppPropertiesFileName))
-                       .Returns(new UserSettings());
+            .Returns(new UserSettings());
         _userSettingsService.Initialize();
 
         // Act
         _userSettingsService.PersistData();
 
         // Assert
-        _mockFileService.Verify(x => x.Save(_expectedSettingsPath, _appConfig.AppPropertiesFileName, It.IsAny<UserSettings>()), Times.Once);
+        _mockFileService.Verify(
+            x => x.Save(_expectedSettingsPath, _appConfig.AppPropertiesFileName, It.IsAny<UserSettings>()), Times.Once);
     }
 
     [Fact]
@@ -66,7 +63,7 @@ public class UserSettingsServiceTests
     {
         // Arrange
         _mockFileService.Setup(x => x.Read<UserSettings>(_expectedSettingsPath, _appConfig.AppPropertiesFileName))
-                       .Returns(new UserSettings());
+            .Returns(new UserSettings());
         _userSettingsService.Initialize();
 
         string eventArg = null;
@@ -85,7 +82,7 @@ public class UserSettingsServiceTests
     {
         // Arrange
         _mockFileService.Setup(x => x.Read<UserSettings>(_expectedSettingsPath, _appConfig.AppPropertiesFileName))
-                       .Returns(new UserSettings());
+            .Returns(new UserSettings());
         _userSettingsService.Initialize();
 
         string eventArg = null;
@@ -104,7 +101,7 @@ public class UserSettingsServiceTests
     {
         // Arrange
         _mockFileService.Setup(x => x.Read<UserSettings>(_expectedSettingsPath, _appConfig.AppPropertiesFileName))
-                       .Returns(new UserSettings { ShowLogs = true });
+            .Returns(new UserSettings { ShowLogs = true });
         _userSettingsService.Initialize();
 
         // Act
@@ -119,7 +116,7 @@ public class UserSettingsServiceTests
     {
         // Arrange
         _mockFileService.Setup(x => x.Read<UserSettings>(_expectedSettingsPath, _appConfig.AppPropertiesFileName))
-                       .Returns(new UserSettings { ConfirmDeletion = false });
+            .Returns(new UserSettings { ConfirmDeletion = false });
         _userSettingsService.Initialize();
 
         // Act
@@ -134,7 +131,7 @@ public class UserSettingsServiceTests
     {
         // Arrange
         _mockFileService.Setup(x => x.Read<UserSettings>(_expectedSettingsPath, _appConfig.AppPropertiesFileName))
-                       .Returns(new UserSettings());
+            .Returns(new UserSettings());
         _userSettingsService.Initialize();
 
         // Act
@@ -149,7 +146,7 @@ public class UserSettingsServiceTests
     {
         // Arrange
         _mockFileService.Setup(x => x.Read<WindowSettings>(_expectedSettingsPath, "WindowSettings.json"))
-                       .Returns((WindowSettings)null);
+            .Returns((WindowSettings)null);
 
         // Act
         var result = _userSettingsService.GetWindowSettings();
@@ -189,12 +186,10 @@ public class UserSettingsServiceTests
         // Arrange
         var expectedSettings = new TimeoutSettings
         {
-            WaitAfterDelete = 1000,
-            WaitBetweenRetryDeleteAttempts = 750,
-            WaitAfterDocumentLoad = 5000
+            WaitAfterDelete = 1000, WaitBetweenRetryDeleteAttempts = 750, WaitAfterDocumentLoad = 5000
         };
         _mockFileService.Setup(x => x.Read<TimeoutSettings>(_expectedSettingsPath, "timeoutSettings.json"))
-                       .Returns(expectedSettings);
+            .Returns(expectedSettings);
 
         // Act
         var result = _userSettingsService.GetTimeoutSettings();
@@ -208,7 +203,7 @@ public class UserSettingsServiceTests
     {
         // Arrange
         _mockFileService.Setup(x => x.Read<TimeoutSettings>(_expectedSettingsPath, "timeoutSettings.json"))
-                       .Returns((TimeoutSettings)null);
+            .Returns((TimeoutSettings)null);
 
         // Act
         var result = _userSettingsService.GetTimeoutSettings();
@@ -226,9 +221,7 @@ public class UserSettingsServiceTests
         // Arrange
         var settings = new TimeoutSettings
         {
-            WaitAfterDelete = 800,
-            WaitBetweenRetryDeleteAttempts = 600,
-            WaitAfterDocumentLoad = 4000
+            WaitAfterDelete = 800, WaitBetweenRetryDeleteAttempts = 600, WaitAfterDocumentLoad = 4000
         };
 
         // Act
@@ -243,7 +236,7 @@ public class UserSettingsServiceTests
     {
         // Arrange
         _mockFileService.Setup(x => x.Read<UserSettings>(_expectedSettingsPath, _appConfig.AppPropertiesFileName))
-                       .Returns(new UserSettings { ShowLogs = true });
+            .Returns(new UserSettings { ShowLogs = true });
 
         // Act
         _userSettingsService.Initialize();
@@ -258,7 +251,7 @@ public class UserSettingsServiceTests
     {
         // Arrange
         _mockFileService.Setup(x => x.Read<UserSettings>(_expectedSettingsPath, _appConfig.AppPropertiesFileName))
-                       .Returns(new UserSettings { ConfirmDeletion = false });
+            .Returns(new UserSettings { ConfirmDeletion = false });
 
         // Act
         _userSettingsService.Initialize();

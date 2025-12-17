@@ -1,9 +1,9 @@
-﻿namespace CleanMyPosts.Tests.Converters;
-
-using System.Globalization;
+﻿using System.Globalization;
 using CleanMyPosts.Converters;
 using FluentAssertions;
 using Xunit;
+
+namespace CleanMyPosts.Tests.Converters;
 
 public enum SampleEnum
 {
@@ -15,15 +15,7 @@ public enum SampleEnum
 [Trait("Category", "Unit")]
 public class EnumToBooleanConverterTests
 {
-    private readonly EnumToBooleanConverter _converter;
-
-    public EnumToBooleanConverterTests()
-    {
-        _converter = new EnumToBooleanConverter
-        {
-            EnumType = typeof(SampleEnum)
-        };
-    }
+    private readonly EnumToBooleanConverter _converter = new() { EnumType = typeof(SampleEnum) };
 
     [Theory]
     [InlineData(SampleEnum.First, "First", true)]

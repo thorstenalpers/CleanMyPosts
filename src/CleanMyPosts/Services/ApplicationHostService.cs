@@ -1,4 +1,5 @@
-﻿using CleanMyPosts.Contracts.Activation;
+﻿using System.Windows;
+using CleanMyPosts.Contracts.Activation;
 using CleanMyPosts.Contracts.Services;
 using CleanMyPosts.Contracts.Views;
 using CleanMyPosts.ViewModels;
@@ -6,15 +7,16 @@ using Microsoft.Extensions.Hosting;
 
 namespace CleanMyPosts.Services;
 
-public class ApplicationHostService(IServiceProvider serviceProvider,
-                                    IEnumerable<IActivationHandler> activationHandlers,
-                                    INavigationService navigationService,
-                                    IUserSettingsService userSettingsService) : IHostedService
+public class ApplicationHostService(
+    IServiceProvider serviceProvider,
+    IEnumerable<IActivationHandler> activationHandlers,
+    INavigationService navigationService,
+    IUserSettingsService userSettingsService) : IHostedService
 {
-    private readonly IServiceProvider _serviceProvider = serviceProvider;
-    private readonly INavigationService _navigationService = navigationService;
-    private readonly IUserSettingsService _userSettingsService = userSettingsService;
     private readonly IEnumerable<IActivationHandler> _activationHandlers = activationHandlers;
+    private readonly INavigationService _navigationService = navigationService;
+    private readonly IServiceProvider _serviceProvider = serviceProvider;
+    private readonly IUserSettingsService _userSettingsService = userSettingsService;
     private bool _isInitialized;
 
     public async Task StartAsync(CancellationToken cancellationToken)
@@ -60,7 +62,7 @@ public class ApplicationHostService(IServiceProvider serviceProvider,
 
         await Task.CompletedTask;
 
-        if (!System.Windows.Application.Current.Windows.OfType<IShellWindow>().Any())
+        if (!Application.Current.Windows.OfType<IShellWindow>().Any())
         {
             var shellWindow = _serviceProvider.GetService(typeof(IShellWindow)) as IShellWindow;
             _navigationService.Initialize(shellWindow.GetNavigationFrame());

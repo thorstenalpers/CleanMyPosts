@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System.ComponentModel;
+using System.Windows;
 using System.Windows.Controls;
 using CleanMyPosts.Contracts.Services;
 using CleanMyPosts.Contracts.Views;
@@ -10,11 +11,13 @@ namespace CleanMyPosts.Views;
 
 public partial class ShellWindow : MetroWindow, IShellWindow
 {
-    private readonly IUserSettingsService _userSettingsService;
-    private bool _settingsLoaded = false;
-
     private const double DefaultWidth = 860;
     private const double DefaultHeight = 600;
+    private readonly IUserSettingsService _userSettingsService;
+
+    private WindowSettings _lastNormalBounds;
+    private bool _settingsLoaded;
+
     public ShellWindow(ShellViewModel viewModel, IUserSettingsService userSettingsService)
     {
         _userSettingsService = userSettingsService ?? throw new ArgumentNullException(nameof(userSettingsService));
@@ -23,6 +26,22 @@ public partial class ShellWindow : MetroWindow, IShellWindow
 
         Loaded += OnLoaded;
         Closing += OnClosing;
+    }
+
+
+    public Frame GetNavigationFrame()
+    {
+        return shellFrame;
+    }
+
+    public void ShowWindow()
+    {
+        Show();
+    }
+
+    public void CloseWindow()
+    {
+        Close();
     }
 
     private static double GetCenteredLeft()
@@ -36,8 +55,6 @@ public partial class ShellWindow : MetroWindow, IShellWindow
         var screenHeight = SystemParameters.WorkArea.Height;
         return (screenHeight - DefaultHeight) / 2;
     }
-
-    private WindowSettings _lastNormalBounds;
 
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
@@ -104,7 +121,7 @@ public partial class ShellWindow : MetroWindow, IShellWindow
         }
     }
 
-    private void OnClosing(object sender, System.ComponentModel.CancelEventArgs e)
+    private void OnClosing(object sender, CancelEventArgs e)
     {
         if (!_settingsLoaded)
         {
@@ -137,14 +154,4 @@ public partial class ShellWindow : MetroWindow, IShellWindow
 
         _userSettingsService.SaveWindowsSettings(settings);
     }
-
-
-    public Frame GetNavigationFrame()
-        => shellFrame;
-
-    public void ShowWindow()
-        => Show();
-
-    public void CloseWindow()
-        => Close();
 }

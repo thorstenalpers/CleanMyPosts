@@ -50,7 +50,7 @@ async function DeleteAllRepost(waitTime) {
     }
 
     async function confirmUnretweet(waitTime, maxRetries = 5) {
-        const delays = Array.from({ length: maxRetries }, (_, i) => waitTime * (i + 1));
+        const delays = Array.from({length: maxRetries}, (_, i) => waitTime * (i + 1));
         for (let i = 0; i < delays.length; i++) {
             await delay(delays[i]);
 

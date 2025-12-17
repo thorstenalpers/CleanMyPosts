@@ -27,7 +27,6 @@ jobs:
       uses: actions/checkout@v4
       with:
         fetch-depth: 0
-        token: ${{ secrets.GITHUB_TOKEN }}
         ref: main
 
     - name: Install .NET
@@ -73,23 +72,16 @@ jobs:
 
     - name: Build Installer x64
       run: |
-        $exePath = "${{ github.workspace }}\artifacts\publish-x64\CleanMyPosts.exe"
-        iscc "/DMyAppVersion=${{ env.VERSION }}" "/DMyAppExePath=$exePath" "${{ env.Installer_Script }}"
+        iscc "/DMyAppVersion=${{ env.VERSION }}" "/DMyAppExePath=..\\artifacts\\publish-x64\\*" "${{ env.Installer_Script }}"
 
     - name: Copy Installer Exe to Artifacts
       run: |
         mkdir artifacts\installer
         copy installer\Output\CleanMyPosts-Installer-${{ env.VERSION }}-win-x64.exe artifacts\installer\
 
-    - name: Switch to update-feed branch
-      shell: bash
+    - name: Clone update-feed branch
       run: |
-        git fetch origin update-feed || echo "update-feed branch does not exist yet"
-        if git rev-parse --verify update-feed; then
-            git switch update-feed
-        else
-            git switch -c update-feed
-        fi
+        git clone --branch update-feed --single-branch https://github.com/${{ github.repository }} update-feed || mkdir update-feed
 
     - name: Generate AutoUpdater.NET files using template
       shell: pwsh
@@ -99,13 +91,7 @@ jobs:
         $baseUrl = "https://github.com/$repo/releases/download/v$version"
         $changelogUrl = "https://raw.githubusercontent.com/thorstenalpers/CleanMyPosts/refs/heads/main/release-notes/v$version.md"
 
-        Write-Host "Aktuelles Verzeichnis: $(Get-Location)"
-
-        Get-ChildItem -Path $env:GITHUB_WORKSPACE -Recurse | ForEach-Object {
-            Write-Host $_.FullName
-        }
-
-        $template = Get-Content "$env:GITHUB_WORKSPACE/update-feed/update-template.xml" -Raw
+        $template = Get-Content "update-feed/update-template.xml" -Raw
 
         $installerUrl = "$baseUrl/CleanMyPosts-Installer-$version-win-x64.exe"
         $installerXml = $template `
@@ -114,40 +100,45 @@ jobs:
           -replace "{{CHANGELOG_URL}}", $changelogUrl 
         $installerXml | Set-Content -Path "artifacts/update-installer.xml" -Encoding UTF8
 
+    - name: Create GitHub App Token
+      id: app-token
+      uses: actions/create-github-app-token@v2.0.5
+      with:
+        app-id: ${{ secrets.GH_APP_ID }}
+        private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
+        repositories: CleanMyPosts
+
     - name: Commit and push update-feed branch
       shell: bash
       run: |
-        cp artifacts/update-installer.xml update-feed/update-installer.xml
+        cd update-feed
+        cp ../artifacts/update-installer.xml update-installer.xml
 
         git config user.name "github-actions[bot]"
         git config user.email "github-actions[bot]@users.noreply.github.com"
 
-        git add update-feed/update-installer.xml
+        git add update-installer.xml
 
         if git diff --cached --quiet; then
           echo "No changes to commit"
         else
           git commit -m "Update for ${{ env.VERSION }}"
-          git push origin update-feed
+          git push https://x-access-token:${{ steps.app-token.outputs.token }}@github.com/${{ github.repository }} update-feed
         fi
 
     - name: Create Git Tag
       run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
         git tag -a "v${{ env.VERSION }}" -m "Release v${{ env.VERSION }}"
         git push origin "v${{ env.VERSION }}"
-    
-    - name: Get release notes from main
-      shell: bash
-      run: |
-        git fetch origin main
-        git show origin/main:release-notes/v${{ env.VERSION }}.md > artifacts/release-notes-${{ env.VERSION }}.md
 
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v1
       with:
         tag_name: "v${{ env.VERSION }}"
         name: "CleanMyPosts ${{ env.VERSION }}"
-        body_path: ./artifacts/release-notes-${{ env.VERSION }}.md
+        body_path: ./release-notes/v${{ env.VERSION }}.md
         files: |
           artifacts/installer/CleanMyPosts-Installer-${{ env.VERSION }}-win-x64.exe
       env:

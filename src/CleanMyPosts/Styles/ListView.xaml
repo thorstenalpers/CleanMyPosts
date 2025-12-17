@@ -1,4 +1,5 @@
-﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <!--
         This style contains a control template to show the ListView as a ContentGrid.
@@ -17,7 +18,8 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource Self}}" Value="true">
-                            <Setter TargetName="itemBorder" Property="BorderBrush" Value="{DynamicResource MahApps.Brushes.Accent3}" />
+                            <Setter TargetName="itemBorder" Property="BorderBrush"
+                                    Value="{DynamicResource MahApps.Brushes.Accent3}" />
                         </DataTrigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>

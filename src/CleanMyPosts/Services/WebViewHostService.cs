@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Reflection;
 using System.Windows;
 using CleanMyPosts.Contracts.Services;
 using CleanMyPosts.Models;
@@ -10,12 +11,12 @@ namespace CleanMyPosts.Services;
 
 public class WebViewHostService(ILogger<WebViewHostService> logger) : IWebViewHostService
 {
-    private WebView2 _webView;
     private readonly ILogger<WebViewHostService> _logger = logger;
+    private CoreWebView2Environment _env;
+    private WebView2 _webView;
 
     public event EventHandler<NavigationCompletedEventArgs> NavigationCompleted;
     public event EventHandler<WebMessageReceivedEventArgs> WebMessageReceived;
-    private CoreWebView2Environment _env;
 
     public Uri Source
     {
@@ -39,12 +40,12 @@ public class WebViewHostService(ILogger<WebViewHostService> logger) : IWebViewHo
         {
             var userDataFolder = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                System.Reflection.Assembly.GetExecutingAssembly().GetName().Name,
+                Assembly.GetExecutingAssembly().GetName().Name,
                 "WebView-XPage");
 
             Directory.CreateDirectory(userDataFolder);
 
-            var options = new CoreWebView2EnvironmentOptions(null, language: "en-US");
+            var options = new CoreWebView2EnvironmentOptions(null, "en-US");
             _env = await CoreWebView2Environment.CreateAsync(null, userDataFolder, options);
         }
 

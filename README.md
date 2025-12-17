@@ -95,14 +95,20 @@ You can also run the cleanup directly in your browser using JavaScript snippets:
 
 
 #### Delete Posts  
+
 - URL: [https://x.com/search?q=from%3AUSERNAME](https://x.com/search?q=from%3AUSERNAME)  
+
 - Script: [delete-all-posts.js](https://raw.githubusercontent.com/thorstenalpers/CleanMyPosts/refs/heads/main/src/UI/Scripts/delete-all-posts.js)  
+
 - Run: `DeleteAllPosts(1000, 1000);`
 
 
-#### Delete Reposts  
+#### Delete Reposts 
+
 - URL: [https://x.com/USERNAME](https://x.com/USERNAME)  
+
 - Script: [delete-all-reposts.js](https://raw.githubusercontent.com/thorstenalpers/CleanMyPosts/refs/heads/main/src/UI/Scripts/delete-all-reposts.js)  
+
 - Run: `DeleteAllRepost(1000);`
 
 
@@ -115,6 +121,7 @@ You can also run the cleanup directly in your browser using JavaScript snippets:
 - Run: `DeleteAllReplies('USERNAME', 1000, 5);` // replace USERNAME with yours
 
 #### Unlike Posts  
+
 - URL: [https://x.com/USERNAME/likes](https://x.com/USERNAME/likes)  
 
 - Script: [delete-all-likes.js](https://raw.githubusercontent.com/thorstenalpers/CleanMyPosts/refs/heads/main/src/UI/Scripts/delete-all-likes.js)  

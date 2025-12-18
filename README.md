@@ -83,15 +83,16 @@ You can also run the cleanup directly in your browser using JavaScript snippets:
 
 ### 🔧 Steps:
 
-1. Visit your [X profile](https://x.com/) and note your **username** (e.g., `@USERNAME`).
-2. Open **Developer Tools** in Chrome by pressing `F12`.
-3. Go to the **Sources** tab, then open the **Snippets** panel.
-4. Click **"New Snippet"** and paste the JavaScript code from the provided links.
-5. Save the snippet.
-6. Run the snippet once by right-clicking it and selecting **Run** — this loads the script into the page context.
-7. Switch to the **Console** tab.
-8. Manually execute the appropriate function call (e.g., `DeleteAllPosts(1000, 1000);`) in the console to start the deletion process.
-9. Repeat step 4 with other functions as needed.
+1. Visit your [X profile](https://x.com/) and note your **username** (the part after `x.com/`, without the `@`).
+2. Replace all occurrences of `USERNAME` in URLs and function calls with your actual username.
+3. Open **Developer Tools** in Chrome by pressing `F12`.
+4. Go to the **Sources** tab, then open the **Snippets** panel.
+5. Click **"New Snippet"** and paste the JavaScript code from the provided links.
+6. Save the snippet.
+7. Run the snippet once (right-click → Run) to load the script into the page context.
+8. Switch to the **Console** tab.
+9. Manually execute the appropriate function call (e.g., `DeleteAllPosts(1000, 1000);`) in the console to start the deletion process.
+10. Repeat steps 4–8 for other scripts as needed.
 
 
 #### Delete Posts  

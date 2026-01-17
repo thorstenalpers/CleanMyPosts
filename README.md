@@ -17,7 +17,7 @@
 
 
 ```mermaid
-%%{init: {"flowchart": {"diagramPadding": 150}}}%%
+%%{init: {"flowchart": {"diagramPadding": 110}}}%%
 flowchart LR
     U["User"]
     A["CleanMyPosts App"]

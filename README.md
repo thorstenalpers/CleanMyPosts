@@ -1,4 +1,4 @@
-﻿![Banner](https://raw.githubusercontent.com/thorstenalpers/CleanMyPosts/main/src/CleanMyPosts/Assets/banner.png)
+![Banner](https://raw.githubusercontent.com/thorstenalpers/CleanMyPosts/main/src/CleanMyPosts/Assets/banner.png)
 
 [![Windows](https://img.shields.io/badge/platform-Windows-blue)](#)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE.txt)
@@ -12,14 +12,14 @@
 
 ## 🚀 Features
 
-- Bulk delete **all posts**  
-- Bulk delete **all reposts**  
-- Bulk delete **all replies**  
-- Remove **all likes** with a single click  
-- Unfollow **all accounts** at once  
-- Secure browser automation  
-
+- 👁️ **View** all posts, reposts, replies, likes, and followings
+- 🗑️ **Bulk delete** all posts
+- 🔁 **Bulk delete** all reposts
+- 💬 **Bulk delete** all replies
+- ❤️ **Remove** all likes
+- 👥 **Unfollow** all followings
 ---
+
 
 ## 🛠️ Requirements
 
@@ -77,6 +77,28 @@
 
 ---
 
+
+## 📊 System Overview
+
+CleanMyPosts automates the process of cleaning up your X (formerly Twitter) account by interacting with your account through an embedded browser. The app sends JavaScript commands to perform actions such as deleting posts, reposts, replies, likes, and unfollowing accounts. It retries actions automatically to ensure everything is removed efficiently.
+
+```mermaid
+flowchart LR
+    U["User"]
+    A["CleanMyPosts App"]
+    B["Embedded Browser"]
+    X["X (Twitter) Platform"]
+
+    U -->A
+    A -->|Retry|B
+    A -->|Execute JS Actions|B
+    A -->|Refresh page|B
+    B -->X
+    X -->B
+```
+
+---
+
 ## 🧟‍♂️ Advanced: Run Deletion Scripts Manually
 
 You can also run the cleanup directly in your browser using JavaScript snippets:
@@ -119,7 +141,7 @@ You can also run the cleanup directly in your browser using JavaScript snippets:
 
 - Script: [delete-all-replies.js](https://raw.githubusercontent.com/thorstenalpers/CleanMyPosts/refs/heads/main/src/CleanMyPosts/Scripts/delete-all-replies.js)  
 
-- Run: `DeleteAllReplies('USERNAME', 1000, 5);` // replace USERNAME with yours
+- Run: `DeleteAllReplies('USERNAME', 1000, 5);` // replace **USERNAME** with yours
 
 #### Unlike Posts  
 

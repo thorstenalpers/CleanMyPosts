@@ -10,14 +10,38 @@
 
 ---
 
+
+## ℹ️ How It Works
+
+**CleanMyPosts** automates the process of cleaning up your X (formerly Twitter) account by interacting with your account through an embedded browser. The app sends JavaScript commands to perform actions such as **deleting posts, reposts, replies, likes, and unfollowing accounts**. It retries actions automatically to ensure everything is removed efficiently.
+
+
+```mermaid
+%%{init: {"flowchart": {"diagramPadding": 150}}}%%
+flowchart LR
+    U["User"]
+    A["CleanMyPosts App"]
+    B["Embedded Browser"]
+    X["X (Twitter) Platform"]
+
+    U -->A
+    A -->|Retry|B
+    A -->|Execute JS Actions|B
+    A -->|Refresh page|B
+    B -->X
+    X -->B
+```
+
+---
+
 ## 🚀 Features
 
-- 👁️ **View** all posts, reposts, replies, likes, and followings
+- 🔍 **View** all posts, reposts, replies, likes, and followings
 - 🗑️ **Bulk delete** all posts
-- 🔁 **Bulk delete** all reposts
-- 💬 **Bulk delete** all replies
-- ❤️ **Remove** all likes
-- 👥 **Unfollow** all followings
+- 🗑️ **Bulk delete** all reposts
+- 🗑️ **Bulk delete** all replies
+- 🖤 **Remove** all likes
+- 👤 **Unfollow** all followings
 ---
 
 
@@ -29,6 +53,8 @@
 ---
 
 ## 📦 Installation
+
+Once your system meets the requirements, follow these steps to install **CleanMyPosts**:
 
 1. Download the latest version from [Releases](https://github.com/thorstenalpers/x-tweet-cleaner/releases).
 2. Run the installer. Ignore the warning about the app being from an unverified publisher.
@@ -77,27 +103,6 @@
 
 ---
 
-
-## 📊 System Overview
-
-CleanMyPosts automates the process of cleaning up your X (formerly Twitter) account by interacting with your account through an embedded browser. The app sends JavaScript commands to perform actions such as deleting posts, reposts, replies, likes, and unfollowing accounts. It retries actions automatically to ensure everything is removed efficiently.
-
-```mermaid
-flowchart LR
-    U["User"]
-    A["CleanMyPosts App"]
-    B["Embedded Browser"]
-    X["X (Twitter) Platform"]
-
-    U -->A
-    A -->|Retry|B
-    A -->|Execute JS Actions|B
-    A -->|Refresh page|B
-    B -->X
-    X -->B
-```
-
----
 
 ## 🧟‍♂️ Advanced: Run Deletion Scripts Manually
 
@@ -164,13 +169,13 @@ You can also run the cleanup directly in your browser using JavaScript snippets:
 
 ## 🤝 How to Contribute
 
-We welcome contributions to CleanMyPosts! If you’d like to improve the project, please:
+We welcome contributions to **CleanMyPosts**! If you’d like to improve the project, please:
 
 1. Check out our [contributing guidelines](CONTRIBUTING.md).
 2. Ideally, open an issue before starting work.
 3. Submit a pull request with your changes.
 
-Thank you for helping make CleanMyPosts better!
+Thank you for helping make **CleanMyPosts** better!
 
 
 ---

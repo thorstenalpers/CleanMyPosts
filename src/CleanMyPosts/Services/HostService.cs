@@ -30,6 +30,7 @@ public class HostService : IHostService
                 services.AddSingleton<IPageService, PageService>();
                 services.AddSingleton<INavigationService, NavigationService>();
                 services.AddSingleton<IXScriptService, XScriptService>();
+                services.AddSingleton<IYouTubeScriptService, YouTubeScriptService>();
                 services.AddSingleton<IWebViewHostService, WebViewHostService>();
 
                 services.AddTransient<IShellWindow, ShellWindow>();
@@ -37,6 +38,8 @@ public class HostService : IHostService
                 services.AddSingleton<LogPage>();
                 services.AddSingleton<XViewModel>();
                 services.AddSingleton<XPage>();
+                services.AddSingleton<YouTubeViewModel>();
+                services.AddSingleton<YouTubePage>();
 
                 services.AddTransient<SettingsViewModel>();
                 services.AddTransient<SettingsPage>();

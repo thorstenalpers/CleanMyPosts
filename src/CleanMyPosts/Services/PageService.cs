@@ -15,6 +15,7 @@ public class PageService : IPageService
     {
         _serviceProvider = serviceProvider;
         Configure<XViewModel, XPage>();
+        Configure<YouTubeViewModel, YouTubePage>();
         Configure<LogViewModel, LogPage>();
         Configure<SettingsViewModel, SettingsPage>();
     }

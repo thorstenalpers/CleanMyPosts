@@ -188,4 +188,7 @@
     <data name="SettingsPageShowLogs" xml:space="preserve">
     <value>Show logs for troubleshooting</value>
   </data>
+    <data name="YouTubePage" xml:space="preserve">
+    <value>YouTube</value>
+  </data>
 </root>

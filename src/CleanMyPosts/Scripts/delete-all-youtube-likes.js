@@ -14,10 +14,45 @@ async function DeleteAllYouTubeLikes(waitAfterDelete = 1000, waitBetweenDeleteAt
         console.log(`[${new Date().toLocaleTimeString()}] ${msg}`);
     }
 
+    // Multilingual patterns for "Remove from Liked videos"
+    const removePatterns = [
+        // English
+        'remove from liked',
+        'remove from "liked',
+        // German
+        'aus "videos, die ich mag" entfernen',
+        'videos, die ich mag',
+        'entfernen',
+        // French
+        'supprimer de',
+        "j'aime",
+        'retirer de',
+        // Spanish
+        'eliminar de',
+        'me gusta',
+        'quitar de',
+        // Italian
+        'rimuovi da',
+        'mi piace',
+        // Portuguese
+        'remover de',
+        'gostei',
+        // Dutch
+        'verwijderen uit',
+        // Polish
+        'usuń z',
+        // Russian (transliterated)
+        'удалить из'
+    ];
+
+    function matchesRemovePattern(text) {
+        const lowerText = text.toLowerCase();
+        return removePatterns.some(pattern => lowerText.includes(pattern));
+    }
+
     async function waitForVideo(maxWait = 5000, interval = 300) {
         const start = Date.now();
         while (true) {
-            // Find video items in the liked videos playlist
             const videoItem = document.querySelector('ytd-playlist-video-renderer');
             if (videoItem) {
                 log("[waitForVideo] Found video item.");
@@ -36,8 +71,16 @@ async function DeleteAllYouTubeLikes(waitAfterDelete = 1000, waitBetweenDeleteAt
     }
 
     async function clickMenuButton(videoItem) {
-        // Find and click the ... menu button (three dots)
-        const menuButton = videoItem.querySelector('ytd-menu-renderer button#button, ytd-menu-renderer yt-icon-button#button button, button[aria-label*="Action"], button[aria-label*="Aktion"]');
+        // Find the three-dots menu button (yt-icon-button#button inside ytd-menu-renderer)
+        const menuRenderer = videoItem.querySelector('ytd-menu-renderer');
+        if (!menuRenderer) {
+            log("[clickMenuButton] Menu renderer not found.");
+            return false;
+        }
+
+        const menuButton = menuRenderer.querySelector('yt-icon-button#button button') || 
+                          menuRenderer.querySelector('button#button') ||
+                          menuRenderer.querySelector('button');
         if (!menuButton) {
             log("[clickMenuButton] Menu button not found.");
             return false;
@@ -50,47 +93,64 @@ async function DeleteAllYouTubeLikes(waitAfterDelete = 1000, waitBetweenDeleteAt
     }
 
     async function clickRemoveFromLiked() {
-        const delays = [100, 200, 300, 500, 500, 500, 1000, 1000];
+        const delays = [200, 300, 400, 500, 600, 800, 1000, 1500];
 
         for (let i = 0; i < delays.length; i++) {
             await delay(delays[i]);
 
-            // Find the menu popup and look for "Remove from Liked videos" option
-            const menuItems = document.querySelectorAll('ytd-menu-service-item-renderer, tp-yt-paper-item, yt-formatted-string');
-            for (const item of menuItems) {
-                const text = item.textContent.toLowerCase();
-                // Match various languages:
-                // EN: "Remove from Liked videos"
-                // DE: "Aus \"Videos, die ich mag\" entfernen"
-                // FR: "Supprimer de \"J'aime\""
-                // ES: "Eliminar de \"Me gusta\""
-                if (text.includes('remove from') || 
-                    text.includes('entfernen') || 
-                    text.includes('aus "videos, die ich mag"') ||
-                    text.includes('videos, die ich mag') ||
-                    text.includes('liked videos') ||
-                    text.includes('supprimer de') ||
-                    text.includes("j'aime") ||
-                    text.includes('eliminar de') ||
-                    text.includes('me gusta')) {
-                    
-                    // Click the parent menu item if we found a formatted string
-                    const clickTarget = item.closest('ytd-menu-service-item-renderer') || item;
-                    clickTarget.click();
-                    log("[clickRemoveFromLiked] Clicked remove from liked.");
-                    return true;
+            // Find the popup menu
+            const popup = document.querySelector('ytd-menu-popup-renderer');
+            if (!popup) {
+                log(`[clickRemoveFromLiked] Popup not found (attempt #${i + 1})`);
+                continue;
+            }
+
+            // Find all menu items in the popup
+            const menuItems = popup.querySelectorAll('ytd-menu-service-item-renderer');
+            log(`[clickRemoveFromLiked] Found ${menuItems.length} menu items`);
+
+            for (const menuItem of menuItems) {
+                // Get the text from yt-formatted-string
+                const formattedString = menuItem.querySelector('yt-formatted-string');
+                if (!formattedString) continue;
+
+                const text = formattedString.textContent || '';
+                log(`[clickRemoveFromLiked] Checking menu item: "${text}"`);
+
+                if (matchesRemovePattern(text)) {
+                    // Click the tp-yt-paper-item inside the menu item
+                    const paperItem = menuItem.querySelector('tp-yt-paper-item');
+                    if (paperItem) {
+                        paperItem.click();
+                        log(`[clickRemoveFromLiked] Clicked: "${text}"`);
+                        return true;
+                    } else {
+                        menuItem.click();
+                        log(`[clickRemoveFromLiked] Clicked menu item: "${text}"`);
+                        return true;
+                    }
                 }
             }
         }
 
-        log("[clickRemoveFromLiked] Remove option not found.");
+        log("[clickRemoveFromLiked] Remove option not found in menu.");
         return false;
+    }
+
+    async function closeMenu() {
+        // Press Escape to close any open menu
+        document.body.dispatchEvent(new KeyboardEvent('keydown', { 
+            key: 'Escape', 
+            code: 'Escape',
+            keyCode: 27, 
+            bubbles: true 
+        }));
+        await delay(200);
     }
 
     async function unlikeVideo() {
         log("[unlikeVideo] Searching for video to unlike...");
 
-        // Find the first video item
         const videoItem = document.querySelector('ytd-playlist-video-renderer');
         if (!videoItem) {
             log("[unlikeVideo] No video item found.");
@@ -104,16 +164,14 @@ async function DeleteAllYouTubeLikes(waitAfterDelete = 1000, waitBetweenDeleteAt
 
         // Click "Remove from Liked videos"
         if (!await clickRemoveFromLiked()) {
-            // Try pressing Escape to close menu and retry
-            document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', keyCode: 27 }));
-            await delay(300);
+            await closeMenu();
             return false;
         }
 
         await delay(500);
 
         // Wait for video to be removed from list
-        const waitDelays = [100, 200, 300, 500, 500, 1000];
+        const waitDelays = [200, 300, 500, 700, 1000, 1500];
         for (let i = 0; i < waitDelays.length; i++) {
             await delay(waitDelays[i]);
             const stillExists = document.contains(videoItem);
@@ -142,7 +200,6 @@ async function DeleteAllYouTubeLikes(waitAfterDelete = 1000, waitBetweenDeleteAt
             failures++;
             log(`[DeleteAllYouTubeLikes] No video found (failure #${failures}). Scrolling...`);
 
-            // Try scrolling down to load more items
             const prevScroll = window.scrollY;
             window.scrollBy(0, 500);
             await delay(500);
@@ -167,6 +224,7 @@ async function DeleteAllYouTubeLikes(waitAfterDelete = 1000, waitBetweenDeleteAt
         } else {
             failures++;
             log(`[DeleteAllYouTubeLikes] Failed to unlike video #${videoNumber} (failure #${failures})`);
+            await closeMenu();
             await delay(500);
         }
     }

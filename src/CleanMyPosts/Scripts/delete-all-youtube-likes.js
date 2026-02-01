@@ -334,5 +334,13 @@ async function DeleteAllYouTubeLikes(waitAfterDelete = 1000, waitBetweenDeleteAt
     }
 
     log(`[DeleteAllYouTubeLikes] Unlike finished. Total unliked: ${window.deletedYouTubeLikes}`);
+    
+    // Reload page to refresh the list
+    if (window.deletedYouTubeLikes > 0) {
+        log("[DeleteAllYouTubeLikes] Reloading page...");
+        await delay(500);
+        window.location.reload();
+    }
+    
     window.youtubeLikesDeletionDone = true;
 }

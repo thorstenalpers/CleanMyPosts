@@ -16,6 +16,7 @@ public class YouTubeScriptServiceTests
     private readonly YouTubeScriptService _service;
     private readonly Mock<IUserSettingsService> _userSettingsServiceMock = new();
     private readonly Mock<IWebViewHostService> _webViewHostServiceMock = new();
+    private readonly AppConfig _appConfig = new();
 
     public YouTubeScriptServiceTests()
     {
@@ -28,10 +29,10 @@ public class YouTubeScriptServiceTests
         _webViewHostServiceMock.Setup(x => x.ExecuteScriptAsync("document.readyState"))
             .ReturnsAsync("\"complete\"");
 
-        // Setup ExecuteScriptAsync for channel handle retrieval (default)
+        // Setup ExecuteScriptAsync for login check (default - logged in)
         _webViewHostServiceMock
-            .Setup(x => x.ExecuteScriptAsync(It.Is<string>(s => s.Contains("channel-handle") || s.Contains("/@"))))
-            .ReturnsAsync("\"@testchannel\"");
+            .Setup(x => x.ExecuteScriptAsync(It.Is<string>(s => s.Contains("listitem"))))
+            .ReturnsAsync("\"logged_in\"");
 
         // Setup dummy for Reload (do nothing)
         _webViewHostServiceMock.Setup(x => x.Reload());
@@ -43,42 +44,51 @@ public class YouTubeScriptServiceTests
             _loggerMock.Object,
             _webViewHostServiceMock.Object,
             _userSettingsServiceMock.Object,
-            _fileServiceMock.Object
+            _fileServiceMock.Object,
+            _appConfig
         );
-
-        // Pre-set _channelHandle to "@testchannel" to avoid fetching it from JS during most tests
-        typeof(YouTubeScriptService).GetField("_channelHandle", BindingFlags.NonPublic | BindingFlags.Instance)
-            ?.SetValue(_service, "@testchannel");
     }
 
     [Fact]
-    public async Task ShowPostsAsync_NavigatesToCommunityUrl()
+    public async Task ShowPostsAsync_NavigatesToGoogleMyActivityUrl()
     {
         await _service.ShowPostsAsync();
 
         var source = _webViewHostServiceMock.Object.Source?.ToString();
         Assert.NotNull(source);
-        Assert.Contains("https://www.youtube.com/@testchannel/community", source);
+        Assert.Contains("myactivity.google.com", source);
+        Assert.Contains("youtube_comments", source);
     }
 
     [Fact]
-    public async Task GetChannelHandleAsync_ReturnsCleanChannelHandle()
+    public async Task GetChannelHandleAsync_ReturnsLoggedInWhenActivityItemsExist()
     {
-        var fakeJsResult = "\"\\\"@testchannel\\\"\""; // double quoted JSON string
         _webViewHostServiceMock
-            .Setup(x => x.ExecuteScriptAsync(It.Is<string>(s => s.Contains("channel-handle") || s.Contains("/@"))))
-            .ReturnsAsync(fakeJsResult);
+            .Setup(x => x.ExecuteScriptAsync(It.Is<string>(s => s.Contains("listitem"))))
+            .ReturnsAsync("\"logged_in\"");
 
-        var handle = await _service.GetChannelHandleAsync();
+        var result = await _service.GetChannelHandleAsync();
 
-        Assert.Equal("@testchannel", handle);
+        Assert.Equal("logged_in", result);
+    }
+
+    [Fact]
+    public async Task GetChannelHandleAsync_ReturnsEmptyWhenNotLoggedIn()
+    {
+        _webViewHostServiceMock
+            .Setup(x => x.ExecuteScriptAsync(It.Is<string>(s => s.Contains("listitem"))))
+            .ReturnsAsync("\"\"");
+
+        var result = await _service.GetChannelHandleAsync();
+
+        Assert.Empty(result);
     }
 
     [Fact]
     public async Task NavigateAsync_SetsSourceWhenUrlIsDifferent()
     {
-        var url = new Uri("https://www.youtube.com/@differentchannel/community");
-        _webViewHostServiceMock.Object.Source = new Uri("https://www.youtube.com/@testchannel/community");
+        var url = new Uri("https://myactivity.google.com/page?page=youtube_comments");
+        _webViewHostServiceMock.Object.Source = new Uri("https://google.com");
 
         var navigateMethod = _service.GetType()
             .GetMethod("NavigateAsync", BindingFlags.NonPublic | BindingFlags.Instance);
@@ -90,47 +100,26 @@ public class YouTubeScriptServiceTests
     }
 
     [Fact]
-    public async Task EnsureChannelHandleAsync_UpdatesChannelHandleIfChanged()
+    public async Task IsNoCommentsPresentAsync_ReturnsTrueWhenNoDeleteButtonsExist()
     {
-        typeof(YouTubeScriptService).GetField("_channelHandle", BindingFlags.NonPublic | BindingFlags.Instance)
-            ?.SetValue(_service, "@oldchannel");
-
-        _webViewHostServiceMock
-            .Setup(x => x.ExecuteScriptAsync(It.Is<string>(s => s.Contains("channel-handle") || s.Contains("/@"))))
-            .ReturnsAsync("\"@newchannel\"");
-
-        var method = _service.GetType()
-            .GetMethod("EnsureChannelHandleAsync", BindingFlags.NonPublic | BindingFlags.Instance);
-        await (Task)method.Invoke(_service, null);
-
-        var updatedChannelHandle = typeof(YouTubeScriptService)
-            .GetField("_channelHandle", BindingFlags.NonPublic | BindingFlags.Instance)
-            ?.GetValue(_service);
-
-        Assert.Equal("@newchannel", updatedChannelHandle);
-    }
-
-    [Fact]
-    public async Task IsNoPostsPresentAsync_ReturnsTrueWhenNoPostsExist()
-    {
-        _webViewHostServiceMock.Setup(x => x.ExecuteScriptAsync(It.Is<string>(s => s.Contains("ytd-backstage-post-thread-renderer"))))
+        _webViewHostServiceMock.Setup(x => x.ExecuteScriptAsync(It.Is<string>(s => s.Contains("Delete activity item"))))
             .ReturnsAsync("true");
 
         var method = _service.GetType()
-            .GetMethod("IsNoPostsPresentAsync", BindingFlags.NonPublic | BindingFlags.Instance);
+            .GetMethod("IsNoCommentsPresentAsync", BindingFlags.NonPublic | BindingFlags.Instance);
         var result = await (Task<bool>)method.Invoke(_service, null);
 
         Assert.True(result);
     }
 
     [Fact]
-    public async Task IsNoPostsPresentAsync_ReturnsFalseWhenPostsExist()
+    public async Task IsNoCommentsPresentAsync_ReturnsFalseWhenDeleteButtonsExist()
     {
-        _webViewHostServiceMock.Setup(x => x.ExecuteScriptAsync(It.Is<string>(s => s.Contains("ytd-backstage-post-thread-renderer"))))
+        _webViewHostServiceMock.Setup(x => x.ExecuteScriptAsync(It.Is<string>(s => s.Contains("Delete activity item"))))
             .ReturnsAsync("false");
 
         var method = _service.GetType()
-            .GetMethod("IsNoPostsPresentAsync", BindingFlags.NonPublic | BindingFlags.Instance);
+            .GetMethod("IsNoCommentsPresentAsync", BindingFlags.NonPublic | BindingFlags.Instance);
         var result = await (Task<bool>)method.Invoke(_service, null);
 
         Assert.False(result);
@@ -150,16 +139,16 @@ public class YouTubeScriptServiceTests
     }
 
     [Fact]
-    public async Task DeletePostsAsync_NavigatesToCommunityUrl()
+    public async Task DeletePostsAsync_NavigatesToGoogleMyActivityUrl()
     {
-        // Setup to simulate no posts present (to exit loop immediately)
-        _webViewHostServiceMock.Setup(x => x.ExecuteScriptAsync(It.Is<string>(s => s.Contains("ytd-backstage-post-thread-renderer"))))
+        // Setup to simulate no comments present (to exit loop immediately)
+        _webViewHostServiceMock.Setup(x => x.ExecuteScriptAsync(It.Is<string>(s => s.Contains("Delete activity item"))))
             .ReturnsAsync("true");
 
         await _service.DeletePostsAsync();
 
         var source = _webViewHostServiceMock.Object.Source?.ToString();
         Assert.NotNull(source);
-        Assert.Contains("https://www.youtube.com/@testchannel/community", source);
+        Assert.Contains("myactivity.google.com", source);
     }
 }

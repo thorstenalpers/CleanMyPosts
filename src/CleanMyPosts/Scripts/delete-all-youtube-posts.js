@@ -7,18 +7,19 @@ async function DeleteAllYouTubePosts(waitAfterDelete, waitBetweenDeleteAttempts)
         console.log(`[${new Date().toLocaleTimeString()}] ${msg}`);
     }
 
-    async function waitForPost(maxWait = 5000, interval = 300) {
+    async function waitForDeleteButton(maxWait = 5000, interval = 300) {
         const start = Date.now();
         while (true) {
-            const post = document.querySelector('ytd-backstage-post-thread-renderer');
-            if (post) {
-                log("[waitForPost] Found community post.");
+            // Find X buttons on Google My Activity page for YouTube comments
+            const deleteButton = document.querySelector('button[aria-label^="Delete activity item"]');
+            if (deleteButton) {
+                log("[waitForDeleteButton] Found delete button.");
                 return true;
             }
 
             const elapsed = Date.now() - start;
             if (elapsed > maxWait) {
-                log(`[waitForPost] Timeout after ${elapsed}ms.`);
+                log(`[waitForDeleteButton] Timeout after ${elapsed}ms.`);
                 return false;
             }
 
@@ -27,142 +28,87 @@ async function DeleteAllYouTubePosts(waitAfterDelete, waitBetweenDeleteAttempts)
         }
     }
 
-    async function clickDeleteOnPost() {
-        log("[clickDeleteOnPost] Searching for post menu button...");
+    async function clickDeleteButton() {
+        log("[clickDeleteButton] Searching for delete button...");
         
-        const post = document.querySelector('ytd-backstage-post-thread-renderer');
-        if (!post) {
-            log("[clickDeleteOnPost] No post found.");
+        // Find the X button (delete button) on Google My Activity page
+        const deleteButton = document.querySelector('button[aria-label^="Delete activity item"]');
+        if (!deleteButton) {
+            log("[clickDeleteButton] Delete button not found.");
             return false;
         }
 
-        const menuButton = post.querySelector('button[aria-label="Action menu"], #menu-button button, yt-icon-button#menu-button');
-        if (!menuButton) {
-            log("[clickDeleteOnPost] Menu button not found on post.");
-            return false;
-        }
-
-        menuButton.click();
+        deleteButton.click();
+        log("[clickDeleteButton] Clicked delete button.");
         await delay(waitBetweenDeleteAttempts);
 
-        const delays = [100, 200, 300, 500, 500, 500, 500, 500, 1000, 1000];
+        // Wait for the item to be removed from DOM
+        const delays = [100, 200, 300, 500, 500, 500, 1000];
 
-        async function tryClickDelete(attempt = 0) {
-            if (attempt >= delays.length) {
-                log("[tryClickDelete] Delete option not found after retries.");
-                return false;
+        for (let i = 0; i < delays.length; i++) {
+            await delay(delays[i]);
+            
+            // Check if item was deleted (button should no longer exist or be in removing state)
+            const stillExists = document.contains(deleteButton);
+            if (!stillExists) {
+                log("[clickDeleteButton] Item deleted successfully.");
+                return true;
             }
-
-            await delay(delays[attempt]);
-
-            const menuItems = document.querySelectorAll('tp-yt-paper-listbox ytd-menu-service-item-renderer, ytd-menu-popup-renderer ytd-menu-service-item-renderer');
-            for (const item of menuItems) {
-                const text = item.textContent.toLowerCase();
-                if (text.includes('delete') || text.includes('löschen') || text.includes('supprimer') || text.includes('eliminar')) {
-                    item.click();
-                    log("[tryClickDelete] Clicked delete option.");
-                    return true;
-                }
-            }
-
-            const paperItems = document.querySelectorAll('tp-yt-paper-item');
-            for (const item of paperItems) {
-                const text = item.textContent.toLowerCase();
-                if (text.includes('delete') || text.includes('löschen') || text.includes('supprimer') || text.includes('eliminar')) {
-                    item.click();
-                    log("[tryClickDelete] Clicked delete option (paper-item).");
-                    return true;
-                }
-            }
-
-            log(`[tryClickDelete] Delete option not found (attempt #${attempt + 1})`);
-            return tryClickDelete(attempt + 1);
         }
 
-        async function confirmDelete(attempt = 0) {
-            if (attempt >= delays.length) {
-                log("[confirmDelete] Confirm button not found after retries.");
-                return false;
-            }
-
-            await delay(delays[attempt]);
-
-            const confirmButtons = document.querySelectorAll('tp-yt-paper-button, yt-button-renderer button, #confirm-button button');
-            for (const btn of confirmButtons) {
-                const text = btn.textContent.toLowerCase();
-                if (text.includes('delete') || text.includes('löschen') || text.includes('supprimer') || text.includes('eliminar') || text.includes('confirm')) {
-                    if (btn.offsetParent !== null) {
-                        btn.click();
-                        log(`[confirmDelete] Clicked confirm (attempt #${attempt + 1})`);
-                        return true;
-                    }
-                }
-            }
-
-            const dialogButtons = document.querySelectorAll('ytd-button-renderer button, tp-yt-paper-dialog button');
-            for (const btn of dialogButtons) {
-                const text = btn.textContent.toLowerCase();
-                if (text.includes('delete') || text.includes('löschen') || text.includes('supprimer') || text.includes('eliminar')) {
-                    if (btn.offsetParent !== null) {
-                        btn.click();
-                        log(`[confirmDelete] Clicked confirm dialog button (attempt #${attempt + 1})`);
-                        return true;
-                    }
-                }
-            }
-
-            log(`[confirmDelete] Confirm button not visible (attempt #${attempt + 1})`);
-            return confirmDelete(attempt + 1);
-        }
-
-        const deleteClicked = await tryClickDelete();
-        if (!deleteClicked) return false;
-
-        const confirmed = await confirmDelete();
-        if (!confirmed) return false;
-
-        log("[clickDeleteOnPost] Post deleted.");
+        log("[clickDeleteButton] Item may have been deleted.");
         return true;
     }
 
     window.youtubePostsDeletionDone = false;
     window.deletedYouTubePosts = 0;
-    log("[DeleteAllYouTubePosts] Starting deletion loop...");
+    log("[DeleteAllYouTubePosts] Starting deletion loop on Google My Activity...");
 
     let failures = 0;
     const maxFailures = 3;
-    let postNumber = 1;
+    let commentNumber = 1;
 
     while (failures < maxFailures) {
-        const found = await waitForPost(5000, 300);
+        const found = await waitForDeleteButton(5000, 300);
         if (!found) {
             failures++;
-            log(`[DeleteAllYouTubePosts] No post found (failure #${failures}). Scrolling up...`);
+            log(`[DeleteAllYouTubePosts] No delete button found (failure #${failures}). Scrolling...`);
 
+            // Try scrolling down to load more items
             const prevScroll = window.scrollY;
-            window.scrollTo(0, 0);
+            window.scrollBy(0, 500);
             await delay(500);
 
+            // Also try clicking "Load more" button if present
+            const loadMoreBtn = document.querySelector('button[jsname="T8gEfd"]');
+            if (loadMoreBtn && loadMoreBtn.offsetParent !== null) {
+                loadMoreBtn.click();
+                log("[DeleteAllYouTubePosts] Clicked 'Load more' button.");
+                await delay(1000);
+                failures = 0;
+                continue;
+            }
+
             if (window.scrollY === prevScroll) {
-                log("[DeleteAllYouTubePosts] No scroll change. Assuming no more posts.");
+                log("[DeleteAllYouTubePosts] No scroll change. Assuming no more comments.");
                 break;
             }
 
             continue;
         }
 
-        log(`[DeleteAllYouTubePosts] Deleting post #${postNumber}...`);
-        const success = await clickDeleteOnPost();
+        log(`[DeleteAllYouTubePosts] Deleting comment #${commentNumber}...`);
+        const success = await clickDeleteButton();
 
         if (success) {
             window.deletedYouTubePosts++;
-            log(`[DeleteAllYouTubePosts] Deleted post #${postNumber}`);
-            postNumber++;
+            log(`[DeleteAllYouTubePosts] Deleted comment #${commentNumber}`);
+            commentNumber++;
             failures = 0;
             await delay(waitAfterDelete);
         } else {
             failures++;
-            log(`[DeleteAllYouTubePosts] Failed to delete post #${postNumber} (failure #${failures})`);
+            log(`[DeleteAllYouTubePosts] Failed to delete comment #${commentNumber} (failure #${failures})`);
             await delay(500);
         }
     }

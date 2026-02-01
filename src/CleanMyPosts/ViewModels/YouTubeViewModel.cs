@@ -32,7 +32,7 @@ public partial class YouTubeViewModel : ObservableObject
     [ObservableProperty] private string _notificationMessage;
 
     private OverlayPleaseWaitWindow _overlayPleaseWaitWindow;
-    private string _channelHandle;
+    private bool _isLoggedIn;
 
     public YouTubeViewModel(ILogger<YouTubeViewModel> logger,
         IUserSettingsService userSettingsService,
@@ -118,7 +118,7 @@ public partial class YouTubeViewModel : ObservableObject
 
             await _webViewHostService.ExecuteScriptAsync(jsLoggerPatch);
 
-            if (!string.IsNullOrEmpty(_channelHandle))
+            if (_isLoggedIn)
             {
                 return;
             }
@@ -129,11 +129,12 @@ public partial class YouTubeViewModel : ObservableObject
             var attempts = 0;
             while (attempts < maxRetries)
             {
-                _channelHandle = await _youTubeScriptService.GetChannelHandleAsync();
-                if (!string.IsNullOrEmpty(_channelHandle))
+                var loginStatus = await _youTubeScriptService.GetChannelHandleAsync();
+                if (!string.IsNullOrEmpty(loginStatus))
                 {
-                    _logger.LogInformation("User logged in to YouTube.");
+                    _logger.LogInformation("User logged in to Google My Activity.");
                     AreButtonsEnabled = true;
+                    _isLoggedIn = true;
                     return;
                 }
 
@@ -141,7 +142,7 @@ public partial class YouTubeViewModel : ObservableObject
                 await Task.Delay(delayMs);
             }
 
-            _logger.LogInformation("User not logged in to YouTube.");
+            _logger.LogInformation("User not logged in to Google My Activity.");
         }
     }
 
@@ -200,20 +201,20 @@ public partial class YouTubeViewModel : ObservableObject
                 var result = await _dialogCoordinator.ShowMessageAsync(
                     this,
                     "Confirm Deletion",
-                    "Are you sure you want to delete all YouTube posts?",
+                    "Are you sure you want to delete all YouTube comments?",
                     MessageDialogStyle.AffirmativeAndNegative);
                 _webViewHostService.Hide(false);
 
                 if (result == MessageDialogResult.Affirmative)
                 {
                     var deletedItems = await _youTubeScriptService.DeletePostsAsync();
-                    await ShowNotificationAsync($"{deletedItems} post(s) cleaned.", TimeSpan.FromSeconds(3));
+                    await ShowNotificationAsync($"{deletedItems} comment(s) cleaned.", TimeSpan.FromSeconds(3));
                 }
             }
             else
             {
                 var deletedItems = await _youTubeScriptService.DeletePostsAsync();
-                await ShowNotificationAsync($"{deletedItems} post(s) cleaned.", TimeSpan.FromSeconds(3));
+                await ShowNotificationAsync($"{deletedItems} comment(s) cleaned.", TimeSpan.FromSeconds(3));
             }
         }
         finally

@@ -49,7 +49,7 @@
                         VerticalAlignment="Top"
                         Orientation="Horizontal">
 
-                        <!--  POSTS GROUP  -->
+                        <!--  COMMENTS GROUP  -->
                         <Border
                             Margin="0,0,10,0"
                             Padding="8"
@@ -61,7 +61,7 @@
                                     Margin="0,0,0,6"
                                     FontSize="14"
                                     FontWeight="Bold"
-                                    Text="Community Posts" />
+                                    Text="Comments" />
                                 <UniformGrid Columns="2" Rows="1">
                                     <Button
                                         MinWidth="80"
@@ -69,7 +69,7 @@
                                         Padding="6,3"
                                         Command="{Binding ShowPostsCommand}"
                                         IsEnabled="{Binding AreButtonsEnabled}"
-                                        ToolTip="View Community Posts">
+                                        ToolTip="View YouTube Comments">
                                         <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
                                             <iconPacks:PackIconMaterial
                                                 Width="16"
@@ -87,7 +87,7 @@
                                         Padding="6,3"
                                         Command="{Binding DeletePostsCommand}"
                                         IsEnabled="{Binding AreButtonsEnabled}"
-                                        ToolTip="Delete Community Posts">
+                                        ToolTip="Delete YouTube Comments">
                                         <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
                                             <iconPacks:PackIconMaterial
                                                 Width="16"

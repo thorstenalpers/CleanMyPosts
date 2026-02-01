@@ -1,7 +1,6 @@
 using System.IO;
-using Ardalis.GuardClauses;
 using CleanMyPosts.Contracts.Services;
-using CleanMyPosts.Helpers;
+using CleanMyPosts.Models;
 using Microsoft.Extensions.Logging;
 
 namespace CleanMyPosts.Services;
@@ -10,33 +9,28 @@ public class YouTubeScriptService(
     ILogger<YouTubeScriptService> logger,
     IWebViewHostService webViewHostService,
     IUserSettingsService userSettingsService,
-    IFileService fileService) : IYouTubeScriptService
+    IFileService fileService,
+    AppConfig appConfig) : IYouTubeScriptService
 {
     private readonly IFileService _fileService = fileService;
     private readonly ILogger<YouTubeScriptService> _logger = logger;
     private readonly IUserSettingsService _userSettingsService = userSettingsService;
     private readonly IWebViewHostService _webViewHostService = webViewHostService;
-    private string _channelHandle;
+    private readonly string _youTubeCommentsUrl = appConfig.YouTubeBaseUrl;
+    private bool _isLoggedIn;
 
     public async Task ShowPostsAsync()
     {
-        await EnsureChannelHandleAsync();
-        Guard.Against.Null(_channelHandle);
-
-        var url = new Uri($"https://www.youtube.com/{_channelHandle}/community");
+        var url = new Uri(_youTubeCommentsUrl);
         await NavigateAsync(url);
     }
 
     public async Task<int> DeletePostsAsync()
     {
-        await EnsureChannelHandleAsync();
-        Guard.Against.Null(_channelHandle);
-
-        var url = $"https://www.youtube.com/{_channelHandle}/community";
         var timeout = _userSettingsService.GetTimeoutSettings();
 
         return await RunDeleteScriptAsync(
-            url,
+            _youTubeCommentsUrl,
             "delete-all-youtube-posts.js",
             "youtubePostsDeletionDone",
             "deletedYouTubePosts",
@@ -49,38 +43,37 @@ public class YouTubeScriptService(
     {
         await WaitForDocumentReadyAsync();
 
+        // Check if user is logged in by looking for activity items on Google My Activity
         const string jsScript = @"
             (() => {
-              const el = document.querySelector('a#endpoint[href*=""/@""]');
-              if (el) {
-                const href = el.getAttribute('href');
-                const match = href.match(/@[\w-]+/);
-                return match ? match[0] : '';
+              const activityItems = document.querySelectorAll('div[role=""listitem""]');
+              if (activityItems.length > 0) {
+                return 'logged_in';
               }
-              const channelLink = document.querySelector('yt-formatted-string#channel-handle');
-              if (channelLink) {
-                return channelLink.textContent.trim();
+              const signInButton = document.querySelector('a[href*=""accounts.google.com""]');
+              if (signInButton) {
+                return '';
               }
-              return '';
+              return 'unknown';
             })()";
 
-        var handle = await _webViewHostService.ExecuteScriptAsync(jsScript);
-        _channelHandle = Helper.CleanJsonResult(handle);
-        return _channelHandle;
+        var result = await _webViewHostService.ExecuteScriptAsync(jsScript);
+        _isLoggedIn = result?.Contains("logged_in") == true;
+        return _isLoggedIn ? "logged_in" : string.Empty;
     }
 
-    private async Task<bool> IsNoPostsPresentAsync()
+    private async Task<bool> IsNoCommentsPresentAsync()
     {
         var script = @"
         (function() {
-            const posts = document.querySelectorAll('ytd-backstage-post-thread-renderer');
-            return posts.length === 0;
+            const deleteButtons = document.querySelectorAll('button[aria-label^=""Delete activity item""]');
+            return deleteButtons.length === 0;
         })();";
 
         var result = await _webViewHostService.ExecuteScriptAsync(script) == "true";
         if (result)
         {
-            _logger.LogInformation("No posts present, nothing more to delete.");
+            _logger.LogInformation("No comments present, nothing more to delete.");
         }
 
         return result;
@@ -115,43 +108,6 @@ public class YouTubeScriptService(
 
         _logger.LogWarning("Timed out waiting for document.readyState = complete.");
         return false;
-    }
-
-    private async Task EnsureChannelHandleAsync()
-    {
-        if (string.IsNullOrEmpty(_channelHandle))
-        {
-            await GetChannelHandleAsync();
-        }
-
-        const string jsScript = @"
-            (() => {
-              const el = document.querySelector('a#endpoint[href*=""/@""]');
-              if (el) {
-                const href = el.getAttribute('href');
-                const match = href.match(/@[\w-]+/);
-                return match ? match[0] : '';
-              }
-              const channelLink = document.querySelector('yt-formatted-string#channel-handle');
-              if (channelLink) {
-                return channelLink.textContent.trim();
-              }
-              return '';
-            })()";
-
-        var handle = await _webViewHostService.ExecuteScriptAsync(jsScript);
-        if (string.IsNullOrEmpty(handle))
-        {
-            _logger.LogInformation("Channel handle is null {Handle}, possibly because HTML is not fully loaded", handle);
-            return;
-        }
-
-        var newHandle = Helper.CleanJsonResult(handle);
-        if (_channelHandle != newHandle)
-        {
-            _logger.LogInformation("Channel handle has changed from {OldHandle} to {NewHandle}", _channelHandle, newHandle);
-            _channelHandle = newHandle;
-        }
     }
 
     private async Task<bool> NavigateAsync(Uri url)
@@ -189,7 +145,7 @@ public class YouTubeScriptService(
 
         int retryCount = 0, deletedItems = 0;
 
-        while (!await IsNoPostsPresentAsync() && retryCount++ < 3)
+        while (!await IsNoCommentsPresentAsync() && retryCount++ < 3)
         {
             try
             {

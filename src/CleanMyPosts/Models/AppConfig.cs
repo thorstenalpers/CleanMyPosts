@@ -8,6 +8,7 @@ public class AppConfig
     public string LightStyleUri { get; init; } = "pack://application:,,,/Styles/Themes/HC.Light.Blue.xaml";
 
     public string XBaseUrl { get; init; } = "https://x.com";
+    public string YouTubeBaseUrl { get; init; } = "https://www.youtube.com";
     public string ReportIssueUrl { get; init; } = "https://github.com/thorstenalpers/CleanMyPosts/issues";
     public string GitRepoUrl { get; init; } = "https://github.com/thorstenalpers/CleanMyPosts";
 }

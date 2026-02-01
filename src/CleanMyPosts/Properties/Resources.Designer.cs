@@ -257,5 +257,14 @@ namespace CleanMyPosts.Properties {
                 return ResourceManager.GetString("XPage", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to YouTube.
+        /// </summary>
+        public static string YouTubePage {
+            get {
+                return ResourceManager.GetString("YouTubePage", resourceCulture);
+            }
+        }
     }
 }

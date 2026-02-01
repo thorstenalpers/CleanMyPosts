@@ -16,16 +16,16 @@ public class YouTubeScriptService(
     private readonly ILogger<YouTubeScriptService> _logger = logger;
     private readonly IUserSettingsService _userSettingsService = userSettingsService;
     private readonly IWebViewHostService _webViewHostService = webViewHostService;
-    private readonly string _youTubeCommentsUrl = appConfig.YouTubeBaseUrl;
-    private bool _isLoggedIn;
+    private readonly string _youTubeCommentsUrl = appConfig.YouTubeCommentsUrl;
+    private readonly string _youTubeLikedVideosUrl = appConfig.YouTubeLikedVideosUrl;
 
-    public async Task ShowPostsAsync()
+    public async Task ShowCommentsAsync()
     {
         var url = new Uri(_youTubeCommentsUrl);
         await NavigateAsync(url);
     }
 
-    public async Task<int> DeletePostsAsync()
+    public async Task<int> DeleteCommentsAsync()
     {
         var timeout = _userSettingsService.GetTimeoutSettings();
 
@@ -35,53 +35,78 @@ public class YouTubeScriptService(
             "youtubePostsDeletionDone",
             "deletedYouTubePosts",
             "DeleteAllYouTubePosts",
+            IsNoCommentsPresentAsync,
             timeout.WaitAfterDelete, timeout.WaitBetweenRetryDeleteAttempts
         );
     }
 
-    public async Task<string> GetChannelHandleAsync()
+    public async Task ShowLikesAsync()
+    {
+        var url = new Uri(_youTubeLikedVideosUrl);
+        await NavigateAsync(url);
+    }
+
+    public async Task<int> DeleteLikesAsync()
+    {
+        var timeout = _userSettingsService.GetTimeoutSettings();
+
+        return await RunDeleteScriptAsync(
+            _youTubeLikedVideosUrl,
+            "delete-all-youtube-likes.js",
+            "youtubeLikesDeletionDone",
+            "deletedYouTubeLikes",
+            "DeleteAllYouTubeLikes",
+            IsNoLikedVideosPresentAsync,
+            timeout.WaitAfterDelete, timeout.WaitBetweenRetryDeleteAttempts
+        );
+    }
+
+    public async Task<string> GetLoginStatusAsync()
     {
         await WaitForDocumentReadyAsync();
 
-        // Check if user is logged in by looking for various indicators on Google My Activity
+        // Check if user is logged in by looking for various indicators
         const string jsScript = @"
             (() => {
-              // Check for activity items (comments list)
+              // Check for YouTube avatar (logged in)
+              const avatar = document.querySelector('button#avatar-btn img, yt-img-shadow#avatar img');
+              if (avatar && avatar.src) {
+                return 'logged_in';
+              }
+              
+              // Check for sign-in button on YouTube (indicates NOT logged in)
+              const ytSignIn = document.querySelector('a[href*=""accounts.google.com""], ytd-button-renderer a[href*=""ServiceLogin""]');
+              if (ytSignIn) {
+                return '';
+              }
+              
+              // Check for Google My Activity indicators
               const activityItems = document.querySelectorAll('div[role=""listitem""]');
               if (activityItems.length > 0) {
                 return 'logged_in';
               }
               
-              // Check for delete buttons (X buttons)
               const deleteButtons = document.querySelectorAll('button[aria-label^=""Delete activity item""]');
               if (deleteButtons.length > 0) {
                 return 'logged_in';
               }
               
-              // Check for the activity collection header
               const activityHeader = document.querySelector('[data-activity-collection-name]');
               if (activityHeader) {
                 return 'logged_in';
               }
               
-              // Check for Google account avatar/profile picture (indicates logged in)
-              const profilePic = document.querySelector('img[data-noaft][data-atf]');
-              if (profilePic && profilePic.src && profilePic.src.includes('googleusercontent')) {
+              // Check for liked videos playlist content
+              const playlistVideos = document.querySelectorAll('ytd-playlist-video-renderer');
+              if (playlistVideos.length > 0) {
                 return 'logged_in';
-              }
-              
-              // Check for sign-in button (indicates NOT logged in)
-              const signInButton = document.querySelector('a[href*=""accounts.google.com/ServiceLogin""]');
-              if (signInButton) {
-                return '';
               }
               
               return 'unknown';
             })()";
 
         var result = await _webViewHostService.ExecuteScriptAsync(jsScript);
-        _isLoggedIn = result?.Contains("logged_in") == true;
-        return _isLoggedIn ? "logged_in" : string.Empty;
+        return result?.Contains("logged_in") == true ? "logged_in" : string.Empty;
     }
 
     private async Task<bool> IsNoCommentsPresentAsync()
@@ -96,6 +121,23 @@ public class YouTubeScriptService(
         if (result)
         {
             _logger.LogInformation("No comments present, nothing more to delete.");
+        }
+
+        return result;
+    }
+
+    private async Task<bool> IsNoLikedVideosPresentAsync()
+    {
+        var script = @"
+        (function() {
+            const videos = document.querySelectorAll('ytd-playlist-video-renderer');
+            return videos.length === 0;
+        })();";
+
+        var result = await _webViewHostService.ExecuteScriptAsync(script) == "true";
+        if (result)
+        {
+            _logger.LogInformation("No liked videos present, nothing more to unlike.");
         }
 
         return result;
@@ -157,7 +199,7 @@ public class YouTubeScriptService(
     }
 
     private async Task<int> RunDeleteScriptAsync(string url, string scriptName, string scriptDoneVar,
-        string deletedVar, string functionName, params object[] args)
+        string deletedVar, string functionName, Func<Task<bool>> isEmptyCheck, params object[] args)
     {
         var waitBetweenRetryDeleteAttempts = _userSettingsService.GetTimeoutSettings().WaitBetweenRetryDeleteAttempts;
         if (!await NavigateAsync(new Uri(url)))
@@ -167,7 +209,7 @@ public class YouTubeScriptService(
 
         int retryCount = 0, deletedItems = 0;
 
-        while (!await IsNoCommentsPresentAsync() && retryCount++ < 3)
+        while (!await isEmptyCheck() && retryCount++ < 3)
         {
             try
             {

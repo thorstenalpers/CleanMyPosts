@@ -130,10 +130,10 @@ public partial class YouTubeViewModel : ObservableObject
             var attempts = 0;
             while (attempts < maxRetries)
             {
-                var loginStatus = await _youTubeScriptService.GetChannelHandleAsync();
+                var loginStatus = await _youTubeScriptService.GetLoginStatusAsync();
                 if (!string.IsNullOrEmpty(loginStatus))
                 {
-                    _logger.LogInformation("User logged in to Google My Activity.");
+                    _logger.LogInformation("User logged in to YouTube.");
                     AreButtonsEnabled = true;
                     _isLoggedIn = true;
                     return;
@@ -180,12 +180,12 @@ public partial class YouTubeViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private async Task ShowPosts()
+    private async Task ShowComments()
     {
         try
         {
             EnableUserInteractions(false);
-            await _youTubeScriptService.ShowPostsAsync();
+            await _youTubeScriptService.ShowCommentsAsync();
         }
         finally
         {
@@ -194,7 +194,7 @@ public partial class YouTubeViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private async Task DeletePosts()
+    private async Task DeleteComments()
     {
         try
         {
@@ -212,14 +212,63 @@ public partial class YouTubeViewModel : ObservableObject
 
                 if (result == MessageDialogResult.Affirmative)
                 {
-                    var deletedItems = await _youTubeScriptService.DeletePostsAsync();
+                    var deletedItems = await _youTubeScriptService.DeleteCommentsAsync();
                     await ShowNotificationAsync($"{deletedItems} comment(s) cleaned.", TimeSpan.FromSeconds(3));
                 }
             }
             else
             {
-                var deletedItems = await _youTubeScriptService.DeletePostsAsync();
+                var deletedItems = await _youTubeScriptService.DeleteCommentsAsync();
                 await ShowNotificationAsync($"{deletedItems} comment(s) cleaned.", TimeSpan.FromSeconds(3));
+            }
+        }
+        finally
+        {
+            EnableUserInteractions(true);
+        }
+    }
+
+    [RelayCommand]
+    private async Task ShowLikes()
+    {
+        try
+        {
+            EnableUserInteractions(false);
+            await _youTubeScriptService.ShowLikesAsync();
+        }
+        finally
+        {
+            EnableUserInteractions(true);
+        }
+    }
+
+    [RelayCommand]
+    private async Task DeleteLikes()
+    {
+        try
+        {
+            EnableUserInteractions(false, true, true);
+
+            if (_userSettingsService.GetConfirmDeletion())
+            {
+                _webViewHostService.Hide(true);
+                var result = await _dialogCoordinator.ShowMessageAsync(
+                    this,
+                    "Confirm Deletion",
+                    "Are you sure you want to remove all liked videos?",
+                    MessageDialogStyle.AffirmativeAndNegative);
+                _webViewHostService.Hide(false);
+
+                if (result == MessageDialogResult.Affirmative)
+                {
+                    var deletedItems = await _youTubeScriptService.DeleteLikesAsync();
+                    await ShowNotificationAsync($"{deletedItems} like(s) removed.", TimeSpan.FromSeconds(3));
+                }
+            }
+            else
+            {
+                var deletedItems = await _youTubeScriptService.DeleteLikesAsync();
+                await ShowNotificationAsync($"{deletedItems} like(s) removed.", TimeSpan.FromSeconds(3));
             }
         }
         finally

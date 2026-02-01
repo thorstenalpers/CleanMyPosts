@@ -50,6 +50,8 @@ flowchart LR
 ### YouTube
 - 🔍 **View** all your YouTube comments via Google My Activity
 - 🗑️ **Bulk delete** all YouTube comments
+- 🔍 **View** all liked videos
+- 🖤 **Remove** all liked videos
 
 ---
 
@@ -190,7 +192,16 @@ You can also run the cleanup directly in your browser using JavaScript snippets:
 
 - Run: `DeleteAllYouTubePosts(1000, 500);`
 
-> **Note:** Make sure you are logged in to your Google account before running the YouTube script.
+
+#### Remove Liked Videos  
+
+- URL: [https://www.youtube.com/playlist?list=LL](https://www.youtube.com/playlist?list=LL)  
+
+- Script: [delete-all-youtube-likes.js](https://raw.githubusercontent.com/thorstenalpers/CleanMyPosts/refs/heads/main/src/CleanMyPosts/Scripts/delete-all-youtube-likes.js)  
+
+- Run: `DeleteAllYouTubeLikes(1000, 500);`
+
+> **Note:** Make sure you are logged in to your Google/YouTube account before running these scripts.
 
 ---
 

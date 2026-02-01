@@ -31,7 +31,7 @@ public class YouTubeScriptServiceTests
 
         // Setup ExecuteScriptAsync for login check (default - logged in)
         _webViewHostServiceMock
-            .Setup(x => x.ExecuteScriptAsync(It.Is<string>(s => s.Contains("listitem"))))
+            .Setup(x => x.ExecuteScriptAsync(It.Is<string>(s => s.Contains("avatar") || s.Contains("listitem"))))
             .ReturnsAsync("\"logged_in\"");
 
         // Setup dummy for Reload (do nothing)
@@ -50,9 +50,9 @@ public class YouTubeScriptServiceTests
     }
 
     [Fact]
-    public async Task ShowPostsAsync_NavigatesToGoogleMyActivityUrl()
+    public async Task ShowCommentsAsync_NavigatesToGoogleMyActivityUrl()
     {
-        await _service.ShowPostsAsync();
+        await _service.ShowCommentsAsync();
 
         var source = _webViewHostServiceMock.Object.Source?.ToString();
         Assert.NotNull(source);
@@ -61,25 +61,36 @@ public class YouTubeScriptServiceTests
     }
 
     [Fact]
-    public async Task GetChannelHandleAsync_ReturnsLoggedInWhenActivityItemsExist()
+    public async Task ShowLikesAsync_NavigatesToYouTubeLikedPlaylist()
+    {
+        await _service.ShowLikesAsync();
+
+        var source = _webViewHostServiceMock.Object.Source?.ToString();
+        Assert.NotNull(source);
+        Assert.Contains("youtube.com/playlist", source);
+        Assert.Contains("list=LL", source);
+    }
+
+    [Fact]
+    public async Task GetLoginStatusAsync_ReturnsLoggedInWhenAvatarExists()
     {
         _webViewHostServiceMock
-            .Setup(x => x.ExecuteScriptAsync(It.Is<string>(s => s.Contains("listitem"))))
+            .Setup(x => x.ExecuteScriptAsync(It.Is<string>(s => s.Contains("avatar"))))
             .ReturnsAsync("\"logged_in\"");
 
-        var result = await _service.GetChannelHandleAsync();
+        var result = await _service.GetLoginStatusAsync();
 
         Assert.Equal("logged_in", result);
     }
 
     [Fact]
-    public async Task GetChannelHandleAsync_ReturnsEmptyWhenNotLoggedIn()
+    public async Task GetLoginStatusAsync_ReturnsEmptyWhenNotLoggedIn()
     {
         _webViewHostServiceMock
-            .Setup(x => x.ExecuteScriptAsync(It.Is<string>(s => s.Contains("listitem"))))
+            .Setup(x => x.ExecuteScriptAsync(It.Is<string>(s => s.Contains("avatar"))))
             .ReturnsAsync("\"\"");
 
-        var result = await _service.GetChannelHandleAsync();
+        var result = await _service.GetLoginStatusAsync();
 
         Assert.Empty(result);
     }
@@ -113,16 +124,16 @@ public class YouTubeScriptServiceTests
     }
 
     [Fact]
-    public async Task IsNoCommentsPresentAsync_ReturnsFalseWhenDeleteButtonsExist()
+    public async Task IsNoLikedVideosPresentAsync_ReturnsTrueWhenNoVideosExist()
     {
-        _webViewHostServiceMock.Setup(x => x.ExecuteScriptAsync(It.Is<string>(s => s.Contains("Delete activity item"))))
-            .ReturnsAsync("false");
+        _webViewHostServiceMock.Setup(x => x.ExecuteScriptAsync(It.Is<string>(s => s.Contains("ytd-playlist-video-renderer"))))
+            .ReturnsAsync("true");
 
         var method = _service.GetType()
-            .GetMethod("IsNoCommentsPresentAsync", BindingFlags.NonPublic | BindingFlags.Instance);
+            .GetMethod("IsNoLikedVideosPresentAsync", BindingFlags.NonPublic | BindingFlags.Instance);
         var result = await (Task<bool>)method.Invoke(_service, null);
 
-        Assert.False(result);
+        Assert.True(result);
     }
 
     [Fact]
@@ -139,16 +150,30 @@ public class YouTubeScriptServiceTests
     }
 
     [Fact]
-    public async Task DeletePostsAsync_NavigatesToGoogleMyActivityUrl()
+    public async Task DeleteCommentsAsync_NavigatesToGoogleMyActivityUrl()
     {
         // Setup to simulate no comments present (to exit loop immediately)
         _webViewHostServiceMock.Setup(x => x.ExecuteScriptAsync(It.Is<string>(s => s.Contains("Delete activity item"))))
             .ReturnsAsync("true");
 
-        await _service.DeletePostsAsync();
+        await _service.DeleteCommentsAsync();
 
         var source = _webViewHostServiceMock.Object.Source?.ToString();
         Assert.NotNull(source);
         Assert.Contains("myactivity.google.com", source);
+    }
+
+    [Fact]
+    public async Task DeleteLikesAsync_NavigatesToYouTubeLikedPlaylist()
+    {
+        // Setup to simulate no videos present (to exit loop immediately)
+        _webViewHostServiceMock.Setup(x => x.ExecuteScriptAsync(It.Is<string>(s => s.Contains("ytd-playlist-video-renderer"))))
+            .ReturnsAsync("true");
+
+        await _service.DeleteLikesAsync();
+
+        var source = _webViewHostServiceMock.Object.Source?.ToString();
+        Assert.NotNull(source);
+        Assert.Contains("youtube.com/playlist", source);
     }
 }

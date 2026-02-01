@@ -141,52 +141,57 @@ async function DeleteAllYouTubeLikes(waitAfterDelete = 1000, waitBetweenDeleteAt
 
         for (let i = 0; i < delays.length; i++) {
             await delay(delays[i]);
+            
+            let foundPopup = false;
 
-            // Try Format 1: Regular playlist popup (ytd-menu-popup-renderer)
-            const popup = document.querySelector('ytd-menu-popup-renderer');
-            if (popup) {
-                const menuItems = popup.querySelectorAll('ytd-menu-service-item-renderer');
-                log(`[clickRemoveFromLiked] Format 1: Found ${menuItems.length} menu items`);
+            // Try Format 1: Shorts/contextual sheet popup (yt-list-view-model) - CHECK FIRST
+            const sheetContainer = document.querySelector('.ytContextualSheetLayoutContentContainer');
+            const listViewModel = document.querySelector('yt-list-view-model');
+            const shortsPopup = sheetContainer || listViewModel;
+            
+            if (shortsPopup) {
+                foundPopup = true;
+                const listItems = shortsPopup.querySelectorAll('yt-list-item-view-model');
+                log(`[clickRemoveFromLiked] Shorts popup: Found ${listItems.length} list items`);
 
-                for (const menuItem of menuItems) {
-                    const formattedString = menuItem.querySelector('yt-formatted-string');
-                    if (!formattedString) continue;
-
-                    const text = formattedString.textContent || '';
-                    log(`[clickRemoveFromLiked] Checking: "${text}"`);
+                for (const listItem of listItems) {
+                    // Get text from various possible title elements
+                    const titleElement = listItem.querySelector('.yt-list-item-view-model__title') ||
+                                        listItem.querySelector('.yt-core-attributed-string') ||
+                                        listItem.querySelector('[role="text"]');
+                    
+                    const text = titleElement ? (titleElement.textContent || '') : (listItem.textContent || '');
+                    log(`[clickRemoveFromLiked] Item: "${text.trim().substring(0, 50)}"`);
 
                     if (matchesRemovePattern(text)) {
-                        const paperItem = menuItem.querySelector('tp-yt-paper-item');
-                        if (paperItem) {
-                            paperItem.click();
-                        } else {
-                            menuItem.click();
-                        }
-                        log(`[clickRemoveFromLiked] Clicked: "${text}"`);
+                        // Click the container div or the list item itself
+                        const clickTarget = listItem.querySelector('.yt-list-item-view-model__container') || 
+                                           listItem.querySelector('div') ||
+                                           listItem;
+                        clickTarget.click();
+                        log(`[clickRemoveFromLiked] SUCCESS - Clicked Shorts item: "${text.trim().substring(0, 40)}"`);
                         return true;
                     }
                 }
             }
 
-            // Try Format 2: Shorts/contextual sheet popup (yt-list-view-model)
-            const sheetContainer = document.querySelector('.ytContextualSheetLayoutContentContainer, yt-list-view-model');
-            if (sheetContainer) {
-                const listItems = sheetContainer.querySelectorAll('yt-list-item-view-model');
-                log(`[clickRemoveFromLiked] Format 2: Found ${listItems.length} list items`);
+            // Try Format 2: Regular playlist popup (ytd-menu-popup-renderer)
+            const popup = document.querySelector('ytd-menu-popup-renderer');
+            if (popup) {
+                foundPopup = true;
+                const menuItems = popup.querySelectorAll('ytd-menu-service-item-renderer');
+                log(`[clickRemoveFromLiked] Playlist popup: Found ${menuItems.length} menu items`);
 
-                for (const listItem of listItems) {
-                    // Get text from .yt-list-item-view-model__title
-                    const titleElement = listItem.querySelector('.yt-list-item-view-model__title');
-                    if (!titleElement) continue;
-
-                    const text = titleElement.textContent || '';
-                    log(`[clickRemoveFromLiked] Checking: "${text}"`);
+                for (const menuItem of menuItems) {
+                    const formattedString = menuItem.querySelector('yt-formatted-string');
+                    const text = formattedString ? (formattedString.textContent || '') : (menuItem.textContent || '');
+                    log(`[clickRemoveFromLiked] Item: "${text.trim().substring(0, 50)}"`);
 
                     if (matchesRemovePattern(text)) {
-                        // Click the container div inside the list item
-                        const clickTarget = listItem.querySelector('.yt-list-item-view-model__container') || listItem;
+                        const paperItem = menuItem.querySelector('tp-yt-paper-item');
+                        const clickTarget = paperItem || menuItem;
                         clickTarget.click();
-                        log(`[clickRemoveFromLiked] Clicked: "${text}"`);
+                        log(`[clickRemoveFromLiked] SUCCESS - Clicked playlist item: "${text.trim().substring(0, 40)}"`);
                         return true;
                     }
                 }
@@ -194,21 +199,28 @@ async function DeleteAllYouTubeLikes(waitAfterDelete = 1000, waitBetweenDeleteAt
 
             // Try Format 3: Any popup with role="listbox" or role="menu"
             const anyPopup = document.querySelector('[role="listbox"], [role="menu"]');
-            if (anyPopup) {
+            if (anyPopup && !foundPopup) {
+                foundPopup = true;
                 const allItems = anyPopup.querySelectorAll('[role="menuitem"], [role="option"]');
-                log(`[clickRemoveFromLiked] Format 3: Found ${allItems.length} items`);
+                log(`[clickRemoveFromLiked] Generic popup: Found ${allItems.length} items`);
 
                 for (const item of allItems) {
                     const text = item.textContent || '';
+                    log(`[clickRemoveFromLiked] Item: "${text.trim().substring(0, 50)}"`);
+                    
                     if (matchesRemovePattern(text)) {
                         item.click();
-                        log(`[clickRemoveFromLiked] Clicked: "${text.substring(0, 50)}..."`);
+                        log(`[clickRemoveFromLiked] SUCCESS - Clicked generic item`);
                         return true;
                     }
                 }
             }
 
-            log(`[clickRemoveFromLiked] No popup found (attempt #${i + 1})`);
+            if (!foundPopup) {
+                log(`[clickRemoveFromLiked] No popup found (attempt #${i + 1})`);
+            } else {
+                log(`[clickRemoveFromLiked] Popup found but no remove option (attempt #${i + 1})`);
+            }
         }
 
         log("[clickRemoveFromLiked] Remove option not found in any menu format.");

@@ -1,4 +1,11 @@
-async function DeleteAllYouTubePosts(waitAfterDelete, waitBetweenDeleteAttempts) {
+// Delete all YouTube comments via Google My Activity
+// URL: https://myactivity.google.com/page?hl=en&page=youtube_comments
+// Usage: DeleteAllYouTubeComments(1000, 500);
+// Parameters:
+//   waitAfterDelete: milliseconds to wait after each deletion (default: 1000)
+//   waitBetweenDeleteAttempts: milliseconds to wait between retry attempts (default: 500)
+
+async function DeleteAllYouTubeComments(waitAfterDelete = 1000, waitBetweenDeleteAttempts = 500) {
     function delay(ms) {
         return new Promise(resolve => setTimeout(resolve, ms));
     }
@@ -96,9 +103,10 @@ async function DeleteAllYouTubePosts(waitAfterDelete, waitBetweenDeleteAttempts)
         return true;
     }
 
-    window.youtubePostsDeletionDone = false;
-    window.deletedYouTubePosts = 0;
-    log("[DeleteAllYouTubePosts] Starting deletion loop on Google My Activity...");
+    window.youtubeCommentsDeletionDone = false;
+    window.deletedYouTubeComments = 0;
+    log("[DeleteAllYouTubeComments] Starting deletion loop on Google My Activity...");
+    log("[DeleteAllYouTubeComments] Make sure you are on: https://myactivity.google.com/page?hl=en&page=youtube_comments");
 
     let failures = 0;
     const maxFailures = 3;
@@ -108,7 +116,7 @@ async function DeleteAllYouTubePosts(waitAfterDelete, waitBetweenDeleteAttempts)
         const found = await waitForDeleteButton(5000, 300);
         if (!found) {
             failures++;
-            log(`[DeleteAllYouTubePosts] No delete button found (failure #${failures}). Scrolling...`);
+            log(`[DeleteAllYouTubeComments] No delete button found (failure #${failures}). Scrolling...`);
 
             // Try scrolling down to load more items
             const prevScroll = window.scrollY;
@@ -119,36 +127,43 @@ async function DeleteAllYouTubePosts(waitAfterDelete, waitBetweenDeleteAttempts)
             const loadMoreBtn = document.querySelector('button[jsname="T8gEfd"]');
             if (loadMoreBtn && loadMoreBtn.offsetParent !== null) {
                 loadMoreBtn.click();
-                log("[DeleteAllYouTubePosts] Clicked 'Load more' button.");
+                log("[DeleteAllYouTubeComments] Clicked 'Load more' button.");
                 await delay(1000);
                 failures = 0;
                 continue;
             }
 
             if (window.scrollY === prevScroll) {
-                log("[DeleteAllYouTubePosts] No scroll change. Assuming no more comments.");
+                log("[DeleteAllYouTubeComments] No scroll change. Assuming no more comments.");
                 break;
             }
 
             continue;
         }
 
-        log(`[DeleteAllYouTubePosts] Deleting comment #${commentNumber}...`);
+        log(`[DeleteAllYouTubeComments] Deleting comment #${commentNumber}...`);
         const success = await clickDeleteButton();
 
         if (success) {
-            window.deletedYouTubePosts++;
-            log(`[DeleteAllYouTubePosts] Deleted comment #${commentNumber}`);
+            window.deletedYouTubeComments++;
+            log(`[DeleteAllYouTubeComments] Deleted comment #${commentNumber}`);
             commentNumber++;
             failures = 0;
             await delay(waitAfterDelete);
         } else {
             failures++;
-            log(`[DeleteAllYouTubePosts] Failed to delete comment #${commentNumber} (failure #${failures})`);
+            log(`[DeleteAllYouTubeComments] Failed to delete comment #${commentNumber} (failure #${failures})`);
             await delay(500);
         }
     }
 
-    log(`[DeleteAllYouTubePosts] Deletion finished. Total deleted: ${window.deletedYouTubePosts}`);
-    window.youtubePostsDeletionDone = true;
+    log(`[DeleteAllYouTubeComments] Deletion finished. Total deleted: ${window.deletedYouTubeComments}`);
+    window.youtubeCommentsDeletionDone = true;
+}
+
+// Alias for backward compatibility with app
+async function DeleteAllYouTubePosts(waitAfterDelete, waitBetweenDeleteAttempts) {
+    await DeleteAllYouTubeComments(waitAfterDelete, waitBetweenDeleteAttempts);
+    window.youtubePostsDeletionDone = window.youtubeCommentsDeletionDone;
+    window.deletedYouTubePosts = window.deletedYouTubeComments;
 }

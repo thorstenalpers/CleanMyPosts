@@ -1,4 +1,11 @@
-async function DeleteAllYouTubeLikes(waitAfterDelete, waitBetweenDeleteAttempts) {
+// Remove all liked videos from YouTube Liked Videos playlist
+// URL: https://www.youtube.com/playlist?list=LL
+// Usage: DeleteAllYouTubeLikes(1000, 500);
+// Parameters:
+//   waitAfterDelete: milliseconds to wait after each unlike (default: 1000)
+//   waitBetweenDeleteAttempts: milliseconds to wait between retry attempts (default: 500)
+
+async function DeleteAllYouTubeLikes(waitAfterDelete = 1000, waitBetweenDeleteAttempts = 500) {
     function delay(ms) {
         return new Promise(resolve => setTimeout(resolve, ms));
     }
@@ -29,15 +36,15 @@ async function DeleteAllYouTubeLikes(waitAfterDelete, waitBetweenDeleteAttempts)
     }
 
     async function clickMenuButton(videoItem) {
-        // Find and click the ... menu button
-        const menuButton = videoItem.querySelector('ytd-menu-renderer button#button, ytd-menu-renderer yt-icon-button#button button');
+        // Find and click the ... menu button (three dots)
+        const menuButton = videoItem.querySelector('ytd-menu-renderer button#button, ytd-menu-renderer yt-icon-button#button button, button[aria-label*="Action"], button[aria-label*="Aktion"]');
         if (!menuButton) {
             log("[clickMenuButton] Menu button not found.");
             return false;
         }
 
         menuButton.click();
-        log("[clickMenuButton] Clicked menu button.");
+        log("[clickMenuButton] Clicked menu button (...).");
         await delay(waitBetweenDeleteAttempts);
         return true;
     }
@@ -49,18 +56,27 @@ async function DeleteAllYouTubeLikes(waitAfterDelete, waitBetweenDeleteAttempts)
             await delay(delays[i]);
 
             // Find the menu popup and look for "Remove from Liked videos" option
-            const menuItems = document.querySelectorAll('ytd-menu-service-item-renderer, tp-yt-paper-item');
+            const menuItems = document.querySelectorAll('ytd-menu-service-item-renderer, tp-yt-paper-item, yt-formatted-string');
             for (const item of menuItems) {
                 const text = item.textContent.toLowerCase();
-                // Match various languages
+                // Match various languages:
+                // EN: "Remove from Liked videos"
+                // DE: "Aus \"Videos, die ich mag\" entfernen"
+                // FR: "Supprimer de \"J'aime\""
+                // ES: "Eliminar de \"Me gusta\""
                 if (text.includes('remove from') || 
                     text.includes('entfernen') || 
                     text.includes('aus "videos, die ich mag"') ||
-                    text.includes('liked') ||
-                    text.includes('mag') ||
-                    text.includes('supprimer') ||
-                    text.includes('eliminar de')) {
-                    item.click();
+                    text.includes('videos, die ich mag') ||
+                    text.includes('liked videos') ||
+                    text.includes('supprimer de') ||
+                    text.includes("j'aime") ||
+                    text.includes('eliminar de') ||
+                    text.includes('me gusta')) {
+                    
+                    // Click the parent menu item if we found a formatted string
+                    const clickTarget = item.closest('ytd-menu-service-item-renderer') || item;
+                    clickTarget.click();
                     log("[clickRemoveFromLiked] Clicked remove from liked.");
                     return true;
                 }
@@ -96,7 +112,7 @@ async function DeleteAllYouTubeLikes(waitAfterDelete, waitBetweenDeleteAttempts)
 
         await delay(500);
 
-        // Wait for video to be removed
+        // Wait for video to be removed from list
         const waitDelays = [100, 200, 300, 500, 500, 1000];
         for (let i = 0; i < waitDelays.length; i++) {
             await delay(waitDelays[i]);
@@ -114,6 +130,7 @@ async function DeleteAllYouTubeLikes(waitAfterDelete, waitBetweenDeleteAttempts)
     window.youtubeLikesDeletionDone = false;
     window.deletedYouTubeLikes = 0;
     log("[DeleteAllYouTubeLikes] Starting unlike loop on YouTube Liked Videos...");
+    log("[DeleteAllYouTubeLikes] Make sure you are on: https://www.youtube.com/playlist?list=LL");
 
     let failures = 0;
     const maxFailures = 3;

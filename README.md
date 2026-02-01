@@ -190,8 +190,7 @@ You can also run the cleanup directly in your browser using JavaScript snippets:
 
 - Script: [delete-all-youtube-posts.js](https://raw.githubusercontent.com/thorstenalpers/CleanMyPosts/refs/heads/main/src/CleanMyPosts/Scripts/delete-all-youtube-posts.js)  
 
-- Run: `DeleteAllYouTubePosts(1000, 500);`
-
+- Run: `DeleteAllYouTubeComments(1000, 500);`
 
 #### Remove Liked Videos  
 
@@ -201,7 +200,7 @@ You can also run the cleanup directly in your browser using JavaScript snippets:
 
 - Run: `DeleteAllYouTubeLikes(1000, 500);`
 
-> **Note:** Make sure you are logged in to your Google/YouTube account before running these scripts.
+> **Note:** Make sure you are logged in to your Google/YouTube account before running these scripts. Default parameters can be omitted: `DeleteAllYouTubeComments();` or `DeleteAllYouTubeLikes();`
 
 ---
 

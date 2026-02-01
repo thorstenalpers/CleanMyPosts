@@ -53,7 +53,8 @@ async function DeleteAllYouTubeLikes(waitAfterDelete = 1000, waitBetweenDeleteAt
     async function waitForVideo(maxWait = 5000, interval = 300) {
         const start = Date.now();
         while (true) {
-            const videoItem = document.querySelector('ytd-playlist-video-renderer');
+            // Find video items that are NOT dismissed
+            const videoItem = document.querySelector('ytd-playlist-video-renderer:not([is-dismissed])');
             if (videoItem) {
                 log("[waitForVideo] Found video item.");
                 return true;
@@ -151,7 +152,8 @@ async function DeleteAllYouTubeLikes(waitAfterDelete = 1000, waitBetweenDeleteAt
     async function unlikeVideo() {
         log("[unlikeVideo] Searching for video to unlike...");
 
-        const videoItem = document.querySelector('ytd-playlist-video-renderer');
+        // Find first non-dismissed video
+        const videoItem = document.querySelector('ytd-playlist-video-renderer:not([is-dismissed])');
         if (!videoItem) {
             log("[unlikeVideo] No video item found.");
             return false;
@@ -170,18 +172,23 @@ async function DeleteAllYouTubeLikes(waitAfterDelete = 1000, waitBetweenDeleteAt
 
         await delay(500);
 
-        // Wait for video to be removed from list
+        // Wait for video to be dismissed (is-dismissed attribute added)
         const waitDelays = [200, 300, 500, 700, 1000, 1500];
         for (let i = 0; i < waitDelays.length; i++) {
             await delay(waitDelays[i]);
-            const stillExists = document.contains(videoItem);
-            if (!stillExists) {
-                log("[unlikeVideo] Video removed successfully.");
+            // Check if dismissed attribute was added
+            if (videoItem.hasAttribute('is-dismissed')) {
+                log("[unlikeVideo] Video dismissed successfully.");
+                return true;
+            }
+            // Also check if removed from DOM
+            if (!document.contains(videoItem)) {
+                log("[unlikeVideo] Video removed from DOM.");
                 return true;
             }
         }
 
-        log("[unlikeVideo] Video may have been removed.");
+        log("[unlikeVideo] Video may have been dismissed.");
         return true;
     }
 

@@ -43,17 +43,39 @@ public class YouTubeScriptService(
     {
         await WaitForDocumentReadyAsync();
 
-        // Check if user is logged in by looking for activity items on Google My Activity
+        // Check if user is logged in by looking for various indicators on Google My Activity
         const string jsScript = @"
             (() => {
+              // Check for activity items (comments list)
               const activityItems = document.querySelectorAll('div[role=""listitem""]');
               if (activityItems.length > 0) {
                 return 'logged_in';
               }
-              const signInButton = document.querySelector('a[href*=""accounts.google.com""]');
+              
+              // Check for delete buttons (X buttons)
+              const deleteButtons = document.querySelectorAll('button[aria-label^=""Delete activity item""]');
+              if (deleteButtons.length > 0) {
+                return 'logged_in';
+              }
+              
+              // Check for the activity collection header
+              const activityHeader = document.querySelector('[data-activity-collection-name]');
+              if (activityHeader) {
+                return 'logged_in';
+              }
+              
+              // Check for Google account avatar/profile picture (indicates logged in)
+              const profilePic = document.querySelector('img[data-noaft][data-atf]');
+              if (profilePic && profilePic.src && profilePic.src.includes('googleusercontent')) {
+                return 'logged_in';
+              }
+              
+              // Check for sign-in button (indicates NOT logged in)
+              const signInButton = document.querySelector('a[href*=""accounts.google.com/ServiceLogin""]');
               if (signInButton) {
                 return '';
               }
+              
               return 'unknown';
             })()";
 

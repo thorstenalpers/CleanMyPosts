@@ -28,6 +28,38 @@ async function DeleteAllYouTubePosts(waitAfterDelete, waitBetweenDeleteAttempts)
         }
     }
 
+    async function clickConfirmDeleteButton() {
+        // Wait for confirmation dialog and click "Delete" button
+        const delays = [100, 200, 300, 500, 500, 500, 1000, 1000];
+        
+        for (let i = 0; i < delays.length; i++) {
+            await delay(delays[i]);
+            
+            // Find the Delete button in the confirmation dialog
+            // It has data-id="EBS5u" or contains text "Delete" in span with class "Crf1o"
+            const confirmDeleteBtn = document.querySelector('div[role="button"][data-id="EBS5u"]');
+            if (confirmDeleteBtn && confirmDeleteBtn.offsetParent !== null) {
+                confirmDeleteBtn.click();
+                log("[clickConfirmDeleteButton] Clicked confirm Delete button.");
+                return true;
+            }
+            
+            // Alternative: find by text content
+            const allButtons = document.querySelectorAll('div[role="button"]');
+            for (const btn of allButtons) {
+                const deleteSpan = btn.querySelector('span.Crf1o');
+                if (deleteSpan && deleteSpan.textContent.toLowerCase().includes('delete')) {
+                    btn.click();
+                    log("[clickConfirmDeleteButton] Clicked confirm Delete button (by text).");
+                    return true;
+                }
+            }
+        }
+        
+        log("[clickConfirmDeleteButton] Confirm dialog not found or already dismissed.");
+        return false;
+    }
+
     async function clickDeleteButton() {
         log("[clickDeleteButton] Searching for delete button...");
         
@@ -39,14 +71,18 @@ async function DeleteAllYouTubePosts(waitAfterDelete, waitBetweenDeleteAttempts)
         }
 
         deleteButton.click();
-        log("[clickDeleteButton] Clicked delete button.");
+        log("[clickDeleteButton] Clicked X button.");
         await delay(waitBetweenDeleteAttempts);
 
-        // Wait for the item to be removed from DOM
-        const delays = [100, 200, 300, 500, 500, 500, 1000];
+        // Handle confirmation dialog
+        await clickConfirmDeleteButton();
+        await delay(300);
 
-        for (let i = 0; i < delays.length; i++) {
-            await delay(delays[i]);
+        // Wait for the item to be removed from DOM
+        const waitDelays = [100, 200, 300, 500, 500, 500, 1000];
+
+        for (let i = 0; i < waitDelays.length; i++) {
+            await delay(waitDelays[i]);
             
             // Check if item was deleted (button should no longer exist or be in removing state)
             const stillExists = document.contains(deleteButton);

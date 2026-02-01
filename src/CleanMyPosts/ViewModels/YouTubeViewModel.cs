@@ -120,11 +120,12 @@ public partial class YouTubeViewModel : ObservableObject
 
             if (_isLoggedIn)
             {
+                AreButtonsEnabled = true;
                 return;
             }
 
-            const int maxRetries = 5;
-            const int delayMs = 500;
+            const int maxRetries = 10;
+            const int delayMs = 1000;
 
             var attempts = 0;
             while (attempts < maxRetries)
@@ -139,10 +140,14 @@ public partial class YouTubeViewModel : ObservableObject
                 }
 
                 attempts++;
+                _logger.LogDebug("Login check attempt {Attempt}/{MaxRetries}", attempts, maxRetries);
                 await Task.Delay(delayMs);
             }
 
-            _logger.LogInformation("User not logged in to Google My Activity.");
+            // Even if we couldn't detect login, enable buttons so user can try
+            // The page might still be loading or have a different structure
+            _logger.LogInformation("Could not detect login status, enabling buttons anyway.");
+            AreButtonsEnabled = true;
         }
     }
 

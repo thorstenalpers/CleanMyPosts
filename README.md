@@ -10,7 +10,6 @@
 
 ---
 
-
 ## ℹ️ How It Works
 
 **CleanMyPosts** automates the process of cleaning up your social media accounts by interacting with them through an embedded browser. The app sends JavaScript commands to perform actions such as **deleting posts, reposts, replies, likes, unfollowing accounts on X (Twitter)**, and **deleting YouTube comments via Google My Activity**. It retries actions automatically to ensure everything is removed efficiently.
@@ -22,8 +21,8 @@ flowchart LR
     U["User"]
     A["CleanMyPosts App"]
     B["Embedded Browser"]
-    X["X (Twitter) Platform"]
-    Y["Google My Activity (YouTube)"]
+    X["X (Twitter)"]
+    Y["YouTube"]
 
     U -->A
     A -->|Retry|B
@@ -31,8 +30,6 @@ flowchart LR
     A -->|Refresh page|B
     B -->X
     B -->Y
-    X -->B
-    Y -->B
 ```
 
 ---
@@ -77,6 +74,9 @@ Once your system meets the requirements, follow these steps to install **CleanMy
 
 ## 🎬 See It in Action
 
+
+### X
+
 <details>
   <summary><strong>Delete posts</strong></summary>
   <br/>
@@ -107,11 +107,21 @@ Once your system meets the requirements, follow these steps to install **CleanMy
   <img src="./assets/delete-following.gif" alt="Unfollow Accounts GIF" width="700" />
 </details>
 
+### Youtube
+
 <details>
-  <summary><strong>Delete YouTube Comments</strong></summary>
+  <summary><strong>Delete Comments</strong></summary>
   <br/>
-  <p>Navigate to the YouTube tab and log in with your Google account. The app will open Google My Activity where you can view and delete all your YouTube comments.</p>
+  <img src="./assets/youtube-delete-comments.gif" alt="Unfollow Accounts GIF" width="700" />
 </details>
+
+<details>
+  <summary><strong>Delete Likes</strong></summary>
+  <br/>
+  <img src="./assets/youtube-delete-likes.gif" alt="Unfollow Accounts GIF" width="700" />
+</details>
+
+### App 
 
 <details>
   <summary><strong>Settings</strong></summary>
@@ -216,8 +226,22 @@ Thank you for helping make **CleanMyPosts** better!
 
 
 ---
+## ⚠️ Disclaimer
 
+This tool automates actions in a web browser.
+Use it at your own risk.
+The author is not affiliated with X (formerly Twitter) or Google.
+
+---
 
 ## 🐞 Report a Bug
 
 If you encounter any issues or bugs, please [report them here](https://github.com/thorstenalpers/CleanMyPosts/issues).
+
+---
+
+
+## 🌟 Thank You for Starring!
+
+
+[![Star History Chart](https://api.star-history.com/svg?repos=thorstenalpers/CleanMyPosts&type=date&legend=top-left)](https://www.star-history.com/#thorstenalpers/CleanMyPosts&type=date&legend=top-left)

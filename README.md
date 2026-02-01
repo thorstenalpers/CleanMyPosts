@@ -6,14 +6,14 @@
 [![Donate](https://img.shields.io/badge/donate-PayPal-yellow)](https://www.paypal.com/donate/?hosted_button_id=QYHGE9LA9SNAN)
 [![Star this repo](https://img.shields.io/github/stars/thorstenalpers/CleanMyPosts.svg?style=social&label=Star&maxAge=60)](https://github.com/thorstenalpers/CleanMyPosts)
 
-**CleanMyPosts** is a lightweight Windows desktop app that securely deletes all posts, reposts, replies, likes, and followings from your X (formerly Twitter) account in bulk using browser automation.
+**CleanMyPosts** is a lightweight Windows desktop app that securely deletes all posts, reposts, replies, likes, and followings from your X (formerly Twitter) account, as well as YouTube comments, in bulk using browser automation.
 
 ---
 
 
 ## ℹ️ How It Works
 
-**CleanMyPosts** automates the process of cleaning up your X (formerly Twitter) account by interacting with your account through an embedded browser. The app sends JavaScript commands to perform actions such as **deleting posts, reposts, replies, likes, and unfollowing accounts**. It retries actions automatically to ensure everything is removed efficiently.
+**CleanMyPosts** automates the process of cleaning up your social media accounts by interacting with them through an embedded browser. The app sends JavaScript commands to perform actions such as **deleting posts, reposts, replies, likes, unfollowing accounts on X (Twitter)**, and **deleting YouTube comments via Google My Activity**. It retries actions automatically to ensure everything is removed efficiently.
 
 
 ```mermaid
@@ -23,32 +23,42 @@ flowchart LR
     A["CleanMyPosts App"]
     B["Embedded Browser"]
     X["X (Twitter) Platform"]
+    Y["Google My Activity (YouTube)"]
 
     U -->A
     A -->|Retry|B
     A -->|Execute JS Actions|B
     A -->|Refresh page|B
     B -->X
+    B -->Y
     X -->B
+    Y -->B
 ```
 
 ---
 
 ## 🚀 Features
 
+### X (Twitter)
 - 🔍 **View** all posts, reposts, replies, likes, and followings
 - 🗑️ **Bulk delete** all posts
 - 🗑️ **Bulk delete** all reposts
 - 🗑️ **Bulk delete** all replies
 - 🖤 **Remove** all likes
 - 👤 **Unfollow** all followings
+
+### YouTube
+- 🔍 **View** all your YouTube comments via Google My Activity
+- 🗑️ **Bulk delete** all YouTube comments
+
 ---
 
 
 ## 🛠️ Requirements
 
 - Windows 10 or later  
-- X (Twitter) account  
+- X (Twitter) account (for X features)
+- Google account (for YouTube features)
 
 ---
 
@@ -58,8 +68,8 @@ Once your system meets the requirements, follow these steps to install **CleanMy
 
 1. Download the latest version from [Releases](https://github.com/thorstenalpers/x-tweet-cleaner/releases).
 2. Run the installer. Ignore the warning about the app being from an unverified publisher.
-3. Launch the app and log in with your X (formerly Twitter) account.
-4. Start bulk deleting your posts, replies, reposts, likes, and following easily.
+3. Launch the app and log in with your X (formerly Twitter) or Google account.
+4. Start bulk deleting your posts, replies, reposts, likes, following, and YouTube comments easily.
 
 ---
 
@@ -93,6 +103,12 @@ Once your system meets the requirements, follow these steps to install **CleanMy
   <summary><strong>Delete Followings</strong></summary>
   <br/>
   <img src="./assets/delete-following.gif" alt="Unfollow Accounts GIF" width="700" />
+</details>
+
+<details>
+  <summary><strong>Delete YouTube Comments</strong></summary>
+  <br/>
+  <p>Navigate to the YouTube tab and log in with your Google account. The app will open Google My Activity where you can view and delete all your YouTube comments.</p>
 </details>
 
 <details>
@@ -164,6 +180,17 @@ You can also run the cleanup directly in your browser using JavaScript snippets:
 - Script: [delete-all-following.js](https://raw.githubusercontent.com/thorstenalpers/CleanMyPosts/refs/heads/main/src/CleanMyPosts/Scripts/delete-all-following.js)  
 
 - Run: `DeleteAllFollowing(1000, 1000);`
+
+
+#### Delete YouTube Comments  
+
+- URL: [https://myactivity.google.com/page?hl=en&page=youtube_comments](https://myactivity.google.com/page?hl=en&page=youtube_comments)  
+
+- Script: [delete-all-youtube-posts.js](https://raw.githubusercontent.com/thorstenalpers/CleanMyPosts/refs/heads/main/src/CleanMyPosts/Scripts/delete-all-youtube-posts.js)  
+
+- Run: `DeleteAllYouTubePosts(1000, 500);`
+
+> **Note:** Make sure you are logged in to your Google account before running the YouTube script.
 
 ---
 

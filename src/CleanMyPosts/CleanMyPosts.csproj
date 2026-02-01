@@ -10,7 +10,7 @@
         <ApplicationIcon>Assets\logo.ico</ApplicationIcon>
         <AssemblyName>CleanMyPosts</AssemblyName>
         <TargetFramework>net10.0-windows</TargetFramework>
-        <Version>2.1.2</Version>
+        <Version>2.1.3</Version>
         <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
         <AnalysisLevel>latest</AnalysisLevel>
         <EnableNETAnalyzers>True</EnableNETAnalyzers>

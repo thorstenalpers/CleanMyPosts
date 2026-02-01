@@ -50,13 +50,34 @@ async function DeleteAllYouTubeLikes(waitAfterDelete = 1000, waitBetweenDeleteAt
         return removePatterns.some(pattern => lowerText.includes(pattern));
     }
 
+    function findVideoItem() {
+        // Try regular playlist video renderer first
+        let videoItem = document.querySelector('ytd-playlist-video-renderer:not([is-dismissed])');
+        if (videoItem) {
+            return { element: videoItem, type: 'playlist' };
+        }
+        
+        // Try rich item renderer (for shorts or single video view)
+        videoItem = document.querySelector('ytd-rich-item-renderer:not([is-dismissed])');
+        if (videoItem) {
+            return { element: videoItem, type: 'rich' };
+        }
+        
+        // Try compact video renderer
+        videoItem = document.querySelector('ytd-compact-video-renderer:not([is-dismissed])');
+        if (videoItem) {
+            return { element: videoItem, type: 'compact' };
+        }
+        
+        return null;
+    }
+
     async function waitForVideo(maxWait = 5000, interval = 300) {
         const start = Date.now();
         while (true) {
-            // Find video items that are NOT dismissed
-            const videoItem = document.querySelector('ytd-playlist-video-renderer:not([is-dismissed])');
-            if (videoItem) {
-                log("[waitForVideo] Found video item.");
+            const result = findVideoItem();
+            if (result) {
+                log(`[waitForVideo] Found video item (type: ${result.type}).`);
                 return true;
             }
 
@@ -71,17 +92,39 @@ async function DeleteAllYouTubeLikes(waitAfterDelete = 1000, waitBetweenDeleteAt
         }
     }
 
-    async function clickMenuButton(videoItem) {
-        // Find the three-dots menu button (yt-icon-button#button inside ytd-menu-renderer)
-        const menuRenderer = videoItem.querySelector('ytd-menu-renderer');
-        if (!menuRenderer) {
-            log("[clickMenuButton] Menu renderer not found.");
-            return false;
+    async function clickMenuButton(videoItem, itemType) {
+        let menuButton = null;
+        
+        if (itemType === 'playlist') {
+            // Regular playlist: ytd-menu-renderer > yt-icon-button#button button
+            const menuRenderer = videoItem.querySelector('ytd-menu-renderer');
+            if (menuRenderer) {
+                menuButton = menuRenderer.querySelector('yt-icon-button#button button') || 
+                            menuRenderer.querySelector('button#button') ||
+                            menuRenderer.querySelector('button');
+            }
+        } else if (itemType === 'rich' || itemType === 'compact') {
+            // Shorts/Rich items: button with aria-label containing "action" or "Aktion" etc
+            menuButton = videoItem.querySelector('button[aria-label*="ction"]') ||  // Action/Aktion
+                        videoItem.querySelector('button[aria-label*="menu"]') ||
+                        videoItem.querySelector('button[aria-label*="Menu"]') ||
+                        videoItem.querySelector('button[aria-label*="Mehr"]') ||    // German "Mehr Aktionen"
+                        videoItem.querySelector('button[aria-label*="More"]') ||    // English "More actions"
+                        videoItem.querySelector('button[aria-label*="plus"]') ||    // French
+                        videoItem.querySelector('button[aria-label*="más"]') ||     // Spanish
+                        videoItem.querySelector('.shortsLockupViewModelHostOutsideMetadataMenu button') ||
+                        videoItem.querySelector('ytd-menu-renderer button');
         }
-
-        const menuButton = menuRenderer.querySelector('yt-icon-button#button button') || 
-                          menuRenderer.querySelector('button#button') ||
-                          menuRenderer.querySelector('button');
+        
+        if (!menuButton) {
+            // Fallback: try any three-dots menu button
+            menuButton = videoItem.querySelector('button[aria-label]');
+            if (menuButton) {
+                const label = menuButton.getAttribute('aria-label') || '';
+                log(`[clickMenuButton] Found button with aria-label: "${label}"`);
+            }
+        }
+        
         if (!menuButton) {
             log("[clickMenuButton] Menu button not found.");
             return false;
@@ -153,14 +196,17 @@ async function DeleteAllYouTubeLikes(waitAfterDelete = 1000, waitBetweenDeleteAt
         log("[unlikeVideo] Searching for video to unlike...");
 
         // Find first non-dismissed video
-        const videoItem = document.querySelector('ytd-playlist-video-renderer:not([is-dismissed])');
-        if (!videoItem) {
+        const result = findVideoItem();
+        if (!result) {
             log("[unlikeVideo] No video item found.");
             return false;
         }
+        
+        const { element: videoItem, type: itemType } = result;
+        log(`[unlikeVideo] Found ${itemType} video item.`);
 
         // Click the menu button
-        if (!await clickMenuButton(videoItem)) {
+        if (!await clickMenuButton(videoItem, itemType)) {
             return false;
         }
 
@@ -184,6 +230,11 @@ async function DeleteAllYouTubeLikes(waitAfterDelete = 1000, waitBetweenDeleteAt
             // Also check if removed from DOM
             if (!document.contains(videoItem)) {
                 log("[unlikeVideo] Video removed from DOM.");
+                return true;
+            }
+            // Check if hidden
+            if (videoItem.hasAttribute('hidden')) {
+                log("[unlikeVideo] Video hidden successfully.");
                 return true;
             }
         }

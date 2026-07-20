@@ -14,7 +14,7 @@ jobs:
     runs-on: windows-latest
 
     env:
-      Solution: "src/CleanMyPosts.slnx"
+      Solution: "CleanMyPosts.slnx"
       UI_Project: "src/CleanMyPosts/CleanMyPosts.csproj"
       Test_Project: "src/Tests/Tests.csproj"
       Installer_Script: "installer/Installer.iss"

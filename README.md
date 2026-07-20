@@ -1,10 +1,11 @@
 ![Banner](https://raw.githubusercontent.com/thorstenalpers/CleanMyPosts/main/src/CleanMyPosts/Assets/banner.png)
 
-[![Windows](https://img.shields.io/badge/platform-Windows-blue)](#)
-[![License](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE.txt)
-[![CI Tests](https://github.com/thorstenalpers/CleanMyPosts/actions/workflows/ci.yml/badge.svg)](https://github.com/thorstenalpers/CleanMyPosts/actions/workflows/ci.yml)
-[![Donate](https://img.shields.io/badge/donate-PayPal-yellow)](https://www.paypal.com/donate/?hosted_button_id=QYHGE9LA9SNAN)
-[![Star this repo](https://img.shields.io/github/stars/thorstenalpers/CleanMyPosts.svg?style=social&label=Star&maxAge=60)](https://github.com/thorstenalpers/CleanMyPosts)
+[![CI](https://img.shields.io/github/actions/workflow/status/thorstenalpers/CleanMyPosts/ci.yml?branch=main&style=flat-square&logo=githubactions&logoColor=white&label=CI)](https://github.com/thorstenalpers/CleanMyPosts/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/thorstenalpers/CleanMyPosts?style=flat-square&logo=github&label=release)](https://github.com/thorstenalpers/CleanMyPosts/releases/latest)
+[![Downloads](https://img.shields.io/github/downloads/thorstenalpers/CleanMyPosts/total?style=flat-square&logo=github&label=downloads)](https://github.com/thorstenalpers/CleanMyPosts/releases)
+[![Platform](https://img.shields.io/badge/platform-Windows-0078D6?style=flat-square&logo=windows&logoColor=white)](https://github.com/thorstenalpers/CleanMyPosts/releases)
+[![Donate](https://img.shields.io/badge/donate-PayPal-00457C?style=flat-square&logo=paypal&logoColor=white)](https://www.paypal.com/donate/?hosted_button_id=QYHGE9LA9SNAN)
+[![Stars](https://img.shields.io/github/stars/thorstenalpers/CleanMyPosts?style=flat-square&logo=github&label=stars)](https://github.com/thorstenalpers/CleanMyPosts)
 
 **CleanMyPosts** is a lightweight Windows desktop app that securely deletes all posts, reposts, replies, likes, and followings from your X (formerly Twitter) account, as well as YouTube comments, in bulk using browser automation.
 

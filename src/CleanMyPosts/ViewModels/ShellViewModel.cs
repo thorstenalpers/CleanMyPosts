@@ -32,6 +32,12 @@ public partial class ShellViewModel : ObservableObject, IDisposable
                 Label = Resources.XPage,
                 Icon = new PackIconFontAwesome { Kind = PackIconFontAwesomeKind.XTwitterBrands },
                 TargetPageType = typeof(XViewModel)
+            },
+            new HamburgerMenuIconItem
+            {
+                Label = Resources.YouTubePage,
+                Icon = new PackIconFontAwesome { Kind = PackIconFontAwesomeKind.YoutubeBrands },
+                TargetPageType = typeof(YouTubeViewModel)
             }
         ];
 

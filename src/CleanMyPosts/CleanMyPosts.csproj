@@ -90,6 +90,9 @@
         <Content Include="Scripts\delete-all-youtube-likes.js">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
+        <Content Include="..\..\THIRD_PARTY_LICENSES.txt" Link="THIRD_PARTY_LICENSES.txt">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
     </ItemGroup>
 
 </Project>

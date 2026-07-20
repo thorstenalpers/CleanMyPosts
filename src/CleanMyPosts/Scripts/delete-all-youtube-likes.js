@@ -14,6 +14,18 @@ async function DeleteAllYouTubeLikes(waitAfterDelete = 1000, waitBetweenDeleteAt
         console.log(`[${new Date().toLocaleTimeString()}] ${msg}`);
     }
 
+    // A Google feedback/survey dialog can pop up mid-run and, being modal, blocks
+    // the next click. Dismiss it whenever it appears.
+    function dismissSurveyBanner() {
+        const closeBtn = document.querySelector('button[aria-label="Close this dialog"]');
+        if (closeBtn && closeBtn.getBoundingClientRect().width > 0) {
+            closeBtn.click();
+            log("[dismissSurveyBanner] Dismissed feedback/survey banner.");
+            return true;
+        }
+        return false;
+    }
+
     // Multilingual patterns for "Remove from Liked videos"
     const removePatterns = [
         // English
@@ -299,6 +311,7 @@ async function DeleteAllYouTubeLikes(waitAfterDelete = 1000, waitBetweenDeleteAt
     let videoNumber = 1;
 
     while (failures < maxFailures) {
+        dismissSurveyBanner();
         const found = await waitForVideo(5000, 300);
         if (!found) {
             failures++;

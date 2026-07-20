@@ -42,6 +42,12 @@ the `build` status check must pass. Every change ships through a PR against
   `body_path`).
 - **Do not create git tags manually.** `deploy-release.yml` creates the
   `v<version>` tag when it publishes.
+- The long-lived **`update-feed`** branch holds the AutoUpdater.NET feed: at each
+  release `deploy-release.yml` regenerates `update-installer.xml` from
+  `update-template.xml` on it, and the installed app polls that file to detect
+  new versions. It is a data-only branch — **do not delete it.** Deleting it
+  breaks the in-app update check and the release workflow (which commits to it).
+  If it is lost, recreate it from the last `Update for <version>` commit.
 - The full release-prep flow (decide SemVer, branch, build/test, bump version,
   write release notes, open the PR to `main`) is encoded in the
   **`prepare-release`** skill at `.claude/skills/prepare-release/`. Run it via

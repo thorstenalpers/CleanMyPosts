@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <item>
-  <version>2.1.3</version>
-  <url>https://github.com/thorstenalpers/CleanMyPosts/releases/download/v2.1.3/CleanMyPosts-Installer-2.1.3-win-x64.exe</url>
-  <changelog>https://raw.githubusercontent.com/thorstenalpers/CleanMyPosts/refs/heads/main/release-notes/v2.1.3.md</changelog>
+  <version>2.1.4</version>
+  <url>https://github.com/thorstenalpers/CleanMyPosts/releases/download/v2.1.4/CleanMyPosts-Installer-2.1.4-win-x64.exe</url>
+  <changelog>https://raw.githubusercontent.com/thorstenalpers/CleanMyPosts/refs/heads/main/release-notes/v2.1.4.md</changelog>
   <mandatory>false</mandatory>
 </item>

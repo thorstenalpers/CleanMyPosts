@@ -14,6 +14,18 @@ async function DeleteAllYouTubeComments(waitAfterDelete = 1000, waitBetweenDelet
         console.log(`[${new Date().toLocaleTimeString()}] ${msg}`);
     }
 
+    // A Google feedback/survey dialog can pop up mid-run and, being modal, blocks
+    // the next delete click. Dismiss it whenever it appears.
+    function dismissSurveyBanner() {
+        const closeBtn = document.querySelector('button[aria-label="Close this dialog"]');
+        if (closeBtn && closeBtn.getBoundingClientRect().width > 0) {
+            closeBtn.click();
+            log("[dismissSurveyBanner] Dismissed feedback/survey banner.");
+            return true;
+        }
+        return false;
+    }
+
     async function waitForDeleteButton(maxWait = 5000, interval = 300) {
         const start = Date.now();
         while (true) {
@@ -113,6 +125,7 @@ async function DeleteAllYouTubeComments(waitAfterDelete = 1000, waitBetweenDelet
     let commentNumber = 1;
 
     while (failures < maxFailures) {
+        dismissSurveyBanner();
         const found = await waitForDeleteButton(5000, 300);
         if (!found) {
             failures++;

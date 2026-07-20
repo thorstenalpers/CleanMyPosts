@@ -363,7 +363,7 @@ MigrationBackup/
 FodyWeavers.xsd
 
 # local cmd files
-*.cmd
+*local.cmd
 
 # Installer releases 
 installer/Output

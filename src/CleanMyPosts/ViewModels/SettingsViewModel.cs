@@ -71,7 +71,8 @@ public partial class SettingsViewModel(
     [RelayCommand]
     private static void OpenLicense()
     {
-        Process.Start(new ProcessStartInfo { FileName = "license.txt", UseShellExecute = true });
+        var licensePath = System.IO.Path.Combine(AppContext.BaseDirectory, "THIRD_PARTY_LICENSES.txt");
+        Process.Start(new ProcessStartInfo { FileName = licensePath, UseShellExecute = true });
     }
 
     [RelayCommand]

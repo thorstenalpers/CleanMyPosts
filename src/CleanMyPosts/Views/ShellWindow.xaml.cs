@@ -1,157 +1,131 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
-using CleanMyPosts.Contracts.Services;
-using CleanMyPosts.Contracts.Views;
-using CleanMyPosts.Models;
-using CleanMyPosts.ViewModels;
-using MahApps.Metro.Controls;
+using CleanMyPosts.Hosting;
+using CleanMyPosts.Infrastructure;
+using CleanMyPosts.Logging;
+using CleanMyPosts.Settings;
+using CleanMyPosts.Sites;
+using CleanMyPosts.Updater;
+using Microsoft.Extensions.Logging;
 
 namespace CleanMyPosts.Views;
 
-public partial class ShellWindow : MetroWindow, IShellWindow
+public partial class ShellWindow : Window, IShellWindow, IShellLayoutService
 {
-    private const double DefaultWidth = 860;
-    private const double DefaultHeight = 600;
+    private const double DefaultWidth = 1000;
+    private const double DefaultHeight = 640;
+    private const double SidebarExpandedWidth = 240;
+    private const double SidebarCollapsedWidth = 56;
+
     private readonly IUserSettingsService _userSettingsService;
+    private readonly IChromeWebViewService _chromeWebViewService;
+    private readonly ISiteWebViewService _siteWebViewService;
+    private readonly HostBridge _hostBridge;
+    private readonly SiteActionOrchestrator _siteActionOrchestrator;
+    private readonly ILogBuffer _logBuffer;
+    private readonly AppConfig _appConfig;
+    private readonly UpdaterConfig _updaterConfig;
+    private readonly ILogger<ShellWindow> _logger;
 
-    private WindowSettings _lastNormalBounds;
-    private bool _settingsLoaded;
-
-    public ShellWindow(ShellViewModel viewModel, IUserSettingsService userSettingsService)
+    public ShellWindow(
+        IUserSettingsService userSettingsService,
+        IChromeWebViewService chromeWebViewService,
+        ISiteWebViewService siteWebViewService,
+        HostBridge hostBridge,
+        SiteActionOrchestrator siteActionOrchestrator,
+        ILogBuffer logBuffer,
+        AppConfig appConfig,
+        UpdaterConfig updaterConfig,
+        ILogger<ShellWindow> logger)
     {
-        _userSettingsService = userSettingsService ?? throw new ArgumentNullException(nameof(userSettingsService));
-        InitializeComponent();
-        DataContext = viewModel;
+        _userSettingsService = userSettingsService;
+        _chromeWebViewService = chromeWebViewService;
+        _siteWebViewService = siteWebViewService;
+        _hostBridge = hostBridge;
+        _siteActionOrchestrator = siteActionOrchestrator;
+        _logBuffer = logBuffer;
+        _appConfig = appConfig;
+        _updaterConfig = updaterConfig;
+        _logger = logger;
 
-        Loaded += OnLoaded;
+        InitializeComponent();
+        _siteActionOrchestrator.AttachLayoutService(this);
+
+        Loaded += OnLoadedAsync;
         Closing += OnClosing;
     }
 
+    public void ShowWindow() => Show();
 
-    public Frame GetNavigationFrame()
+    public void CloseWindow() => Close();
+
+    public void SetSidebarExpanded(bool expanded)
     {
-        return shellFrame;
+        Dispatcher.Invoke(() =>
+        {
+            SidebarColumn.Width = new GridLength(expanded ? SidebarExpandedWidth : SidebarCollapsedWidth);
+        });
     }
 
-    public void ShowWindow()
+    public void SetSiteVisible(bool visible)
     {
-        Show();
+        Dispatcher.Invoke(() =>
+        {
+            Grid.SetColumnSpan(chromeWebView, visible ? 1 : 2);
+        });
     }
 
-    public void CloseWindow()
+    private async void OnLoadedAsync(object sender, RoutedEventArgs e)
     {
-        Close();
+        RestoreWindowBounds();
+
+        var wwwRootPath = Path.Combine(AppContext.BaseDirectory, "wwwroot");
+        var contentScriptPath = Path.Combine(AppContext.BaseDirectory, "Scripts", "content.js");
+
+        // Bring the menu (chrome) up first so it paints before the heavier site
+        // WebView; the site then loads hidden in the background so the logged-in
+        // username is ready the first time the user opens X.
+        await _chromeWebViewService.InitializeAsync(chromeWebView, wwwRootPath);
+        await _siteWebViewService.InitializeAsync(siteWebView, contentScriptPath);
+
+        BridgeRegistrar.RegisterAll(
+            _hostBridge,
+            _userSettingsService,
+            _siteActionOrchestrator,
+            this,
+            _logBuffer,
+            _appConfig,
+            _updaterConfig,
+            _logger);
+        _hostBridge.AttachTo(_chromeWebViewService);
+
+        SetSiteVisible(false);
+        _siteWebViewService.Hide(true);
+        _siteWebViewService.Source = new Uri(_appConfig.XBaseUrl);
     }
 
-    private static double GetCenteredLeft()
-    {
-        var screenWidth = SystemParameters.WorkArea.Width;
-        return (screenWidth - DefaultWidth) / 2;
-    }
-
-    private static double GetCenteredTop()
-    {
-        var screenHeight = SystemParameters.WorkArea.Height;
-        return (screenHeight - DefaultHeight) / 2;
-    }
-
-    private void OnLoaded(object sender, RoutedEventArgs e)
+    private void RestoreWindowBounds()
     {
         var settings = _userSettingsService.GetWindowSettings();
 
-        if (settings.WindowState == WindowState.Maximized)
-        {
-            Left = settings.Left >= 0 ? settings.Left : GetCenteredLeft();
-            Top = settings.Top >= 0 ? settings.Top : GetCenteredTop();
-            Width = settings.Width > 0 ? settings.Width : DefaultWidth;
-            Height = settings.Height > 0 ? settings.Height : DefaultHeight;
-
-            WindowState = WindowState.Maximized;
-        }
-        else
-        {
-            Left = settings.Left >= 0 ? settings.Left : GetCenteredLeft();
-            Top = settings.Top >= 0 ? settings.Top : GetCenteredTop();
-            Width = settings.Width > 0 ? settings.Width : DefaultWidth;
-            Height = settings.Height > 0 ? settings.Height : DefaultHeight;
-            WindowState = WindowState.Normal;
-        }
-
-        _lastNormalBounds = new WindowSettings
-        {
-            Left = Left,
-            Top = Top,
-            Width = Width,
-            Height = Height,
-            WindowState = WindowState.Normal
-        };
-
-        _settingsLoaded = true;
-        StateChanged += ShellWindow_StateChanged;
-    }
-
-
-    private void ShellWindow_StateChanged(object sender, EventArgs e)
-    {
-        if (!_settingsLoaded)
-        {
-            return;
-        }
-
-        if (WindowState == WindowState.Normal)
-        {
-            // User restored window from maximized or minimized -> reset to default size/position
-
-            var settings = _userSettingsService.GetWindowSettings();
-            Left = settings.Left >= 0 ? settings.Left : GetCenteredLeft();
-            Top = settings.Top >= 0 ? settings.Top : GetCenteredTop();
-            Width = DefaultWidth;
-            Height = DefaultHeight;
-
-            // Update _lastNormalBounds accordingly
-            _lastNormalBounds.Left = Left;
-            _lastNormalBounds.Top = Top;
-            _lastNormalBounds.Width = Width;
-            _lastNormalBounds.Height = Height;
-        }
-        else if (WindowState == WindowState.Maximized)
-        {
-            // Do nothing special here
-        }
+        Left = settings.Left >= 0 ? settings.Left : (SystemParameters.WorkArea.Width - DefaultWidth) / 2;
+        Top = settings.Top >= 0 ? settings.Top : (SystemParameters.WorkArea.Height - DefaultHeight) / 2;
+        Width = settings.Width > 0 ? settings.Width : DefaultWidth;
+        Height = settings.Height > 0 ? settings.Height : DefaultHeight;
+        WindowState = settings.WindowState;
     }
 
     private void OnClosing(object sender, CancelEventArgs e)
     {
-        if (!_settingsLoaded)
+        _userSettingsService.SaveWindowsSettings(new WindowSettings
         {
-            return;
-        }
-
-        var settings = new WindowSettings();
-
-        if (WindowState == WindowState.Maximized)
-        {
-            settings.WindowState = WindowState.Maximized;
-
-            // Save the last known normal bounds, _not_ the maximized bounds
-            settings.Left = _lastNormalBounds.Left;
-            settings.Top = _lastNormalBounds.Top;
-            settings.Width = _lastNormalBounds.Width;
-            settings.Height = _lastNormalBounds.Height;
-        }
-        else
-        {
-            // Normal state, save current bounds as last known normal
-            settings.WindowState = WindowState.Normal;
-            settings.Left = Left;
-            settings.Top = Top;
-            settings.Width = Width;
-            settings.Height = Height;
-
-            _lastNormalBounds = settings;
-        }
-
-        _userSettingsService.SaveWindowsSettings(settings);
+            Left = RestoreBounds.Left,
+            Top = RestoreBounds.Top,
+            Width = RestoreBounds.Width > 0 ? RestoreBounds.Width : Width,
+            Height = RestoreBounds.Height > 0 ? RestoreBounds.Height : Height,
+            WindowState = WindowState
+        });
     }
 }

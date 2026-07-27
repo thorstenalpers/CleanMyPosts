@@ -365,9 +365,12 @@ FodyWeavers.xsd
 # local cmd files
 *local.cmd
 
+# Frontend build artifacts
+dist/
+storybook-static/
+
 # Installer releases 
 installer/Output
 
-github-stats.txt
-/CleanMyPosts.sln.lnk
-/CleanMyPosts.slnx.lnk
+.drawio-tmp
+#.claude

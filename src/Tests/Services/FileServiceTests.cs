@@ -1,5 +1,5 @@
 ﻿using System.Text;
-using CleanMyPosts.Services;
+using CleanMyPosts.Hosting;
 using FluentAssertions;
 using Newtonsoft.Json;
 using Xunit;

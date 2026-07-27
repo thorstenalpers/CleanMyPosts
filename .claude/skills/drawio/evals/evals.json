@@ -1,0 +1,223 @@
+{
+  "skill_name": "drawio",
+  "version": "2.7.0",
+  "evals": [
+    {
+      "id": "base-general-architecture",
+      "prompt": "Create a tech-blue service architecture with a web client, API gateway, auth service, worker, queue, and PostgreSQL. Return the editable drawio bundle plus SVG.",
+      "expected_output": "A general engineering architecture diagram generated through the YAML-first offline bundle.",
+      "files": [],
+      "assertions": [
+        "Uses the base drawio skill rather than an academic overlay",
+        "Normalizes the request into a YAML spec before rendering",
+        "Outputs final .drawio and .svg, with .spec.yaml and .arch.json in a separate work directory unless a persistent bundle is requested",
+        "Uses tech-blue or another non-academic engineering theme",
+        "Does not require a live backend to complete",
+        "Uses exported SVG or Desktop-exported artifacts for visual verification before any browser screenshot"
+      ]
+    },
+    {
+      "id": "base-flowchart-fast-path",
+      "prompt": "Create a horizontal login flowchart with Start, Login Form, Validate, Success, and Error using the high-contrast theme.",
+      "expected_output": "A simple flowchart that can be handled by the base fast path.",
+      "files": [],
+      "assertions": [
+        "Contains exactly the requested flowchart nodes",
+        "Uses horizontal layout",
+        "Uses terminal and decision semantic node types where appropriate",
+        "Runs validation before reporting completion"
+      ]
+    },
+    {
+      "id": "base-uml-sequence-state-er",
+      "prompt": "Create a draw.io bundle containing four pages or clearly separated sections: a UML class diagram, a sequence diagram, a state machine, and an ER diagram for a checkout system.",
+      "expected_output": "A non-academic UML/ER bundle using base references and semantic shapes.",
+      "files": [],
+      "assertions": [
+        "Covers UML class, sequence, state, and ER diagram forms",
+        "Uses base semantic shapes and typed connectors",
+        "Keeps YAML as the canonical authoring surface",
+        "Does not apply publication-specific venue or caption gates"
+      ]
+    },
+    {
+      "id": "base-network-topology",
+      "prompt": "Create a network topology with firewall, core switch, access switch, wireless APs, two app servers, and a private database subnet. Include interface and VLAN labels on the links.",
+      "expected_output": "A network topology generated from semantic network device and link metadata.",
+      "files": [],
+      "assertions": [
+        "Uses semantic device types such as firewall, switch, server, subnet, and ap",
+        "Records link metadata such as interfaces, VLAN, bandwidth, or link type",
+        "Produces readable hierarchical, star, or mesh layout",
+        "Uses engineering-review quality checks when routing is dense"
+      ]
+    },
+    {
+      "id": "base-mermaid-conversion",
+      "prompt": "Convert this Mermaid flowchart to draw.io:\n\nflowchart LR\n  A[User] --> B[API Gateway]\n  B --> C[Auth]\n  B --> D[Orders]\n  D --> E[(Order DB)]",
+      "expected_output": "A draw.io bundle converted from Mermaid through the base YAML normalization path.",
+      "files": [],
+      "assertions": [
+        "Parses Mermaid as an input format",
+        "Generates an intermediate YAML spec",
+        "Preserves Mermaid nodes and edge connectivity",
+        "Outputs editable drawio artifacts without live backend requirements"
+      ]
+    },
+    {
+      "id": "base-csv-orgchart-conversion",
+      "prompt": "Convert this CSV to an org chart draw.io diagram:\n\nname,parent,type\nCEO,,user\nVP Engineering,CEO,service\nBackend Lead,VP Engineering,service\nFrontend Lead,VP Engineering,service",
+      "expected_output": "A vertical org chart generated from CSV hierarchy input.",
+      "files": [],
+      "assertions": [
+        "Parses CSV as an input format",
+        "Preserves parent-child hierarchy",
+        "Uses a clear vertical org chart layout",
+        "Keeps the YAML spec as canonical after conversion"
+      ]
+    },
+    {
+      "id": "base-import-drawio-export-spec",
+      "prompt": "Import the uploaded .drawio file into YAML spec and write sidecars, then rename API to Auth Service and export SVG.",
+      "expected_output": "An imported and edited sidecar bundle generated from an existing .drawio file.",
+      "files": [
+        "skills/drawio/evals/fixtures/import-simple.drawio"
+      ],
+      "assertions": [
+        "Uses --input-format drawio --export-spec for import",
+        "Writes .spec.yaml and .arch.json sidecars",
+        "Applies edits to the YAML spec before regeneration",
+        "Regenerates SVG or drawio output from the offline bundle"
+      ]
+    },
+    {
+      "id": "base-theme-style-preset-behavior",
+      "prompt": "Apply the built-in corporate style preset to a small service diagram. If I ask to make it my default, copy it to my user preset directory rather than editing bundled presets.",
+      "expected_output": "A style-preset workflow that treats base bundled presets as read-only shared resources.",
+      "files": [],
+      "assertions": [
+        "Looks for bundled presets under skills/drawio/styles/built-in/",
+        "Uses user presets from a home-directory style folder before bundled presets",
+        "Never mutates bundled preset JSON files",
+        "Reports unknown preset names instead of silently falling back"
+      ]
+    },
+    {
+      "id": "base-non-academic-replicate",
+      "prompt": "Replicate the uploaded approval-flow image. Preserve the warm orange fills, brown connectors, cream background, and off-line edge labels. This is not a paper figure.",
+      "expected_output": "A non-academic replicated bundle preserving source palette and text placement.",
+      "files": [
+        "skills/drawio/evals/fixtures/replicate-warm-approval.svg"
+      ],
+      "assertions": [
+        "Sets meta.source to replicated",
+        "Uses meta.canvas when source image dimensions or top-left coordinate fidelity matter",
+        "Preserves source palette unless the user asks for theme-first",
+        "Uses bounds for position-sensitive standalone text",
+        "Uses labelOffset when edge labels must sit off connector lines",
+        "Does not embed the whole uploaded reference image as the final draw.io page",
+        "Does not force academic-paper metadata",
+        "Compares against exported SVG or Desktop-exported artifacts before any browser screenshot"
+      ]
+    },
+    {
+      "id": "base-native-reference-rebuild",
+      "prompt": "Rebuild the uploaded workflow screenshot as an editable native draw.io diagram. Match the 1200x800 source canvas, preserve panel bounds, labels, arrows, and a small legend thumbnail, but do not paste the screenshot as the page.",
+      "expected_output": "A native editable reference rebuild bundle with explicit canvas, inventory, validation, and exported-artifact verification.",
+      "files": [
+        "skills/drawio/evals/fixtures/replicate-warm-approval.svg"
+      ],
+      "assertions": [
+        "Writes or presents a reference inventory covering source canvas, regions, native shapes, connectors, palette, and approximations",
+        "Sets meta.source to replicated",
+        "Sets meta.canvas to the source dimensions, such as 1200x800, when mapping top-left coordinates",
+        "Uses native draw.io shapes, text, connectors, modules or groups, waypoints, and styles for the main diagram",
+        "Allows only small icon or motif image cells when they are not the whole page",
+        "Runs --validate or validateXml so full-page embedded image cells are caught",
+        "Outputs final .drawio and .svg, with .spec.yaml, .arch.json, and inventory sidecars in a work directory",
+        "Uses exported SVG or Desktop-exported artifacts for visual verification before any browser screenshot"
+      ]
+    },
+    {
+      "id": "base-desktop-unavailable-fallback",
+      "prompt": "Export this diagram as PNG and PDF, but draw.io Desktop may not be installed.",
+      "expected_output": "A fallback response that still provides the offline bundle and SVG when Desktop export is unavailable.",
+      "files": [],
+      "assertions": [
+        "Attempts PNG/PDF only through Desktop-enhanced export when available",
+        "Does not claim PNG/PDF files exist if Desktop is unavailable",
+        "Still delivers final .drawio and .svg when possible, with sidecars in a work directory",
+        "Provides an exact Desktop command or diagrams.net URL fallback",
+        "Does not substitute Playwright screenshots for unavailable Desktop exports"
+      ]
+    },
+    {
+      "id": "base-optional-live-refinement-boundary",
+      "prompt": "Open a browser session only if live inline refinement is available; otherwise edit the offline YAML bundle and explain the fallback.",
+      "expected_output": "A base workflow that treats live backend as optional refinement rather than source of truth.",
+      "files": [],
+      "assertions": [
+        "Live backend is refinement-only",
+        "Offline YAML sidecar bundle remains canonical",
+        "Missing live capabilities do not block create/edit/export",
+        "Does not require one specific MCP provider for normal work"
+      ]
+    },
+    {
+      "id": "base-formula-technical-diagram",
+      "prompt": "Create a technical pipeline diagram with a standalone formula node for $$L = -\\sum y_i \\log(\\hat{y}_i)$$ and an inline note using \\(p < 0.05\\).",
+      "expected_output": "A formula-bearing technical diagram using official math delimiters without academic publication gates.",
+      "files": [],
+      "assertions": [
+        "Uses official formula delimiters only",
+        "Escapes YAML/XML-sensitive math text correctly",
+        "Keeps formula content readable in SVG",
+        "Does not require academic-paper profile unless explicitly requested"
+      ]
+    },
+    {
+      "id": "base-palette-selection",
+      "prompt": "Create a multi-category service map that remains readable for colorblind reviewers. I have not chosen a palette.",
+      "expected_output": "A base-skill palette selection that asks once before recording a metadata-backed palette in the YAML spec.",
+      "files": [],
+      "assertions": [
+        "Uses AskUserQuestion as a single-select because palette and colorblind intent are explicit but no palette was named",
+        "Offers 3-4 relevant palettes with the best fit first and marked (Recommended)",
+        "Uses palette display names and describes colorblind and grayscale safety for each option",
+        "Records the selected palette in meta.palette without changing theme-owned typography, layout, shapes, or line styles",
+        "Reports the selected palette and its safety flags after validation"
+      ]
+    },
+    {
+      "id": "base-replicate-palette-preservation",
+      "prompt": "Replicate the uploaded architecture diagram and preserve its existing blue, teal, and gray colors exactly. Do not normalize the style.",
+      "expected_output": "A base replication workflow that preserves source colors and skips palette selection.",
+      "files": [
+        "skills/drawio/evals/fixtures/replicate-brand-architecture.svg"
+      ],
+      "assertions": [
+        "Preserves the source palette and does not ask a palette-selection question",
+        "Does not set meta.palette because normalization or recoloring was not requested",
+        "May record extracted source colors in meta.replication.palette without treating them as a reusable rendering palette",
+        "Keeps the final diagram native and editable rather than embedding the uploaded image as a full page",
+        "Verifies the exported SVG or Desktop-exported artifact against the source colors"
+      ]
+    },
+    {
+      "id": "base-upstream-integration-routing",
+      "prompt": "Import a saved Compose architecture and Docker inspect snapshot, show drift, add a linked detail page, and export a script-free HTML review plus Mermaid summary. Stay offline.",
+      "expected_output": "A canonical stable-identity drift bundle with multi-page links and offline postprocess projections.",
+      "files": [
+        "skills/drawio/references/examples/importers/live/drift-declared-compose.yaml",
+        "skills/drawio/references/examples/importers/live/compose-drift-report.json"
+      ],
+      "assertions": [
+        "Uses the shared declared/live identity and canonical graph projection path",
+        "Keeps linked pages in canonical bundle v1 with stable page and object identity",
+        "Uses only the shipped mermaid and script-free html postprocess operations",
+        "Does not require Graphviz, network, Desktop, browser, MCP, or a model",
+        "Preserves unavailable provider and model execution as missing evidence"
+      ]
+    }
+  ]
+}

@@ -34,6 +34,13 @@ jobs:
         with:
           dotnet-version: 10.x
 
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          cache: npm
+          cache-dependency-path: src/CleanMyPosts.UI/package-lock.json
+
       - name: Install .NET Tools (local)
         run: |
           dotnet new tool-manifest
@@ -42,10 +49,17 @@ jobs:
       - name: Restore
         run: dotnet restore "${{ env.Solution }}"
 
+      - name: UI - Install and Test
+        working-directory: src/CleanMyPosts.UI
+        run: |
+          npm ci
+          npm run check
+          npm test
+
       - name: Build and Test
         run: |
           dotnet build "${{ env.Solution }}" --configuration Release --no-restore
-          
+
           dotnet test "${{ env.Test_Project }}" `
             --collect:"XPlat Code Coverage" `
             --results-directory TestResults/Tests `

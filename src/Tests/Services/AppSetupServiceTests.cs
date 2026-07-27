@@ -1,5 +1,5 @@
-﻿using CleanMyPosts.Services;
-using CleanMyPosts.ViewModels;
+using CleanMyPosts.Hosting;
+using CleanMyPosts.Logging;
 using FluentAssertions;
 using Microsoft.Extensions.Configuration;
 using Xunit;
@@ -15,10 +15,10 @@ public class AppSetupServiceTests
         // Arrange
         var service = new AppSetupService();
         var config = new ConfigurationBuilder().Build();
-        var logViewModel = new LogViewModel(); // You might need to provide a stub or mock if it has dependencies
+        var logBuffer = new LogBuffer();
 
         // Act
-        var logger = service.CreateLogger(config, logViewModel);
+        var logger = service.CreateLogger(config, logBuffer);
 
         // Assert
         logger.Should().NotBeNull();
@@ -35,10 +35,10 @@ public class AppSetupServiceTests
             .Build();
 
         var service = new AppSetupService();
-        var logViewModel = new LogViewModel();
+        var logBuffer = new LogBuffer();
 
         // Act
-        var logger = service.CreateLogger(config, logViewModel);
+        var logger = service.CreateLogger(config, logBuffer);
 
         // Assert
         logger.Should().NotBeNull();

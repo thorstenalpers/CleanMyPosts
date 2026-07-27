@@ -1,7 +1,6 @@
 using System.Windows;
-using CleanMyPosts.Contracts.Services;
-using CleanMyPosts.Models;
-using CleanMyPosts.Services;
+using CleanMyPosts.Hosting;
+using CleanMyPosts.Settings;
 using FluentAssertions;
 using Moq;
 using Xunit;
@@ -19,7 +18,7 @@ public class UserSettingsServiceTests
     public UserSettingsServiceTests()
     {
         _mockFileService = new Mock<IFileService>();
-        _appConfig = new AppConfig { DarkStyleUri = null, LightStyleUri = null };
+        _appConfig = new AppConfig();
         _expectedSettingsPath = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
             _appConfig.ConfigurationsFolder);

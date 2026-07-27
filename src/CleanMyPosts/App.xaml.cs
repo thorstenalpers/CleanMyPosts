@@ -1,7 +1,7 @@
 ﻿using System.Windows;
 using System.Windows.Threading;
-using CleanMyPosts.Services;
-using CleanMyPosts.ViewModels;
+using CleanMyPosts.Hosting;
+using CleanMyPosts.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -24,12 +24,12 @@ public partial class App : Application
     private async void OnStartup(object sender, StartupEventArgs e)
     {
         var config = _appSetupService.BuildConfiguration();
-        var logViewModel = new LogViewModel();
-        Log.Logger = _appSetupService.CreateLogger(config, logViewModel);
+        var logBuffer = new LogBuffer();
+        Log.Logger = _appSetupService.CreateLogger(config, logBuffer);
 
         try
         {
-            _host = _hostService.BuildHost(e.Args, config, logViewModel);
+            _host = _hostService.BuildHost(e.Args, config, logBuffer);
             await _host.StartAsync();
             var logger = _host.Services.GetRequiredService<ILogger<App>>();
             logger.LogInformation("Application started.");

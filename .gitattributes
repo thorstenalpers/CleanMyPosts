@@ -1,7 +1,13 @@
 ###############################################################################
-# Set default behavior to automatically normalize line endings.
+# Normalize line endings: store text as LF in the repo and check it out as LF
+# on every platform, regardless of each contributor's core.autocrlf setting.
 ###############################################################################
-* text=auto
+* text=auto eol=lf
+
+# Windows-only scripts must keep CRLF or batch labels/goto can misbehave.
+*.cmd text eol=crlf
+*.bat text eol=crlf
+
 *.sh text eol=lf
 
 ###############################################################################

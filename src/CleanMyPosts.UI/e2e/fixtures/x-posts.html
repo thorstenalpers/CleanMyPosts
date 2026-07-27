@@ -1,0 +1,33 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>x.com posts fixture</title>
+  </head>
+  <body>
+    <div data-testid="primaryColumn">
+      <section>
+        <article data-post="1">Post 1</article>
+        <button data-testid="caret" data-post="1">More</button>
+        <article data-post="2">Post 2</article>
+        <button data-testid="caret" data-post="2">More</button>
+      </section>
+    </div>
+
+    <div role="menu">
+      <div role="menuitem"><span style="color: rgb(220, 20, 20)">Delete</span></div>
+    </div>
+
+    <button data-testid="confirmationSheetConfirm">Delete</button>
+
+    <script>
+      // Simulate x.com removing the top post when the deletion is confirmed.
+      document
+        .querySelector('button[data-testid="confirmationSheetConfirm"]')
+        .addEventListener('click', () => {
+          document.querySelector('section article')?.remove();
+          document.querySelector('section button[data-testid="caret"]')?.remove();
+        });
+    </script>
+  </body>
+</html>

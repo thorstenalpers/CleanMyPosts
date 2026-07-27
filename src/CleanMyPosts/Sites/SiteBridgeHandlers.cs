@@ -8,6 +8,11 @@ public static class SiteBridgeHandlers
     {
         bridge.Register<SiteNavigateParams, SiteNavigateResult>("site.navigate", orchestrator.NavigateAsync);
         bridge.Register<SiteRunActionParams, ActionResultDto>("site.runAction", orchestrator.RunActionAsync);
+        bridge.Register<SiteCancelActionParams, object>("site.cancelAction", async p =>
+        {
+            await orchestrator.CancelAction(p);
+            return null;
+        });
         bridge.Register<SiteHideParams, object>("site.hide", async p =>
         {
             await orchestrator.HideAsync(p.Hide);

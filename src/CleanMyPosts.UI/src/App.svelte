@@ -12,8 +12,8 @@
   import XView from './views/x-view.svelte';
   import YouTubeView from './views/youtube-view.svelte';
   import { SiteLoginStore } from '$lib/stores/site-login.svelte';
-  import MessagesSquareIcon from '@lucide/svelte/icons/messages-square';
-  import VideoIcon from '@lucide/svelte/icons/video';
+  import XIcon from '$lib/components/icons/x-icon.svelte';
+  import YouTubeIcon from '$lib/components/icons/youtube-icon.svelte';
   import ScrollTextIcon from '@lucide/svelte/icons/scroll-text';
   import SettingsIcon from '@lucide/svelte/icons/settings';
 
@@ -45,11 +45,11 @@
 
   const navItems = $derived(
     [
-      { key: 'x' as const, label: 'X', icon: MessagesSquareIcon },
-      { key: 'youtube' as const, label: 'YouTube', icon: VideoIcon },
+      { key: 'x' as const, label: 'X', icon: XIcon },
+      { key: 'youtube' as const, label: 'YouTube', icon: YouTubeIcon },
       ...(settingsStore.settings.showLogs ? [{ key: 'log' as const, label: 'Log', icon: ScrollTextIcon }] : []),
-      { key: 'settings' as const, label: 'Settings', icon: SettingsIcon }
-    ] satisfies { key: NavKey; label: string; icon: Component }[]
+      { key: 'settings' as const, label: 'Settings', icon: SettingsIcon, footer: true }
+    ] satisfies { key: NavKey; label: string; icon: Component; footer?: boolean }[]
   );
 
   function onNavigate(key: NavKey): void {

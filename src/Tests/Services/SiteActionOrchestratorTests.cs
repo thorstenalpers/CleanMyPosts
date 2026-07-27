@@ -1,4 +1,5 @@
 #nullable enable
+using CleanMyPosts.Exceptions;
 using CleanMyPosts.Hosting;
 using CleanMyPosts.Infrastructure;
 using CleanMyPosts.Settings;
@@ -36,6 +37,9 @@ public class SiteActionOrchestratorTests
         // Safe default for the fire-and-forget login-status check NavigateAsync kicks off; individual tests
         // override the getUserName/getLoginStatus setups when they care about the resolved value.
         _siteWebViewMock.Setup(x => x.ExecuteScriptAsync(It.Is<string>(s => s.Contains("getLoginStatus")))).ReturnsAsync("''");
+
+        // The content script is assumed injected unless a test says otherwise.
+        _siteWebViewMock.Setup(x => x.ExecuteScriptAsync(It.Is<string>(s => s.Contains("typeof window.__cmp")))).ReturnsAsync("\"object\"");
 
         _siteWebViewMock.SetupGet(x => x.Source).Returns(() => _currentSource!);
         _siteWebViewMock.SetupSet(x => x.Source = It.IsAny<Uri>()).Callback<Uri>(uri =>
@@ -86,7 +90,7 @@ public class SiteActionOrchestratorTests
     }
 
     [Fact]
-    public async Task NavigateAsync_ForX_FailsWhenNoUserNameCanBeResolved()
+    public async Task NavigateAsync_ForX_FallsBackToHomePageWhenNoUserNameCanBeResolved()
     {
         _siteWebViewMock.Setup(x => x.ExecuteScriptAsync(It.Is<string>(s => s.Contains("getUserName"))))
             .ReturnsAsync("\"\"");
@@ -95,7 +99,8 @@ public class SiteActionOrchestratorTests
 
         var result = await orchestrator.NavigateAsync(new SiteNavigateParams(Platform.X, "showPosts"));
 
-        result.Ok.Should().BeFalse();
+        result.Ok.Should().BeTrue();
+        _currentSource.Should().Be(new Uri(_appConfig.XBaseUrl));
     }
 
     [Fact]
@@ -127,5 +132,45 @@ public class SiteActionOrchestratorTests
 
         result.DeletedCount.Should().Be(0);
         _siteWebViewMock.Verify(x => x.ExecuteScriptAsync(It.Is<string>(s => s.Contains("__cmp.run"))), Times.Never);
+    }
+
+    [Fact]
+    public async Task RunActionAsync_FailsWhenContentScriptIsNotReachable()
+    {
+        var orchestrator = CreateOrchestrator();
+
+        // Override the "script is injected" default from CreateOrchestrator (last Moq setup wins).
+        _siteWebViewMock.Setup(x => x.ExecuteScriptAsync(It.Is<string>(s => s.Contains("typeof window.__cmp"))))
+            .ReturnsAsync("\"undefined\"");
+
+        var act = () => orchestrator.RunActionAsync(new SiteRunActionParams(
+            "req-3",
+            Platform.Youtube,
+            "deleteLikes",
+            new TimeoutSettingsDto(0, 0, 0)));
+
+        await act.Should().ThrowAsync<CleanMyPostsException>();
+    }
+
+    [Fact]
+    public async Task RunActionAsync_CanBeCancelled_AndReturnsWhatWasDeletedSoFar()
+    {
+        // isEmpty stays false so the run would loop forever; the pending __cmp.run never gets a `done`
+        // message, so only cancellation can end it — proving Stop works and doesn't hang.
+        _siteWebViewMock.Setup(x => x.ExecuteScriptAsync(It.Is<string>(s => s.Contains("isEmpty"))))
+            .ReturnsAsync("false");
+
+        var orchestrator = CreateOrchestrator();
+
+        var run = orchestrator.RunActionAsync(new SiteRunActionParams(
+            "req-cancel",
+            Platform.Youtube,
+            "deleteLikes",
+            new TimeoutSettingsDto(0, 0, 0)));
+
+        await orchestrator.CancelAction(new SiteCancelActionParams("req-cancel"));
+
+        var result = await run.WaitAsync(TimeSpan.FromSeconds(5));
+        result.DeletedCount.Should().Be(0);
     }
 }

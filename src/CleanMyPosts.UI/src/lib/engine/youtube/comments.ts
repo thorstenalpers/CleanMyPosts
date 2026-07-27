@@ -1,4 +1,4 @@
-import { clickWithCursor, delay, postLog, postProgress, waitForByScrolling } from '../dom';
+import { clickWithCursor, delay, highlightElement, postLog, postProgress, waitForByScrolling } from '../dom';
 import type { RunParams } from '../protocol';
 import type { DeleteActionDefinition } from '../types';
 
@@ -44,6 +44,7 @@ async function clickDeleteButton(waitBetweenRetryDeleteAttempts: number): Promis
   const deleteButton = findDeleteButton();
   if (!deleteButton) return false;
 
+  highlightElement((deleteButton.closest('div[role="listitem"]') as HTMLElement | null) ?? deleteButton);
   clickWithCursor(deleteButton);
   await delay(waitBetweenRetryDeleteAttempts);
 

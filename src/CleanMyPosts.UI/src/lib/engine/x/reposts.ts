@@ -1,4 +1,4 @@
-import { clickWithCursor, delay, isVisible, postLog, postProgress, waitForByScrolling } from '../dom';
+import { clickWithCursor, delay, highlightElement, isVisible, postLog, postProgress, waitForByScrolling } from '../dom';
 import type { RunParams } from '../protocol';
 import type { DeleteActionDefinition } from '../types';
 
@@ -26,6 +26,7 @@ async function clickUnretweetButtonWithRetry(waitTime: number, maxTries = 5): Pr
   for (let attempt = 0; attempt < maxTries; attempt++) {
     const btn = findUnretweetButton();
     if (isVisible(btn)) {
+      highlightElement((btn.closest('article') as HTMLElement | null) ?? btn);
       clickWithCursor(btn);
       await delay(500);
 

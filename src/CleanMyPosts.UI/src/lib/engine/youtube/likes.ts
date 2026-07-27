@@ -1,4 +1,4 @@
-import { clickWithCursor, delay, postLog, postProgress, waitForByScrolling } from '../dom';
+import { clickWithCursor, delay, highlightElement, postLog, postProgress, waitForByScrolling } from '../dom';
 import type { RunParams } from '../protocol';
 import type { DeleteActionDefinition } from '../types';
 
@@ -155,6 +155,7 @@ async function unlikeVideo(waitTime: number): Promise<boolean> {
   const result = findVideoItem();
   if (!result) return false;
 
+  highlightElement(result.element);
   if (!(await clickMenuButton(result.element, result.type, waitTime))) return false;
 
   if (!(await clickRemoveFromLiked())) {

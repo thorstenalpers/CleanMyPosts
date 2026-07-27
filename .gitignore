@@ -368,6 +368,8 @@ FodyWeavers.xsd
 # Frontend build artifacts
 dist/
 storybook-static/
+playwright-report/
+test-results/
 
 # Installer releases 
 installer/Output

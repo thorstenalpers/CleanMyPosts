@@ -1,4 +1,4 @@
-import { clickWithCursor, delay, isVisible, postLog, postProgress, waitForByScrolling } from '../dom';
+import { clickWithCursor, delay, highlightElement, isVisible, postLog, postProgress, waitForByScrolling } from '../dom';
 import type { RunParams } from '../protocol';
 import type { DeleteActionDefinition } from '../types';
 
@@ -16,6 +16,7 @@ async function clickUnfollowButtonWithConfirm(
   const btn = findUnfollowButton();
   if (!isVisible(btn)) return false;
 
+  highlightElement((btn.closest('[data-testid="UserCell"]') as HTMLElement | null) ?? btn);
   clickWithCursor(btn);
   await delay(waitBeforeTryClickDelete);
 

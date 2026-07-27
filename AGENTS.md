@@ -51,8 +51,10 @@ npm --prefix src/CleanMyPosts.UI run storybook
 ## Hard rules
 
 1. **No platform API.** No OAuth, no token storage, no API key.
-2. **No local storage.** No SQLite, no files written to disk, no user data cached.
-   The session lives only in the WebView2 user profile (cookies, which the platform manages).
+2. **No user data stored.** No SQLite, no database, and none of the user's posts, likes, comments,
+   or account content is ever written to disk or cached. The only files written are the app's own
+   preferences (theme, timeouts, window state) under `LocalApplicationData`. The login session lives
+   solely in the WebView2 user profile (cookies, which the platform manages).
 3. **All UI ↔ host communication goes through the bridge.** Two distinct protocols, never
    mixed: [02-bridge-contract.md](.agents/docs/02-bridge-contract.md).
 4. **No telemetry.** No outbound traffic other than to the sites the user opens themselves.

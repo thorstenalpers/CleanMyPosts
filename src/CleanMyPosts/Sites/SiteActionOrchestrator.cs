@@ -1,6 +1,7 @@
 using System.Net;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
+using CleanMyPosts.Exceptions;
 using CleanMyPosts.Hosting;
 using CleanMyPosts.Infrastructure;
 using CleanMyPosts.Settings;
@@ -27,6 +28,8 @@ public sealed class SiteActionOrchestrator : IDisposable
 
     private readonly Dictionary<string, TaskCompletionSource<ContentMessageDto>> _pendingRuns = new();
     private readonly Dictionary<string, int> _progressBase = new();
+    private readonly Dictionary<string, CancellationTokenSource> _cancellations = new();
+    private readonly Dictionary<string, Action> _activityResetters = new();
     private readonly HashSet<Platform> _loginConfirmed = [];
 
     // Set once via AttachLayoutService — ShellWindow (which implements IShellLayoutService)
@@ -85,20 +88,62 @@ public sealed class SiteActionOrchestrator : IDisposable
 
     public async Task<ActionResultDto> RunActionAsync(SiteRunActionParams request)
     {
+        using var cts = new CancellationTokenSource();
+        _cancellations[request.RequestId] = cts;
+        try
+        {
+            return await RunActionCoreAsync(request, cts.Token);
+        }
+        finally
+        {
+            _cancellations.Remove(request.RequestId);
+        }
+    }
+
+    /// <summary>Cancels an in-flight <see cref="RunActionAsync"/> so a long, destructive run can be stopped from the UI.</summary>
+    public Task CancelAction(SiteCancelActionParams request)
+    {
+        if (_cancellations.TryGetValue(request.RequestId, out var cts))
+        {
+            cts.Cancel();
+        }
+
+        return Task.CompletedTask;
+    }
+
+    private async Task<ActionResultDto> RunActionCoreAsync(SiteRunActionParams request, CancellationToken cancellationToken)
+    {
         var url = await BuildUrlAsync(request.Platform, request.Action);
         if (url == null || !await NavigateToUrlAsync(url))
         {
             return new ActionResultDto(0);
         }
 
+        if (!await IsScriptReadyAsync())
+        {
+            throw new CleanMyPostsException(
+                "Could not reach the delete engine on the page. The site may have changed its layout or blocked the injected script.");
+        }
+
         var deletedTotal = 0;
         var retryCount = 0;
 
-        while (retryCount < MaxRetriesPerAction && !await IsEmptyAsync(request.Platform, request.Action))
+        while (retryCount < MaxRetriesPerAction
+               && !cancellationToken.IsCancellationRequested
+               && !await IsEmptyAsync(request.Platform, request.Action))
         {
             _progressBase[request.RequestId] = deletedTotal;
 
-            var deletedThisRound = await RunOnceAsync(request.Platform, request.Action, request.RequestId, request.Timeouts);
+            int deletedThisRound;
+            try
+            {
+                deletedThisRound = await RunOnceAsync(request.Platform, request.Action, request.RequestId, request.Timeouts, cancellationToken);
+            }
+            catch (OperationCanceledException)
+            {
+                break;
+            }
+
             if (deletedThisRound > 0)
             {
                 deletedTotal += deletedThisRound;
@@ -109,9 +154,21 @@ public sealed class SiteActionOrchestrator : IDisposable
                 retryCount++;
             }
 
+            if (cancellationToken.IsCancellationRequested)
+            {
+                break;
+            }
+
             _siteWebViewService.Reload();
             await WaitForNavigationAsync();
-            await Task.Delay(request.Timeouts.WaitAfterDocumentLoad);
+            try
+            {
+                await Task.Delay(request.Timeouts.WaitAfterDocumentLoad, cancellationToken);
+            }
+            catch (OperationCanceledException)
+            {
+                break;
+            }
         }
 
         _progressBase.Remove(request.RequestId);
@@ -167,6 +224,13 @@ public sealed class SiteActionOrchestrator : IDisposable
         return tcs.Task;
     }
 
+    /// <summary>True once the injected content script has attached <c>window.__cmp</c> to the page.</summary>
+    private async Task<bool> IsScriptReadyAsync()
+    {
+        var result = await _siteWebViewService.ExecuteScriptAsync("(typeof window.__cmp)");
+        return string.Equals(ScriptResult.Unwrap(result), "object", StringComparison.OrdinalIgnoreCase);
+    }
+
     private async Task<bool> IsEmptyAsync(Platform platform, string action)
     {
         var script = $"(window.__cmp ? window.__cmp.isEmpty({ToJs(platform)}, {ToJs(action)}) : true)";
@@ -174,34 +238,68 @@ public sealed class SiteActionOrchestrator : IDisposable
         return string.Equals(result?.Trim(), "true", StringComparison.OrdinalIgnoreCase);
     }
 
-    private async Task<int> RunOnceAsync(Platform platform, string action, string requestId, TimeoutSettingsDto timeouts)
+    private async Task<int> RunOnceAsync(
+        Platform platform, string action, string requestId, TimeoutSettingsDto timeouts, CancellationToken cancellationToken)
     {
         var tcs = new TaskCompletionSource<ContentMessageDto>(TaskCreationOptions.RunContinuationsAsynchronously);
         _pendingRuns[requestId] = tcs;
 
-        var runParams = new
+        // A single page load can legitimately take a while, so guard against a *stalled* run (a lost
+        // done/error, e.g. the JS context torn down by a navigation) with an inactivity timeout that
+        // every progress event pushes back — rather than a flat cap that would cut off slow deletions.
+        var inactivityMs = InactivityLimitMs(timeouts);
+        using var inactivityCts = new CancellationTokenSource(inactivityMs);
+        _activityResetters[requestId] = () => inactivityCts.CancelAfter(inactivityMs);
+
+        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, inactivityCts.Token);
+        await using var registration = linkedCts.Token.Register(() => tcs.TrySetCanceled(linkedCts.Token));
+
+        try
         {
-            requestId,
-            waitAfterDelete = timeouts.WaitAfterDelete,
-            waitBetweenRetryDeleteAttempts = timeouts.WaitBetweenRetryDeleteAttempts,
-            userName = platform == Platform.X ? _xUserName : null
-        };
-        var paramsJson = JsonSerializer.Serialize(runParams, BridgeJson.Options);
+            var runParams = new
+            {
+                requestId,
+                waitAfterDelete = timeouts.WaitAfterDelete,
+                waitBetweenRetryDeleteAttempts = timeouts.WaitBetweenRetryDeleteAttempts,
+                userName = platform == Platform.X ? _xUserName : null
+            };
+            var paramsJson = JsonSerializer.Serialize(runParams, BridgeJson.Options);
 
-        var script = $"window.__cmp && window.__cmp.run({ToJs(platform)}, {ToJs(action)}, {ToJs(paramsJson)})";
-        await _siteWebViewService.ExecuteScriptAsync(script);
+            var script = $"window.__cmp && window.__cmp.run({ToJs(platform)}, {ToJs(action)}, {ToJs(paramsJson)})";
+            await _siteWebViewService.ExecuteScriptAsync(script);
 
-        var message = await tcs.Task;
-        _pendingRuns.Remove(requestId);
+            ContentMessageDto message;
+            try
+            {
+                message = await tcs.Task;
+            }
+            catch (OperationCanceledException ex)
+            {
+                if (inactivityCts.IsCancellationRequested && !cancellationToken.IsCancellationRequested)
+                {
+                    _logger.LogWarning(ex, "Action {Action} stalled for {Ms}ms with no progress; aborting.", action, inactivityMs);
+                }
 
-        if (message.Type == "error")
-        {
-            _logger.LogWarning("Action {Action} reported an error: {Message}", action, message.Message);
-            return 0;
+                throw;
+            }
+
+            if (message.Type == "error")
+            {
+                _logger.LogWarning("Action {Action} reported an error: {Message}", action, message.Message);
+                return 0;
+            }
+
+            return message.DeletedCount ?? 0;
         }
-
-        return message.DeletedCount ?? 0;
+        finally
+        {
+            _pendingRuns.Remove(requestId);
+            _activityResetters.Remove(requestId);
+        }
     }
+
+    private static int InactivityLimitMs(TimeoutSettingsDto timeouts) =>
+        30_000 + timeouts.WaitAfterDelete + timeouts.WaitAfterDocumentLoad;
 
     private async Task<string> BuildUrlAsync(Platform platform, string action)
     {
@@ -236,14 +334,17 @@ public sealed class SiteActionOrchestrator : IDisposable
 
     private async Task<string> EnsureXUserNameAsync()
     {
-        if (!string.IsNullOrEmpty(_xUserName))
+        // Re-read on every call rather than caching for the session: the user may sign out and back in
+        // as a different account, and a stale name would build URLs for the wrong profile. The last
+        // known name is kept only as a fallback for the moments the page can't resolve it yet.
+        var raw = await _siteWebViewService.ExecuteScriptAsync("window.__cmp ? window.__cmp.getUserName() : ''");
+        var resolved = ScriptResult.Unwrap(raw);
+        if (!string.IsNullOrEmpty(resolved))
         {
-            return _xUserName;
+            _xUserName = resolved;
         }
 
-        var raw = await _siteWebViewService.ExecuteScriptAsync("window.__cmp ? window.__cmp.getUserName() : ''");
-        _xUserName = ScriptResult.Unwrap(raw);
-        return _xUserName;
+        return _xUserName ?? string.Empty;
     }
 
     private async Task CheckLoginStatusAsync(Platform platform)
@@ -317,6 +418,11 @@ public sealed class SiteActionOrchestrator : IDisposable
             case "progress":
                 if (message.RequestId != null)
                 {
+                    if (_activityResetters.TryGetValue(message.RequestId, out var reset))
+                    {
+                        reset();
+                    }
+
                     var basis = _progressBase.GetValueOrDefault(message.RequestId);
                     var payload = new ProgressPayloadDto(message.RequestId, basis + (message.DeletedCount ?? 0), message.Message);
                     var json = JsonSerializer.Serialize(new { @event = "progress", payload }, BridgeJson.Options);

@@ -67,6 +67,7 @@ export function defaultMockHandlers(): MockHandlers {
     'settings.set': () => undefined,
     'site.navigate': () => ({ ok: true }),
     'site.runAction': () => ({ deletedCount: 0 }),
+    'site.cancelAction': () => undefined,
     'site.hide': () => undefined,
     'site.reload': () => undefined,
     'layout.setSidebarExpanded': () => undefined,

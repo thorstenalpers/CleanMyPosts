@@ -57,6 +57,22 @@ function ensureCursor(): HTMLElement {
   return cursorEl;
 }
 
+/** Briefly outlines an element so the user can see which item (post, video, …) is being deleted. */
+export function highlightElement(el: HTMLElement, durationMs = 1500): void {
+  const prevOutline = el.style.outline;
+  const prevOffset = el.style.outlineOffset;
+  const prevBackground = el.style.backgroundColor;
+  el.style.outline = '3px solid #ff3b30';
+  el.style.outlineOffset = '-3px';
+  el.style.backgroundColor = 'rgba(255,59,48,.08)';
+  setTimeout(() => {
+    if (!document.contains(el)) return;
+    el.style.outline = prevOutline;
+    el.style.outlineOffset = prevOffset;
+    el.style.backgroundColor = prevBackground;
+  }, durationMs);
+}
+
 /** Clicks `el` after moving a visible pointer marker + ripple to its centre, so the user can follow the automation. */
 export function clickWithCursor(el: HTMLElement): void {
   const rect = el.getBoundingClientRect();

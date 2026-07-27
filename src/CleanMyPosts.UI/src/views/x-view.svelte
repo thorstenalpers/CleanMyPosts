@@ -5,6 +5,7 @@
   import type { SiteLoginStore } from '$lib/stores/site-login.svelte';
   import { ActionRunner } from '$lib/stores/action-runner.svelte';
   import ActionRow from '$lib/components/action-row.svelte';
+  import { Button } from '$lib/components/ui/button';
   import { ConfirmDialog } from '$lib/components/ui/alert-dialog';
   import MessagesSquareIcon from '@lucide/svelte/icons/messages-square';
   import ReplyIcon from '@lucide/svelte/icons/reply';
@@ -55,13 +56,21 @@
   }
 
   async function runDelete(group: (typeof groups)[number]): Promise<void> {
-    const result = await runner.run({
-      platform: 'x',
-      action: group.deleteAction,
-      timeouts: settingsStore.settings.timeouts,
-      label: group.label
-    });
-    toast.success(`${result.deletedCount} ${group.noun}${result.deletedCount === 1 ? '' : 's'} cleaned successfully.`);
+    try {
+      const result = await runner.run({
+        platform: 'x',
+        action: group.deleteAction,
+        timeouts: settingsStore.settings.timeouts,
+        label: group.label
+      });
+      if (result.deletedCount === 0) {
+        toast.info(`No ${group.noun}s removed — nothing was found to delete.`);
+      } else {
+        toast.success(`${result.deletedCount} ${group.noun}${result.deletedCount === 1 ? '' : 's'} cleaned.`);
+      }
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Deletion failed.');
+    }
   }
 
   function onDeleteClick(group: (typeof groups)[number]): void {
@@ -93,7 +102,14 @@
       onDelete={() => onDeleteClick(group)}
     />
   {/each}
-  {#if !loginStore.loggedIn.x}
+  {#if runner.running}
+    <div class="flex items-center gap-2 px-3 pt-1">
+      <span class="text-muted-foreground flex-1 truncate text-xs">
+        Deleting {runner.currentLabel}… {runner.deletedSoFar}
+      </span>
+      <Button variant="outline" size="sm" class="h-7" onclick={() => runner.cancel()}>Stop</Button>
+    </div>
+  {:else if !loginStore.loggedIn.x}
     <p class="text-muted-foreground px-3 pt-1 text-xs">Sign in to X to enable cleaning.</p>
   {/if}
 </div>
@@ -102,7 +118,7 @@
   <ConfirmDialog
     bind:open={confirmOpen}
     title="Confirm Deletion"
-    description={`Are you sure you want to delete all ${confirmTarget.noun}s?`}
+    description={`Delete all ${confirmTarget.noun}s? This cannot be undone.`}
     onConfirm={onConfirm}
     onCancel={onCancel}
   />

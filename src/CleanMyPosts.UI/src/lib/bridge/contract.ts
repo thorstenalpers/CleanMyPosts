@@ -1,11 +1,10 @@
 import { z } from 'zod';
 
 /**
- * Single source of truth for the UI <-> WPF host bridge. There is only one
- * WebView2; this same channel is used whether the UI is running as the
- * injected sidebar overlay (on x.com / youtube.com) or as the standalone
- * local app (Settings / Log, served from `cleanmyposts.local`). The C# side
- * implements matching DTOs (System.Text.Json) for each method; a bridge
+ * Single source of truth for the UI <-> WPF host bridge. The Svelte app runs in
+ * the chrome WebView2 (served from `cleanmyposts.local`) and talks to the host
+ * over this channel; the platform sites load in a separate site WebView. The C#
+ * side implements matching DTOs (System.Text.Json) for each method; a bridge
  * integration test on the C# side keeps the two in sync.
  *
  * This is a distinct protocol from `$lib/engine/protocol.ts`, which governs
@@ -102,6 +101,8 @@ export const BridgeMethods = {
     }),
     result: ActionResultSchema
   },
+  /** Stops an in-flight `site.runAction`; that call then resolves with the count deleted so far. */
+  'site.cancelAction': { params: z.object({ requestId: z.string() }), result: voidSchema },
   'site.hide': { params: z.object({ hide: z.boolean() }), result: voidSchema },
   'site.reload': { params: voidSchema, result: voidSchema },
   /** Resizes the host's sidebar column so it tracks the sidebar's expanded/collapsed width (no content bleed). */

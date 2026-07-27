@@ -56,6 +56,12 @@ jobs:
           npm run check
           npm test
 
+      - name: UI - E2E (Playwright)
+        working-directory: src/CleanMyPosts.UI
+        run: |
+          npx playwright install chromium
+          npm run test:e2e
+
       - name: Build and Test
         run: |
           dotnet build "${{ env.Solution }}" --configuration Release --no-restore

@@ -1,4 +1,4 @@
-import { clickWithCursor, delay, isVisible, postLog, postProgress, waitForByScrolling } from '../dom';
+import { clickWithCursor, delay, highlightElement, isVisible, postLog, postProgress, waitForByScrolling } from '../dom';
 import type { RunParams } from '../protocol';
 import type { DeleteActionDefinition } from '../types';
 
@@ -12,6 +12,7 @@ async function clickUnlikeButton(waitTime: number): Promise<boolean> {
   const btn = findUnlikeButton();
   if (!isVisible(btn)) return false;
 
+  highlightElement((btn.closest('article') as HTMLElement | null) ?? btn);
   clickWithCursor(btn);
   await delay(waitTime);
 

@@ -1,4 +1,4 @@
-import { clickWithCursor, delay, isVisible, postLog, postProgress, waitForByScrolling } from '../dom';
+import { clickWithCursor, delay, highlightElement, isVisible, postLog, postProgress, waitForByScrolling } from '../dom';
 import type { RunParams } from '../protocol';
 import type { DeleteActionDefinition } from '../types';
 
@@ -53,6 +53,7 @@ async function clickDeleteOnPost(waitBetweenRetryDeleteAttempts: number): Promis
   const caret = findCaret();
   if (!caret) return false;
 
+  highlightElement((caret.closest('article') as HTMLElement | null) ?? (caret as HTMLElement));
   clickWithCursor(caret as HTMLElement);
   await delay(waitBetweenRetryDeleteAttempts);
 

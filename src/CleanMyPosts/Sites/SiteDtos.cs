@@ -14,6 +14,7 @@ public sealed record SiteNavigateParams(Platform Platform, string Action);
 public sealed record SiteNavigateResult(bool Ok);
 
 public sealed record SiteRunActionParams(string RequestId, Platform Platform, string Action, TimeoutSettingsDto Timeouts);
+public sealed record SiteCancelActionParams(string RequestId);
 public sealed record ActionResultDto(int DeletedCount);
 
 public sealed record SiteHideParams(bool Hide);

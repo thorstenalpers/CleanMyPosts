@@ -121,12 +121,16 @@
       {/snippet}
     </SidebarShell>
 
-    <main class="min-w-0 flex-1 overflow-hidden">
-      {#if activeKey === 'log'}
+    <!-- Pages stay mounted and are only hidden; unmounting would reset their filters, sorting
+         and scroll offset. `visibility` rather than `display`, which drops layout and with it
+         the scroll offset. -->
+    <main class="relative min-w-0 flex-1 overflow-hidden">
+      <div class="absolute inset-0" class:invisible={activeKey !== 'log'} inert={activeKey !== 'log'}>
         <LogView {logStore} />
-      {:else if activeKey === 'settings'}
+      </div>
+      <div class="absolute inset-0" class:invisible={activeKey !== 'settings'} inert={activeKey !== 'settings'}>
         <SettingsView {bridge} {settingsStore} />
-      {/if}
+      </div>
     </main>
   </div>
 </div>

@@ -1,59 +1,61 @@
-using System.Drawing;
-using System.Windows;
 using AutoUpdaterDotNET;
-using Microsoft.Extensions.Logging;
 using CleanMyPosts.Infrastructure;
+using Microsoft.Extensions.Logging;
 
 namespace CleanMyPosts.Updater;
 
 public static class UpdaterBridgeHandlers
 {
-    public static void Register(HostBridge bridge, UpdaterConfig updaterConfig, ILogger logger)
+    public static void Register(
+        HostBridge bridge,
+        UpdaterConfig updaterConfig,
+        IShellLayoutService shellLayoutService,
+        ILogger logger)
     {
-        bridge.Register<object, UpdateCheckResultDto>("updater.checkForUpdates", _ => CheckForUpdatesAsync(updaterConfig, logger));
+        bridge.Register<object, UpdateCheckResultDto>("updater.checkForUpdates",
+            _ => CheckForUpdatesAsync(updaterConfig, shellLayoutService, logger));
     }
 
-    private static Task<UpdateCheckResultDto> CheckForUpdatesAsync(UpdaterConfig updaterConfig, ILogger logger)
+    private static Task<UpdateCheckResultDto> CheckForUpdatesAsync(
+        UpdaterConfig updaterConfig,
+        IShellLayoutService shellLayoutService,
+        ILogger logger)
     {
         var tcs = new TaskCompletionSource<UpdateCheckResultDto>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        void Handler(UpdateInfoEventArgs args)
+        async void Handler(UpdateInfoEventArgs args)
         {
             AutoUpdater.CheckForUpdateEvent -= Handler;
 
-            if (args == null)
+            if (args is null)
             {
                 tcs.TrySetResult(new UpdateCheckResultDto(false, "Unable to check for updates at this time."));
                 return;
             }
 
-            if (args.IsUpdateAvailable)
-            {
-                AutoUpdater.ShowUpdateForm(args);
-                tcs.TrySetResult(new UpdateCheckResultDto(true, null));
-            }
-            else
+            if (!args.IsUpdateAvailable)
             {
                 tcs.TrySetResult(new UpdateCheckResultDto(false, "No updates available."));
+                return;
             }
-        }
 
-        try
-        {
-            var iconUri = new Uri(updaterConfig.IconUri, UriKind.Absolute);
-            var iconStream = Application.GetResourceStream(iconUri)?.Stream;
-            if (iconStream != null)
+            try
             {
-                using (iconStream)
-                using (var icon = new Icon(iconStream))
+                var confirmed = await shellLayoutService.ConfirmUpdateAsync(
+                    args.CurrentVersion, args.InstalledVersion.ToString(), args.ChangelogURL);
+
+                if (confirmed && AutoUpdater.DownloadUpdate(args))
                 {
-                    AutoUpdater.Icon = icon.ToBitmap();
+                    Environment.Exit(0);
                 }
+
+                tcs.TrySetResult(new UpdateCheckResultDto(true, null));
             }
-        }
-        catch (Exception ex)
-        {
-            logger.LogWarning(ex, "Failed to load updater icon.");
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Update prompt failed.");
+                tcs.TrySetResult(new UpdateCheckResultDto(true, "Update could not be installed."));
+            }
         }
 
         AutoUpdater.CheckForUpdateEvent += Handler;

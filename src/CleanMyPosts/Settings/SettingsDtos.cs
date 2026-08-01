@@ -1,4 +1,3 @@
-
 namespace CleanMyPosts.Settings;
 
 public sealed record TimeoutSettingsDto(int WaitAfterDelete, int WaitBetweenRetryDeleteAttempts, int WaitAfterDocumentLoad)
@@ -14,4 +13,10 @@ public sealed record TimeoutSettingsDto(int WaitAfterDelete, int WaitBetweenRetr
     };
 }
 
-public sealed record AppSettingsDto(AppTheme Theme, bool ShowLogs, bool ConfirmDeletion, TimeoutSettingsDto Timeouts);
+public sealed record AppSettingsDto(
+    AppTheme Theme,
+    bool ShowLogs,
+    bool ConfirmDeletion,
+    string AccentColor,
+    bool UseSystemAccent,
+    TimeoutSettingsDto Timeouts);

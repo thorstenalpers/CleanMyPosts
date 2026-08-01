@@ -19,6 +19,13 @@ public class FakeShellLayoutService : IShellLayoutService
     public void SetSidebarExpanded(bool expanded) => LastSidebarExpanded = expanded;
 
     public void SetSiteVisible(bool visible) => LastSiteVisible = visible;
+
+    public void HideSkeleton()
+    {
+    }
+
+    public Task<bool> ConfirmUpdateAsync(string availableVersion, string installedVersion, string? changelogUrl) =>
+        Task.FromResult(false);
 }
 
 [Trait("Category", "Unit")]

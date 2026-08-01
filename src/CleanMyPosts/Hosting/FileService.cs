@@ -1,12 +1,20 @@
-﻿using System.IO;
-using System.Text;
-using Newtonsoft.Json;
+using System.IO;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace CleanMyPosts.Hosting;
 
 public class FileService : IFileService
 {
-    public T Read<T>(string folderPath, string fileName)
+    // Enums are written as their member names so existing settings files
+    // (e.g. "Theme": "Dark") stay readable, and stay readable by humans.
+    private static readonly JsonSerializerOptions Options = new()
+    {
+        WriteIndented = true,
+        Converters = { new JsonStringEnumConverter() }
+    };
+
+    public T? Read<T>(string folderPath, string fileName)
     {
         var path = Path.Combine(folderPath, fileName);
         if (!File.Exists(path))
@@ -14,32 +22,23 @@ public class FileService : IFileService
             return default;
         }
 
-        var json = File.ReadAllText(path);
-        return JsonConvert.DeserializeObject<T>(json);
-
+        try
+        {
+            return JsonSerializer.Deserialize<T>(File.ReadAllText(path), Options);
+        }
+        catch (JsonException)
+        {
+            // Settings are user state, not a contract: a file left behind by an older
+            // version (or hand-edited) must fall back to defaults, not stop start-up.
+            return default;
+        }
     }
 
-    public string ReadFile(string filePath)
-    {
-        return File.ReadAllText(filePath);
-    }
+    public string ReadFile(string filePath) => File.ReadAllText(filePath);
 
     public void Save<T>(string folderPath, string fileName, T content)
     {
-        if (!Directory.Exists(folderPath))
-        {
-            Directory.CreateDirectory(folderPath);
-        }
-
-        var fileContent = JsonConvert.SerializeObject(content);
-        File.WriteAllText(Path.Combine(folderPath, fileName), fileContent, Encoding.UTF8);
-    }
-
-    public void Delete(string folderPath, string fileName)
-    {
-        if (fileName != null && File.Exists(Path.Combine(folderPath, fileName)))
-        {
-            File.Delete(Path.Combine(folderPath, fileName));
-        }
+        Directory.CreateDirectory(folderPath);
+        File.WriteAllText(Path.Combine(folderPath, fileName), JsonSerializer.Serialize(content, Options));
     }
 }

@@ -1,4 +1,3 @@
-using System.Windows;
 using CleanMyPosts.Hosting;
 using CleanMyPosts.Settings;
 using FluentAssertions;
@@ -96,48 +95,39 @@ public class UserSettingsServiceTests
     }
 
     [Fact]
-    public void GetSetting_ShouldReturnCorrectValue_ForShowLogs()
-    {
-        // Arrange
-        _mockFileService.Setup(x => x.Read<UserSettings>(_expectedSettingsPath, _appConfig.AppPropertiesFileName))
-            .Returns(new UserSettings { ShowLogs = true });
-        _userSettingsService.Initialize();
-
-        // Act
-        var result = _userSettingsService.GetSetting<bool>(nameof(UserSettings.ShowLogs));
-
-        // Assert
-        result.Should().BeTrue();
-    }
-
-    [Fact]
-    public void GetSetting_ShouldReturnCorrectValue_ForConfirmDeletion()
-    {
-        // Arrange
-        _mockFileService.Setup(x => x.Read<UserSettings>(_expectedSettingsPath, _appConfig.AppPropertiesFileName))
-            .Returns(new UserSettings { ConfirmDeletion = false });
-        _userSettingsService.Initialize();
-
-        // Act
-        var result = _userSettingsService.GetSetting<bool>(nameof(UserSettings.ConfirmDeletion));
-
-        // Assert
-        result.Should().BeFalse();
-    }
-
-    [Fact]
-    public void GetSetting_ShouldReturnDefaultValue_ForUnknownKey()
+    public void SetAccentColor_ShouldUpdateValueAndRaiseEvent()
     {
         // Arrange
         _mockFileService.Setup(x => x.Read<UserSettings>(_expectedSettingsPath, _appConfig.AppPropertiesFileName))
             .Returns(new UserSettings());
         _userSettingsService.Initialize();
+        string eventArg = null;
+        _userSettingsService.SettingChanged += (_, name) => eventArg = name;
 
         // Act
-        var result = _userSettingsService.GetSetting("UnknownKey", "DefaultValue");
+        _userSettingsService.SetAccentColor("#FF00AA");
 
         // Assert
-        result.Should().Be("DefaultValue");
+        _userSettingsService.GetAccentColor().Should().Be("#FF00AA");
+        eventArg.Should().Be(nameof(UserSettings.AccentColor));
+    }
+
+    [Fact]
+    public void SetUseSystemAccent_ShouldUpdateValueAndRaiseEvent()
+    {
+        // Arrange
+        _mockFileService.Setup(x => x.Read<UserSettings>(_expectedSettingsPath, _appConfig.AppPropertiesFileName))
+            .Returns(new UserSettings());
+        _userSettingsService.Initialize();
+        string eventArg = null;
+        _userSettingsService.SettingChanged += (_, name) => eventArg = name;
+
+        // Act
+        _userSettingsService.SetUseSystemAccent(false);
+
+        // Assert
+        _userSettingsService.GetUseSystemAccent().Should().BeFalse();
+        eventArg.Should().Be(nameof(UserSettings.UseSystemAccent));
     }
 
     [Fact]
@@ -152,11 +142,11 @@ public class UserSettingsServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Top.Should().Be(100);
-        result.Left.Should().Be(100);
-        result.Width.Should().Be(860);
-        result.Height.Should().Be(600);
-        result.WindowState.Should().Be(WindowState.Normal);
+        result.Top.Should().Be(-1);
+        result.Left.Should().Be(-1);
+        result.Width.Should().Be(0);
+        result.Height.Should().Be(0);
+        result.WindowState.Should().Be(ShellWindowState.Normal);
     }
 
     [Fact]
@@ -169,7 +159,7 @@ public class UserSettingsServiceTests
             Left = 250,
             Width = 900,
             Height = 700,
-            WindowState = WindowState.Minimized
+            WindowState = ShellWindowState.Minimized
         };
 
         // Act

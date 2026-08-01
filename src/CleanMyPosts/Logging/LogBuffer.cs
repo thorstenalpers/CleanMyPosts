@@ -8,7 +8,7 @@ public class LogBuffer : ILogBuffer
     private readonly Lock _lock = new();
     private readonly LinkedList<LogEntryDto> _entries = new();
 
-    public event EventHandler<LogEntryDto> EntryAdded;
+    public event EventHandler<LogEntryDto>? EntryAdded;
 
     public void Append(LogEntryDto entry)
     {

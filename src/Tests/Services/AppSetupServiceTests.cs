@@ -13,12 +13,11 @@ public class AppSetupServiceTests
     public void CreateLogger_ShouldReturnNotNullLogger()
     {
         // Arrange
-        var service = new AppSetupService();
         var config = new ConfigurationBuilder().Build();
         var logBuffer = new LogBuffer();
 
         // Act
-        var logger = service.CreateLogger(config, logBuffer);
+        var logger = AppSetupService.CreateLogger(config, logBuffer);
 
         // Assert
         logger.Should().NotBeNull();
@@ -34,11 +33,10 @@ public class AppSetupServiceTests
             .AddInMemoryCollection(inMemorySettings)
             .Build();
 
-        var service = new AppSetupService();
         var logBuffer = new LogBuffer();
 
         // Act
-        var logger = service.CreateLogger(config, logBuffer);
+        var logger = AppSetupService.CreateLogger(config, logBuffer);
 
         // Assert
         logger.Should().NotBeNull();

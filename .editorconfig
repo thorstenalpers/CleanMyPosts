@@ -424,3 +424,7 @@ dotnet_diagnostic.RCS1246.severity = warning
 # IDE0052: Unused private member
 dotnet_diagnostic.IDE0052.severity = warning
 dotnet_style_allow_statement_immediately_after_block_experimental = true:silent
+
+# CA1873: log arguments here are enum values and ints; a guard would cost more
+# readability than the boxing it saves. CA1848 (LoggerMessage) is already silent.
+dotnet_diagnostic.CA1873.severity = silent

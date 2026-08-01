@@ -11,9 +11,9 @@ using Serilog;
 
 namespace CleanMyPosts.Hosting;
 
-public class HostService
+public static class HostService
 {
-    public IHost BuildHost(string[] args, IConfiguration config, ILogBuffer logBuffer)
+    public static IHost BuildHost(string[] args, IConfiguration config, ILogBuffer logBuffer)
     {
         var host = Host.CreateDefaultBuilder(args)
             .ConfigureAppConfiguration(c => c.AddConfiguration(config))
@@ -26,6 +26,7 @@ public class HostService
                 services.AddSingleton<IUserSettingsService, UserSettingsService>();
 
                 services.AddSingleton<WebView2EnvironmentProvider>();
+                services.AddSingleton<WebAssetProvider>();
                 services.AddSingleton<ISiteWebViewService, SiteWebViewService>();
                 services.AddSingleton<IChromeWebViewService, ChromeWebViewService>();
                 services.AddSingleton<HostBridge>();

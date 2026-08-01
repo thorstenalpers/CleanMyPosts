@@ -1,27 +1,36 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <OutputType>WinExe</OutputType>
-        <UseWPF>true</UseWPF>
+        <UseWinUI>true</UseWinUI>
         <ApplicationManifest>app.manifest</ApplicationManifest>
         <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <!-- Required by the LibraryImport source generator used for the few Win32 calls. -->
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <RootNamespace>CleanMyPosts</RootNamespace>
         <DefaultNamespace>CleanMyPosts</DefaultNamespace>
         <ApplicationIcon>Assets\logo.ico</ApplicationIcon>
         <AssemblyName>CleanMyPosts</AssemblyName>
-        <TargetFramework>net10.0-windows</TargetFramework>
+        <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+        <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
+        <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+        <WindowsPackageType>None</WindowsPackageType>
+        <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+        <SelfContained>true</SelfContained>
+		<Platforms>x64</Platforms>
+        <EnableMsixTooling>false</EnableMsixTooling>
         <Version>2.1.4</Version>
         <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
         <AnalysisLevel>latest</AnalysisLevel>
-        <EnableNETAnalyzers>True</EnableNETAnalyzers>
+		<AnalysisMode>Recommended</AnalysisMode>
     </PropertyGroup>
 
     <ItemGroup>
-
         <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.10" />
-        <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
         <PackageReference Include="Autoupdater.NET.Official" Version="1.9.2" />
         <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.10" />
+        <PackageReference Include="Microsoft.WindowsAppSDK" Version="2.3.1" />
         <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.4078.44" />
         <PackageReference Include="Serilog.Extensions.Hosting" Version="10.0.0" />
         <PackageReference Include="Serilog.Extensions.Logging" Version="10.0.0" />
@@ -42,52 +51,40 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Resource Include="Assets\logo.ico">
-            <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-        </Resource>
-    </ItemGroup>
-
-    <ItemGroup>
-        <Compile Update="Properties\Resources.Designer.cs">
-            <DesignTime>True</DesignTime>
-            <AutoGen>True</AutoGen>
-            <DependentUpon>Resources.resx</DependentUpon>
-        </Compile>
-    </ItemGroup>
-
-    <ItemGroup>
-        <EmbeddedResource Update="Properties\Resources.resx">
-            <Generator>PublicResXFileCodeGenerator</Generator>
-            <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-        </EmbeddedResource>
-    </ItemGroup>
-
-    <ItemGroup>
         <Content Include="..\..\THIRD_PARTY_LICENSES.txt" Link="THIRD_PARTY_LICENSES.txt">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
     </ItemGroup>
+
+    <PropertyGroup>
+        <CleanMyPostsUIDir>$(MSBuildThisFileDirectory)..\CleanMyPosts.UI\</CleanMyPostsUIDir>
+    </PropertyGroup>
 
     <!--
       Builds the Svelte UI (chrome shell + content-script) before this project so both
       land in the output directory; `dotnet build`/`publish` on this project alone is
       enough to produce a runnable app, no separate npm step required in CI or locally.
     -->
-    <Target Name="BuildCleanMyPostsUI" BeforeTargets="BeforeBuild">
-        <PropertyGroup>
-            <CleanMyPostsUIDir>$(MSBuildThisFileDirectory)..\CleanMyPosts.UI\</CleanMyPostsUIDir>
-        </PropertyGroup>
+    <Target Name="BuildCleanMyPostsUI" BeforeTargets="BeforeBuild;PrepareResourceNames">
         <Exec Command="npm ci" WorkingDirectory="$(CleanMyPostsUIDir)" Condition="!Exists('$(CleanMyPostsUIDir)node_modules')" />
         <Exec Command="npm run build" WorkingDirectory="$(CleanMyPostsUIDir)" />
     </Target>
 
-    <ItemGroup>
-        <Content Include="..\CleanMyPosts.UI\dist\chrome\**" Link="wwwroot\%(RecursiveDir)%(Filename)%(Extension)">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </Content>
-        <Content Include="..\CleanMyPosts.UI\dist\content\content.js" Link="Scripts\content.js">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </Content>
-    </ItemGroup>
+    <!--
+      Embedded rather than copied: the publish folder stays free of a wwwroot/Scripts tree,
+      and WebAssetProvider serves them straight from the assembly. Added inside a target
+      because dist/ does not exist yet when MSBuild evaluates the project.
+    -->
+    <Target Name="AddWebAssets" AfterTargets="BuildCleanMyPostsUI" BeforeTargets="PrepareResourceNames">
+        <ItemGroup>
+            <WebAssetFile Include="$(CleanMyPostsUIDir)dist\chrome\**\*.*" />
+            <WebAssetFile Include="$(CleanMyPostsUIDir)dist\content\content.js" />
+        </ItemGroup>
+        <ItemGroup>
+            <EmbeddedResource Include="@(WebAssetFile)">
+                <LogicalName>WebAssets/%(WebAssetFile.RecursiveDir)%(WebAssetFile.Filename)%(WebAssetFile.Extension)</LogicalName>
+            </EmbeddedResource>
+        </ItemGroup>
+    </Target>
 
 </Project>

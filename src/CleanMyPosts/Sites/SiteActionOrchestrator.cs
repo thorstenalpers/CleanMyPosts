@@ -34,9 +34,9 @@ public sealed class SiteActionOrchestrator : IDisposable
 
     // Set once via AttachLayoutService — ShellWindow (which implements IShellLayoutService)
     // itself depends on this orchestrator, so constructor injection would be circular.
-    private IShellLayoutService _shellLayoutService;
+    private IShellLayoutService? _shellLayoutService;
 
-    private string _xUserName;
+    private string? _xUserName;
 
     public SiteActionOrchestrator(
         ILogger<SiteActionOrchestrator> logger,
@@ -214,7 +214,7 @@ public sealed class SiteActionOrchestrator : IDisposable
     {
         var tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        void Handler(object sender, NavigationCompletedEventArgs e)
+        void Handler(object? sender, NavigationCompletedEventArgs e)
         {
             _siteWebViewService.NavigationCompleted -= Handler;
             tcs.TrySetResult(e.IsSuccess);
@@ -301,7 +301,7 @@ public sealed class SiteActionOrchestrator : IDisposable
     private static int InactivityLimitMs(TimeoutSettingsDto timeouts) =>
         30_000 + timeouts.WaitAfterDelete + timeouts.WaitAfterDocumentLoad;
 
-    private async Task<string> BuildUrlAsync(Platform platform, string action)
+    private async Task<string?> BuildUrlAsync(Platform platform, string action)
     {
         if (platform == Platform.Youtube)
         {
@@ -391,9 +391,9 @@ public sealed class SiteActionOrchestrator : IDisposable
         _chromeWebViewService.PostMessage(json);
     }
 
-    private void OnSiteWebMessageReceived(object sender, WebMessageReceivedEventArgs e)
+    private void OnSiteWebMessageReceived(object? sender, WebMessageReceivedEventArgs e)
     {
-        ContentMessageDto message;
+        ContentMessageDto? message;
         try
         {
             message = JsonSerializer.Deserialize<ContentMessageDto>(e.Message, BridgeJson.Options);

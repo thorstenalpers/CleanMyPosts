@@ -1,7 +1,7 @@
 ﻿using System.Text;
 using CleanMyPosts.Hosting;
 using FluentAssertions;
-using Newtonsoft.Json;
+using System.Text.Json;
 using Xunit;
 
 namespace CleanMyPosts.Tests.Services;
@@ -39,7 +39,7 @@ public class FileServiceTests : IDisposable
         File.Exists(filePath).Should().BeTrue();
 
         var json = File.ReadAllText(filePath);
-        var result = JsonConvert.DeserializeObject<TestObject>(json);
+        var result = JsonSerializer.Deserialize<TestObject>(json);
 
         result.Should().BeEquivalentTo(expectedObject);
     }
@@ -50,7 +50,7 @@ public class FileServiceTests : IDisposable
         // Arrange
         var fileName = "readtest.json";
         var expectedObject = new TestObject { Id = 2, Name = "ReadTest" };
-        var json = JsonConvert.SerializeObject(expectedObject);
+        var json = JsonSerializer.Serialize(expectedObject);
         Directory.CreateDirectory(_testDirectory);
         File.WriteAllText(Path.Combine(_testDirectory, fileName), json, Encoding.UTF8);
 
@@ -59,22 +59,6 @@ public class FileServiceTests : IDisposable
 
         // Assert
         result.Should().BeEquivalentTo(expectedObject);
-    }
-
-    [Fact]
-    public void Delete_ShouldRemoveFileIfExists()
-    {
-        // Arrange
-        var fileName = "todelete.json";
-        var filePath = Path.Combine(_testDirectory, fileName);
-        Directory.CreateDirectory(_testDirectory);
-        File.WriteAllText(filePath, "dummy");
-
-        // Act
-        _fileService.Delete(_testDirectory, fileName);
-
-        // Assert
-        File.Exists(filePath).Should().BeFalse();
     }
 
     [Fact]
@@ -102,22 +86,6 @@ public class FileServiceTests : IDisposable
 
         // Assert
         result.Should().Be(expectedContent);
-    }
-
-    [Fact]
-    public void Delete_ShouldNotThrow_WhenFileNameIsNull()
-    {
-        // Act & Assert
-        var action = () => _fileService.Delete(_testDirectory, null);
-        action.Should().NotThrow();
-    }
-
-    [Fact]
-    public void Delete_ShouldNotThrow_WhenFileDoesNotExist()
-    {
-        // Act & Assert
-        var action = () => _fileService.Delete(_testDirectory, "nonexistent.json");
-        action.Should().NotThrow();
     }
 
     [Fact]

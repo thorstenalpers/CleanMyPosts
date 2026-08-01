@@ -1,4 +1,5 @@
 using System.IO;
+using CleanMyPosts.Hosting;
 using Microsoft.Web.WebView2.Core;
 
 namespace CleanMyPosts.Infrastructure;
@@ -8,18 +9,14 @@ namespace CleanMyPosts.Infrastructure;
 /// site WebView2 controls — they then share a single browser process instead
 /// of each spinning up their own.
 /// </summary>
-public class WebView2EnvironmentProvider
+public sealed class WebView2EnvironmentProvider : IDisposable
 {
-    // Pinned, not derived from the assembly name: renaming the assembly must not
-    // orphan the WebView2 profile (cookies/logins) by moving its folder.
-    private const string ProfileFolderName = "CleanMyPosts";
-
     private readonly SemaphoreSlim _lock = new(1, 1);
-    private CoreWebView2Environment _environment;
+    private CoreWebView2Environment? _environment;
 
     public async Task<CoreWebView2Environment> GetEnvironmentAsync()
     {
-        if (_environment != null)
+        if (_environment is not null)
         {
             return _environment;
         }
@@ -27,20 +24,16 @@ public class WebView2EnvironmentProvider
         await _lock.WaitAsync();
         try
         {
-            if (_environment != null)
+            if (_environment is not null)
             {
                 return _environment;
             }
 
-            var userDataFolder = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                ProfileFolderName,
-                "WebView2");
+            Directory.CreateDirectory(AppPaths.WebView2UserData);
 
-            Directory.CreateDirectory(userDataFolder);
-
-            var options = new CoreWebView2EnvironmentOptions(null, "en-US");
-            _environment = await CoreWebView2Environment.CreateAsync(null, userDataFolder, options);
+            var options = new CoreWebView2EnvironmentOptions { Language = "en-US" };
+            _environment = await CoreWebView2Environment.CreateWithOptionsAsync(
+                string.Empty, AppPaths.WebView2UserData, options);
             return _environment;
         }
         finally
@@ -48,4 +41,6 @@ public class WebView2EnvironmentProvider
             _lock.Release();
         }
     }
+
+    public void Dispose() => _lock.Dispose();
 }

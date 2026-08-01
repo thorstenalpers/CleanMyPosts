@@ -1,12 +1,19 @@
-﻿using System.Windows;
-
 namespace CleanMyPosts.Settings;
 
+/// <summary>Member names match the legacy WPF <c>WindowState</c> so existing files stay readable.</summary>
+public enum ShellWindowState
+{
+    Normal,
+    Minimized,
+    Maximized
+}
+
+/// <summary>Physical pixels — <c>AppWindow</c> positions and sizes in device units, not DIPs.</summary>
 public class WindowSettings
 {
-    public double Top { get; set; } = 100;
-    public double Left { get; set; } = 100;
-    public double Width { get; set; } = 860;
-    public double Height { get; set; } = 600;
-    public WindowState WindowState { get; set; } = WindowState.Normal;
+    public int Top { get; set; } = -1;
+    public int Left { get; set; } = -1;
+    public int Width { get; set; }
+    public int Height { get; set; }
+    public ShellWindowState WindowState { get; set; } = ShellWindowState.Normal;
 }

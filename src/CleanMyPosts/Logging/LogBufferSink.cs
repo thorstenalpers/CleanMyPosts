@@ -1,3 +1,4 @@
+using System.Globalization;
 using Serilog.Core;
 using Serilog.Events;
 using CleanMyPosts.Infrastructure;
@@ -8,7 +9,7 @@ public class LogBufferSink(ILogBuffer logBuffer) : ILogEventSink
 {
     public void Emit(LogEvent logEvent)
     {
-        var message = logEvent.RenderMessage();
+        var message = logEvent.RenderMessage(CultureInfo.InvariantCulture);
         if (logEvent.Exception != null)
         {
             message += Environment.NewLine + logEvent.Exception;

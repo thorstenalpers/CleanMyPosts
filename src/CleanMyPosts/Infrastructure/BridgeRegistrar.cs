@@ -23,8 +23,8 @@ public static class BridgeRegistrar
         SiteBridgeHandlers.Register(bridge, siteActionOrchestrator);
         LayoutBridgeHandlers.Register(bridge, shellLayoutService);
         LogBridgeHandlers.Register(bridge, logBuffer);
-        AppInfoBridgeHandlers.Register(bridge, appConfig);
-        UpdaterBridgeHandlers.Register(bridge, updaterConfig, updaterLogger);
+        AppInfoBridgeHandlers.Register(bridge, appConfig, shellLayoutService);
+        UpdaterBridgeHandlers.Register(bridge, updaterConfig, shellLayoutService, updaterLogger);
         SystemBridgeHandlers.Register(bridge);
     }
 }

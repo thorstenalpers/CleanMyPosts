@@ -5,10 +5,16 @@ namespace CleanMyPosts.Infrastructure;
 
 public static class AppInfoBridgeHandlers
 {
-    public static void Register(HostBridge bridge, AppConfig appConfig)
+    public static void Register(HostBridge bridge, AppConfig appConfig, IShellLayoutService shellLayoutService)
     {
         bridge.Register<object, AppInfoDto>("app.getInfo", _ => Task.FromResult(
             new AppInfoDto(GetVersion(), appConfig.GitRepoUrl, appConfig.ReportIssueUrl)));
+
+        bridge.Register<object, object?>("app.ready", _ =>
+        {
+            shellLayoutService.HideSkeleton();
+            return Task.FromResult<object?>(null);
+        });
     }
 
     private static string GetVersion()

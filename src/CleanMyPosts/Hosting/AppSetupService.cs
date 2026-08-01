@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Globalization;
+using System.IO;
 using Microsoft.Extensions.Configuration;
 using Serilog;
 using Serilog.Events;
@@ -6,28 +7,25 @@ using CleanMyPosts.Logging;
 
 namespace CleanMyPosts.Hosting;
 
-public class AppSetupService
+public static class AppSetupService
 {
-    public IConfiguration BuildConfiguration()
+    public static IConfiguration BuildConfiguration()
     {
         return new ConfigurationBuilder()
             .AddEnvironmentVariables()
             .Build();
     }
 
-    public ILogger CreateLogger(IConfiguration config, ILogBuffer logBuffer)
+    public static ILogger CreateLogger(IConfiguration config, ILogBuffer logBuffer)
     {
         var loggerConfig = new LoggerConfiguration()
-            .WriteTo.Console()
+            .WriteTo.Console(formatProvider: CultureInfo.InvariantCulture)
             .MinimumLevel.Information()
             .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
             .MinimumLevel.Override("System", LogEventLevel.Warning)
             .WriteTo.File(
-                Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                    "CleanMyPosts",
-                    "Logs",
-                    "log-.txt"),
+                Path.Combine(AppPaths.Logs, "log-.txt"),
+                formatProvider: CultureInfo.InvariantCulture,
                 rollingInterval: RollingInterval.Day,
                 shared: true,
                 outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}")

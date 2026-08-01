@@ -27,7 +27,8 @@ All documentation, comments, and diagram labels are written in **English**.
 
 | Layer     | Technology                                                        |
 |-----------|-------------------------------------------------------------------|
-| Host      | .NET 10, WinUI 3 / Windows App SDK (unpackaged), WebView2, Serilog |
+| Host      | Tauri 2 (Rust) in `src/CleanMyPosts.UI/src-tauri`, WebView2        |
+| Host (legacy) | .NET 10, WinUI 3 / Windows App SDK (unpackaged), WebView2, Serilog |
 | UI        | Svelte 5 + Vite (no SvelteKit), TypeScript                        |
 | UI kit    | shadcn-svelte (`new-york`, `neutral`), Tailwind v4                |
 | Contracts | Zod — one source for types and runtime validation                 |
@@ -36,6 +37,12 @@ All documentation, comments, and diagram labels are written in **English**.
 
 No MVVM framework, no XAML styling, no bindings: the host window is two WebView2 controls
 and a startup skeleton. Everything visible is Svelte.
+
+**The C# host is legacy.** The Tauri host is the one being developed; the WinUI 3 host stays
+only until the Tauri build is signed off, so both currently build. New host work goes into
+`src-tauri`. Anything changed in `src/CleanMyPosts` has to be worth doing twice — if it is
+not, it probably should not be done at all. ADR 0001 (WinUI 3) predates this and is
+superseded in practice; it has not been reworded yet.
 
 Two Vite build targets: `chrome` (app UI at `cleanmyposts.local`) and `content` (injected
 script; a single IIFE that sets `window.__cmp`). Both are **embedded resources** in the

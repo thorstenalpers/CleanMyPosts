@@ -7,7 +7,7 @@ async function renderApp() {
   await waitFor(() => expect(screen.getByRole('button', { name: 'Log' })).toBeInTheDocument());
 }
 
-const filterInput = () => screen.getByPlaceholderText(/filter messages/i);
+const filterInput = () => screen.getByLabelText(/filter log messages/i);
 
 describe('App navigation', () => {
   it('keeps the log filters when navigating away and back', async () => {

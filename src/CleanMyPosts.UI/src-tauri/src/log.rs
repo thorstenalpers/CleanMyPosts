@@ -48,3 +48,46 @@ impl Default for LogBuffer {
         Self::new()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn entry(message: &str) -> LogEntry {
+        LogEntry {
+            timestamp: "2026-08-01T00:00:00.000Z".into(),
+            level: "info".into(),
+            message: message.into(),
+        }
+    }
+
+    #[test]
+    fn snapshot_preserves_insertion_order() {
+        let buffer = LogBuffer::new();
+        buffer.push(entry("first"));
+        buffer.push(entry("second"));
+
+        let messages: Vec<_> = buffer
+            .snapshot()
+            .into_iter()
+            .map(|e| e.message)
+            .collect();
+        assert_eq!(messages, ["first", "second"]);
+    }
+
+    #[test]
+    fn drops_oldest_once_full() {
+        let buffer = LogBuffer::new();
+        for i in 0..CAPACITY + 10 {
+            buffer.push(entry(&i.to_string()));
+        }
+
+        let snapshot = buffer.snapshot();
+        assert_eq!(snapshot.len(), CAPACITY);
+        assert_eq!(snapshot.first().unwrap().message, "10");
+        assert_eq!(
+            snapshot.last().unwrap().message,
+            (CAPACITY + 9).to_string()
+        );
+    }
+}

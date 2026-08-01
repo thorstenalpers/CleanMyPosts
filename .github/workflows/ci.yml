@@ -123,3 +123,7 @@ jobs:
       - name: Clippy
         working-directory: src/CleanMyPosts.UI/src-tauri
         run: cargo clippy -- -D warnings
+
+      - name: Test
+        working-directory: src/CleanMyPosts.UI/src-tauri
+        run: cargo test

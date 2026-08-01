@@ -472,3 +472,103 @@ fn read_user_name(app: &AppHandle) -> String {
         .user_name
         .clone()
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn builds_every_x_page() {
+        assert_eq!(
+            target_url("x", "deletePosts", "someuser").unwrap(),
+            "https://x.com/search?q=from%3Asomeuser&src=typed_query"
+        );
+        assert_eq!(
+            target_url("x", "showReplies", "someuser").unwrap(),
+            "https://x.com/someuser/with_replies"
+        );
+        assert_eq!(
+            target_url("x", "deleteReposts", "someuser").unwrap(),
+            "https://x.com/someuser"
+        );
+        assert_eq!(
+            target_url("x", "deleteLikes", "someuser").unwrap(),
+            "https://x.com/someuser/likes"
+        );
+        assert_eq!(
+            target_url("x", "showFollowing", "someuser").unwrap(),
+            "https://x.com/someuser/following"
+        );
+    }
+
+    /// `show*` and `delete*` land on the same page; deleting happens where the items are
+    /// listed, so a divergence here would send a delete run to a page with nothing on it.
+    #[test]
+    fn show_and_delete_share_a_target() {
+        for (show, delete) in [
+            ("showPosts", "deletePosts"),
+            ("showReplies", "deleteReplies"),
+            ("showReposts", "deleteReposts"),
+            ("showLikes", "deleteLikes"),
+            ("showFollowing", "deleteFollowing"),
+        ] {
+            assert_eq!(
+                target_url("x", show, "someuser"),
+                target_url("x", delete, "someuser"),
+                "{show} and {delete} disagree"
+            );
+        }
+    }
+
+    #[test]
+    fn youtube_pages_ignore_the_handle() {
+        assert_eq!(
+            target_url("youtube", "deleteComments", "").unwrap(),
+            "https://myactivity.google.com/page?hl=en&page=youtube_comments"
+        );
+        assert_eq!(
+            target_url("youtube", "showLikes", "").unwrap(),
+            "https://www.youtube.com/playlist?list=LL"
+        );
+    }
+
+    #[test]
+    fn unknown_combinations_have_no_target() {
+        assert!(target_url("x", "deleteComments", "someuser").is_none());
+        assert!(target_url("youtube", "deleteFollowing", "").is_none());
+        assert!(target_url("mastodon", "deletePosts", "someuser").is_none());
+    }
+
+    #[test]
+    fn handle_is_stripped_of_anything_that_could_escape_the_path() {
+        assert_eq!(urlencoding_minimal("some_user1"), "some_user1");
+        assert_eq!(urlencoding_minimal("../../etc"), "etc");
+        assert_eq!(urlencoding_minimal("a/b?c=d#e"), "abcde");
+    }
+
+    #[test]
+    fn only_delete_actions_reach_the_engine() {
+        assert_eq!(engine_action("deletePosts"), Some("deletePosts"));
+        assert_eq!(engine_action("deleteComments"), Some("deleteComments"));
+        assert_eq!(engine_action("showPosts"), None);
+        assert_eq!(engine_action("nonsense"), None);
+    }
+
+    #[test]
+    fn converts_days_since_epoch_to_a_civil_date() {
+        assert_eq!(civil_from_days(0), (1970, 1, 1));
+        assert_eq!(civil_from_days(11_323), (2001, 1, 1));
+        assert_eq!(civil_from_days(19_358), (2023, 1, 1));
+    }
+
+    /// The UI parses this with `z.iso.datetime({ offset: true })`.
+    #[test]
+    fn timestamp_is_rfc3339_with_a_zulu_offset() {
+        let stamp = now_rfc3339();
+
+        assert_eq!(stamp.len(), 24, "unexpected shape: {stamp}");
+        assert!(stamp.ends_with('Z'), "no offset: {stamp}");
+        assert_eq!(&stamp[4..5], "-");
+        assert_eq!(&stamp[10..11], "T");
+    }
+}

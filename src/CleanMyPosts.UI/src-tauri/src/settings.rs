@@ -74,3 +74,66 @@ impl SettingsStore {
         Ok(())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::sync::atomic::{AtomicU32, Ordering};
+
+    fn temp_path() -> PathBuf {
+        static COUNTER: AtomicU32 = AtomicU32::new(0);
+        let n = COUNTER.fetch_add(1, Ordering::Relaxed);
+        std::env::temp_dir()
+            .join(format!("cmp-settings-test-{}-{n}", std::process::id()))
+            .join("settings.json")
+    }
+
+    #[test]
+    fn missing_file_yields_defaults() {
+        let store = SettingsStore::load(temp_path());
+        let settings = store.get();
+
+        assert_eq!(settings.theme, "Default");
+        assert!(settings.confirm_deletion);
+        assert_eq!(settings.timeouts.wait_after_delete, 500);
+    }
+
+    #[test]
+    fn corrupt_file_yields_defaults_instead_of_failing() {
+        let path = temp_path();
+        std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+        std::fs::write(&path, "{ this is not json").unwrap();
+
+        assert_eq!(SettingsStore::load(path).get().theme, "Default");
+    }
+
+    #[test]
+    fn set_persists_and_is_read_back_by_a_fresh_store() {
+        let path = temp_path();
+        let store = SettingsStore::load(path.clone());
+
+        let mut next = store.get();
+        next.theme = "Dark".into();
+        next.show_logs = true;
+        next.timeouts.wait_after_delete = 1234;
+        store.set(next).unwrap();
+
+        let reloaded = SettingsStore::load(path).get();
+        assert_eq!(reloaded.theme, "Dark");
+        assert!(reloaded.show_logs);
+        assert_eq!(reloaded.timeouts.wait_after_delete, 1234);
+    }
+
+    /// The UI validates against camelCase Zod schemas, so a rename here would break the
+    /// contract silently rather than at compile time.
+    #[test]
+    fn serializes_as_camel_case() {
+        let json = serde_json::to_string(&AppSettings::default()).unwrap();
+
+        assert!(json.contains("\"showLogs\""));
+        assert!(json.contains("\"confirmDeletion\""));
+        assert!(json.contains("\"waitAfterDelete\""));
+        assert!(json.contains("\"waitBetweenRetryDeleteAttempts\""));
+        assert!(json.contains("\"waitAfterDocumentLoad\""));
+    }
+}

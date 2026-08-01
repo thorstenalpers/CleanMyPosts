@@ -12,6 +12,8 @@ function setup(overrides: MockHandlers = {}) {
       theme: 'Default',
       showLogs: false,
       confirmDeletion: true,
+      accentColor: '#3B82F6',
+      useSystemAccent: false,
       timeouts: { waitAfterDelete: 500, waitBetweenRetryDeleteAttempts: 500, waitAfterDocumentLoad: 3000 }
     }),
     'settings.set': (params) => {
@@ -52,7 +54,7 @@ describe('SettingsView', () => {
     await settingsStore.load();
     render(SettingsView, { bridge: client, settingsStore });
 
-    const toggle = screen.getByRole('switch', { name: /ask for confirmation/i });
+    const toggle = screen.getByRole('switch', { name: /confirm before deleting/i });
     await fireEvent.click(toggle);
 
     await waitFor(() => expect(settingsSet).toHaveBeenCalledWith(expect.objectContaining({ confirmDeletion: false })));

@@ -1,12 +1,12 @@
 <script lang="ts">
-  import { createTable, getCoreRowModel, getSortedRowModel, type ColumnDef, type SortingState, type TableOptionsResolved } from '@tanstack/table-core';
   import type { LogStore } from '$lib/stores/log.svelte';
-  import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '$lib/components/ui/table';
-  import { Button } from '$lib/components/ui/button';
+  import type { LogLevel } from '$lib/bridge/contract';
   import { Input } from '$lib/components/ui/input';
-  import type { LogEntry, LogLevel } from '$lib/bridge/contract';
-  import ChevronsUpDownIcon from '@lucide/svelte/icons/chevrons-up-down';
+  import { Badge } from '$lib/components/ui/badge';
+  import { cn } from '$lib/utils';
   import Trash2Icon from '@lucide/svelte/icons/trash-2';
+  import ArrowDownIcon from '@lucide/svelte/icons/arrow-down';
+  import SearchIcon from '@lucide/svelte/icons/search';
 
   interface Props {
     logStore: LogStore;
@@ -14,17 +14,20 @@
 
   let { logStore }: Props = $props();
 
-  let sorting = $state<SortingState>([{ id: 'timestamp', desc: true }]);
   let messageFilter = $state('');
   let levelFilter = $state<LogLevel | 'all'>('all');
+  let follow = $state(true);
+  let scroller = $state<HTMLDivElement | undefined>(undefined);
 
-  const columns: ColumnDef<LogEntry>[] = [
-    { accessorKey: 'timestamp', header: 'Time' },
-    { accessorKey: 'level', header: 'Level' },
-    { accessorKey: 'message', header: 'Message' }
+  const levels = [
+    { value: 'all' as const, label: 'All' },
+    { value: 'info' as const, label: 'Info' },
+    { value: 'warning' as const, label: 'Warning' },
+    { value: 'error' as const, label: 'Error' }
   ];
 
-  const filteredEntries = $derived(
+  // Newest last, like a terminal: the interesting line is the one that just arrived.
+  const entries = $derived(
     logStore.entries.filter(
       (entry) =>
         (levelFilter === 'all' || entry.level === levelFilter) &&
@@ -32,96 +35,113 @@
     )
   );
 
-  // `@tanstack/svelte-table` (the official adapter) only supports Svelte 5 in an
-  // unstable v9 beta, so this rebuilds a fresh `table-core` instance inside a
-  // `$derived.by` whenever its inputs change — table-core itself is a plain
-  // imperative object, not a Svelte signal, so a long-lived mutable instance
-  // would never trigger the template to re-render.
-  //
-  // `table.getState()` returns `options.state` verbatim (it is *not* merged
-  // with `table.initialState`), so every feature's state slice — not just
-  // `sorting` — has to be present or `getHeaderGroups()` throws reading e.g.
-  // `columnPinning.left`. Constructing once to capture `initialState`, then
-  // layering `sorting` on top via `setOptions`, keeps every other slice at
-  // table-core's own defaults.
-  const table = $derived.by(() => {
-    const instance = createTable({
-      data: filteredEntries,
-      columns,
-      state: {},
-      onStateChange: () => {},
-      onSortingChange: (updater) => {
-        sorting = typeof updater === 'function' ? updater(sorting) : updater;
-      },
-      getCoreRowModel: getCoreRowModel(),
-      getSortedRowModel: getSortedRowModel(),
-      renderFallbackValue: null,
-      mergeOptions: (defaultOptions, patch) => ({ ...defaultOptions, ...patch })
-    } as TableOptionsResolved<LogEntry>);
-
-    instance.setOptions((prev) => ({ ...prev, state: { ...instance.initialState, ...prev.state, sorting } }));
-    return instance;
+  const counts = $derived({
+    warning: logStore.entries.filter((e) => e.level === 'warning').length,
+    error: logStore.entries.filter((e) => e.level === 'error').length
   });
 
-  function formatCell(columnId: string, value: unknown): string {
-    if (columnId === 'timestamp') {
-      return new Date(value as string).toLocaleTimeString();
+  $effect(() => {
+    // Touch `entries` so this re-runs whenever a line arrives.
+    entries.length;
+    if (follow && scroller) {
+      scroller.scrollTop = scroller.scrollHeight;
     }
-    return String(value);
+  });
+
+  function onScroll(): void {
+    if (!scroller) return;
+    // Re-arm follow only once the user is back at the bottom, so reading history is not
+    // interrupted by every incoming line.
+    follow = scroller.scrollHeight - scroller.scrollTop - scroller.clientHeight < 24;
+  }
+
+  function formatTime(timestamp: string): string {
+    return new Date(timestamp).toLocaleTimeString(undefined, { hour12: false });
   }
 </script>
 
-<div class="flex h-full flex-col gap-2 p-2">
-  <div class="flex items-center gap-2">
-    <Input placeholder="Filter messages…" bind:value={messageFilter} class="max-w-xs" />
-    <div class="flex gap-1">
-      {#each [{ value: 'all' as const, label: 'All' }, { value: 'info' as const, label: 'Info' }, { value: 'warning' as const, label: 'Warning' }, { value: 'error' as const, label: 'Error' }] as level (level.value)}
-        <Button
-          variant={levelFilter === level.value ? 'secondary' : 'ghost'}
-          size="sm"
+<div class="flex h-full flex-col">
+  <header class="flex shrink-0 flex-wrap items-center gap-2 border-b px-4 py-2.5">
+    <h1 class="mr-1 text-[13px] font-semibold tracking-tight">Log</h1>
+
+    {#if counts.error > 0}
+      <Badge variant="destructive">{counts.error} errors</Badge>
+    {/if}
+    {#if counts.warning > 0}
+      <Badge>{counts.warning} warnings</Badge>
+    {/if}
+
+    <div class="relative ml-auto">
+      <SearchIcon class="text-muted-foreground pointer-events-none absolute top-1/2 left-2 size-3.5 -translate-y-1/2" />
+      <Input placeholder="Filter…" bind:value={messageFilter} class="h-8 w-44 pl-7 text-xs" aria-label="Filter log messages" />
+    </div>
+
+    <div class="flex gap-0.5" role="group" aria-label="Filter by level">
+      {#each levels as level (level.value)}
+        {@const active = levelFilter === level.value}
+        <button
+          type="button"
+          aria-pressed={active}
           onclick={() => (levelFilter = level.value)}
+          class={cn(
+            'focus-visible:ring-ring h-8 cursor-pointer rounded-md px-2 text-xs font-medium transition-colors duration-150 focus-visible:ring-2 focus-visible:outline-none',
+            active ? 'bg-primary/10 text-foreground' : 'text-muted-foreground hover:bg-muted'
+          )}
         >
           {level.label}
-        </Button>
+        </button>
       {/each}
     </div>
-    <Button variant="outline" size="sm" onclick={() => logStore.clear()}>
-      <Trash2Icon />
+
+    <button
+      type="button"
+      onclick={() => logStore.clear()}
+      class="border-border hover:bg-muted focus-visible:ring-ring flex h-8 cursor-pointer items-center gap-1.5 rounded-md border px-2 text-xs font-medium transition-colors duration-150 focus-visible:ring-2 focus-visible:outline-none"
+    >
+      <Trash2Icon class="size-3.5" />
       Clear
-    </Button>
+    </button>
+  </header>
+
+  <div bind:this={scroller} onscroll={onScroll} class="min-h-0 flex-1 overflow-y-auto">
+    {#if entries.length === 0}
+      <p class="text-muted-foreground p-6 text-center text-xs">
+        {logStore.entries.length === 0 ? 'Nothing logged yet.' : 'No entries match the filter.'}
+      </p>
+    {:else}
+      <ul class="divide-border/40 divide-y font-mono text-xs">
+        {#each entries as entry, i (`${entry.timestamp}-${i}`)}
+          <li class={cn('flex gap-3 px-4 py-1.5', entry.level === 'error' && 'bg-destructive/5')}>
+            <time class="text-muted-foreground shrink-0 tabular-nums" datetime={entry.timestamp}>
+              {formatTime(entry.timestamp)}
+            </time>
+            <span
+              class={cn(
+                'w-12 shrink-0 uppercase',
+                entry.level === 'error' ? 'text-destructive font-medium' : 'text-muted-foreground',
+                entry.level === 'warning' && 'text-foreground'
+              )}
+            >
+              {entry.level === 'warning' ? 'warn' : entry.level}
+            </span>
+            <span class="break-words whitespace-pre-wrap">{entry.message}</span>
+          </li>
+        {/each}
+      </ul>
+    {/if}
   </div>
 
-  <div class="flex-1 overflow-auto rounded-md border">
-    <Table>
-      <TableHeader>
-        {#each table.getHeaderGroups() as headerGroup (headerGroup.id)}
-          <TableRow>
-            {#each headerGroup.headers as header (header.id)}
-              <TableHead>
-                <button class="flex items-center gap-1 font-medium" onclick={header.column.getToggleSortingHandler()}>
-                  {header.column.columnDef.header as string}
-                  <ChevronsUpDownIcon class="size-3" />
-                </button>
-              </TableHead>
-            {/each}
-          </TableRow>
-        {/each}
-      </TableHeader>
-      <TableBody>
-        {#each table.getRowModel().rows as row (row.id)}
-          <TableRow>
-            {#each row.getVisibleCells() as cell (cell.id)}
-              <TableCell class={cell.column.id === 'message' ? 'max-w-md truncate' : ''}>
-                {formatCell(cell.column.id, cell.getValue())}
-              </TableCell>
-            {/each}
-          </TableRow>
-        {:else}
-          <TableRow>
-            <TableCell colspan={columns.length} class="text-muted-foreground text-center">No log entries.</TableCell>
-          </TableRow>
-        {/each}
-      </TableBody>
-    </Table>
-  </div>
+  {#if !follow}
+    <button
+      type="button"
+      onclick={() => {
+        follow = true;
+        if (scroller) scroller.scrollTop = scroller.scrollHeight;
+      }}
+      class="border-border bg-background hover:bg-muted focus-visible:ring-ring absolute right-6 bottom-6 flex h-8 cursor-pointer items-center gap-1.5 rounded-full border px-3 text-xs font-medium shadow-sm transition-colors duration-150 focus-visible:ring-2 focus-visible:outline-none"
+    >
+      <ArrowDownIcon class="size-3.5" />
+      Jump to latest
+    </button>
+  {/if}
 </div>

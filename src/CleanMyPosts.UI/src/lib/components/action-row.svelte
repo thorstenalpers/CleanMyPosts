@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { Component } from 'svelte';
-  import { Button } from '$lib/components/ui/button';
+  import { cn } from '$lib/utils';
   import ListIcon from '@lucide/svelte/icons/list';
   import Trash2Icon from '@lucide/svelte/icons/trash-2';
 
@@ -8,27 +8,50 @@
     label: string;
     icon: Component;
     disabled?: boolean;
+    /** Marks the row whose deletion is currently running. */
+    active?: boolean;
     onShow: () => void;
     onDelete: () => void;
   }
 
-  let { label, icon: Icon, disabled = false, onShow, onDelete }: Props = $props();
+  let { label, icon: Icon, disabled = false, active = false, onShow, onDelete }: Props = $props();
+
+  const iconButton =
+    'flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-md transition-colors duration-150 ' +
+    'focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none ' +
+    'disabled:pointer-events-none disabled:opacity-40';
 </script>
 
-<div class="flex items-center gap-1 pl-3">
-  <Icon class="text-muted-foreground size-4 shrink-0" />
-  <span class="flex-1 truncate text-sm">{label}</span>
-  <Button variant="ghost" size="icon" class="size-7" aria-label={`Show ${label}`} {disabled} onclick={onShow}>
-    <ListIcon />
-  </Button>
-  <Button
-    variant="ghost"
-    size="icon"
-    class="text-destructive hover:text-destructive size-7"
-    aria-label={`Delete ${label}`}
+<div
+  class={cn(
+    'group/row flex h-8 items-center gap-2 rounded-md pr-0.5 pl-2 transition-colors duration-150',
+    active ? 'bg-primary/10' : 'hover:bg-muted'
+  )}
+>
+  <Icon class={cn('size-3.5 shrink-0', active ? 'text-primary' : 'text-muted-foreground')} />
+  <span class="flex-1 truncate text-[13px]">{label}</span>
+
+  <!-- Buttons stay in the layout at all times; only their contrast is revealed on hover,
+       so the row never reflows and keyboard users always see a target. -->
+  <button
+    type="button"
+    aria-label={`Show ${label}`}
+    {disabled}
+    onclick={onShow}
+    class={cn(
+      iconButton,
+      'text-muted-foreground/60 group-hover/row:text-muted-foreground hover:bg-background hover:text-foreground focus-visible:text-foreground'
+    )}
+  >
+    <ListIcon class="size-3.5" />
+  </button>
+  <button
+    type="button"
+    aria-label={`Delete all ${label}`}
     {disabled}
     onclick={onDelete}
+    class={cn(iconButton, 'text-muted-foreground/60 group-hover/row:text-destructive hover:bg-destructive/10 hover:text-destructive focus-visible:text-destructive')}
   >
-    <Trash2Icon />
-  </Button>
+    <Trash2Icon class="size-3.5" />
+  </button>
 </div>

@@ -13,12 +13,20 @@
       label: 'Posts',
       icon: MessagesSquareIcon,
       disabled: false,
+      active: false,
       onShow: fn(),
       onDelete: fn()
     }
   });
 </script>
 
-<Story name="Enabled" />
-<Story name="Disabled" args={{ disabled: true }} />
-<Story name="Likes" args={{ label: 'Likes', icon: HeartIcon }} />
+{#snippet template(args)}
+  <div class="w-52">
+    <ActionRow {...args} />
+  </div>
+{/snippet}
+
+<Story name="Enabled" {template} />
+<Story name="Disabled" args={{ disabled: true }} {template} />
+<Story name="Running" args={{ active: true, disabled: true }} {template} />
+<Story name="Likes" args={{ label: 'Likes', icon: HeartIcon }} {template} />

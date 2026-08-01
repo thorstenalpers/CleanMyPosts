@@ -9,8 +9,8 @@
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
+  --primary: var(--accent-base);
+  --primary-foreground: var(--accent-on);
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);
   --muted: oklch(0.97 0 0);
@@ -21,8 +21,13 @@
   --destructive-foreground: oklch(0.985 0 0);
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --radius: 0.5rem;
+  --ring: var(--accent-base);
+  --radius: 0.75rem;
+
+  /* Overwritten at runtime from the accent colour in settings (see $lib/theme/accent.ts). */
+  --accent-base: oklch(0.623 0.188 259.8);
+  --accent-base-hover: oklch(0.563 0.188 259.8);
+  --accent-on: oklch(0.985 0 0);
 }
 
 .dark {
@@ -32,8 +37,8 @@
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.205 0 0);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
+  --primary: var(--accent-base);
+  --primary-foreground: var(--accent-on);
   --secondary: oklch(0.269 0 0);
   --secondary-foreground: oklch(0.985 0 0);
   --muted: oklch(0.269 0 0);
@@ -44,7 +49,7 @@
   --destructive-foreground: oklch(0.985 0 0);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
+  --ring: var(--accent-base);
 }
 
 @theme inline {
@@ -67,10 +72,22 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-accent-base: var(--accent-base);
+  --color-accent-base-hover: var(--accent-base-hover);
+  --color-accent-on: var(--accent-on);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+}
+
+@keyframes cmp-indeterminate {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(300%);
+  }
 }
 
 @layer base {
@@ -78,7 +95,21 @@
     @apply border-border outline-ring/50;
   }
 
+  /* The delete loop is the only continuous motion in the app; kill it too when asked. */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  /* Transparent so the host window's Mica backdrop shows through the title-bar strip;
+     the app shell paints its own background below it. */
   body {
-    @apply bg-background text-foreground;
+    @apply text-foreground;
+    background: transparent;
   }
 }

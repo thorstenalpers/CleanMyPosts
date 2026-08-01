@@ -1,14 +1,19 @@
 <script lang="ts">
   import { toast } from 'svelte-sonner';
-  import { setMode } from 'mode-watcher';
   import type { BridgeClient } from '$lib/bridge/client';
   import type { SettingsStore } from '$lib/stores/settings.svelte';
   import { AppSettingsSchema, type AppInfo, type AppTheme } from '$lib/bridge/contract';
   import { Button } from '$lib/components/ui/button';
   import { Input } from '$lib/components/ui/input';
-  import { Label } from '$lib/components/ui/label';
   import { Switch } from '$lib/components/ui/switch';
-  import { Card, CardContent, CardHeader, CardTitle } from '$lib/components/ui/card';
+  import SettingSection from '$lib/components/setting-section.svelte';
+  import SettingRow from '$lib/components/setting-row.svelte';
+  import AccentPicker from '$lib/components/accent-picker.svelte';
+  import { cn } from '$lib/utils';
+  import PaletteIcon from '@lucide/svelte/icons/palette';
+  import ShieldIcon from '@lucide/svelte/icons/shield';
+  import TimerIcon from '@lucide/svelte/icons/timer';
+  import InfoIcon from '@lucide/svelte/icons/info';
   import SunIcon from '@lucide/svelte/icons/sun';
   import MoonIcon from '@lucide/svelte/icons/moon';
   import LaptopIcon from '@lucide/svelte/icons/laptop';
@@ -37,6 +42,27 @@
     { value: 'Default', label: 'System', icon: LaptopIcon }
   ];
 
+  const timeoutFields = [
+    {
+      key: 'waitAfterDocumentLoad',
+      id: 'wait-after-document-load',
+      label: 'After a page loads',
+      description: 'How long to let the page settle before the first deletion.'
+    },
+    {
+      key: 'waitAfterDelete',
+      id: 'wait-after-delete',
+      label: 'Between deletions',
+      description: 'Pause after each removed item. The main brake against automation detection.'
+    },
+    {
+      key: 'waitBetweenRetryDeleteAttempts',
+      id: 'wait-between-retries',
+      label: 'Between retries',
+      description: 'Pause before retrying an item that did not disappear.'
+    }
+  ] as const;
+
   async function commit(next: Partial<typeof settingsStore.settings>): Promise<void> {
     const merged = { ...settingsStore.settings, ...next };
     const parsed = AppSettingsSchema.safeParse(merged);
@@ -45,11 +71,6 @@
       return;
     }
     await settingsStore.update(parsed.data);
-  }
-
-  async function setTheme(theme: AppTheme): Promise<void> {
-    setMode(theme === 'Default' ? 'system' : theme === 'Dark' ? 'dark' : 'light');
-    await commit({ theme });
   }
 
   async function checkForUpdates(): Promise<void> {
@@ -63,129 +84,123 @@
       checkingUpdates = false;
     }
   }
-
-  async function openUrl(url: string): Promise<void> {
-    await bridge.call('system.openUrl', { url });
-  }
-
-  async function openLicense(): Promise<void> {
-    await bridge.call('system.openLicense', undefined);
-  }
 </script>
 
-<div class="flex h-full flex-col gap-4 overflow-auto p-4">
-  <Card>
-    <CardHeader>
-      <CardTitle>Theme</CardTitle>
-    </CardHeader>
-    <CardContent class="flex gap-2">
-      {#each themes as theme (theme.value)}
-        <Button
-          variant={settingsStore.settings.theme === theme.value ? 'default' : 'outline'}
-          size="sm"
-          onclick={() => setTheme(theme.value)}
-        >
-          <theme.icon />
-          {theme.label}
-        </Button>
+<div class="h-full overflow-y-auto">
+  <div class="mx-auto flex max-w-2xl flex-col gap-4 p-5">
+    <header>
+      <h1 class="text-xl font-semibold tracking-tight">Settings</h1>
+      <p class="text-muted-foreground mt-0.5 text-xs">Changes are saved as you make them.</p>
+    </header>
+
+    <SettingSection title="Appearance" icon={PaletteIcon}>
+      <SettingRow label="Theme" description="Follow Windows or pick a fixed mode.">
+        {#snippet control()}
+          <div class="flex gap-1" role="group" aria-label="Theme">
+            {#each themes as theme (theme.value)}
+              {@const active = settingsStore.settings.theme === theme.value}
+              <button
+                type="button"
+                aria-pressed={active}
+                onclick={() => commit({ theme: theme.value })}
+                class={cn(
+                  'focus-visible:ring-ring flex h-8 cursor-pointer items-center gap-1.5 rounded-md border px-2.5 text-xs font-medium transition-colors duration-150 focus-visible:ring-2 focus-visible:outline-none',
+                  active ? 'border-primary/40 bg-primary/10 text-foreground' : 'border-border text-muted-foreground hover:bg-muted'
+                )}
+              >
+                <theme.icon class="size-3.5" />
+                {theme.label}
+              </button>
+            {/each}
+          </div>
+        {/snippet}
+      </SettingRow>
+
+      <div class="py-3">
+        <AccentPicker
+          value={settingsStore.settings.accentColor}
+          useSystemAccent={settingsStore.settings.useSystemAccent}
+          onChange={(accentColor) => commit({ accentColor })}
+          onUseSystemAccentChange={(useSystemAccent) => commit({ useSystemAccent })}
+        />
+      </div>
+    </SettingSection>
+
+    <SettingSection title="Safety" icon={ShieldIcon}>
+      <SettingRow
+        label="Confirm before deleting"
+        description="Ask once per run. Deletions cannot be undone."
+        for="confirm-deletion"
+      >
+        {#snippet control()}
+          <Switch
+            id="confirm-deletion"
+            checked={settingsStore.settings.confirmDeletion}
+            onCheckedChange={(checked: boolean) => commit({ confirmDeletion: checked })}
+          />
+        {/snippet}
+      </SettingRow>
+
+      <SettingRow label="Show log tab" description="Adds a live log of every action to the sidebar." for="show-logs">
+        {#snippet control()}
+          <Switch
+            id="show-logs"
+            checked={settingsStore.settings.showLogs}
+            onCheckedChange={(checked: boolean) => commit({ showLogs: checked })}
+          />
+        {/snippet}
+      </SettingRow>
+    </SettingSection>
+
+    <SettingSection title="Timing" icon={TimerIcon}>
+      {#each timeoutFields as field (field.key)}
+        <SettingRow label={field.label} description={field.description} for={field.id}>
+          {#snippet control()}
+            <Input
+              id={field.id}
+              type="number"
+              min="0"
+              step="100"
+              class="h-8 w-24 text-right tabular-nums"
+              value={settingsStore.settings.timeouts[field.key]}
+              onchange={(e) =>
+                commit({ timeouts: { ...settingsStore.settings.timeouts, [field.key]: Number(e.currentTarget.value) } })}
+            />
+            <span class="text-muted-foreground w-5 text-xs">ms</span>
+          {/snippet}
+        </SettingRow>
       {/each}
-    </CardContent>
-  </Card>
+      <p class="text-muted-foreground py-2.5 text-xs leading-relaxed">
+        Raising these is always safe. Lowering them makes deletion faster but more likely to be flagged as automation.
+      </p>
+    </SettingSection>
 
-  <Card>
-    <CardHeader>
-      <CardTitle>Timeouts</CardTitle>
-    </CardHeader>
-    <CardContent class="flex flex-col gap-3">
-      <div class="flex items-center gap-2">
-        <Label class="w-56" for="wait-after-document-load">Wait after document loaded</Label>
-        <Input
-          id="wait-after-document-load"
-          type="number"
-          min="0"
-          class="w-28"
-          value={settingsStore.settings.timeouts.waitAfterDocumentLoad}
-          onchange={(e) =>
-            commit({
-              timeouts: { ...settingsStore.settings.timeouts, waitAfterDocumentLoad: Number(e.currentTarget.value) }
-            })}
-        />
-        <span class="text-muted-foreground text-sm">ms</span>
-      </div>
-      <div class="flex items-center gap-2">
-        <Label class="w-56" for="wait-after-delete">Wait after delete</Label>
-        <Input
-          id="wait-after-delete"
-          type="number"
-          min="0"
-          class="w-28"
-          value={settingsStore.settings.timeouts.waitAfterDelete}
-          onchange={(e) =>
-            commit({ timeouts: { ...settingsStore.settings.timeouts, waitAfterDelete: Number(e.currentTarget.value) } })}
-        />
-        <span class="text-muted-foreground text-sm">ms</span>
-      </div>
-      <div class="flex items-center gap-2">
-        <Label class="w-56" for="wait-between-retries">Wait between retry delete attempts</Label>
-        <Input
-          id="wait-between-retries"
-          type="number"
-          min="0"
-          class="w-28"
-          value={settingsStore.settings.timeouts.waitBetweenRetryDeleteAttempts}
-          onchange={(e) =>
-            commit({
-              timeouts: { ...settingsStore.settings.timeouts, waitBetweenRetryDeleteAttempts: Number(e.currentTarget.value) }
-            })}
-        />
-        <span class="text-muted-foreground text-sm">ms</span>
-      </div>
-    </CardContent>
-  </Card>
+    <SettingSection title="About" icon={InfoIcon}>
+      <SettingRow label="CleanMyPosts" description={appInfo ? `Version ${appInfo.version}` : 'Loading version…'}>
+        {#snippet control()}
+          <Button variant="outline" size="sm" class="h-8" disabled={checkingUpdates} onclick={checkForUpdates}>
+            <RefreshCwIcon class={cn(checkingUpdates && 'animate-spin')} />
+            Check for updates
+          </Button>
+        {/snippet}
+      </SettingRow>
 
-  <Card>
-    <CardContent class="flex flex-col gap-3 pt-3">
-      <div class="flex items-center gap-2">
-        <Switch
-          id="confirm-deletion"
-          checked={settingsStore.settings.confirmDeletion}
-          onCheckedChange={(checked: boolean) => commit({ confirmDeletion: checked })}
-        />
-        <Label for="confirm-deletion">Ask for confirmation before deleting</Label>
-      </div>
-      <div class="flex items-center gap-2">
-        <Switch id="show-logs" checked={settingsStore.settings.showLogs} onCheckedChange={(checked: boolean) => commit({ showLogs: checked })} />
-        <Label for="show-logs">Show log tab</Label>
-      </div>
-    </CardContent>
-  </Card>
-
-  <Card>
-    <CardHeader>
-      <CardTitle>About</CardTitle>
-    </CardHeader>
-    <CardContent class="flex flex-col gap-3">
-      <p class="text-muted-foreground text-sm">CleanMyPosts {appInfo?.version ?? ''}</p>
-      <div class="flex flex-wrap gap-2">
-        <Button variant="outline" size="sm" disabled={checkingUpdates} onclick={checkForUpdates}>
-          <RefreshCwIcon />
-          Check for Updates
-        </Button>
+      <div class="flex flex-wrap gap-2 py-2.5">
         {#if appInfo}
-          <Button variant="outline" size="sm" onclick={() => openUrl(appInfo!.homepageUrl)}>
+          <Button variant="ghost" size="sm" class="h-8" onclick={() => bridge.call('system.openUrl', { url: appInfo!.homepageUrl })}>
             <ExternalLinkIcon />
             Project on GitHub
           </Button>
-          <Button variant="outline" size="sm" onclick={() => openUrl(appInfo!.reportBugUrl)}>
+          <Button variant="ghost" size="sm" class="h-8" onclick={() => bridge.call('system.openUrl', { url: appInfo!.reportBugUrl })}>
             <BugIcon />
-            Report a Bug
+            Report a bug
           </Button>
         {/if}
-        <Button variant="outline" size="sm" onclick={openLicense}>
+        <Button variant="ghost" size="sm" class="h-8" onclick={() => bridge.call('system.openLicense', undefined)}>
           <FileTextIcon />
-          Third-Party Licenses
+          Third-party licenses
         </Button>
       </div>
-    </CardContent>
-  </Card>
+    </SettingSection>
+  </div>
 </div>

@@ -5,6 +5,8 @@ const FALLBACK_SETTINGS: AppSettings = {
   theme: 'Default',
   showLogs: false,
   confirmDeletion: true,
+  accentColor: '#3B82F6',
+  useSystemAccent: true,
   timeouts: { waitAfterDelete: 500, waitBetweenRetryDeleteAttempts: 500, waitAfterDocumentLoad: 3000 }
 };
 

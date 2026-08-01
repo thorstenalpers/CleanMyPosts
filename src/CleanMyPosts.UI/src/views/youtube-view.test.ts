@@ -3,6 +3,7 @@ import { render, screen, fireEvent, waitFor, within } from '@testing-library/sve
 import YouTubeView from './youtube-view.svelte';
 import { SettingsStore } from '$lib/stores/settings.svelte';
 import { SiteLoginStore } from '$lib/stores/site-login.svelte';
+import { ActionRunner } from '$lib/stores/action-runner.svelte';
 import { createMockHost } from '$lib/bridge/mock';
 
 function setup(confirmDeletion: boolean) {
@@ -15,6 +16,8 @@ function setup(confirmDeletion: boolean) {
       theme: 'Default',
       showLogs: false,
       confirmDeletion,
+      accentColor: '#3B82F6',
+      useSystemAccent: false,
       timeouts: { waitAfterDelete: 1, waitBetweenRetryDeleteAttempts: 1, waitAfterDocumentLoad: 1 }
     }),
     'site.navigate': navigate,
@@ -27,15 +30,16 @@ function setup(confirmDeletion: boolean) {
 
   const settingsStore = new SettingsStore(client);
   const loginStore = new SiteLoginStore(client);
-  return { client, emit, settingsStore, loginStore, navigate, runAction, hide };
+  const runner = new ActionRunner(client);
+  return { client, emit, settingsStore, loginStore, runner, navigate, runAction, hide };
 }
 
 describe('YouTubeView', () => {
   it('navigates to comments when Show is clicked', async () => {
-    const { client, emit, settingsStore, loginStore, navigate } = setup(true);
+    const { client, emit, settingsStore, loginStore, runner, navigate } = setup(true);
     await settingsStore.load();
     emit({ event: 'siteLogin', payload: { platform: 'youtube', loggedIn: true } });
-    render(YouTubeView, { bridge: client, settingsStore, loginStore });
+    render(YouTubeView, { bridge: client, settingsStore, loginStore, runner });
 
     await fireEvent.click(screen.getByRole('button', { name: 'Show Comments' }));
 
@@ -43,12 +47,12 @@ describe('YouTubeView', () => {
   });
 
   it('runs deleteLikes after confirming', async () => {
-    const { client, emit, settingsStore, loginStore, runAction } = setup(true);
+    const { client, emit, settingsStore, loginStore, runner, runAction } = setup(true);
     await settingsStore.load();
     emit({ event: 'siteLogin', payload: { platform: 'youtube', loggedIn: true } });
-    render(YouTubeView, { bridge: client, settingsStore, loginStore });
+    render(YouTubeView, { bridge: client, settingsStore, loginStore, runner });
 
-    await fireEvent.click(screen.getByRole('button', { name: 'Delete Likes' }));
+    await fireEvent.click(screen.getByRole('button', { name: 'Delete all Likes' }));
 
     const dialog = await screen.findByRole('alertdialog');
     await fireEvent.click(within(dialog).getByRole('button', { name: /^delete$/i }));

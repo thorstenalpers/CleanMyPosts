@@ -31,10 +31,21 @@ reliably.
 
 Long-running tests carry `[Trait("TestCategory", "Long-Running")]` and are excluded from CI.
 
+The host builds with nullable reference types enabled and treats a warning as something to
+fix, not to live with — `dotnet build` is expected to print zero. Analyzer rules that are
+noise for this codebase are silenced in `.editorconfig` with a reason, never with a blanket
+`NoWarn`.
+
 ## CI
 
 On every push and PR to `main`: `dotnet build` · `dotnet test` (without Long-Running) ·
-`npm run check` · `npm run test` · `npm run build` · `npm run build-storybook`.
+`npm run check` · `npm run test` · `npm run test:e2e` · `npm run build` ·
+`npm run build-storybook`.
+
+The Playwright e2e suite drives the built content script against static DOM fixtures in a
+real Chromium, stubbing the host by collecting `chrome.webview.postMessage` calls. It is
+host-agnostic by construction, which makes it the regression net for any change to the host
+or the shell UI.
 
 The Storybook build is part of CI so a broken story is caught immediately instead of
 rotting unnoticed.

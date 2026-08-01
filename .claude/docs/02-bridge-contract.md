@@ -31,6 +31,7 @@ exist. The C# side has matching DTOs; a bridge integration test keeps both sides
 | Method                  | Params                                       | Result                         |
 |-------------------------|----------------------------------------------|--------------------------------|
 | `app.getInfo`           | —                                            | `{ version, homepageUrl, … }` |
+| `app.ready`             | —                                            | —                              |
 | `settings.get`          | —                                            | `AppSettings`                  |
 | `settings.set`          | `AppSettings`                                | —                              |
 | `site.navigate`         | `{ platform, action }`                       | `{ ok: boolean }`              |
@@ -47,9 +48,13 @@ exist. The C# side has matching DTOs; a bridge integration test keeps both sides
 round-trip and must be attributable to their trigger.
 
 `site.hide` and `layout.setSidebarExpanded` drive the shell layout: the first swaps the
-ContentHost between the site browser and the Svelte pages (`Visibility` + `Grid.ColumnSpan`),
+content area between the site browser and the Svelte pages (opacity + `Grid.ColumnSpan`),
 the second toggles the sidebar column between 240px and 56px. See
 [01-architecture.md](01-architecture.md).
+
+`app.ready` is called once, from `App.svelte`'s `onMount` after settings and log have
+loaded. It tells the host to drop the startup skeleton — so it must not be called before
+the first real view is on screen. The host drops the skeleton anyway after 15 s.
 
 ### Push events (host → UI, no request)
 
@@ -83,6 +88,8 @@ type AppSettings = {
   theme: 'Default' | 'Light' | 'Dark';
   showLogs: boolean;
   confirmDeletion: boolean;
+  accentColor: string;       // '#RRGGBB'
+  useSystemAccent: boolean;  // follow the Windows accent colour
   timeouts: {
     waitAfterDelete: number;             // ms between individual deletions
     waitBetweenRetryDeleteAttempts: number;

@@ -18,6 +18,10 @@ the host page).
 - Runes only: `$state`, `$derived`, `$effect`, `$props`. No `export let` props, no `$:`
   statements, no legacy stores.
 - `$effect` is the exception, not the default. Prefer `$derived` for computed state.
+- Never write state that another library owns from inside an `$effect` body (e.g.
+  `mode-watcher`'s `setMode`) — Svelte 5 rejects a state write while effects are flushing and
+  logs `updated at $effect`. Defer it with `queueMicrotask`. Bridge calls *are* fine in an
+  effect: `BridgeClient` keeps its pending map in a plain `Map`, not in `$state`.
 - Stores live in `src/lib/stores/*.svelte.ts` and export an object with getters — not loose
   `let` exports that lose reactivity on import.
 - File names `kebab-case.svelte`, component names in templates `PascalCase`.
@@ -43,11 +47,10 @@ component's events by calling the bridge. Keep the logic-free presentation in th
 `@storybook/addon-svelte-csf`. Without a story the component counts as unfinished. This
 explicitly includes the **left navbar / sidebar**.
 
-**Settings gets a story too.** The settings *view* is bridge-connected and stays out of
-Storybook, but its form is a bridge-free `settings-form` component (props: current
-`AppSettings`; event: `change` with the new settings). That component carries the story; the
-view is a thin wrapper that loads `settings.get` and sends `settings.set`. Apply the same
-split to any other view whose body is worth previewing in isolation.
+**Bridge-connected views stay out of Storybook; their building blocks do not.** The settings
+view loads `settings.get` and sends `settings.set`, so it has no story — but
+`setting-section`, `setting-row`, and `accent-picker` are bridge-free and each carry one.
+Apply the same split to any view whose body is worth previewing in isolation.
 
 ### Required story states
 
@@ -65,13 +68,16 @@ Every component that shows data needs at least:
 - A decorator renders each story in light and dark; both must hold up (the app is
   theme-aware).
 - Storybook points the bridge at `mock.ts` and never talks to a real host.
-- Shared sample data lives in `src/lib/fixtures/` and is used by stories **and** tests — no
-  story with ad-hoc invented data.
+- Sample data in a story is written inline and kept realistic (five-digit counts, overlong
+  labels). Engine test fixtures are a separate thing and live under `__fixtures__/`.
 
 ## shadcn-svelte
 
 - Existing components first. Use `npx shadcn-svelte@latest add` instead of hand-rolling.
-- Compose instead of reinventing: settings page = form controls inside Cards.
+- Compose instead of reinventing: the settings page is form controls inside
+  `setting-section` / `setting-row`, not bespoke layout per screen.
+- Small primitives the registry does not carry (`badge`, `progress`) are written by hand into
+  `ui/` in the same style rather than pulling in a dependency for twenty lines.
 - Built-in variants (`variant="outline"`, `size="sm"`) before custom classes.
 - Import style: multi-part as a namespace
   (`import * as Card from '$lib/components/ui/card'`), single as a named import

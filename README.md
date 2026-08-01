@@ -15,6 +15,11 @@
 
 **CleanMyPosts** automates the process of cleaning up your social media accounts by interacting with them through an embedded browser. The app sends JavaScript commands to perform actions such as **deleting posts, reposts, replies, likes, unfollowing accounts on X (Twitter)**, and **deleting YouTube comments via Google My Activity**. It retries actions automatically to ensure everything is removed efficiently.
 
+There is **no API, no OAuth, and no token**. You sign in exactly as you would in a browser,
+and the app clicks the same buttons you would — just without stopping. Deletions are
+deliberately paced; the waits between them are configurable and exist to keep the platforms
+from treating you as a bot.
+
 
 ```mermaid
 %%{init: {"flowchart": {"diagramPadding": 125}}}%%
@@ -56,9 +61,13 @@ flowchart LR
 
 ## 🛠️ Requirements
 
-- Windows 10 or later  
+- Windows 10 version 2004 (build 19041) or later, 64-bit
 - X (Twitter) account (for X features)
 - Google account (for YouTube features)
+
+Nothing else — the app ships everything it needs, including the Windows App SDK. The only
+data it writes is your own preferences and the browser profile that keeps you signed in,
+both under `%LocalAppData%\CleanMyPosts`.
 
 ---
 
@@ -212,6 +221,38 @@ You can also run the cleanup directly in your browser using JavaScript snippets:
 - Run: `DeleteAllYouTubeLikes(1000, 500);`
 
 > **Note:** Make sure you are logged in to your Google/YouTube account before running these scripts. Default parameters can be omitted: `DeleteAllYouTubeComments();` or `DeleteAllYouTubeLikes();`
+
+---
+
+## 🧑‍💻 Building from Source
+
+Requires the [.NET 10 SDK](https://dotnet.microsoft.com/download) and
+[Node.js 22+](https://nodejs.org/). The .NET build runs the Svelte build for you, so this is
+enough for a runnable app:
+
+```bash
+dotnet build CleanMyPosts.slnx -c Release
+```
+
+Working on the UI alone is faster in the browser — it falls back to an in-memory mock host,
+so no WebView2 is needed:
+
+```bash
+npm --prefix src/CleanMyPosts.UI run dev
+npm --prefix src/CleanMyPosts.UI run storybook
+```
+
+Tests:
+
+```bash
+dotnet test src/Tests/Tests.csproj --filter "TestCategory!=Long-Running"
+npm --prefix src/CleanMyPosts.UI run check
+npm --prefix src/CleanMyPosts.UI run test
+npm --prefix src/CleanMyPosts.UI run test:e2e
+```
+
+The architecture, the UI↔host bridge, and the design rules are documented under
+[`.agents/docs/`](.agents/docs/) — start at [AGENTS.md](AGENTS.md).
 
 ---
 

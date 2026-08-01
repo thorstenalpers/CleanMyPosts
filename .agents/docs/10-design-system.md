@@ -1,19 +1,27 @@
 # Design System
 
-Classic black and white. The base is shadcn-svelte in the `new-york` style with
-`baseColor: neutral` — there every token has chroma 0, i.e. true greys.
+A neutral greyscale base with exactly two colours that carry meaning. The base is
+shadcn-svelte in the `new-york` style with `baseColor: neutral` — there every token has
+chroma 0, i.e. true greys.
 
 ## The principle
 
-**The only color in the app is the warning color.**
+**Two colours, two meanings. Nothing else is coloured.**
 
-All tokens are neutral (`oklch(… 0 0)`); the sole exception is `--destructive`. That way
-color in this UI always means exactly one thing: something is about to be deleted
-irreversibly here. This is not a style choice but part of the safety concept — so it must
-not be softened.
+| Colour        | Meaning                                          | Token                        |
+|---------------|--------------------------------------------------|------------------------------|
+| Destructive   | something is about to be deleted irreversibly     | `--destructive`              |
+| Accent        | *you are here* / *this is the primary action*     | `--accent-base` → `--primary`, `--ring` |
 
-No brand color, no accent blue, no colored charts, no green success badges. Status is
-distinguished by shape, position, and text, not by hue.
+Everything else is neutral (`oklch(… 0 0)`). Red must never be used for anything but
+deletion — that is part of the safety concept, not a style choice. The accent is
+user-chosen, so it must never be the only signal for a state: selection and focus are also
+carried by shape, position, and text.
+
+No colored charts, no green success badges, no coloured status dots.
+
+> Earlier revisions of this document forbade any accent colour at all. That was relaxed when
+> the accent became user-configurable; the destructive-red rule was not.
 
 ## Tokens
 
@@ -21,12 +29,27 @@ Defined in `src/app.css` as CSS variables, mirrored into Tailwind via `@theme in
 `:root` is light, `.dark` is dark; switched via `mode-watcher`.
 
 Use **only** the semantic classes: `bg-background`, `text-foreground`,
-`text-muted-foreground`, `bg-card`, `border-border`, `bg-destructive`.
+`text-muted-foreground`, `bg-card`, `border-border`, `bg-destructive`, `bg-primary`.
 
 Forbidden: raw color values (`bg-zinc-800`, `#111`), manual `dark:` color overrides.
 If you need `dark:` for a color, you are using the wrong token.
 
-`--radius: 0.5rem`. Other radii only via `rounded-sm/md/lg/xl`.
+`--radius: 0.75rem`. Other radii only via `rounded-sm/md/lg/xl`.
+
+### Accent tokens
+
+Three variables are written at runtime by `$lib/theme/accent.ts` and must not be hard-coded
+in CSS:
+
+| Variable              | Derived from the user's hex accent                              |
+|-----------------------|------------------------------------------------------------------|
+| `--accent-base`       | the colour converted to OKLCH                                    |
+| `--accent-base-hover` | same hue and chroma, lightness −0.06                             |
+| `--accent-on`         | near-white, or near-black when the accent's lightness is > 0.68  |
+
+OKLCH is used because lightness is perceptually uniform there: the hover shade and the
+on-accent text colour stay legible for any hue the user picks. `--primary` and `--ring`
+reference `--accent-base` in both light and dark mode.
 
 ## Typography
 
@@ -44,6 +67,19 @@ Windows tool, not a website.
 `tabular-nums` is mandatory on anything that changes live — progress counters that jump as
 they climb look broken.
 
+## Components
+
+Layout-bearing components live in `src/lib/components/` and take props in, events out —
+never the bridge. The set that carries the app's identity:
+
+| Component            | Role                                                              |
+|----------------------|-------------------------------------------------------------------|
+| `sidebar-shell`      | Nav rail. Active item marked by a 3px accent rail **and** `aria-current`, plus an optional connection dot. Expanded 240px / collapsed 56px. |
+| `action-row`         | One delete-able category. Show + Delete buttons stay in the layout at all times and only gain contrast on hover, so rows never reflow. |
+| `run-status`         | Pinned above the sidebar footer while a deletion runs: label, running count, indeterminate progress, Stop. Survives navigating away. |
+| `setting-section` / `setting-row` | Settings grouping. Every row carries a visible description — a toggle that deletes data must say so before it is flipped. |
+| `accent-picker`      | Eight presets, a hex field, and a "follow Windows" switch.         |
+
 ## Layout
 
 - Spacing in multiples of 4. Card padding `p-4`, section gap `gap-6`.
@@ -52,10 +88,29 @@ they climb look broken.
 - `truncate` instead of the three-part `overflow-hidden text-ellipsis whitespace-nowrap`.
 - `class` on components controls layout, never colors or typography.
 
+### The title-bar strip
+
+The host extends its content into the title bar and registers a 40px drag region over the
+sidebar column. `App.svelte` reserves a matching 40px strip at the top of the shell (`h-10`)
+holding the word mark, and nothing in it may be interactive — the host owns dragging there.
+
+`body` has no background of its own; the app shell paints `bg-background` below the strip.
+That is what would let the window's Mica backdrop show through. **In practice it does not:**
+WebView2 paints opaque even with `DefaultBackgroundColor = Transparent`, so the strip renders
+in the page background colour, which happens to sit close enough to the system title bar that
+it reads as native. Treat Mica as a window-level effect that the WebView does not currently
+participate in; do not build a design that depends on translucency.
+
 ## States and motion
 
 Skeletons instead of spinners where the shape of the data is known. Spinners only for
 indeterminate waits, and never without a way to cancel.
+
+The start-up skeleton is deliberately **static** — no shimmer, no animation. It exists in
+two places: a XAML layer in `ShellWindow.xaml` covering the whole window, and a CSS
+`#app:empty` placeholder in `index.html` covering the gap between "page painted" and "Svelte
+mounted". Both use theme-aware neutral fills, so they are correct in light and dark without
+extra work.
 
 Transitions are short (150–200 ms) and limited to `opacity` and `transform`. Nothing moves
 while the user is reading. Progress bars are the only element with continuous motion.
@@ -64,7 +119,9 @@ while the user is reading. Progress bars are the only element with continuous mo
 
 - Interactive elements are keyboard reachable; the focus ring via `outline-ring/50` is
   visible.
-- Icon-only buttons need an `aria-label`.
+- Icon-only buttons need an `aria-label`. The accent swatches are icon-only — they carry
+  both `aria-label` and `aria-pressed`.
 - Contrast at least AA — with pure greys, `text-muted-foreground` on `bg-muted` is where it
-  regularly slips.
+  regularly slips. For the accent, `--accent-on` is what keeps the primary button legible;
+  do not replace it with a fixed white.
 - The a11y addon in Storybook is the check, not eyeballing.

@@ -83,3 +83,43 @@ jobs:
         with:
           name: test-coverage-report
           path: TestResults/Reports
+
+  tauri:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          cache: npm
+          cache-dependency-path: src/CleanMyPosts.UI/package-lock.json
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+
+      - name: Cache cargo
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: src/CleanMyPosts.UI/src-tauri
+
+      # The Rust host embeds dist/content/content.js with include_str!, so the frontend
+      # has to be built before cargo can even parse the crate.
+      - name: Build frontend
+        working-directory: src/CleanMyPosts.UI
+        run: |
+          npm ci
+          npm run build
+
+      - name: Format
+        working-directory: src/CleanMyPosts.UI/src-tauri
+        run: cargo fmt --check
+
+      - name: Clippy
+        working-directory: src/CleanMyPosts.UI/src-tauri
+        run: cargo clippy -- -D warnings

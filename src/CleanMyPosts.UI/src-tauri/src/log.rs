@@ -41,7 +41,6 @@ impl LogBuffer {
             .cloned()
             .collect()
     }
-
 }
 
 impl Default for LogBuffer {

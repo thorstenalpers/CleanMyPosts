@@ -1,4 +1,4 @@
-use crate::log::{LogEntry, LogBuffer};
+use crate::log::{LogBuffer, LogEntry};
 use crate::settings::{AppSettings, SettingsStore};
 use serde_json::{json, Value};
 use std::collections::HashMap;
@@ -68,7 +68,11 @@ fn civil_from_days(z: i64) -> (i64, u32, u32) {
 }
 
 pub fn push_event(app: &AppHandle, event: &str, payload: Value) {
-    let _ = app.emit_to("chrome", "cmp-push", json!({ "event": event, "payload": payload }));
+    let _ = app.emit_to(
+        "chrome",
+        "cmp-push",
+        json!({ "event": event, "payload": payload }),
+    );
 }
 
 pub fn log(app: &AppHandle, level: &str, message: impl Into<String>) {
@@ -80,7 +84,11 @@ pub fn log(app: &AppHandle, level: &str, message: impl Into<String>) {
     if let Some(state) = app.try_state::<AppState>() {
         state.logs.push(entry.clone());
     }
-    push_event(app, "log", serde_json::to_value(entry).unwrap_or(Value::Null));
+    push_event(
+        app,
+        "log",
+        serde_json::to_value(entry).unwrap_or(Value::Null),
+    );
 }
 
 /// Mirrors `SiteActionOrchestrator.BuildUrl` on the C# side. `show*` and `delete*` share a
@@ -167,7 +175,10 @@ pub fn handle_content_message(app: &AppHandle, message: &Value) {
             );
         }
         "log" => {
-            let level = message.get("level").and_then(Value::as_str).unwrap_or("info");
+            let level = message
+                .get("level")
+                .and_then(Value::as_str)
+                .unwrap_or("info");
             let text = message.get("message").and_then(Value::as_str).unwrap_or("");
             log(app, level, text);
         }
@@ -177,7 +188,13 @@ pub fn handle_content_message(app: &AppHandle, message: &Value) {
                 .and_then(Value::as_u64)
                 .unwrap_or(0) as u32;
             if let Some(state) = app.try_state::<AppState>() {
-                if let Some(run) = state.runs.0.lock().expect("runs mutex").get_mut(&request_id) {
+                if let Some(run) = state
+                    .runs
+                    .0
+                    .lock()
+                    .expect("runs mutex")
+                    .get_mut(&request_id)
+                {
                     run.deleted = count;
                 }
             }
@@ -317,6 +334,38 @@ fn cancel_action(app: &AppHandle, params: &Value) -> Result<Value, String> {
     Ok(Value::Null)
 }
 
+/// Installs and restarts on its own rather than reporting back and waiting: the contract's
+/// result only carries "is there one", and AutoUpdater.NET likewise owned the whole flow
+/// once the user asked. `app.restart()` never returns.
+async fn check_for_updates(app: &AppHandle) -> Result<Value, String> {
+    use tauri_plugin_updater::UpdaterExt;
+
+    let update = app
+        .updater()
+        .map_err(|e| e.to_string())?
+        .check()
+        .await
+        .map_err(|e| e.to_string())?;
+
+    let Some(update) = update else {
+        return Ok(
+            json!({ "updateAvailable": false, "message": "You are on the latest version." }),
+        );
+    };
+
+    log(
+        app,
+        "info",
+        format!("Installing update {}…", update.version),
+    );
+    update
+        .download_and_install(|_, _| {}, || {})
+        .await
+        .map_err(|e| e.to_string())?;
+
+    app.restart();
+}
+
 pub async fn dispatch(app: AppHandle, method: String, params: Value) -> Result<Value, String> {
     match method.as_str() {
         "app.getInfo" => Ok(json!({
@@ -387,12 +436,7 @@ pub async fn dispatch(app: AppHandle, method: String, params: Value) -> Result<V
             Ok(Value::Null)
         }
 
-        // Wired up with the rest of the release pipeline; reporting "no update" is
-        // honest here, where the WPF build asked AutoUpdater.NET.
-        "updater.checkForUpdates" => Ok(json!({
-            "updateAvailable": false,
-            "message": "Update checks are not available in this build yet."
-        })),
+        "updater.checkForUpdates" => check_for_updates(&app).await,
 
         "system.openUrl" => {
             let url = params.get("url").and_then(Value::as_str).unwrap_or("");

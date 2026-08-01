@@ -132,6 +132,7 @@ fn layout_webviews(app: &tauri::AppHandle) {
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_updater::Builder::new().build())
         .invoke_handler(tauri::generate_handler![content_message, bridge_call])
         .setup(|app| {
             let settings_path = app

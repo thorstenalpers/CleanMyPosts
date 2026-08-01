@@ -19,6 +19,16 @@
   "bundle": {
     "active": true,
     "targets": ["nsis"],
-    "icon": ["icons/icon.ico"]
+    "icon": ["icons/icon.ico"],
+    "createUpdaterArtifacts": true,
+    "resources": ["../../../THIRD_PARTY_LICENSES.txt"]
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "REPLACE_WITH_PUBLIC_KEY",
+      "endpoints": [
+        "https://github.com/thorstenalpers/CleanMyPosts/releases/latest/download/latest.json"
+      ]
+    }
   }
 }

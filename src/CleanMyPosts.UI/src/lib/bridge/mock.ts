@@ -57,11 +57,14 @@ export function createMockHost(handlers: MockHandlers) {
 /** Default handlers covering every method with harmless fake data — a safe base for `vite dev`. */
 export function defaultMockHandlers(): MockHandlers {
   return {
+    'app.ready': () => undefined,
     'app.getInfo': () => ({ version: '0.0.0-dev', homepageUrl: 'https://github.com/thorstenalpers/CleanMyPosts', reportBugUrl: 'https://github.com/thorstenalpers/CleanMyPosts/issues' }),
     'settings.get': () => ({
       theme: 'Default',
       showLogs: true,
       confirmDeletion: true,
+      accentColor: '#3B82F6',
+      useSystemAccent: false,
       timeouts: { waitAfterDelete: 500, waitBetweenRetryDeleteAttempts: 500, waitAfterDocumentLoad: 3000 }
     }),
     'settings.set': () => undefined,

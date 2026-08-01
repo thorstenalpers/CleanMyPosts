@@ -10,6 +10,8 @@ describe('BridgeClient', () => {
         theme: 'Light',
         showLogs: true,
         confirmDeletion: false,
+        accentColor: '#3B82F6',
+        useSystemAccent: false,
         timeouts: { waitAfterDelete: 100, waitBetweenRetryDeleteAttempts: 200, waitAfterDocumentLoad: 300 }
       })
     });

@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 /**
- * Single source of truth for the UI <-> WPF host bridge. The Svelte app runs in
+ * Single source of truth for the UI <-> WinUI 3 host bridge. The Svelte app runs in
  * the chrome WebView2 (served from `cleanmyposts.local`) and talks to the host
  * over this channel; the platform sites load in a separate site WebView. The C#
  * side implements matching DTOs (System.Text.Json) for each method; a bridge
@@ -21,10 +21,14 @@ export const TimeoutSettingsSchema = z.object({
 });
 export type TimeoutSettings = z.infer<typeof TimeoutSettingsSchema>;
 
+export const AccentColorSchema = z.string().regex(/^#[0-9a-fA-F]{6}$/);
+
 export const AppSettingsSchema = z.object({
   theme: AppThemeSchema,
   showLogs: z.boolean(),
   confirmDeletion: z.boolean(),
+  accentColor: AccentColorSchema,
+  useSystemAccent: z.boolean(),
   timeouts: TimeoutSettingsSchema
 });
 export type AppSettings = z.infer<typeof AppSettingsSchema>;
@@ -85,6 +89,8 @@ export type AppInfo = z.infer<typeof AppInfoSchema>;
 /** Every UI -> Host RPC method, keyed by name, with its params/result schemas. */
 export const BridgeMethods = {
   'app.getInfo': { params: voidSchema, result: AppInfoSchema },
+  /** Signals that the Svelte UI has rendered, so the host can drop its startup skeleton. */
+  'app.ready': { params: voidSchema, result: voidSchema },
   'settings.get': { params: voidSchema, result: AppSettingsSchema },
   'settings.set': { params: AppSettingsSchema, result: voidSchema },
   'site.navigate': {

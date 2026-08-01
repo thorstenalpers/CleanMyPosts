@@ -14,6 +14,8 @@ describe('AppSettingsSchema', () => {
       theme: 'Dark',
       showLogs: false,
       confirmDeletion: true,
+      accentColor: '#3B82F6',
+      useSystemAccent: false,
       timeouts: { waitAfterDelete: 500, waitBetweenRetryDeleteAttempts: 500, waitAfterDocumentLoad: 3000 }
     });
     expect(result.success).toBe(true);

@@ -18,5 +18,7 @@ tauri-build = { version = "2", features = [] }
 # `unstable` gates the multi-webview API (`Window::add_child`), which this app needs:
 # the sidebar and the platform site are two webviews inside one window, not two windows.
 tauri = { version = "2", features = ["unstable"] }
+tauri-plugin-opener = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
+tokio = { version = "1", features = ["sync"] }

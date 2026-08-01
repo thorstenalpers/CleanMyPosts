@@ -1,7 +1,8 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { ModeWatcher, setMode } from 'mode-watcher';
-  import { getBridge } from '$lib/bridge/client';
+  import { createBridgeClient } from '$lib/bridge/client';
+  import { createTauriHost, isTauri } from '$lib/bridge/tauri-host';
   import { createMockHost, defaultMockHandlers } from '$lib/bridge/mock';
   import { SettingsStore } from '$lib/stores/settings.svelte';
   import { LogStore } from '$lib/stores/log.svelte';
@@ -28,8 +29,8 @@
    * sidebar width via `layout.setSidebarExpanded`.
    */
 
-  // `vite dev` in a plain browser has no WebView2 host — fall back to an in-memory mock so the UI is still previewable.
-  const bridge = window.chrome?.webview ? getBridge() : createMockHost(defaultMockHandlers()).client;
+  // `vite dev` in a plain browser has no host — fall back to an in-memory mock so the UI is still previewable.
+  const bridge = isTauri() ? createBridgeClient(createTauriHost()) : createMockHost(defaultMockHandlers()).client;
 
   const settingsStore = new SettingsStore(bridge);
   const logStore = new LogStore(bridge);

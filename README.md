@@ -142,85 +142,64 @@ Once your system meets the requirements, follow these steps to install **CleanMy
 ---
 
 
-## 🧟‍♂️ Advanced: Run Deletion Scripts Manually
+## 🧟‍♂️ Advanced: Run the Deletion Engine Manually
 
-You can also run the cleanup directly in your browser using JavaScript snippets:
+The same code the app injects can be run by hand in any Chromium browser's DevTools
+console — useful on non-Windows machines, or to debug a selector against the live site.
 
-### 🔧 Steps:
+The deletion logic lives in [`src/CleanMyPosts.UI/src/lib/engine/`](src/CleanMyPosts.UI/src/lib/engine)
+([X actions](src/CleanMyPosts.UI/src/lib/engine/x), [YouTube actions](src/CleanMyPosts.UI/src/lib/engine/youtube))
+and is bundled into a single dependency-free IIFE that exposes `window.__cmp`.
 
-1. Visit your [X profile](https://x.com/) and note your **username** (the part after `x.com/`, without the `@`).
-2. Replace all occurrences of `USERNAME` in URLs and function calls with your actual username.
-3. Open **Developer Tools** in Chrome by pressing `F12`.
-4. Go to the **Sources** tab, then open the **Snippets** panel.
-5. Click **"New Snippet"** and paste the JavaScript code from the provided links.
-6. Save the snippet.
-7. Run the snippet once (right-click → Run) to load the script into the page context.
-8. Switch to the **Console** tab.
-9. Manually execute the appropriate function call (e.g., `DeleteAllPosts(1000, 1000);`) in the console to start the deletion process.
-10. Repeat steps 4–8 for other scripts as needed.
+### 🔧 Build the bundle
 
+Requires [Node.js](https://nodejs.org/) 20+:
 
-#### Delete Posts  
+```bash
+cd src/CleanMyPosts.UI && npm ci && npm run build:content
+```
 
-- URL: [https://x.com/search?q=from%3AUSERNAME](https://x.com/search?q=from%3AUSERNAME)  
+The result is `src/CleanMyPosts.UI/dist/content/content.js`.
 
-- Script: [delete-all-posts.js](https://raw.githubusercontent.com/thorstenalpers/CleanMyPosts/refs/heads/main/src/CleanMyPosts/Scripts/delete-all-posts.js)  
+### 🔧 Run it
 
-- Run: `DeleteAllPosts(1000, 1000);`
+1. Log in and open the page for the action you want (see the table below), replacing
+   `USERNAME` with your X handle — the part after `x.com/`, without the `@`.
+2. Open **DevTools** (`F12`) and switch to the **Console** tab.
+3. Optional — the engine reports progress through the WebView2 host channel, which
+   does not exist in a normal browser, so nothing is printed unless you shim it first:
+   ```js
+   window.chrome = { ...window.chrome, webview: { postMessage: (m) => console.log(m) } };
+   ```
+4. Paste the entire contents of `content.js` and press Enter. This only defines
+   `window.__cmp`; nothing is deleted yet.
+5. Start the run:
+   ```js
+   __cmp.run('x', 'deletePosts', JSON.stringify({
+     requestId: 'manual',
+     waitAfterDelete: 1000,
+     waitBetweenRetryDeleteAttempts: 1000
+   }));
+   ```
 
+`__cmp.run` returns immediately and works through the page in the background; it stops
+on its own once nothing deletable is left. `__cmp.isEmpty('x', 'deletePosts')` reports
+whether the current page still has anything to delete.
 
-#### Delete Reposts 
+| Platform | Action | Open this page first |
+| --- | --- | --- |
+| `x` | `deletePosts` | [`x.com/search?q=from:USERNAME`](https://x.com/search?q=from%3AUSERNAME&src=typed_query) |
+| `x` | `deleteReplies` | [`x.com/USERNAME/with_replies`](https://x.com/) |
+| `x` | `deleteReposts` | [`x.com/USERNAME`](https://x.com/) |
+| `x` | `deleteLikes` | [`x.com/USERNAME/likes`](https://x.com/) |
+| `x` | `deleteFollowing` | [`x.com/USERNAME/following`](https://x.com/) |
+| `youtube` | `deleteComments` | [My Activity → YouTube comments](https://myactivity.google.com/page?hl=en&page=youtube_comments) |
+| `youtube` | `deleteLikes` | [Liked videos playlist](https://www.youtube.com/playlist?list=LL) |
 
-- URL: [https://x.com/USERNAME](https://x.com/USERNAME)  
+> **Note:** `deleteReplies` additionally needs your handle, since it has to tell your own
+> replies apart from the posts they answer — add `userName: 'USERNAME'` to the JSON.
 
-- Script: [delete-all-reposts.js](https://raw.githubusercontent.com/thorstenalpers/CleanMyPosts/refs/heads/main/src/CleanMyPosts/Scripts/delete-all-reposts.js)  
-
-- Run: `DeleteAllRepost(1000);`
-
-
-#### Delete Replies  
-
-- URL: [https://x.com/USERNAME/with_replies](https://x.com/USERNAME/with_replies)  
-
-- Script: [delete-all-replies.js](https://raw.githubusercontent.com/thorstenalpers/CleanMyPosts/refs/heads/main/src/CleanMyPosts/Scripts/delete-all-replies.js)  
-
-- Run: `DeleteAllReplies('USERNAME', 1000, 5);` // replace **USERNAME** with yours
-
-#### Unlike Posts  
-
-- URL: [https://x.com/USERNAME/likes](https://x.com/USERNAME/likes)  
-
-- Script: [delete-all-likes.js](https://raw.githubusercontent.com/thorstenalpers/CleanMyPosts/refs/heads/main/src/CleanMyPosts/Scripts/delete-all-likes.js)  
-
-- Run: `DeleteAllLike(1000)`
-
-
-#### Unfollow Accounts  
-
-- URL: [https://x.com/USERNAME/following](https://x.com/USERNAME/following)  
-
-- Script: [delete-all-following.js](https://raw.githubusercontent.com/thorstenalpers/CleanMyPosts/refs/heads/main/src/CleanMyPosts/Scripts/delete-all-following.js)  
-
-- Run: `DeleteAllFollowing(1000, 1000);`
-
-
-#### Delete YouTube Comments  
-
-- URL: [https://myactivity.google.com/page?hl=en&page=youtube_comments](https://myactivity.google.com/page?hl=en&page=youtube_comments)  
-
-- Script: [delete-all-youtube-posts.js](https://raw.githubusercontent.com/thorstenalpers/CleanMyPosts/refs/heads/main/src/CleanMyPosts/Scripts/delete-all-youtube-posts.js)  
-
-- Run: `DeleteAllYouTubeComments(1000, 500);`
-
-#### Remove Liked Videos  
-
-- URL: [https://www.youtube.com/playlist?list=LL](https://www.youtube.com/playlist?list=LL)  
-
-- Script: [delete-all-youtube-likes.js](https://raw.githubusercontent.com/thorstenalpers/CleanMyPosts/refs/heads/main/src/CleanMyPosts/Scripts/delete-all-youtube-likes.js)  
-
-- Run: `DeleteAllYouTubeLikes(1000, 500);`
-
-> **Note:** Make sure you are logged in to your Google/YouTube account before running these scripts. Default parameters can be omitted: `DeleteAllYouTubeComments();` or `DeleteAllYouTubeLikes();`
+> **Note:** Make sure you are logged in to the relevant account before starting a run.
 
 ---
 

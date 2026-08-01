@@ -1,0 +1,4 @@
+[[permission]]
+identifier = "allow-content-message"
+description = "Lets the injected delete engine report log, progress, done and error messages back to the host."
+commands.allow = ["content_message"]

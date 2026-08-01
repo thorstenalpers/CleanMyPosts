@@ -25,9 +25,15 @@ Settings                         (footer)
 
 ## Routing
 
-No router package. `App.svelte` holds an `activeKey` state and switches the content area via
-an `{#if}` chain. For a desktop app with a fixed sidebar there are no URLs, no deep links, no
-browser history — a router is ballast.
+No router package. `App.svelte` holds an `activeKey` state and switches the content area by
+hiding pages, not by swapping them. For a desktop app with a fixed sidebar there are no URLs,
+no deep links, no browser history — a router is ballast.
+
+Both content-area pages stay mounted; the inactive one is `invisible` and `inert`. Unmounting
+would reset its filters, level selection and scroll offset every time the user looks at
+something else, which is the behaviour a SPA is expected *not* to have. `visibility` rather
+than `display`, because a `display:none` subtree drops its layout and with it the scroll
+offset.
 
 `activeKey` is one nav key: `'x' | 'youtube' | 'log' | 'settings'`. The per-platform action
 (Posts, Likes, Comments, …) is not a route — it is chosen within the platform panel's

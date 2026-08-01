@@ -1,0 +1,7 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "chrome",
+  "description": "The local sidebar UI on the app's own origin.",
+  "webviews": ["chrome"],
+  "permissions": ["core:default", "allow-bridge-call"]
+}

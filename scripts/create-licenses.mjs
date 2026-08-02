@@ -103,7 +103,10 @@ function section(title, entries) {
 	return `${rule}\n${title} (${entries.length})\n${body}\n`;
 }
 
-const output = [section('Rust crates', crates()), section('npm packages', packages())].join('\n');
+const output = [
+	section('Rust crates', crates()),
+	section('npm packages (build and runtime)', packages())
+].join('\n');
 
 writeFileSync(join(root, 'THIRD_PARTY_LICENSES.txt'), output, 'utf8');
 console.log('THIRD_PARTY_LICENSES.txt written.');

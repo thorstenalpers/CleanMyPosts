@@ -90,27 +90,22 @@ never the bridge. The set that carries the app's identity:
 
 ### The title-bar strip
 
-The host extends its content into the title bar and registers a 40px drag region over the
-sidebar column. `App.svelte` reserves a matching 40px strip at the top of the shell (`h-10`)
-holding the word mark, and nothing in it may be interactive — the host owns dragging there.
+The window keeps the standard system title bar; the host does not extend into it and owns no
+drag region. `+layout.svelte` reserves a 40px strip at the top of the shell (`h-10`) holding the
+word mark, directly below the system title bar.
 
-`body` has no background of its own; the app shell paints `bg-background` below the strip.
-That is what would let the window's Mica backdrop show through. **In practice it does not:**
-WebView2 paints opaque even with `DefaultBackgroundColor = Transparent`, so the strip renders
-in the page background colour, which happens to sit close enough to the system title bar that
-it reads as native. Treat Mica as a window-level effect that the WebView does not currently
-participate in; do not build a design that depends on translucency.
+`body` has no background of its own; the app shell paints `bg-background`. Do not build a
+design that depends on translucency — WebView2 paints opaque, so a window-level backdrop
+material would not show through the page anyway.
 
 ## States and motion
 
 Skeletons instead of spinners where the shape of the data is known. Spinners only for
 indeterminate waits, and never without a way to cancel.
 
-The start-up skeleton is deliberately **static** — no shimmer, no animation. It exists in
-two places: a XAML layer in `ShellWindow.xaml` covering the whole window, and a CSS
-`#app:empty` placeholder in `index.html` covering the gap between "page painted" and "Svelte
-mounted". Both use theme-aware neutral fills, so they are correct in light and dark without
-extra work.
+The start-up placeholder is deliberately **static** — no shimmer, no animation. It is a CSS
+`#app:empty` rule in `src/app.html` covering the gap between "page painted" and "Svelte
+mounted". Theme-aware neutral fills, so it is correct in light and dark without extra work.
 
 Transitions are short (150–200 ms) and limited to `opacity` and `transform`. Nothing moves
 while the user is reading. Progress bars are the only element with continuous motion.
@@ -124,4 +119,3 @@ while the user is reading. Progress bars are the only element with continuous mo
 - Contrast at least AA — with pure greys, `text-muted-foreground` on `bg-muted` is where it
   regularly slips. For the accent, `--accent-on` is what keeps the primary button legible;
   do not replace it with a fixed white.
-- The a11y addon in Storybook is the check, not eyeballing.

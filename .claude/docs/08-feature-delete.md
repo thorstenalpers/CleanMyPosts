@@ -5,13 +5,12 @@
 ```
 User clicks "Delete all"
   → (optional) confirm dialog
+  → site.navigate RPC { platform, action } → host: target_url → assign in site webview
   → site.runAction RPC { requestId, platform, action, timeouts }
-  → host: BuildUrlAsync → NavigateToUrlAsync → wait NavigationCompleted
-  → host: window.__cmp.run(platform, action, paramsJson) via ExecuteScriptAsync
+  → host: window.__cmp.run(platform, action, paramsJson) via eval
   → content script: click/confirm/retry loop → postProgress after each item
-  → host: relay progress push events to chrome UI (accumulated count across reloads)
-  → content script: postDone or postError
-  → host: if isEmpty() → done; else reload → repeat up to MaxRetriesPerAction
+  → host: relay progress push events to chrome UI
+  → content script: postDone or postError → resolves the pending call
   → RPC result: { deletedCount }
   → UI: show final count or error message
 ```
@@ -49,20 +48,15 @@ follow the automation on the live page.
 
 ## Retry loop
 
-The host loops until one of:
-- `isEmpty()` returns `true` (the page has no more items to act on).
-- `MaxRetriesPerAction` consecutive rounds with `deletedCount == 0` (stuck — logs a
-  warning and returns the total so far).
-
-Between rounds: the host calls `Reload()` on the SiteWebView and waits for
-`NavigationCompleted` + `waitAfterDocumentLoad` before starting the next round. The
-content script is already registered and does not need to be re-injected.
+The loop lives in the page, not in the host. Each action's `run` keeps scrolling and
+clicking until it can no longer find an item, then resolves with the count. A failed click
+is retried; a run of failures with no scroll progress ends the action.
 
 ## Progress accumulation
 
-`deletedCount` in `progress` push events is the count for the **current round only**.
-The host adds the `progressBase` (total from completed rounds) before forwarding to the
-chrome UI, so the counter is monotonically increasing across reloads.
+`deletedCount` in `progress` push events is the running total for the call and is forwarded
+to the chrome UI unchanged. The host keeps the last value so a cancel can still resolve the
+call with the count reached so far.
 
 ## Confirmation dialog
 

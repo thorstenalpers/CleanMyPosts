@@ -2,21 +2,20 @@
 
 ## Persistence
 
-Settings live as JSON under `%LocalAppData%\CleanMyPosts\Configurations\`, written by
-`UserSettingsService` through `IFileService`:
+All settings live in one file, `settings.json` under Tauri's `app_config_dir`
+(`%AppData%\com.thorstenalpers.cleanmyposts\`), owned by `SettingsStore`
+(`src-tauri/src/settings.rs`). Window position and size are not persisted.
 
-| File                   | Contents                                                    |
-|------------------------|-------------------------------------------------------------|
-| `AppProperties.json`   | theme, accent colour, `showLogs`, `confirmDeletion`          |
-| `timeoutSettings.json` | the three delete timeouts                                    |
-| `WindowSettings.json`  | window position, size, and state (written on close)          |
+It is read once on start-up and written immediately on every change. The enum is stored as
+its name, not a number, so the file stays readable.
 
-They are loaded once on start-up (`ApplicationHostService`) and written immediately on every
-change. Enums are stored as their names, not numbers, so the files stay readable.
+`SettingsStore::load` falls back to defaults when the file is missing or cannot be parsed.
+Settings are user state, not a contract — a file left behind by an older version must never
+block start-up. That is the migration story; there is no version field and no migration code.
 
-`FileService.Read` falls back to defaults when a file cannot be deserialised. Settings are
-user state, not a contract — a file left behind by an older version must never block
-start-up. That is the migration story; there is no version field and no migration code.
+**Known gap:** `accentColor` and `useSystemAccent` are in the Zod schema below but not in the
+Rust `AppSettings`, so `settings.get` currently fails the UI's validation. Tracked in
+[14-roadmap.md](14-roadmap.md).
 
 ## Settings fields
 
@@ -56,9 +55,8 @@ On the UI side `$lib/theme/accent.ts` converts the hex value to OKLCH and writes
 `--accent-base`, `--accent-base-hover`, and `--accent-on` onto the document root; `app.css`
 derives `--primary` and `--ring` from them. See [10-design-system.md](10-design-system.md).
 
-The host applies theme and title-bar button colours itself in `ShellWindow.ApplyAppearance`,
-driven by `IUserSettingsService.SettingChanged`, so the window chrome follows without a
-restart.
+Theme and accent apply to the web UI only. The window keeps the system title bar, and the
+host does not restyle it.
 
 ## Timeout defaults
 

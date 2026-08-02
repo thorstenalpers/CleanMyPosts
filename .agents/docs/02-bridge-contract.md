@@ -4,14 +4,19 @@ There are **two** protocols. They are never mixed.
 
 | Protocol         | File                              | Between                       | Transport                                    |
 |------------------|-----------------------------------|-------------------------------|----------------------------------------------|
-| Chrome bridge    | `src/lib/bridge/contract.ts`      | Svelte app ↔ host             | `postMessage` in, `PostWebMessageAsJson` out |
-| Content protocol | `src/lib/engine/protocol.ts`      | host ↔ injected script        | `ExecuteScriptAsync` in, `postMessage` out   |
+| Chrome bridge    | `src/lib/bridge/contract.ts`      | Svelte app ↔ host             | `invoke('bridge_call')` in, `cmp-push` event out |
+| Content protocol | `src/lib/engine/protocol.ts`      | host ↔ injected script        | `eval` in, `postMessage` out                 |
 
 ## Chrome bridge
 
 Zod is the single source: types **and** runtime validation come from the same schemas.
 Every method lives in a central `BridgeMethods` map. A handler without an entry does not
-exist. The C# side has matching DTOs; a bridge integration test keeps both sides in sync.
+exist. `dispatch` in `src-tauri/src/commands/` has a matching arm per method; nothing
+currently checks that the two lists agree, so adding a method means touching both by hand.
+
+`tauri-host.ts` adapts Tauri's `invoke` and event channel to the `{ id, ok, result }`
+envelope `BridgeClient` already speaks, which is why the client, the schemas, and the stores
+never learned that the host changed.
 
 **Request** (UI → host)
 
@@ -31,7 +36,6 @@ exist. The C# side has matching DTOs; a bridge integration test keeps both sides
 | Method                  | Params                                       | Result                         |
 |-------------------------|----------------------------------------------|--------------------------------|
 | `app.getInfo`           | —                                            | `{ version, homepageUrl, … }` |
-| `app.ready`             | —                                            | —                              |
 | `settings.get`          | —                                            | `AppSettings`                  |
 | `settings.set`          | `AppSettings`                                | —                              |
 | `site.navigate`         | `{ platform, action }`                       | `{ ok: boolean }`              |
@@ -47,14 +51,10 @@ exist. The C# side has matching DTOs; a bridge integration test keeps both sides
 **The caller mints `requestId`** for `site.runAction`. Push events outlive the RPC
 round-trip and must be attributable to their trigger.
 
-`site.hide` and `layout.setSidebarExpanded` drive the shell layout: the first swaps the
-content area between the site browser and the Svelte pages (opacity + `Grid.ColumnSpan`),
-the second toggles the sidebar column between 240px and 56px. See
+`site.hide` and `layout.setSidebarExpanded` drive the shell layout: the first parks the
+site webview off-screen and stretches the chrome webview over the window, the second
+toggles the sidebar column between 240px and 56px. See
 [01-architecture.md](01-architecture.md).
-
-`app.ready` is called once, from `App.svelte`'s `onMount` after settings and log have
-loaded. It tells the host to drop the startup skeleton — so it must not be called before
-the first real view is on screen. The host drops the skeleton anyway after 15 s.
 
 ### Push events (host → UI, no request)
 
@@ -78,8 +78,8 @@ type YouTubeAction = 'showComments' | 'deleteComments'
                    | 'showLikes' | 'deleteLikes';
 ```
 
-`show*` actions navigate the SiteWebView to the correct URL and return `{ ok }`.
-`delete*` actions navigate and then run the full retry loop.
+`show*` actions navigate the site webview to the correct URL and return `{ ok }`.
+`delete*` actions navigate and then start a run; the retry loop itself is in the page.
 
 ### Settings
 
@@ -129,4 +129,4 @@ v1 — do not reintroduce it.
 
 `src/lib/bridge/mock.ts` implements the chrome bridge fully in the browser so that
 `npm run dev` and all component tests run without a host. A new bridge method requires an
-entry in `contract.ts`, a handler in C#, **and** a stub in `mock.ts`.
+entry in `contract.ts`, an arm in `dispatch`, **and** a stub in `mock.ts`.

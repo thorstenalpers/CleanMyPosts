@@ -37,12 +37,6 @@
       "skillPath": "skills/documentation-and-adrs/SKILL.md",
       "computedHash": "7464fd2950b99fb00bbf65cab27653e0a049eef00c98927713ffdfe232a9daa9"
     },
-    "dotnet-best-practices": {
-      "source": "github/awesome-copilot",
-      "sourceType": "github",
-      "skillPath": "skills/dotnet-best-practices/SKILL.md",
-      "computedHash": "9ef94db7f06c167d544369817e5a4415eeb7886dcff0d47026837a1aada260e3"
-    },
     "doubt-driven-development": {
       "source": "addyosmani/agent-skills",
       "sourceType": "github",

@@ -25,17 +25,25 @@ Settings                         (footer)
 
 ## Routing
 
-No router package. `App.svelte` holds an `activeKey` state and switches the content area by
-hiding pages, not by swapping them. For a desktop app with a fixed sidebar there are no URLs,
-no deep links, no browser history — a router is ballast.
+SvelteKit's file-based router, running as an SPA (`ssr = false`, `adapter-static` with an
+`index.html` fallback). One route per nav key:
 
-Both content-area pages stay mounted; the inactive one is `invisible` and `inert`. Unmounting
-would reset its filters, level selection and scroll offset every time the user looks at
-something else, which is the behaviour a SPA is expected *not* to have. `visibility` rather
-than `display`, because a `display:none` subtree drops its layout and with it the scroll
-offset.
+| Route       | Renders                                                              |
+|-------------|----------------------------------------------------------------------|
+| `/`         | redirects to `/settings`                                             |
+| `/x`        | nothing — the site webview covers the content area; the panel is subnav |
+| `/youtube`  | nothing — same                                                       |
+| `/log`      | `LogView`                                                            |
+| `/settings` | `SettingsView`                                                       |
 
-`activeKey` is one nav key: `'x' | 'youtube' | 'log' | 'settings'`. The per-platform action
+The window has no address bar, so the URL is an internal detail; it exists because the router
+needs one, not because anyone reads it.
+
+**Routing unmounts the page it leaves.** State the user would be annoyed to lose therefore
+lives in a store: `LogStore` owns the log's message and level filters for exactly this
+reason. Scroll position is not preserved — the log re-arms follow-to-bottom on mount.
+
+`activeKey` is derived from `page.url.pathname`, never held separately. The per-platform action
 (Posts, Likes, Comments, …) is not a route — it is chosen within the platform panel's
 `ActionRow`s. `x` / `youtube` also drive the site (`site.hide` + `site.navigate`); `log` /
 `settings` render in the content area.
@@ -62,7 +70,7 @@ YouTube nav item while the sidebar is expanded. Each action is one `ActionRow`.
 - The row that is deleting is marked with the accent tint.
 - `RunStatus` appears above the sidebar footer: label, running count, an indeterminate
   progress bar, and Stop.
-- The `ActionRunner` lives in `App.svelte`, not in the panel, so progress stays visible after
+- The `ActionRunner` lives in the layout, not in the panel, so progress stays visible after
   the user navigates to Settings or Log.
 - On `done`/`error` a toast reports the count or the failure.
 
@@ -85,13 +93,13 @@ See [09-feature-settings.md](09-feature-settings.md).
 
 ## Shell
 
-- The sidebar (ChromeWebView, column 0) is always visible. The content area (column 1) is a
-  **content host that swaps**: a sidebar click on X or YouTube shows the SiteWebView browser
-  (`site.hide = false`); a click on a Svelte page (Settings, Log) hides the browser and
-  expands the ChromeWebView over column 1 to show that page (`site.hide = true`). See
-  [01-architecture.md](01-architecture.md) for the `ColumnSpan` / opacity mechanics.
+- The sidebar (chrome webview, column 0) is always visible. The content area (column 1) is a
+  **content host that swaps**: a sidebar click on X or YouTube shows the site webview
+  (`site.hide = false`); a click on a Svelte page (Settings, Log) hides it and stretches the
+  chrome webview over the whole window (`site.hide = true`). See
+  [01-architecture.md](01-architecture.md) for the off-screen-parking mechanics.
 - The sidebar width toggles between 240px (expanded) and 56px (icon rail) via
   `layout.setSidebarExpanded`.
-- The top 40px of the window is the host's title-bar drag region. The strip in the web UI
-  that lines up with it holds the word mark and must contain nothing interactive.
+- The 40px strip at the top of the web UI holds the word mark and sits below the system
+  title bar. Keep it free of controls so the two read as one.
 - The log view is always reachable without interrupting a running action.

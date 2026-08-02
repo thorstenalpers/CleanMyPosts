@@ -9,4 +9,5 @@ the old one keeps its number and gains a `Superseded by` line.
 
 | ADR                                        | Decision                                  | Status   |
 |--------------------------------------------|-------------------------------------------|----------|
-| [0001](0001-winui3-host.md)                | WinUI 3 instead of WPF for the host        | Accepted |
+| [0001](0001-winui3-host.md)                | WinUI 3 instead of WPF for the host        | Superseded by 0002 |
+| [0002](0002-tauri-host.md)                 | Tauri 2 instead of .NET for the host       | Accepted |

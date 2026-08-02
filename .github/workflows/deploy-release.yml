@@ -14,8 +14,7 @@ jobs:
     runs-on: windows-latest
 
     env:
-      UI_Dir: "src/CleanMyPosts.UI"
-      Tauri_Config: "src/CleanMyPosts.UI/src-tauri/tauri.conf.json"
+      Tauri_Config: "src-tauri/tauri.conf.json"
       FORCE_COLOR: "true"
 
     steps:
@@ -30,7 +29,7 @@ jobs:
       with:
         node-version: 22
         cache: npm
-        cache-dependency-path: src/CleanMyPosts.UI/package-lock.json
+        cache-dependency-path: package-lock.json
 
     - name: Install Rust
       uses: dtolnay/rust-toolchain@stable
@@ -40,18 +39,15 @@ jobs:
     - name: Cache cargo
       uses: swatinem/rust-cache@v2
       with:
-        workspaces: src/CleanMyPosts.UI/src-tauri
+        workspaces: src-tauri
 
     - name: Install dependencies
-      working-directory: ${{ env.UI_Dir }}
       run: npm ci
 
     - name: Run tests
-      working-directory: ${{ env.UI_Dir }}
       run: npm run test
 
     - name: Typecheck
-      working-directory: ${{ env.UI_Dir }}
       run: npm run check
 
     - name: Extract Version
@@ -70,7 +66,6 @@ jobs:
     # produces the installer and *then* exits with an error, so a release missing this
     # secret fails the job rather than shipping an installer nobody can update from.
     - name: Build installer and updater artifacts
-      working-directory: ${{ env.UI_Dir }}
       env:
         TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
         TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
@@ -79,7 +74,7 @@ jobs:
     - name: Collect artifacts
       shell: pwsh
       run: |
-        $bundle = "${{ env.UI_Dir }}/src-tauri/target/release/bundle/nsis"
+        $bundle = "src-tauri/target/release/bundle/nsis"
         New-Item -ItemType Directory -Force artifacts | Out-Null
         Copy-Item "$bundle/*-setup.exe" artifacts/
         Copy-Item "$bundle/*-setup.exe.sig" artifacts/

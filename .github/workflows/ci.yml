@@ -13,76 +13,39 @@ permissions:
   id-token: write
 
 jobs:
-  build:
+  ui:
     runs-on: windows-latest
 
     env:
-      Solution: "CleanMyPosts.slnx"
-      Test_Project: "src/Tests/Tests.csproj"
       FORCE_COLOR: "true"
-      DOTNET_LOGGING__CONSOLE__COLORBEHAVIOR: Enabled
-      FA_LICENSE_MESSAGE_SUPPRESS: 1
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: 10.x
 
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 22.x
           cache: npm
-          cache-dependency-path: src/CleanMyPosts.UI/package-lock.json
+          cache-dependency-path: package-lock.json
 
-      - name: Install .NET Tools (local)
-        run: |
-          dotnet new tool-manifest
-          dotnet tool install dotnet-reportgenerator-globaltool
-
-      - name: Restore
-        run: dotnet restore "${{ env.Solution }}"
-
-      - name: UI - Install and Test
-        working-directory: src/CleanMyPosts.UI
+      - name: Install and Test
         run: |
           npm ci
           npm run check
-          npm test
+          npm run test:coverage
 
-      - name: UI - E2E (Playwright)
-        working-directory: src/CleanMyPosts.UI
+      - name: E2E (Playwright)
         run: |
           npx playwright install chromium
           npm run test:e2e
-
-      - name: Build and Test
-        run: |
-          dotnet build "${{ env.Solution }}" --configuration Release --no-restore
-
-          dotnet test "${{ env.Test_Project }}" `
-            --collect:"XPlat Code Coverage" `
-            --results-directory TestResults/Tests `
-            --configuration Release `
-            --logger "console;verbosity=detailed" `
-            --filter "TestCategory!=Long-Running"
-          
-          dotnet tool run reportgenerator `
-            -reports:TestResults/**/coverage.cobertura.xml `
-            -targetdir:TestResults/Reports `
-            -reporttypes:"Html;lcov;Cobertura" `
 
       - name: Upload Test Coverage Report
         uses: actions/upload-artifact@v4
         with:
           name: test-coverage-report
-          path: TestResults/Reports
+          path: coverage
 
   tauri:
     runs-on: windows-latest
@@ -96,7 +59,7 @@ jobs:
         with:
           node-version: 22.x
           cache: npm
-          cache-dependency-path: src/CleanMyPosts.UI/package-lock.json
+          cache-dependency-path: package-lock.json
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
@@ -106,24 +69,23 @@ jobs:
       - name: Cache cargo
         uses: swatinem/rust-cache@v2
         with:
-          workspaces: src/CleanMyPosts.UI/src-tauri
+          workspaces: src-tauri
 
       # The Rust host embeds dist/content/content.js with include_str!, so the frontend
       # has to be built before cargo can even parse the crate.
       - name: Build frontend
-        working-directory: src/CleanMyPosts.UI
         run: |
           npm ci
           npm run build
 
       - name: Format
-        working-directory: src/CleanMyPosts.UI/src-tauri
+        working-directory: src-tauri
         run: cargo fmt --check
 
       - name: Clippy
-        working-directory: src/CleanMyPosts.UI/src-tauri
+        working-directory: src-tauri
         run: cargo clippy -- -D warnings
 
       - name: Test
-        working-directory: src/CleanMyPosts.UI/src-tauri
+        working-directory: src-tauri
         run: cargo test

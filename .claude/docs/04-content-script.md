@@ -88,11 +88,11 @@ language changes. Where only text remains, document the language dependency in t
 ## Error handling
 
 A failed click is normal operation, not an exception. Failures are counted, not thrown. An
-unhandled exception from `run` posts an `error` message and ends the run; the host decides
-whether to retry.
+unhandled exception from `run` posts an `error` message and ends the run.
 
-What the content script does **not** do: decide whether to retry or continue. That
-responsibility belongs to the host's `SiteActionOrchestrator`.
+The retry loop lives here, in the page: `run` keeps going until it can no longer find an
+item to act on. The host does not poll `isEmpty` and does not reload between rounds —
+`isEmpty` is part of the protocol but nothing calls it across the bridge.
 
 ## URL map
 

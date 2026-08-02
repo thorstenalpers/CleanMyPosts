@@ -2,140 +2,137 @@
 
 ## Core principle
 
-The C# host owns the process, the window, and the WebView2 lifecycle. Everything visible
+The Rust host owns the process, the window, and the webview lifecycle. Everything visible
 and every platform interaction is TypeScript.
 
-| Responsibility                        | C# host | TypeScript |
-|---------------------------------------|---------|------------|
-| Window, WebView2 lifecycle            | ✓       |            |
-| URL construction, retry loop          | ✓       |            |
-| Navigation of the site WebView        | ✓       |            |
-| Progress relay to the chrome UI       | ✓       |            |
-| App UI                                |         | ✓          |
-| DOM interaction on the platform site  |         | ✓          |
-| Deletion click/confirm/retry          |         | ✓          |
+| Responsibility                        | Rust host | TypeScript |
+|---------------------------------------|-----------|------------|
+| Window, webview lifecycle             | ✓         |            |
+| URL construction                      | ✓         |            |
+| Navigation of the site webview        | ✓         |            |
+| Progress relay to the chrome UI       | ✓         |            |
+| App UI                                |           | ✓          |
+| DOM interaction on the platform site  |           | ✓          |
+| Deletion click/confirm/retry          |           | ✓          |
 
 The host never touches a platform API and never parses the DOM itself. It only navigates,
 calls `window.__cmp.run()`, and relays what comes back.
 
 ## Host platform
 
-WinUI 3 (Windows App SDK), **unpackaged** and self-contained: no MSIX, no runtime install,
-distribution stays an Inno Setup installer plus the AutoUpdater.NET feed. `WindowsPackageType`
-is `None` and `WindowsAppSDKSelfContained` is on, so the app runs on a machine without the
-Windows App SDK installed. Minimum OS is Windows 10 build 19041.
-
-There is no MVVM framework, no XAML resource dictionary, and no bindings. `ShellWindow.xaml`
-is roughly 50 lines: a grid, two WebView2 controls, a title-bar drag region, and a skeleton
-layer. See [adr/0001-winui3-host.md](adr/0001-winui3-host.md) for why.
+Tauri 2 on WebView2, bundled as an NSIS installer with the updater plugin's signed
+artifacts. There is no native UI toolkit and no packaged runtime: WebView2 ships with
+Windows, and the app is a single `cleanmyposts.exe` plus its resources. The one runtime
+requirement is WebView2, which is preinstalled on Windows 11 and on current Windows 10.
 
 ## Shell composition
 
 ```
-ShellWindow (WinUI 3 Window, Mica backdrop, extended title bar)
-└── RootGrid
-    ├── content grid
-    │   ├── column 0 (240px) ── ChromeWebView ── Svelte app: sidebar (+ pages when spanned)
-    │   ├── column 1 (*) ────── SiteWebView ──── x.com / youtube.com + injected __cmp
-    │   └── DragRegion ──────── 40px strip over column 0, registered via SetTitleBar
-    └── SkeletonLayer ───────── static placeholder until the UI reports app.ready
+main window (Tauri)
+├── chrome webview ── column 0 (240px expanded / 56px collapsed) ── Svelte app
+└── site webview ──── column 1 (rest) ── x.com / youtube.com + injected __cmp
 ```
 
-**ChromeWebView** (`IChromeWebViewService`) — the Svelte app on `cleanmyposts.local`. It
-always renders the sidebar in column 0. For Settings and Log it also fills column 1: the
-shell sets `Grid.ColumnSpan = 2` so the chrome WebView stretches across the whole window.
+Both webviews are children of one window, positioned by hand in `layout_webviews`
+(`lib.rs`) on every resize and on every layout change the UI requests.
 
-**SiteWebView** (`ISiteWebViewService`) — the embedded browser where the user is logged in
-to X and YouTube. The content script IIFE is registered once via
-`AddScriptToExecuteOnDocumentCreatedAsync` and survives every navigation without
-re-injection. The host calls `ExecuteScriptAsync` to invoke `window.__cmp`; the script posts
-back via `chrome.webview.postMessage`.
+**chrome webview** — the SvelteKit app, served from `build/`. It always renders the
+sidebar. For Settings and Log it takes the full window width via `site.hide`.
 
-**Hiding the site view uses opacity, not visibility.** A collapsed WebView2 stops rendering
-and would never finish the background sign-in load that makes the X username available
-before the user first opens X. `Hide(true)` sets `Opacity = 0` and `IsHitTestVisible = false`.
+**site webview** — the embedded browser where the user is logged in to X and YouTube. The
+content-script IIFE is registered with `initialization_script_for_all_frames`, so it
+survives every navigation without re-injection.
 
-Both WebViews share one `CoreWebView2Environment` (`WebView2EnvironmentProvider`), so they
-share a single browser process and one profile — login sessions persist across restarts.
+**Hiding the site view parks it off-screen instead of resizing it to zero.** A zero-sized
+webview stops laying out, which would reset the platform page's scroll position every time
+the user glances at Settings.
 
-## Web assets are embedded
+## The engine talks WebView2, the host is Tauri
 
-The Vite output is compiled into the host assembly as embedded resources under the logical
-prefix `WebAssets/` (see the `AddWebAssets` target in `CleanMyPosts.csproj`). `WebAssetProvider`
-serves them, and `ChromeWebViewService` answers `WebResourceRequested` for
-`https://cleanmyposts.local/*` from that provider instead of mapping a folder.
+The delete engine posts through `chrome.webview.postMessage`, which only exists inside
+WebView2's own host channel. The init script shims that object onto
+`__TAURI__.core.invoke('content_message')`, so the engine — and its tests — stay unaware
+that the host changed. The same script guards on the origin: it runs on every top-level
+navigation the site webview makes, including anything the user clicks through to.
 
-Consequence: the publish folder contains no `wwwroot/` and no `Scripts/`, and the app cannot
-be broken by someone editing loose files next to the executable.
+`eval` has no return channel, so the page reports who is logged in (`siteInfo`) rather than
+the host asking for it.
+
+## Web assets
+
+The chrome build is `build/`, which Tauri bundles as the frontend. The content build is
+compiled into the binary with `include_str!("../../dist/content/content.js")` — which is why
+`npm run build` has to run before cargo can even parse the crate.
+
+Consequence: the installed app carries no loose script tree, and it cannot be broken by
+someone editing files next to the executable.
 
 ## Runtime paths
 
-Everything the app writes goes through `Hosting/AppPaths.cs`:
+| Path                                                       | Contents                            |
+|------------------------------------------------------------|-------------------------------------|
+| `%AppData%\com.thorstenalpers.cleanmyposts\settings.json`   | theme, log visibility, confirmation, timeouts |
+| `%LocalAppData%\com.thorstenalpers.cleanmyposts\EBWebView`  | WebView2 profile (cookies, session) |
 
-| Path                                        | Contents                          |
-|---------------------------------------------|-----------------------------------|
-| `%LocalAppData%\CleanMyPosts\Configurations` | `AppProperties.json`, `WindowSettings.json`, `timeoutSettings.json` |
-| `%LocalAppData%\CleanMyPosts\Logs`           | Rolling Serilog files             |
-| `%LocalAppData%\CleanMyPosts\WebView2`       | WebView2 profile (cookies, session) |
-
-`WEBVIEW2_USER_DATA_FOLDER` is set in the `App` constructor before any XAML is realised.
-Without it WebView2 falls back to a `<exe>.WebView2` folder next to the executable, which an
-installed app cannot write to.
+Both come from Tauri's `app_config_dir` / local data dir. The log buffer is in memory only
+(2000 entries, oldest dropped) — nothing is written to disk.
 
 ## Startup sequence
 
-1. `App.OnLaunched` builds the generic host and starts it.
-2. `ApplicationHostService` loads settings, then activates `ShellWindow`.
-3. The window restores its bounds from `WindowSettings.json`, applies theme and title-bar
-   colours, and shows `SkeletonLayer` — a static placeholder, no animation.
-4. `RootGrid.Loaded` initialises the chrome WebView first, then the site WebView (which
-   loads x.com hidden in the background), and registers the bridge handlers.
-5. The Svelte app mounts, loads settings and log, and calls `app.ready`.
-6. The host collapses `SkeletonLayer`. A 15 s timer drops it anyway if `app.ready` never
-   arrives, so a frontend failure cannot leave the app looking hung.
-
-Shutdown runs the other way: `AppWindow.Closing` cancels the close, saves the window bounds,
-stops the host and flushes Serilog, then closes for real.
+1. `run()` builds the Tauri app, loads `settings.json`, and manages `AppState`.
+2. The main window is created, then the chrome webview, then the site webview — the latter
+   loads x.com straight away so the username is known before the user first opens X.
+3. The SvelteKit app mounts, loads settings and log, and routes to `/settings`.
+4. Resizes re-run `layout_webviews`.
 
 ## Projects
 
 ```
-CleanMyPosts.slnx
-src/
-├── CleanMyPosts/                 # WinUI 3 host
-│   ├── Hosting/                  # App wiring: AppPaths, AppConfig, HostService, FileService
-│   ├── Infrastructure/           # HostBridge, registrar, WebView services, WebAssetProvider
-│   ├── Settings/                 # UserSettingsService, DTOs, settings bridge handlers
-│   ├── Sites/                    # SiteActionOrchestrator, site bridge handlers
-│   ├── Logging/                  # Ring buffer + Serilog sink
-│   ├── Updater/                  # AutoUpdater.NET wiring, update prompt handler
-│   └── Views/                    # ShellWindow.xaml (two WebView2s, drag region, skeleton)
-├── CleanMyPosts.UI/              # Svelte 5 + Vite
-│   ├── src/lib/bridge/           # client.ts, contract.ts, mock.ts
-│   ├── src/lib/engine/           # content script: protocol.ts, dom.ts, x/, youtube/
-│   ├── src/lib/components/       # app components + ui/ (shadcn-svelte)
-│   ├── src/lib/stores/           # Svelte 5 runes stores
-│   ├── src/lib/theme/            # accent colour → OKLCH tokens
-│   ├── src/views/                # XView, YouTubeView, LogView, SettingsView
-│   ├── src/main.ts               # chrome build entry
-│   ├── src/content-entry.ts      # content build entry (sets window.__cmp)
-│   └── e2e/                      # Playwright specs against DOM fixtures
-└── Tests/                        # xUnit
+src/                             # SvelteKit app
+├── app.html                     # HTML shell + static start-up placeholder
+├── routes/                      # +layout.svelte (shell) + one page per nav key
+├── lib/app-context.ts           # bridge + stores handed from layout to pages
+├── lib/bridge/                  # client.ts, contract.ts, tauri-host.ts, mock.ts
+├── lib/engine/                  # content script: protocol.ts, dom.ts, x/, youtube/
+├── lib/components/              # app components + ui/ (shadcn-svelte)
+├── lib/stores/                  # Svelte 5 runes stores
+├── lib/theme/                   # accent colour → OKLCH tokens
+├── views/                       # XView, YouTubeView, LogView, SettingsView
+└── content-entry.ts             # content build entry (sets window.__cmp)
+src-tauri/                       # Rust host
+├── src/main.rs                  # entry point, calls lib.rs
+├── src/lib.rs                   # window + webviews, layout, init script
+├── src/commands/                # one module per bridge domain
+│   ├── mod.rs                   # the method → function map
+│   ├── settings.rs              # settings.get / settings.set
+│   ├── site.rs                  # navigate, run, cancel, hide, layout, URL building
+│   └── system.rs                # app info, open url/license, updater, log buffer
+├── src/bridge.rs                # push events + content-script message routing
+├── src/state.rs                 # AppState, in-flight runs, site info
+├── src/error.rs                 # serialisable error type
+├── src/settings.rs              # settings.json store
+├── src/log.rs                   # bounded in-memory log buffer, RFC 3339 stamps
+└── capabilities/                # per-webview permissions
+e2e/                             # Playwright specs against DOM fixtures
 ```
 
-## SiteActionOrchestrator
+## Running an action
 
-The orchestrator owns everything that must survive a page reload:
+`commands/site.rs` owns everything a run needs:
 
-1. Build the target URL for the requested `(platform, action)` pair.
-2. Navigate the SiteWebView and wait for `NavigationCompleted`.
-3. Detect login: call `window.__cmp.getUserName()` or `getLoginStatus()`.
-4. Call `window.__cmp.run(platform, action, paramsJson)`.
-5. Await the `done` or `error` message from the content script.
-6. If items remain (`isEmpty` returns false), reload and go to step 4 — up to
-   `MaxRetriesPerAction` consecutive rounds without progress.
-7. Push a `progress` event to the chrome UI after each content-script progress message,
-   accumulating the count across reloads.
+1. `site.navigate` builds the target URL for the requested `(platform, action)` pair and
+   assigns it to the site webview.
+2. `site.runAction` registers the request id in `state::Runs`, then evals
+   `window.__cmp.run(platform, action, paramsJson)` in the page.
+3. Content-script messages come back through `content_message` into `bridge.rs`: `progress`
+   updates the run's count and is forwarded to the UI, `done`/`error` resolves the pending
+   call.
+4. `site.cancelAction` resolves the call with the count reached so far and reloads the page
+   — the engine has no cancellation primitive, so tearing down the page is what actually
+   stops its click loop.
+
+The retry-until-empty loop lives in the engine, inside the page. The host does not poll
+`isEmpty`.
 
 ## Dependency rules
 
@@ -151,6 +148,7 @@ The orchestrator owns everything that must survive a page reload:
    `ContentActionDefinition`.
 2. Register in `engine/protocol.ts` and `bridge/contract.ts`.
 3. A view under `src/views/` and a sidebar entry.
-4. URL builder case in `SiteActionOrchestrator.BuildUrlAsync`.
+4. URL builder case in `target_url` (`commands/site.rs`), plus the origin guard in
+   `site_init_script` (`lib.rs`).
 
 No existing code changes for this — if it requires them, the abstraction needs rework.

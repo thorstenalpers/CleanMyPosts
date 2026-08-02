@@ -1,4 +1,4 @@
-![Banner](https://raw.githubusercontent.com/thorstenalpers/CleanMyPosts/main/src/CleanMyPosts/Assets/banner.png)
+![Banner](https://raw.githubusercontent.com/thorstenalpers/CleanMyPosts/main/assets/banner.png)
 
 [![CI](https://img.shields.io/github/actions/workflow/status/thorstenalpers/CleanMyPosts/ci.yml?branch=main&style=flat-square&logo=githubactions&logoColor=white&label=CI)](https://github.com/thorstenalpers/CleanMyPosts/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/thorstenalpers/CleanMyPosts?style=flat-square&logo=github&label=release)](https://github.com/thorstenalpers/CleanMyPosts/releases/latest)
@@ -65,9 +65,9 @@ flowchart LR
 - X (Twitter) account (for X features)
 - Google account (for YouTube features)
 
-Nothing else — the app ships everything it needs, including the Windows App SDK. The only
-data it writes is your own preferences and the browser profile that keeps you signed in,
-both under `%LocalAppData%\CleanMyPosts`.
+Nothing else — the app ships everything it needs and uses the WebView2 runtime that ships
+with Windows. The only data it writes is your own preferences and the browser profile that
+keeps you signed in, under `%AppData%` and `%LocalAppData%`.
 
 ---
 
@@ -147,8 +147,8 @@ Once your system meets the requirements, follow these steps to install **CleanMy
 The same code the app injects can be run by hand in any Chromium browser's DevTools
 console — useful on non-Windows machines, or to debug a selector against the live site.
 
-The deletion logic lives in [`src/CleanMyPosts.UI/src/lib/engine/`](src/CleanMyPosts.UI/src/lib/engine)
-([X actions](src/CleanMyPosts.UI/src/lib/engine/x), [YouTube actions](src/CleanMyPosts.UI/src/lib/engine/youtube))
+The deletion logic lives in [`src/lib/engine/`](src/lib/engine)
+([X actions](src/lib/engine/x), [YouTube actions](src/lib/engine/youtube))
 and is bundled into a single dependency-free IIFE that exposes `window.__cmp`.
 
 ### 🔧 Build the bundle
@@ -156,10 +156,10 @@ and is bundled into a single dependency-free IIFE that exposes `window.__cmp`.
 Requires [Node.js](https://nodejs.org/) 20+:
 
 ```bash
-cd src/CleanMyPosts.UI && npm ci && npm run build:content
+npm ci && npm run build:content
 ```
 
-The result is `src/CleanMyPosts.UI/dist/content/content.js`.
+The result is `dist/content/content.js`.
 
 ### 🔧 Run it
 
@@ -205,29 +205,27 @@ whether the current page still has anything to delete.
 
 ## 🧑‍💻 Building from Source
 
-Requires the [.NET 10 SDK](https://dotnet.microsoft.com/download) and
-[Node.js 22+](https://nodejs.org/). The .NET build runs the Svelte build for you, so this is
-enough for a runnable app:
+Requires the [Rust toolchain](https://rustup.rs/) and [Node.js 22+](https://nodejs.org/).
+The Tauri build runs the Svelte build for you, so this is enough for a runnable app:
 
 ```bash
-dotnet build CleanMyPosts.slnx -c Release
+npm ci && npx tauri build
 ```
 
 Working on the UI alone is faster in the browser — it falls back to an in-memory mock host,
 so no WebView2 is needed:
 
 ```bash
-npm --prefix src/CleanMyPosts.UI run dev
-npm --prefix src/CleanMyPosts.UI run storybook
+npm run dev
 ```
 
 Tests:
 
 ```bash
-dotnet test src/Tests/Tests.csproj --filter "TestCategory!=Long-Running"
-npm --prefix src/CleanMyPosts.UI run check
-npm --prefix src/CleanMyPosts.UI run test
-npm --prefix src/CleanMyPosts.UI run test:e2e
+npm run check
+npm run test
+npm run test:e2e
+cargo test --manifest-path src-tauri/Cargo.toml
 ```
 
 The architecture, the UI↔host bridge, and the design rules are documented under

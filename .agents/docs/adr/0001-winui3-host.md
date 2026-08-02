@@ -1,6 +1,6 @@
 # ADR 0001 — WinUI 3 instead of WPF for the host
 
-- **Status:** Accepted
+- **Status:** Superseded by [0002](0002-tauri-host.md)
 - **Date:** 2026-07-31
 - **Supersedes:** the WPF host that shipped up to v2.1.4
 

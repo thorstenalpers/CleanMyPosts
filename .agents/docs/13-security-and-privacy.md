@@ -21,11 +21,13 @@ What does not exist cannot leak.
 
 1. **Cookies are never read, copied, exported, or logged.** Session access is only implicit:
    the WebView2 uses the cookie itself. The host never sees it.
-2. **The content script is only injected into the intended origins.** Allowed hosts are a
-   whitelist in the host. On a redirect to a foreign origin, `window.__cmp` is not available.
-3. **The chrome origin and the platform origins stay separate.** The app UI runs under
-   `cleanmyposts.local`; bridge handlers verify the message origin. A page from x.com must
-   not be able to call bridge methods.
+2. **The content script is only injected into the intended origins.** The init script checks
+   `window.location.host` against a whitelist before it defines anything. On a redirect to a
+   foreign origin, `window.__cmp` is not available.
+3. **The chrome origin and the platform origins stay separate.** Tauri capabilities do the
+   enforcing: `capabilities/chrome.json` grants `bridge_call` to the chrome webview only,
+   and `capabilities/site.json` grants the site webview nothing but `content_message`, and
+   only on the listed remote origins. A page from x.com cannot call bridge methods.
 4. **No outbound traffic other than to the sites the user opens**, plus an optional update
    check. No telemetry, no crash reporting, no analytics — not opt-out, but not present.
 

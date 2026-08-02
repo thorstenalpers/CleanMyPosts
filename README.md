@@ -207,11 +207,17 @@ whether the current page still has anything to delete.
 
 ## 🧑‍💻 Building from Source
 
-Requires the [Rust toolchain](https://rustup.rs/) and [Node.js 22+](https://nodejs.org/).
-The Tauri build runs the Svelte build for you, so this is enough for a runnable app:
+Requires the [Rust toolchain](https://rustup.rs/) and [Node.js 24+](https://nodejs.org/).
+Run the app in the real Tauri window, with hot reload:
 
 ```bash
-npm ci && npx tauri build
+npm ci && npm run start
+```
+
+Build the installer:
+
+```bash
+npm run app:build
 ```
 
 Working on the UI alone is faster in the browser — it falls back to an in-memory mock host,
@@ -221,9 +227,10 @@ so no WebView2 is needed:
 npm run dev
 ```
 
-Tests:
+Checks and tests:
 
 ```bash
+npm run lint
 npm run check
 npm run test
 npm run test:e2e

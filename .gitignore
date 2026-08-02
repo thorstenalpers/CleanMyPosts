@@ -24,6 +24,7 @@ coverage/
 # Rust / Tauri
 target/
 src-tauri/gen/
+/bin/
 
 # Local-only scripts
 *local.cmd

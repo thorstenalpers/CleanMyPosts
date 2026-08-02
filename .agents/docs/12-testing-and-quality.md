@@ -35,9 +35,11 @@ to fix, not to live with.
 
 ## CI
 
-On every push and PR to `main`, two jobs: `ui` runs `npm run check` · `npm test` ·
-`npm run test:e2e`; `tauri` runs `npm run build` · `cargo fmt --check` · `cargo clippy` ·
-`cargo test`.
+On every push and PR to `main`, two jobs on `windows-latest`, with older runs on the same
+ref cancelled: `frontend` runs `npm run lint` · `npm run check` · `npm run test:coverage` ·
+`npm run test:e2e` · `npm run build` and uploads the coverage report; `rust` runs
+`npm run build` (the crate cannot compile without `dist/content/content.js`) ·
+`cargo fmt --check` · `cargo clippy --all-targets -- -D warnings` · `cargo test`.
 
 The Playwright e2e suite drives the built content script against static DOM fixtures in a
 real Chromium, stubbing the host by collecting `chrome.webview.postMessage` calls. It is

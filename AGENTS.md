@@ -45,11 +45,14 @@ installed app carries no loose script tree.
 ## Commands
 
 ```bash
-npm run dev
+npm run start        # the app itself, in the Tauri window
+npm run dev          # UI only, in a browser, against the mock host
 npm run build
-npm exec tauri dev
+npm run lint
+npm run check
 npm run test
 npm run test:e2e
+npm run app:build    # NSIS installer + updater artifacts
 cargo test --manifest-path src-tauri/Cargo.toml
 ```
 
@@ -82,6 +85,10 @@ cargo test --manifest-path src-tauri/Cargo.toml
 ## Code style
 
 - Rust: `cargo fmt` and `cargo clippy -- -D warnings` are both CI gates.
+- Frontend: `npm run lint` is prettier plus eslint, and is a CI gate. Run `npm run format`
+  rather than hand-formatting.
+- State lives in `src/lib/stores/*.svelte.ts` as Svelte 5 runes classes — kept as classes
+  rather than plain objects because each one owns a bridge subscription.
 - TypeScript: no `any`, Zod schemas as the type source, selectors as named constants at
   the top of each engine module.
 - Comments only when the _why_ is non-obvious. Never describe what the code does.

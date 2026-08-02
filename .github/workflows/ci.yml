@@ -1,45 +1,46 @@
-name: 'CI'
+name: CI
 
 on:
   push:
-    branches: [develop, main]
-  pull_request:
     branches: [main]
+  pull_request:
+  workflow_dispatch:
 
-permissions:
-  contents: read
-  pull-requests: write
-  checks: write
-  id-token: write
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  ui:
+  frontend:
+    # Windows, because that is the only platform this app targets; a Linux
+    # runner would pass on code that cannot build for release.
     runs-on: windows-latest
-
-    env:
-      FORCE_COLOR: 'true'
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
-          node-version: 22.x
+          node-version: 24
           cache: npm
-          cache-dependency-path: package-lock.json
 
-      - name: Install and Test
-        run: |
-          npm ci
-          npm run check
-          npm run test:coverage
+      - run: npm ci
+
+      - name: Lint and format check
+        run: npm run lint
+
+      - name: Type check
+        run: npm run check
+
+      - name: Test
+        run: npm run test:coverage
 
       - name: E2E (Playwright)
         run: |
           npx playwright install chromium
           npm run test:e2e
+
+      - name: Build
+        run: npm run build
 
       - name: Upload Test Coverage Report
         uses: actions/upload-artifact@v4
@@ -47,27 +48,21 @@ jobs:
           name: test-coverage-report
           path: coverage
 
-  tauri:
+  rust:
     runs-on: windows-latest
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
-          node-version: 22.x
+          node-version: 24
           cache: npm
-          cache-dependency-path: package-lock.json
 
-      - name: Setup Rust
-        uses: dtolnay/rust-toolchain@stable
+      - uses: dtolnay/rust-toolchain@stable
         with:
           components: clippy, rustfmt
 
-      - name: Cache cargo
-        uses: swatinem/rust-cache@v2
+      - uses: Swatinem/rust-cache@v2
         with:
           workspaces: src-tauri
 
@@ -78,13 +73,13 @@ jobs:
           npm ci
           npm run build
 
-      - name: Format
+      - name: Format check
         working-directory: src-tauri
         run: cargo fmt --check
 
       - name: Clippy
         working-directory: src-tauri
-        run: cargo clippy -- -D warnings
+        run: cargo clippy --all-targets -- -D warnings
 
       - name: Test
         working-directory: src-tauri

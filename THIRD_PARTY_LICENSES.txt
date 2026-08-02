@@ -1934,7 +1934,63 @@ license Type:MIT
 
 
 ####################################################################################################
-npm packages (53)
+npm packages (174)
+####################################################################################################
+Package:@adobe/css-tools
+Version:4.5.0
+project URL:https://github.com/adobe/css-tools
+Description:A modern CSS parser and stringifier with TypeScript support
+license Type:MIT
+
+####################################################################################################
+Package:@babel/code-frame
+Version:7.29.7
+project URL:https://github.com/babel/babel
+Description:Generate errors that contain a code frame that point to source locations.
+license Type:MIT
+
+####################################################################################################
+Package:@babel/helper-string-parser
+Version:7.29.7
+project URL:https://github.com/babel/babel
+Description:A utility package to parse strings
+license Type:MIT
+
+####################################################################################################
+Package:@babel/helper-validator-identifier
+Version:7.29.7
+project URL:https://github.com/babel/babel
+Description:Validate identifier/keywords name
+license Type:MIT
+
+####################################################################################################
+Package:@babel/parser
+Version:7.29.7
+project URL:https://github.com/babel/babel
+Description:A JavaScript parser
+license Type:MIT
+
+####################################################################################################
+Package:@babel/runtime
+Version:7.29.7
+project URL:https://github.com/babel/babel
+Description:babel's modular runtime helpers
+license Type:MIT
+
+####################################################################################################
+Package:@babel/types
+Version:7.29.7
+project URL:https://github.com/babel/babel
+Description:Babel Types is a Lodash-esque utility library for AST nodes
+license Type:MIT
+
+####################################################################################################
+Package:@bcoe/v8-coverage
+Version:1.0.2
+project URL:git://github.com/bcoe/v8-coverage
+Description:Helper functions for V8 coverage files.
+license Type:MIT
+
 ####################################################################################################
 Package:@floating-ui/core
 Version:1.8.0
@@ -2006,10 +2062,80 @@ Description:A Lucide icon library package for Svelte applications.
 license Type:ISC
 
 ####################################################################################################
+Package:@oxc-project/types
+Version:0.139.0
+project URL:https://github.com/oxc-project/oxc
+Description:Types for Oxc AST nodes
+license Type:MIT
+
+####################################################################################################
+Package:@playwright/test
+Version:1.62.0
+project URL:https://github.com/microsoft/playwright
+Description:A high-level API to automate web browsers
+license Type:Apache-2.0
+
+####################################################################################################
+Package:@polka/url
+Version:1.0.0-next.29
+project URL:lukeed/polka
+Description:Super fast, memoized `req.url` parser
+license Type:MIT
+
+####################################################################################################
+Package:@rolldown/binding-win32-x64-msvc
+Version:1.1.5
+project URL:https://github.com/rolldown/rolldown
+Description:Fast JavaScript/TypeScript bundler in Rust with Rollup-compatible API.
+license Type:MIT
+
+####################################################################################################
+Package:@rolldown/pluginutils
+Version:1.0.1
+project URL:https://github.com/rolldown/plugins
+Description:Plugin utilities for Rolldown
+license Type:MIT
+
+####################################################################################################
+Package:@standard-schema/spec
+Version:1.1.0
+project URL:https://github.com/standard-schema/standard-schema
+Description:A family of specs for interoperable TypeScript
+license Type:MIT
+
+####################################################################################################
 Package:@sveltejs/acorn-typescript
 Version:1.0.11
 project URL:https://github.com/sveltejs/acorn-typescript
 Description:Acorn plugin that parses TypeScript
+license Type:MIT
+
+####################################################################################################
+Package:@sveltejs/adapter-static
+Version:3.0.10
+project URL:https://github.com/sveltejs/kit
+Description:Adapter for SvelteKit apps that prerenders your entire site as a collection of static files
+license Type:MIT
+
+####################################################################################################
+Package:@sveltejs/kit
+Version:2.70.2
+project URL:https://github.com/sveltejs/kit
+Description:SvelteKit is the fastest way to build Svelte apps
+license Type:MIT
+
+####################################################################################################
+Package:@sveltejs/load-config
+Version:0.2.0
+project URL:https://github.com/sveltejs/language-tools
+Description:Load Svelte config via vite.config or svelte.config
+license Type:MIT
+
+####################################################################################################
+Package:@sveltejs/vite-plugin-svelte
+Version:7.2.0
+project URL:https://github.com/sveltejs/vite-plugin-svelte
+Description:
 license Type:MIT
 
 ####################################################################################################
@@ -2020,10 +2146,108 @@ Description:External helpers for the swc project.
 license Type:Apache-2.0
 
 ####################################################################################################
+Package:@tailwindcss/node
+Version:4.3.3
+project URL:https://github.com/tailwindlabs/tailwindcss
+Description:A utility-first CSS framework for rapidly building custom user interfaces.
+license Type:MIT
+
+####################################################################################################
+Package:@tailwindcss/oxide
+Version:4.3.3
+project URL:https://github.com/tailwindlabs/tailwindcss
+Description:
+license Type:MIT
+
+####################################################################################################
+Package:@tailwindcss/oxide-win32-x64-msvc
+Version:4.3.3
+project URL:https://github.com/tailwindlabs/tailwindcss
+Description:
+license Type:MIT
+
+####################################################################################################
+Package:@tailwindcss/vite
+Version:4.3.3
+project URL:https://github.com/tailwindlabs/tailwindcss
+Description:A utility-first CSS framework for rapidly building custom user interfaces.
+license Type:MIT
+
+####################################################################################################
 Package:@tanstack/table-core
 Version:8.21.3
 project URL:https://github.com/TanStack/table
 Description:Headless UI for building powerful tables & datagrids for TS/JS.
+license Type:MIT
+
+####################################################################################################
+Package:@tauri-apps/cli
+Version:2.11.4
+project URL:https://github.com/tauri-apps/tauri
+Description:Command line interface for building Tauri apps
+license Type:Apache-2.0 OR MIT
+
+####################################################################################################
+Package:@tauri-apps/cli-win32-x64-msvc
+Version:2.11.4
+project URL:https://github.com/tauri-apps/tauri
+Description:Command line interface for building Tauri apps
+license Type:Apache-2.0 OR MIT
+
+####################################################################################################
+Package:@testing-library/dom
+Version:10.4.1
+project URL:https://github.com/testing-library/dom-testing-library
+Description:Simple and complete DOM testing utilities that encourage good testing practices.
+license Type:MIT
+
+####################################################################################################
+Package:@testing-library/jest-dom
+Version:7.0.0
+project URL:https://github.com/testing-library/jest-dom
+Description:Custom jest matchers to test the state of the DOM
+license Type:MIT
+
+####################################################################################################
+Package:@testing-library/svelte
+Version:5.4.2
+project URL:https://github.com/testing-library/svelte-testing-library
+Description:Simple and complete Svelte testing utilities that encourage good testing practices.
+license Type:MIT
+
+####################################################################################################
+Package:@testing-library/svelte-core
+Version:1.1.3
+project URL:https://github.com/testing-library/svelte-testing-library
+Description:Core rendering and cleanup logic for Svelte testing utilities.
+license Type:MIT
+
+####################################################################################################
+Package:@types/aria-query
+Version:5.0.4
+project URL:https://github.com/DefinitelyTyped/DefinitelyTyped
+Description:TypeScript definitions for aria-query
+license Type:MIT
+
+####################################################################################################
+Package:@types/chai
+Version:5.2.3
+project URL:https://github.com/DefinitelyTyped/DefinitelyTyped
+Description:TypeScript definitions for chai
+license Type:MIT
+
+####################################################################################################
+Package:@types/cookie
+Version:0.6.0
+project URL:https://github.com/DefinitelyTyped/DefinitelyTyped
+Description:TypeScript definitions for cookie
+license Type:MIT
+
+####################################################################################################
+Package:@types/deep-eql
+Version:4.0.2
+project URL:https://github.com/DefinitelyTyped/DefinitelyTyped
+Description:TypeScript definitions for deep-eql
 license Type:MIT
 
 ####################################################################################################
@@ -2034,10 +2258,87 @@ Description:TypeScript definitions for estree
 license Type:MIT
 
 ####################################################################################################
+Package:@types/node
+Version:26.1.1
+project URL:https://github.com/DefinitelyTyped/DefinitelyTyped
+Description:TypeScript definitions for node
+license Type:MIT
+
+####################################################################################################
 Package:@types/trusted-types
 Version:2.0.7
 project URL:https://github.com/DefinitelyTyped/DefinitelyTyped
 Description:TypeScript definitions for trusted-types
+license Type:MIT
+
+####################################################################################################
+Package:@types/whatwg-mimetype
+Version:3.0.2
+project URL:https://github.com/DefinitelyTyped/DefinitelyTyped
+Description:TypeScript definitions for whatwg-mimetype
+license Type:MIT
+
+####################################################################################################
+Package:@types/ws
+Version:8.18.1
+project URL:https://github.com/DefinitelyTyped/DefinitelyTyped
+Description:TypeScript definitions for ws
+license Type:MIT
+
+####################################################################################################
+Package:@vitest/coverage-v8
+Version:4.1.10
+project URL:https://github.com/vitest-dev/vitest
+Description:V8 coverage provider for Vitest
+license Type:MIT
+
+####################################################################################################
+Package:@vitest/expect
+Version:4.1.10
+project URL:https://github.com/vitest-dev/vitest
+Description:Jest's expect matchers as a Chai plugin
+license Type:MIT
+
+####################################################################################################
+Package:@vitest/mocker
+Version:4.1.10
+project URL:https://github.com/vitest-dev/vitest
+Description:Vitest module mocker implementation
+license Type:MIT
+
+####################################################################################################
+Package:@vitest/pretty-format
+Version:4.1.10
+project URL:https://github.com/vitest-dev/vitest
+Description:Fork of pretty-format with support for ESM
+license Type:MIT
+
+####################################################################################################
+Package:@vitest/runner
+Version:4.1.10
+project URL:https://github.com/vitest-dev/vitest
+Description:Vitest test runner
+license Type:MIT
+
+####################################################################################################
+Package:@vitest/snapshot
+Version:4.1.10
+project URL:https://github.com/vitest-dev/vitest
+Description:Vitest snapshot manager
+license Type:MIT
+
+####################################################################################################
+Package:@vitest/spy
+Version:4.1.10
+project URL:https://github.com/vitest-dev/vitest
+Description:Lightweight Jest compatible spy implementation
+license Type:MIT
+
+####################################################################################################
+Package:@vitest/utils
+Version:4.1.10
+project URL:https://github.com/vitest-dev/vitest
+Description:Shared Vitest utility functions
 license Type:MIT
 
 ####################################################################################################
@@ -2069,11 +2370,46 @@ Description:Advanced Data Grid / Data Table supporting Javascript / Typescript /
 license Type:MIT
 
 ####################################################################################################
+Package:ansi-regex
+Version:5.0.1
+project URL:chalk/ansi-regex
+Description:Regular expression for matching ANSI escape codes
+license Type:MIT
+
+####################################################################################################
+Package:ansi-styles
+Version:5.2.0
+project URL:chalk/ansi-styles
+Description:ANSI escape codes for styling strings in the terminal
+license Type:MIT
+
+####################################################################################################
+Package:aria-query
+Version:5.3.0
+project URL:https://github.com/A11yance/aria-query
+Description:Programmatic access to the ARIA specification
+license Type:Apache-2.0
+
+####################################################################################################
 Package:aria-query
 Version:5.3.1
 project URL:https://github.com/A11yance/aria-query
 Description:Programmatic access to the ARIA specification
 license Type:Apache-2.0
+
+####################################################################################################
+Package:assertion-error
+Version:2.0.1
+project URL:git@github.com:chaijs/assertion-error
+Description:Error constructor for test and validation frameworks that implements standardized AssertionError specification.
+license Type:MIT
+
+####################################################################################################
+Package:ast-v8-to-istanbul
+Version:1.0.5
+project URL:https://github.com/AriPerkkio/ast-v8-to-istanbul
+Description:AST-aware v8-to-istanbul
+license Type:MIT
 
 ####################################################################################################
 Package:axobject-query
@@ -2087,6 +2423,27 @@ Package:bits-ui
 Version:2.18.1
 project URL:github:huntabyte/bits-ui
 Description:The headless components for Svelte.
+license Type:MIT
+
+####################################################################################################
+Package:buffer-image-size
+Version:0.6.4
+project URL:evidentpoint/buffer-image-size
+Description:get dimensions of any image buffer
+license Type:MIT
+
+####################################################################################################
+Package:chai
+Version:6.2.2
+project URL:https://github.com/chaijs/chai
+Description:BDD/TDD assertion library for node.js and the browser. Test framework agnostic.
+license Type:MIT
+
+####################################################################################################
+Package:chokidar
+Version:4.0.3
+project URL:https://github.com/paulmillr/chokidar
+Description:Minimal and efficient cross-platform file watching library
 license Type:MIT
 
 ####################################################################################################
@@ -2104,11 +2461,46 @@ Description:A tiny (239B) utility for constructing className strings conditional
 license Type:MIT
 
 ####################################################################################################
+Package:convert-source-map
+Version:2.0.0
+project URL:git://github.com/thlorenz/convert-source-map
+Description:Converts a source-map from/to  different formats and allows adding/changing properties.
+license Type:MIT
+
+####################################################################################################
+Package:cookie
+Version:0.6.0
+project URL:jshttp/cookie
+Description:HTTP server cookie parsing and serialization
+license Type:MIT
+
+####################################################################################################
+Package:css.escape
+Version:1.5.1
+project URL:https://github.com/mathiasbynens/CSS.escape
+Description:A robust polyfill for the `CSS.escape` utility method as defined in CSSOM.
+license Type:MIT
+
+####################################################################################################
+Package:deepmerge
+Version:4.3.1
+project URL:git://github.com/TehShrike/deepmerge
+Description:A library for deep (recursive) merging of Javascript objects
+license Type:MIT
+
+####################################################################################################
 Package:dequal
 Version:2.0.3
 project URL:lukeed/dequal
 Description:A tiny (304B to 489B) utility for check for deep equality
 license Type:MIT
+
+####################################################################################################
+Package:detect-libc
+Version:2.1.2
+project URL:git://github.com/lovell/detect-libc
+Description:Node.js module to detect the C standard library (libc) implementation family and version
+license Type:Apache-2.0
 
 ####################################################################################################
 Package:devalue
@@ -2118,11 +2510,46 @@ Description:Gets the job done when JSON.stringify can't
 license Type:MIT
 
 ####################################################################################################
+Package:dom-accessibility-api
+Version:0.5.16
+project URL:https://github.com/eps1lon/dom-accessibility-api
+Description:Implements https://w3c.github.io/accname/
+license Type:MIT
+
+####################################################################################################
+Package:dom-accessibility-api
+Version:0.6.3
+project URL:https://github.com/eps1lon/dom-accessibility-api
+Description:Implements https://w3c.github.io/accname/
+license Type:MIT
+
+####################################################################################################
 Package:echarts
 Version:6.1.0
 project URL:https://github.com/apache/echarts
 Description:Apache ECharts is a powerful, interactive charting and data visualization library for browser
 license Type:Apache-2.0
+
+####################################################################################################
+Package:enhanced-resolve
+Version:5.24.3
+project URL:https://github.com/webpack/enhanced-resolve
+Description:Offers a async require.resolve function. It's highly configurable.
+license Type:MIT
+
+####################################################################################################
+Package:entities
+Version:7.0.1
+project URL:https://github.com/fb55/entities
+Description:Encode & decode XML and HTML entities with ease & speed
+license Type:BSD-2-Clause
+
+####################################################################################################
+Package:es-module-lexer
+Version:2.3.1
+project URL:https://github.com/guybedford/es-module-lexer
+Description:Lexes ES modules returning their import/export metadata
+license Type:MIT
 
 ####################################################################################################
 Package:esm-env
@@ -2139,6 +2566,62 @@ Description:Parse in reverse
 license Type:MIT
 
 ####################################################################################################
+Package:estree-walker
+Version:3.0.3
+project URL:https://github.com/Rich-Harris/estree-walker
+Description:Traverse an ESTree-compliant AST
+license Type:MIT
+
+####################################################################################################
+Package:expect-type
+Version:1.4.0
+project URL:https://github.com/mmkal/expect-type
+Description:
+license Type:Apache-2.0
+
+####################################################################################################
+Package:fdir
+Version:6.5.0
+project URL:https://github.com/thecodrr/fdir
+Description:The fastest directory crawler & globbing alternative to glob, fast-glob, & tiny-glob. Crawls 1m files in < 1s
+license Type:MIT
+
+####################################################################################################
+Package:graceful-fs
+Version:4.2.11
+project URL:https://github.com/isaacs/node-graceful-fs
+Description:A drop-in replacement for fs, making various improvements.
+license Type:ISC
+
+####################################################################################################
+Package:happy-dom
+Version:20.11.1
+project URL:https://github.com/capricorn86/happy-dom
+Description:Happy DOM is a JavaScript implementation of a web browser without its graphical user interface. It includes many web standards from WHATWG DOM and HTML.
+license Type:MIT
+
+####################################################################################################
+Package:has-flag
+Version:4.0.0
+project URL:sindresorhus/has-flag
+Description:Check if argv has a specific flag
+license Type:MIT
+
+####################################################################################################
+Package:html-escaper
+Version:2.0.2
+project URL:https://github.com/WebReflection/html-escaper
+Description:fast and safe way to escape and unescape &<>'" chars
+license Type:MIT
+
+####################################################################################################
+Package:indent-string
+Version:4.0.0
+project URL:sindresorhus/indent-string
+Description:Indent each line in a string
+license Type:MIT
+
+####################################################################################################
 Package:inline-style-parser
 Version:0.2.7
 project URL:https://github.com/remarkablemark/inline-style-parser
@@ -2151,6 +2634,69 @@ Version:3.0.3
 project URL:https://github.com/Rich-Harris/is-reference
 Description:Determine whether an AST node is a reference
 license Type:MIT
+
+####################################################################################################
+Package:istanbul-lib-coverage
+Version:3.2.2
+project URL:ssh://git@github.com/istanbuljs/istanbuljs
+Description:Data library for istanbul coverage objects
+license Type:BSD-3-Clause
+
+####################################################################################################
+Package:istanbul-lib-report
+Version:3.0.1
+project URL:ssh://git@github.com/istanbuljs/istanbuljs
+Description:Base reporting library for istanbul
+license Type:BSD-3-Clause
+
+####################################################################################################
+Package:istanbul-reports
+Version:3.2.0
+project URL:ssh://git@github.com/istanbuljs/istanbuljs
+Description:istanbul reports
+license Type:BSD-3-Clause
+
+####################################################################################################
+Package:jiti
+Version:2.7.0
+project URL:unjs/jiti
+Description:Runtime typescript and ESM support for Node.js
+license Type:MIT
+
+####################################################################################################
+Package:js-tokens
+Version:4.0.0
+project URL:lydell/js-tokens
+Description:A regex that tokenizes JavaScript.
+license Type:MIT
+
+####################################################################################################
+Package:js-tokens
+Version:10.0.0
+project URL:lydell/js-tokens
+Description:Tiny JavaScript tokenizer.
+license Type:MIT
+
+####################################################################################################
+Package:kleur
+Version:4.1.5
+project URL:lukeed/kleur
+Description:The fastest Node.js library for formatting terminal text with ANSI colors~!
+license Type:MIT
+
+####################################################################################################
+Package:lightningcss
+Version:1.32.0
+project URL:https://github.com/parcel-bundler/lightningcss
+Description:A CSS parser, transformer, and minifier written in Rust
+license Type:MPL-2.0
+
+####################################################################################################
+Package:lightningcss-win32-x64-msvc
+Version:1.32.0
+project URL:https://github.com/parcel-bundler/lightningcss
+Description:A CSS parser, transformer, and minifier written in Rust
+license Type:MPL-2.0
 
 ####################################################################################################
 Package:locate-character
@@ -2174,10 +2720,136 @@ Description:Modify strings, generate sourcemaps
 license Type:MIT
 
 ####################################################################################################
+Package:magicast
+Version:0.5.3
+project URL:unjs/magicast
+Description:Modify a JS/TS file and write back magically just like JSON!
+license Type:MIT
+
+####################################################################################################
+Package:make-dir
+Version:4.0.0
+project URL:sindresorhus/make-dir
+Description:Make a directory and its parents if needed - Think `mkdir -p`
+license Type:MIT
+
+####################################################################################################
+Package:min-indent
+Version:1.0.1
+project URL:https://github.com/thejameskyle/min-indent
+Description:Get the shortest leading whitespace from lines in a string
+license Type:MIT
+
+####################################################################################################
 Package:mode-watcher
 Version:1.1.0
 project URL:https://github.com/svecosystem/mode-watcher
 Description:SSR-friendly light and dark mode for SvelteKit
+license Type:MIT
+
+####################################################################################################
+Package:mri
+Version:1.2.0
+project URL:lukeed/mri
+Description:Quickly scan for CLI flags and arguments
+license Type:MIT
+
+####################################################################################################
+Package:mrmime
+Version:2.0.1
+project URL:lukeed/mrmime
+Description:A tiny (2.8kB) and fast utility for getting a MIME type from an extension or filename
+license Type:MIT
+
+####################################################################################################
+Package:nanoid
+Version:3.3.16
+project URL:ai/nanoid
+Description:A tiny (116 bytes), secure URL-friendly unique string ID generator
+license Type:MIT
+
+####################################################################################################
+Package:obug
+Version:2.1.4
+project URL:https://github.com/sxzz/obug
+Description:A lightweight JavaScript debugging utility, forked from debug, featuring TypeScript and ESM support.
+license Type:MIT
+
+####################################################################################################
+Package:pathe
+Version:2.0.3
+project URL:unjs/pathe
+Description:Universal filesystem path utils
+license Type:MIT
+
+####################################################################################################
+Package:picocolors
+Version:1.1.1
+project URL:alexeyraspopov/picocolors
+Description:The tiniest and the fastest library for terminal output formatting with ANSI colors
+license Type:ISC
+
+####################################################################################################
+Package:picomatch
+Version:4.0.5
+project URL:micromatch/picomatch
+Description:Blazing fast and accurate glob matcher written in JavaScript, with no dependencies and full support for standard and extended Bash glob features, including braces, extglobs, POSIX brackets, and regular expressions.
+license Type:MIT
+
+####################################################################################################
+Package:playwright
+Version:1.62.0
+project URL:https://github.com/microsoft/playwright
+Description:A high-level API to automate web browsers
+license Type:Apache-2.0
+
+####################################################################################################
+Package:playwright-core
+Version:1.62.0
+project URL:https://github.com/microsoft/playwright
+Description:A high-level API to automate web browsers
+license Type:Apache-2.0
+
+####################################################################################################
+Package:postcss
+Version:8.5.23
+project URL:postcss/postcss
+Description:Tool for transforming styles with JS plugins
+license Type:MIT
+
+####################################################################################################
+Package:pretty-format
+Version:27.5.1
+project URL:https://github.com/facebook/jest
+Description:Stringify any JavaScript value.
+license Type:MIT
+
+####################################################################################################
+Package:react-is
+Version:17.0.2
+project URL:https://github.com/facebook/react
+Description:Brand checking of React Elements.
+license Type:MIT
+
+####################################################################################################
+Package:readdirp
+Version:4.1.2
+project URL:git://github.com/paulmillr/readdirp
+Description:Recursive version of fs.readdir with small RAM & CPU footprint.
+license Type:MIT
+
+####################################################################################################
+Package:redent
+Version:3.0.0
+project URL:sindresorhus/redent
+Description:Strip redundant indentation and indent the string
+license Type:MIT
+
+####################################################################################################
+Package:rolldown
+Version:1.1.5
+project URL:https://github.com/rolldown/rolldown
+Description:Fast JavaScript/TypeScript bundler in Rust with Rollup-compatible API.
 license Type:MIT
 
 ####################################################################################################
@@ -2209,6 +2881,69 @@ Description:
 license Type:MIT
 
 ####################################################################################################
+Package:sade
+Version:1.8.1
+project URL:lukeed/sade
+Description:Smooth (CLI) operator 🎶
+license Type:MIT
+
+####################################################################################################
+Package:semver
+Version:7.8.5
+project URL:https://github.com/npm/node-semver
+Description:The semantic version parser used by npm.
+license Type:ISC
+
+####################################################################################################
+Package:set-cookie-parser
+Version:3.1.2
+project URL:nfriedly/set-cookie-parser
+Description:Parses set-cookie headers into objects
+license Type:MIT
+
+####################################################################################################
+Package:siginfo
+Version:2.0.0
+project URL:https://github.com/emilbayes/siginfo
+Description:Utility module to print pretty messages on SIGINFO/SIGUSR1
+license Type:ISC
+
+####################################################################################################
+Package:sirv
+Version:3.0.2
+project URL:lukeed/sirv
+Description:The optimized & lightweight middleware for serving requests to static assets
+license Type:MIT
+
+####################################################################################################
+Package:source-map-js
+Version:1.2.1
+project URL:7rulnik/source-map-js
+Description:Generates and consumes source maps
+license Type:BSD-3-Clause
+
+####################################################################################################
+Package:stackback
+Version:0.0.2
+project URL:git://github.com/shtylman/node-stackback
+Description:return list of CallSite objects from a captured stacktrace
+license Type:MIT
+
+####################################################################################################
+Package:std-env
+Version:4.2.0
+project URL:unjs/std-env
+Description:Runtime agnostic JS utils
+license Type:MIT
+
+####################################################################################################
+Package:strip-indent
+Version:3.0.0
+project URL:sindresorhus/strip-indent
+Description:Strip leading whitespace from each line in a string
+license Type:MIT
+
+####################################################################################################
 Package:style-to-object
 Version:1.0.14
 project URL:https://github.com/remarkablemark/style-to-object
@@ -2216,10 +2951,24 @@ Description:Parse CSS inline style to JavaScript object.
 license Type:MIT
 
 ####################################################################################################
+Package:supports-color
+Version:7.2.0
+project URL:chalk/supports-color
+Description:Detect whether a terminal supports color
+license Type:MIT
+
+####################################################################################################
 Package:svelte
 Version:5.56.7
 project URL:https://github.com/sveltejs/svelte
 Description:Cybernetically enhanced web apps
+license Type:MIT
+
+####################################################################################################
+Package:svelte-check
+Version:4.7.3
+project URL:https://github.com/sveltejs/language-tools
+Description:Svelte Code Checker Terminal Interface
 license Type:MIT
 
 ####################################################################################################
@@ -2272,6 +3021,48 @@ Description:A utility-first CSS framework for rapidly building custom user inter
 license Type:MIT
 
 ####################################################################################################
+Package:tapable
+Version:2.3.3
+project URL:http://github.com/webpack/tapable
+Description:Just a little module for plugins.
+license Type:MIT
+
+####################################################################################################
+Package:tinybench
+Version:2.9.0
+project URL:tinylibs/tinybench
+Description:
+license Type:MIT
+
+####################################################################################################
+Package:tinyexec
+Version:1.2.4
+project URL:https://github.com/tinylibs/tinyexec
+Description:A minimal library for executing processes in Node
+license Type:MIT
+
+####################################################################################################
+Package:tinyglobby
+Version:0.2.17
+project URL:https://github.com/SuperchupuDev/tinyglobby
+Description:A fast and minimal alternative to globby and fast-glob
+license Type:MIT
+
+####################################################################################################
+Package:tinyrainbow
+Version:3.1.0
+project URL:https://github.com/tinylibs/tinyrainbow
+Description:A small library to print colourful messages.
+license Type:MIT
+
+####################################################################################################
+Package:totalist
+Version:3.0.1
+project URL:lukeed/totalist
+Description:A tiny (195B to 220B) utility to recursively list all (total) files in a directory
+license Type:MIT
+
+####################################################################################################
 Package:tslib
 Version:2.8.1
 project URL:https://github.com/Microsoft/tslib
@@ -2284,6 +3075,62 @@ Version:2.3.0
 project URL:https://github.com/Microsoft/tslib
 Description:Runtime library for TypeScript helper functions
 license Type:0BSD
+
+####################################################################################################
+Package:typescript
+Version:5.9.3
+project URL:https://github.com/microsoft/TypeScript
+Description:TypeScript is a language for application scale JavaScript development
+license Type:Apache-2.0
+
+####################################################################################################
+Package:undici-types
+Version:8.3.0
+project URL:https://github.com/nodejs/undici
+Description:A stand-alone types package for Undici
+license Type:MIT
+
+####################################################################################################
+Package:vite
+Version:8.1.5
+project URL:https://github.com/vitejs/vite
+Description:Native-ESM powered web dev build tool
+license Type:MIT
+
+####################################################################################################
+Package:vitefu
+Version:1.1.3
+project URL:https://github.com/svitejs/vitefu
+Description:Utilities for building frameworks with Vite
+license Type:MIT
+
+####################################################################################################
+Package:vitest
+Version:4.1.10
+project URL:https://github.com/vitest-dev/vitest
+Description:Next generation testing framework powered by Vite
+license Type:MIT
+
+####################################################################################################
+Package:whatwg-mimetype
+Version:3.0.0
+project URL:jsdom/whatwg-mimetype
+Description:Parses, serializes, and manipulates MIME types, according to the WHATWG MIME Sniffing Standard
+license Type:MIT
+
+####################################################################################################
+Package:why-is-node-running
+Version:2.3.0
+project URL:https://github.com/mafintosh/why-is-node-running
+Description:Node is running but you don't know why? why-is-node-running is here to help you.
+license Type:MIT
+
+####################################################################################################
+Package:ws
+Version:8.21.1
+project URL:https://github.com/websockets/ws
+Description:Simple to use, blazing fast and thoroughly tested websocket client and server for Node.js
+license Type:MIT
 
 ####################################################################################################
 Package:zimmerframe

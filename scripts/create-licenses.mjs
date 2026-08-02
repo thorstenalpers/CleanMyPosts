@@ -30,8 +30,11 @@ function crates() {
     }));
 }
 
+// Every package in the tree, not just `dependencies`: adapter-static bundles at build
+// time, so this project keeps everything under devDependencies and the split carries no
+// information about what ships.
 function packages() {
-  const tree = JSON.parse(run('npm', ['ls', '--omit=dev', '--all', '--long', '--json'], root));
+  const tree = JSON.parse(run('npm', ['ls', '--all', '--long', '--json'], root));
   const found = new Map();
 
   (function walk(node) {

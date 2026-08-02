@@ -17,13 +17,13 @@ User clicks "Delete all"
 
 ## X actions
 
-| Action     | Target URL                                             | What the script does                                   |
-|------------|--------------------------------------------------------|--------------------------------------------------------|
-| Posts      | `/search?q=from%3A{user}&src=typed_query`              | Opens menu on each post → Delete                       |
-| Reposts    | `/{user}`                                              | Opens menu on each repost → Undo Repost                |
-| Replies    | `/{user}/with_replies`                                 | Opens menu on each reply → Delete                      |
-| Likes      | `/{user}/likes`                                        | Opens menu on each liked tweet → Unlike                |
-| Following  | `/{user}/following`                                    | Clicks Following button on each account → Unfollow     |
+| Action    | Target URL                                | What the script does                               |
+| --------- | ----------------------------------------- | -------------------------------------------------- |
+| Posts     | `/search?q=from%3A{user}&src=typed_query` | Opens menu on each post → Delete                   |
+| Reposts   | `/{user}`                                 | Opens menu on each repost → Undo Repost            |
+| Replies   | `/{user}/with_replies`                    | Opens menu on each reply → Delete                  |
+| Likes     | `/{user}/likes`                           | Opens menu on each liked tweet → Unlike            |
+| Following | `/{user}/following`                       | Clicks Following button on each account → Unfollow |
 
 The X username is read once from the live page via `window.__cmp.getUserName()`, which the
 content script extracts from the logged-in session. Navigation is never blocked on login: if
@@ -32,10 +32,10 @@ manually. The delete/show buttons stay disabled until a `siteLogin` push confirm
 
 ## YouTube actions
 
-| Action         | Target URL                                                                    | What the script does                         |
-|----------------|-------------------------------------------------------------------------------|----------------------------------------------|
-| Comments       | `https://myactivity.google.com/page?hl=en&page=youtube_comments`             | Opens menu on each entry → Delete            |
-| Liked videos   | `https://www.youtube.com/playlist?list=LL`                                    | Opens menu on each video → Remove from playlist |
+| Action       | Target URL                                                       | What the script does                            |
+| ------------ | ---------------------------------------------------------------- | ----------------------------------------------- |
+| Comments     | `https://myactivity.google.com/page?hl=en&page=youtube_comments` | Opens menu on each entry → Delete               |
+| Liked videos | `https://www.youtube.com/playlist?list=LL`                       | Opens menu on each video → Remove from playlist |
 
 YouTube login detection uses `window.__cmp.getLoginStatus()`. The content script reads a
 DOM marker; the host reports the detected state via the `siteLogin` push and pushes `false`

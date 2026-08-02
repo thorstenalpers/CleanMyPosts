@@ -6,9 +6,9 @@ import { defineConfig } from '@playwright/test';
  * deleted for real. `npm run test:e2e` builds the content bundle first.
  */
 export default defineConfig({
-  testDir: './e2e',
-  timeout: 30_000,
-  fullyParallel: true,
-  reporter: 'list',
-  projects: [{ name: 'chromium', use: { browserName: 'chromium' } }]
+	testDir: './e2e',
+	timeout: 30_000,
+	fullyParallel: true,
+	reporter: 'list',
+	projects: [{ name: 'chromium', use: { browserName: 'chromium' } }]
 });

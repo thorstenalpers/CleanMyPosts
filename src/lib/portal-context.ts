@@ -9,9 +9,9 @@
 let portalTarget: Element | undefined;
 
 export function setPortalTarget(target: Element | undefined): void {
-  portalTarget = target;
+	portalTarget = target;
 }
 
 export function getPortalTarget(): Element | undefined {
-  return portalTarget;
+	return portalTarget;
 }

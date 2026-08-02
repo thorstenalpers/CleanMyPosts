@@ -2,10 +2,10 @@
 
 There are **two** protocols. They are never mixed.
 
-| Protocol         | File                              | Between                       | Transport                                    |
-|------------------|-----------------------------------|-------------------------------|----------------------------------------------|
-| Chrome bridge    | `src/lib/bridge/contract.ts`      | Svelte app ↔ host             | `invoke('bridge_call')` in, `cmp-push` event out |
-| Content protocol | `src/lib/engine/protocol.ts`      | host ↔ injected script        | `eval` in, `postMessage` out                 |
+| Protocol         | File                         | Between                | Transport                                        |
+| ---------------- | ---------------------------- | ---------------------- | ------------------------------------------------ |
+| Chrome bridge    | `src/lib/bridge/contract.ts` | Svelte app ↔ host      | `invoke('bridge_call')` in, `cmp-push` event out |
+| Content protocol | `src/lib/engine/protocol.ts` | host ↔ injected script | `eval` in, `postMessage` out                     |
 
 ## Chrome bridge
 
@@ -33,20 +33,20 @@ never learned that the host changed.
 
 ### RPC methods
 
-| Method                  | Params                                       | Result                         |
-|-------------------------|----------------------------------------------|--------------------------------|
-| `app.getInfo`           | —                                            | `{ version, homepageUrl, … }` |
-| `settings.get`          | —                                            | `AppSettings`                  |
-| `settings.set`          | `AppSettings`                                | —                              |
-| `site.navigate`         | `{ platform, action }`                       | `{ ok: boolean }`              |
-| `site.runAction`        | `{ requestId, platform, action, timeouts }`  | `{ deletedCount }`             |
-| `site.reload`           | —                                            | —                              |
-| `site.hide`             | `{ hide: boolean }`                          | —                              |
-| `layout.setSidebarExpanded` | `{ expanded: boolean }`                  | —                              |
-| `updater.checkForUpdates` | —                                          | `{ updateAvailable, message? }`|
-| `system.openUrl`        | `{ url }`                                    | —                              |
-| `system.openLicense`    | —                                            | —                              |
-| `log.getBuffer`         | —                                            | `LogEntry[]`                   |
+| Method                      | Params                                      | Result                          |
+| --------------------------- | ------------------------------------------- | ------------------------------- |
+| `app.getInfo`               | —                                           | `{ version, homepageUrl, … }`   |
+| `settings.get`              | —                                           | `AppSettings`                   |
+| `settings.set`              | `AppSettings`                               | —                               |
+| `site.navigate`             | `{ platform, action }`                      | `{ ok: boolean }`               |
+| `site.runAction`            | `{ requestId, platform, action, timeouts }` | `{ deletedCount }`              |
+| `site.reload`               | —                                           | —                               |
+| `site.hide`                 | `{ hide: boolean }`                         | —                               |
+| `layout.setSidebarExpanded` | `{ expanded: boolean }`                     | —                               |
+| `updater.checkForUpdates`   | —                                           | `{ updateAvailable, message? }` |
+| `system.openUrl`            | `{ url }`                                   | —                               |
+| `system.openLicense`        | —                                           | —                               |
+| `log.getBuffer`             | —                                           | `LogEntry[]`                    |
 
 **The caller mints `requestId`** for `site.runAction`. Push events outlive the RPC
 round-trip and must be attributable to their trigger.
@@ -58,24 +58,29 @@ toggles the sidebar column between 240px and 56px. See
 
 ### Push events (host → UI, no request)
 
-| Event             | Payload                           | Purpose                              |
-|-------------------|-----------------------------------|--------------------------------------|
-| `progress`        | `{ requestId, deletedCount, message? }` | items deleted so far in a run  |
-| `log`             | `{ timestamp, level, message }`   | a line for the log view              |
-| `settingsChanged` | `AppSettings`                     | settings changed from another source |
-| `siteLogin`       | `{ platform, loggedIn }`          | login status detected                |
+| Event             | Payload                                 | Purpose                              |
+| ----------------- | --------------------------------------- | ------------------------------------ |
+| `progress`        | `{ requestId, deletedCount, message? }` | items deleted so far in a run        |
+| `log`             | `{ timestamp, level, message }`         | a line for the log view              |
+| `settingsChanged` | `AppSettings`                           | settings changed from another source |
+| `siteLogin`       | `{ platform, loggedIn }`                | login status detected                |
 
 ### Actions
 
 ```ts
-type XAction       = 'showPosts' | 'deletePosts'
-                   | 'showReplies' | 'deleteReplies'
-                   | 'showReposts' | 'deleteReposts'
-                   | 'showLikes' | 'deleteLikes'
-                   | 'showFollowing' | 'deleteFollowing';
+type XAction =
+	| 'showPosts'
+	| 'deletePosts'
+	| 'showReplies'
+	| 'deleteReplies'
+	| 'showReposts'
+	| 'deleteReposts'
+	| 'showLikes'
+	| 'deleteLikes'
+	| 'showFollowing'
+	| 'deleteFollowing';
 
-type YouTubeAction = 'showComments' | 'deleteComments'
-                   | 'showLikes' | 'deleteLikes';
+type YouTubeAction = 'showComments' | 'deleteComments' | 'showLikes' | 'deleteLikes';
 ```
 
 `show*` actions navigate the site webview to the correct URL and return `{ ok }`.
@@ -85,16 +90,16 @@ type YouTubeAction = 'showComments' | 'deleteComments'
 
 ```ts
 type AppSettings = {
-  theme: 'Default' | 'Light' | 'Dark';
-  showLogs: boolean;
-  confirmDeletion: boolean;
-  accentColor: string;       // '#RRGGBB'
-  useSystemAccent: boolean;  // follow the Windows accent colour
-  timeouts: {
-    waitAfterDelete: number;             // ms between individual deletions
-    waitBetweenRetryDeleteAttempts: number;
-    waitAfterDocumentLoad: number;
-  };
+	theme: 'Default' | 'Light' | 'Dark';
+	showLogs: boolean;
+	confirmDeletion: boolean;
+	accentColor: string; // '#RRGGBB'
+	useSystemAccent: boolean; // follow the Windows accent colour
+	timeouts: {
+		waitAfterDelete: number; // ms between individual deletions
+		waitBetweenRetryDeleteAttempts: number;
+		waitAfterDocumentLoad: number;
+	};
 };
 ```
 
@@ -104,10 +109,10 @@ The injected script exposes exactly one global. It has no other connection to th
 
 ```ts
 interface CmpApi {
-  run(platform: Platform, action: Action, paramsJson: string): void;
-  isEmpty(platform: Platform, action: Action): boolean;
-  getUserName(): string;       // X only — returns '' when not logged in
-  getLoginStatus(): string;    // YouTube only — returns 'logged_in' or ''
+	run(platform: Platform, action: Action, paramsJson: string): void;
+	isEmpty(platform: Platform, action: Action): boolean;
+	getUserName(): string; // X only — returns '' when not logged in
+	getLoginStatus(): string; // YouTube only — returns 'logged_in' or ''
 }
 declare const window: { __cmp?: CmpApi };
 ```

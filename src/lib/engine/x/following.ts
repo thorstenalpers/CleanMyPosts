@@ -1,84 +1,104 @@
-import { clickWithCursor, delay, highlightElement, isVisible, postLog, postProgress, waitForByScrolling } from '../dom';
+import {
+	clickWithCursor,
+	delay,
+	highlightElement,
+	isVisible,
+	postLog,
+	postProgress,
+	waitForByScrolling
+} from '../dom';
 import type { RunParams } from '../protocol';
 import type { DeleteActionDefinition } from '../types';
 
 const UNFOLLOW_SELECTOR = 'button[data-testid$="-unfollow"]';
 
 function findUnfollowButton(): HTMLButtonElement | null {
-  return document.querySelector<HTMLButtonElement>(UNFOLLOW_SELECTOR);
+	return document.querySelector<HTMLButtonElement>(UNFOLLOW_SELECTOR);
 }
 
 async function clickUnfollowButtonWithConfirm(
-  waitBeforeTryClickDelete: number,
-  waitBetweenTryClickDeleteAttempts: number,
-  maxConfirmAttempts: number
+	waitBeforeTryClickDelete: number,
+	waitBetweenTryClickDeleteAttempts: number,
+	maxConfirmAttempts: number
 ): Promise<boolean> {
-  const btn = findUnfollowButton();
-  if (!isVisible(btn)) return false;
+	const btn = findUnfollowButton();
+	if (!isVisible(btn)) return false;
 
-  highlightElement((btn.closest('[data-testid="UserCell"]') as HTMLElement | null) ?? btn);
-  clickWithCursor(btn);
-  await delay(waitBeforeTryClickDelete);
+	highlightElement((btn.closest('[data-testid="UserCell"]') as HTMLElement | null) ?? btn);
+	clickWithCursor(btn);
+	await delay(waitBeforeTryClickDelete);
 
-  for (let attempt = 0; attempt < maxConfirmAttempts; attempt++) {
-    const confirmBtn = document.querySelector<HTMLButtonElement>('button[data-testid="confirmationSheetConfirm"]');
-    if (isVisible(confirmBtn)) {
-      clickWithCursor(confirmBtn);
-      return true;
-    }
+	for (let attempt = 0; attempt < maxConfirmAttempts; attempt++) {
+		const confirmBtn = document.querySelector<HTMLButtonElement>(
+			'button[data-testid="confirmationSheetConfirm"]'
+		);
+		if (isVisible(confirmBtn)) {
+			clickWithCursor(confirmBtn);
+			return true;
+		}
 
-    await delay(waitBetweenTryClickDeleteAttempts * (attempt + 1));
-  }
+		await delay(waitBetweenTryClickDeleteAttempts * (attempt + 1));
+	}
 
-  return false;
+	return false;
 }
 
 async function tryUnfollow(
-  waitBeforeTryClickDelete: number,
-  waitBetweenTryClickDeleteAttempts: number,
-  maxTries: number
+	waitBeforeTryClickDelete: number,
+	waitBetweenTryClickDeleteAttempts: number,
+	maxTries: number
 ): Promise<boolean> {
-  for (let attempt = 1; attempt <= maxTries; attempt++) {
-    if (await clickUnfollowButtonWithConfirm(waitBeforeTryClickDelete, waitBetweenTryClickDeleteAttempts, 5)) {
-      return true;
-    }
+	for (let attempt = 1; attempt <= maxTries; attempt++) {
+		if (
+			await clickUnfollowButtonWithConfirm(
+				waitBeforeTryClickDelete,
+				waitBetweenTryClickDeleteAttempts,
+				5
+			)
+		) {
+			return true;
+		}
 
-    if (attempt < maxTries) {
-      await delay(waitBetweenTryClickDeleteAttempts);
-    }
-  }
-  return false;
+		if (attempt < maxTries) {
+			await delay(waitBetweenTryClickDeleteAttempts);
+		}
+	}
+	return false;
 }
 
 export const followingAction: DeleteActionDefinition = {
-  isEmpty(): boolean {
-    return document.querySelector('[data-testid="emptyState"]') !== null;
-  },
+	isEmpty(): boolean {
+		return document.querySelector('[data-testid="emptyState"]') !== null;
+	},
 
-  async run(params: RunParams): Promise<number> {
-    let deletedCount = 0;
+	async run(params: RunParams): Promise<number> {
+		let deletedCount = 0;
 
-    while (true) {
-      const found = await waitForByScrolling(() => findUnfollowButton() !== null, 500, {
-        maxWaitMs: 5000,
-        intervalMs: 200
-      });
-      if (!found) {
-        postLog('info', 'No unfollow buttons found after timeout.');
-        break;
-      }
+		while (true) {
+			const found = await waitForByScrolling(() => findUnfollowButton() !== null, 500, {
+				maxWaitMs: 5000,
+				intervalMs: 200
+			});
+			if (!found) {
+				postLog('info', 'No unfollow buttons found after timeout.');
+				break;
+			}
 
-      const success = await tryUnfollow(params.waitAfterDelete, params.waitBetweenRetryDeleteAttempts, 10);
-      if (!success) {
-        postLog('info', 'Could not unfollow; aborting.');
-        break;
-      }
+			const success = await tryUnfollow(
+				params.waitAfterDelete,
+				params.waitBetweenRetryDeleteAttempts,
+				10
+			);
+			if (!success) {
+				postLog('info', 'Could not unfollow; aborting.');
+				break;
+			}
 
-      deletedCount++;
-      postProgress(params.requestId, deletedCount);
-      await delay(params.waitAfterDelete);
-    }
+			deletedCount++;
+			postProgress(params.requestId, deletedCount);
+			await delay(params.waitAfterDelete);
+		}
 
-    return deletedCount;
-  }
+		return deletedCount;
+	}
 };

@@ -1,20 +1,20 @@
 import type { WebView2Host, WebView2MessageEvent } from './webview2.d.ts';
 
 interface TauriGlobal {
-  core: { invoke: (cmd: string, args?: Record<string, unknown>) => Promise<unknown> };
-  event: {
-    listen: (event: string, handler: (event: { payload: unknown }) => void) => Promise<() => void>;
-  };
+	core: { invoke: (cmd: string, args?: Record<string, unknown>) => Promise<unknown> };
+	event: {
+		listen: (event: string, handler: (event: { payload: unknown }) => void) => Promise<() => void>;
+	};
 }
 
 declare global {
-  interface Window {
-    __TAURI__?: TauriGlobal;
-  }
+	interface Window {
+		__TAURI__?: TauriGlobal;
+	}
 }
 
 export function isTauri(): boolean {
-  return typeof window !== 'undefined' && window.__TAURI__ !== undefined;
+	return typeof window !== 'undefined' && window.__TAURI__ !== undefined;
 }
 
 /**
@@ -26,39 +26,39 @@ export function isTauri(): boolean {
  * than teaching the client a second calling convention.
  */
 export function createTauriHost(): WebView2Host {
-  const listeners = new Set<(event: WebView2MessageEvent) => void>();
-  const tauri = window.__TAURI__;
+	const listeners = new Set<(event: WebView2MessageEvent) => void>();
+	const tauri = window.__TAURI__;
 
-  if (!tauri) {
-    throw new Error('createTauriHost called outside a Tauri window.');
-  }
+	if (!tauri) {
+		throw new Error('createTauriHost called outside a Tauri window.');
+	}
 
-  const deliver = (data: unknown) => {
-    const event = { data } as WebView2MessageEvent;
-    for (const listener of listeners) listener(event);
-  };
+	const deliver = (data: unknown) => {
+		const event = { data } as WebView2MessageEvent;
+		for (const listener of listeners) listener(event);
+	};
 
-  void tauri.event.listen('cmp-push', (event) => deliver(event.payload));
+	void tauri.event.listen('cmp-push', (event) => deliver(event.payload));
 
-  return {
-    postMessage(message: unknown) {
-      const request = message as { id: string; method: string; params: unknown };
-      tauri.core
-        .invoke('bridge_call', { method: request.method, params: request.params ?? null })
-        .then((result) => deliver({ id: request.id, ok: true, result: result ?? undefined }))
-        .catch((error: unknown) =>
-          deliver({
-            id: request.id,
-            ok: false,
-            error: { message: error instanceof Error ? error.message : String(error) }
-          })
-        );
-    },
-    addEventListener(_type, listener) {
-      listeners.add(listener);
-    },
-    removeEventListener(_type, listener) {
-      listeners.delete(listener);
-    }
-  };
+	return {
+		postMessage(message: unknown) {
+			const request = message as { id: string; method: string; params: unknown };
+			tauri.core
+				.invoke('bridge_call', { method: request.method, params: request.params ?? null })
+				.then((result) => deliver({ id: request.id, ok: true, result: result ?? undefined }))
+				.catch((error: unknown) =>
+					deliver({
+						id: request.id,
+						ok: false,
+						error: { message: error instanceof Error ? error.message : String(error) }
+					})
+				);
+		},
+		addEventListener(_type, listener) {
+			listeners.add(listener);
+		},
+		removeEventListener(_type, listener) {
+			listeners.delete(listener);
+		}
+	};
 }

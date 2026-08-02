@@ -1,16 +1,16 @@
 {
-  "$schema": "../gen/schemas/desktop-schema.json",
-  "identifier": "site",
-  "description": "The platform page being cleaned. Scoped to the 'site' webview and to the exact origins the delete engine runs on, so no other remote page can reach the host.",
-  "webviews": ["site"],
-  "remote": {
-    "urls": [
-      "https://x.com",
-      "https://*.x.com",
-      "https://youtube.com",
-      "https://*.youtube.com",
-      "https://myactivity.google.com"
-    ]
-  },
-  "permissions": ["allow-content-message"]
+	"$schema": "../gen/schemas/desktop-schema.json",
+	"identifier": "site",
+	"description": "The platform page being cleaned. Scoped to the 'site' webview and to the exact origins the delete engine runs on, so no other remote page can reach the host.",
+	"webviews": ["site"],
+	"remote": {
+		"urls": [
+			"https://x.com",
+			"https://*.x.com",
+			"https://youtube.com",
+			"https://*.youtube.com",
+			"https://myactivity.google.com"
+		]
+	},
+	"permissions": ["allow-content-message"]
 }

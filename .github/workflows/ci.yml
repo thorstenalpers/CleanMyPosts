@@ -1,10 +1,10 @@
-name: "CI"
+name: 'CI'
 
 on:
   push:
-    branches: [ develop, main ]
+    branches: [develop, main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 permissions:
   contents: read
@@ -17,7 +17,7 @@ jobs:
     runs-on: windows-latest
 
     env:
-      FORCE_COLOR: "true"
+      FORCE_COLOR: 'true'
 
     steps:
       - name: Checkout

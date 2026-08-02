@@ -6,23 +6,23 @@ import type { SiteLoginStore } from '$lib/stores/site-login.svelte';
 import type { ActionRunner } from '$lib/stores/action-runner.svelte';
 
 export interface AppContext {
-  bridge: BridgeClient;
-  settingsStore: SettingsStore;
-  logStore: LogStore;
-  loginStore: SiteLoginStore;
-  runner: ActionRunner;
+	bridge: BridgeClient;
+	settingsStore: SettingsStore;
+	logStore: LogStore;
+	loginStore: SiteLoginStore;
+	runner: ActionRunner;
 }
 
 const KEY = Symbol('cmp-app');
 
 export function setAppContext(context: AppContext): AppContext {
-  return setContext(KEY, context);
+	return setContext(KEY, context);
 }
 
 export function getAppContext(): AppContext {
-  const context = getContext<AppContext | undefined>(KEY);
-  if (!context) {
-    throw new Error('getAppContext called outside the app layout.');
-  }
-  return context;
+	const context = getContext<AppContext | undefined>(KEY);
+	if (!context) {
+		throw new Error('getAppContext called outside the app layout.');
+	}
+	return context;
 }

@@ -8,10 +8,10 @@ chroma 0, i.e. true greys.
 
 **Two colours, two meanings. Nothing else is coloured.**
 
-| Colour        | Meaning                                          | Token                        |
-|---------------|--------------------------------------------------|------------------------------|
-| Destructive   | something is about to be deleted irreversibly     | `--destructive`              |
-| Accent        | *you are here* / *this is the primary action*     | `--accent-base` → `--primary`, `--ring` |
+| Colour      | Meaning                                       | Token                                   |
+| ----------- | --------------------------------------------- | --------------------------------------- |
+| Destructive | something is about to be deleted irreversibly | `--destructive`                         |
+| Accent      | _you are here_ / _this is the primary action_ | `--accent-base` → `--primary`, `--ring` |
 
 Everything else is neutral (`oklch(… 0 0)`). Red must never be used for anything but
 deletion — that is part of the safety concept, not a style choice. The accent is
@@ -42,10 +42,10 @@ Three variables are written at runtime by `$lib/theme/accent.ts` and must not be
 in CSS:
 
 | Variable              | Derived from the user's hex accent                              |
-|-----------------------|------------------------------------------------------------------|
-| `--accent-base`       | the colour converted to OKLCH                                    |
-| `--accent-base-hover` | same hue and chroma, lightness −0.06                             |
-| `--accent-on`         | near-white, or near-black when the accent's lightness is > 0.68  |
+| --------------------- | --------------------------------------------------------------- |
+| `--accent-base`       | the colour converted to OKLCH                                   |
+| `--accent-base-hover` | same hue and chroma, lightness −0.06                            |
+| `--accent-on`         | near-white, or near-black when the accent's lightness is > 0.68 |
 
 OKLCH is used because lightness is perceptually uniform there: the hover shade and the
 on-accent text colour stay legible for any hue the user picks. `--primary` and `--ring`
@@ -56,13 +56,13 @@ reference `--accent-base` in both light and dark mode.
 One family: the system UI font. No web fonts — the app runs offline and should feel like a
 Windows tool, not a website.
 
-| Role | Class |
-|---|---|
-| Page title | `text-2xl font-semibold tracking-tight` |
-| Section | `text-lg font-medium` |
-| Body | `text-sm` |
-| Secondary | `text-sm text-muted-foreground` |
-| Numbers, IDs, paths | `font-mono text-xs tabular-nums` |
+| Role                | Class                                   |
+| ------------------- | --------------------------------------- |
+| Page title          | `text-2xl font-semibold tracking-tight` |
+| Section             | `text-lg font-medium`                   |
+| Body                | `text-sm`                               |
+| Secondary           | `text-sm text-muted-foreground`         |
+| Numbers, IDs, paths | `font-mono text-xs tabular-nums`        |
 
 `tabular-nums` is mandatory on anything that changes live — progress counters that jump as
 they climb look broken.
@@ -72,13 +72,13 @@ they climb look broken.
 Layout-bearing components live in `src/lib/components/` and take props in, events out —
 never the bridge. The set that carries the app's identity:
 
-| Component            | Role                                                              |
-|----------------------|-------------------------------------------------------------------|
-| `sidebar-shell`      | Nav rail. Active item marked by a 3px accent rail **and** `aria-current`, plus an optional connection dot. Expanded 240px / collapsed 56px. |
-| `action-row`         | One delete-able category. Show + Delete buttons stay in the layout at all times and only gain contrast on hover, so rows never reflow. |
-| `run-status`         | Pinned above the sidebar footer while a deletion runs: label, running count, indeterminate progress, Stop. Survives navigating away. |
-| `setting-section` / `setting-row` | Settings grouping. Every row carries a visible description — a toggle that deletes data must say so before it is flipped. |
-| `accent-picker`      | Eight presets, a hex field, and a "follow Windows" switch.         |
+| Component                         | Role                                                                                                                                        |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `sidebar-shell`                   | Nav rail. Active item marked by a 3px accent rail **and** `aria-current`, plus an optional connection dot. Expanded 240px / collapsed 56px. |
+| `action-row`                      | One delete-able category. Show + Delete buttons stay in the layout at all times and only gain contrast on hover, so rows never reflow.      |
+| `run-status`                      | Pinned above the sidebar footer while a deletion runs: label, running count, indeterminate progress, Stop. Survives navigating away.        |
+| `setting-section` / `setting-row` | Settings grouping. Every row carries a visible description — a toggle that deletes data must say so before it is flipped.                   |
+| `accent-picker`                   | Eight presets, a hex field, and a "follow Windows" switch.                                                                                  |
 
 ## Layout
 

@@ -48,10 +48,10 @@ Select platform → Navigate to correct page → Inject script → Delete → Sh
 
 ## Platforms
 
-| Platform | Show | Delete actions                                    |
-|----------|------|---------------------------------------------------|
-| X        | ✓    | posts, reposts, replies, likes, following         |
-| YouTube  | ✓    | comments (via myactivity.google.com), liked videos|
+| Platform | Show | Delete actions                                     |
+| -------- | ---- | -------------------------------------------------- |
+| X        | ✓    | posts, reposts, replies, likes, following          |
+| YouTube  | ✓    | comments (via myactivity.google.com), liked videos |
 
 ## Priorities on conflict
 

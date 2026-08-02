@@ -21,16 +21,16 @@ Rust `AppSettings`, so `settings.get` currently fails the UI's validation. Track
 
 ```ts
 type AppSettings = {
-  theme: 'Default' | 'Light' | 'Dark';
-  showLogs: boolean;
-  confirmDeletion: boolean;
-  accentColor: string;       // '#RRGGBB'
-  useSystemAccent: boolean;
-  timeouts: {
-    waitAfterDelete: number;              // ms — pause between individual delete actions
-    waitBetweenRetryDeleteAttempts: number;
-    waitAfterDocumentLoad: number;        // ms — pause after a page reload
-  };
+	theme: 'Default' | 'Light' | 'Dark';
+	showLogs: boolean;
+	confirmDeletion: boolean;
+	accentColor: string; // '#RRGGBB'
+	useSystemAccent: boolean;
+	timeouts: {
+		waitAfterDelete: number; // ms — pause between individual delete actions
+		waitBetweenRetryDeleteAttempts: number;
+		waitAfterDocumentLoad: number; // ms — pause after a page reload
+	};
 };
 ```
 
@@ -63,8 +63,8 @@ host does not restyle it.
 The defaults are conservative by design. Raising them further is always safe; lowering them
 risks triggering platform automation detection.
 
-| Setting                          | Default  | Notes                                      |
-|----------------------------------|----------|--------------------------------------------|
-| `waitAfterDelete`                | 500 ms   | Pause after each individual deletion       |
-| `waitBetweenRetryDeleteAttempts` | 500 ms   | Pause between retries within a page load   |
-| `waitAfterDocumentLoad`          | 3 000 ms | Pause after a page reload before running   |
+| Setting                          | Default  | Notes                                    |
+| -------------------------------- | -------- | ---------------------------------------- |
+| `waitAfterDelete`                | 500 ms   | Pause after each individual deletion     |
+| `waitBetweenRetryDeleteAttempts` | 500 ms   | Pause between retries within a page load |
+| `waitAfterDocumentLoad`          | 3 000 ms | Pause after a page reload before running |

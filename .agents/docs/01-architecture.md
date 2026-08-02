@@ -5,15 +5,15 @@
 The Rust host owns the process, the window, and the webview lifecycle. Everything visible
 and every platform interaction is TypeScript.
 
-| Responsibility                        | Rust host | TypeScript |
-|---------------------------------------|-----------|------------|
-| Window, webview lifecycle             | ✓         |            |
-| URL construction                      | ✓         |            |
-| Navigation of the site webview        | ✓         |            |
-| Progress relay to the chrome UI       | ✓         |            |
-| App UI                                |           | ✓          |
-| DOM interaction on the platform site  |           | ✓          |
-| Deletion click/confirm/retry          |           | ✓          |
+| Responsibility                       | Rust host | TypeScript |
+| ------------------------------------ | --------- | ---------- |
+| Window, webview lifecycle            | ✓         |            |
+| URL construction                     | ✓         |            |
+| Navigation of the site webview       | ✓         |            |
+| Progress relay to the chrome UI      | ✓         |            |
+| App UI                               |           | ✓          |
+| DOM interaction on the platform site |           | ✓          |
+| Deletion click/confirm/retry         |           | ✓          |
 
 The host never touches a platform API and never parses the DOM itself. It only navigates,
 calls `window.__cmp.run()`, and relays what comes back.
@@ -69,10 +69,10 @@ someone editing files next to the executable.
 
 ## Runtime paths
 
-| Path                                                       | Contents                            |
-|------------------------------------------------------------|-------------------------------------|
-| `%AppData%\com.thorstenalpers.cleanmyposts\settings.json`   | theme, log visibility, confirmation, timeouts |
-| `%LocalAppData%\com.thorstenalpers.cleanmyposts\EBWebView`  | WebView2 profile (cookies, session) |
+| Path                                                       | Contents                                      |
+| ---------------------------------------------------------- | --------------------------------------------- |
+| `%AppData%\com.thorstenalpers.cleanmyposts\settings.json`  | theme, log visibility, confirmation, timeouts |
+| `%LocalAppData%\com.thorstenalpers.cleanmyposts\EBWebView` | WebView2 profile (cookies, session)           |
 
 Both come from Tauri's `app_config_dir` / local data dir. The log buffer is in memory only
 (2000 entries, oldest dropped) — nothing is written to disk.

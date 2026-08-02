@@ -7,53 +7,55 @@ const fixtureUrl = pathToFileURL(path.resolve(dirname, 'fixtures/x-posts.html'))
 const contentScript = path.resolve(dirname, '../dist/content/content.js');
 
 interface ContentMessage {
-  type: string;
-  deletedCount?: number;
+	type: string;
+	deletedCount?: number;
 }
 
 declare global {
-  interface Window {
-    __msgs: ContentMessage[];
-  }
+	interface Window {
+		__msgs: ContentMessage[];
+	}
 }
 
 test('deletePosts deletes every post and reports progress in a real browser', async ({ page }) => {
-  // Capture what the injected engine posts back, standing in for the WPF host.
-  await page.addInitScript(() => {
-    window.__msgs = [];
-    window.chrome = {
-      webview: {
-        postMessage: (m: unknown) => window.__msgs.push(m as ContentMessage),
-        addEventListener: () => {},
-        removeEventListener: () => {}
-      }
-    } as unknown as typeof window.chrome;
-  });
+	// Capture what the injected engine posts back, standing in for the WPF host.
+	await page.addInitScript(() => {
+		window.__msgs = [];
+		window.chrome = {
+			webview: {
+				postMessage: (m: unknown) => window.__msgs.push(m as ContentMessage),
+				addEventListener: () => {},
+				removeEventListener: () => {}
+			}
+		} as unknown as typeof window.chrome;
+	});
 
-  await page.goto(fixtureUrl);
-  await page.addScriptTag({ path: contentScript });
-  await expect.poll(() => page.evaluate(() => typeof window.__cmp)).toBe('object');
+	await page.goto(fixtureUrl);
+	await page.addScriptTag({ path: contentScript });
+	await expect.poll(() => page.evaluate(() => typeof window.__cmp)).toBe('object');
 
-  await page.evaluate(() =>
-    window.__cmp!.run(
-      'x',
-      'deletePosts',
-      JSON.stringify({ requestId: 'r1', waitAfterDelete: 1, waitBetweenRetryDeleteAttempts: 1 })
-    )
-  );
+	await page.evaluate(() =>
+		window.__cmp!.run(
+			'x',
+			'deletePosts',
+			JSON.stringify({ requestId: 'r1', waitAfterDelete: 1, waitBetweenRetryDeleteAttempts: 1 })
+		)
+	);
 
-  await page.waitForFunction(() => window.__msgs.some((m) => m.type === 'done'), null, { timeout: 20_000 });
+	await page.waitForFunction(() => window.__msgs.some((m) => m.type === 'done'), null, {
+		timeout: 20_000
+	});
 
-  const msgs = await page.evaluate(() => window.__msgs);
-  expect(msgs.find((m) => m.type === 'done')?.deletedCount).toBe(2);
-  expect(msgs.filter((m) => m.type === 'progress').map((m) => m.deletedCount)).toEqual([1, 2]);
+	const msgs = await page.evaluate(() => window.__msgs);
+	expect(msgs.find((m) => m.type === 'done')?.deletedCount).toBe(2);
+	expect(msgs.filter((m) => m.type === 'progress').map((m) => m.deletedCount)).toEqual([1, 2]);
 
-  const remaining = await page.evaluate(() => document.querySelectorAll('section article').length);
-  expect(remaining).toBe(0);
+	const remaining = await page.evaluate(() => document.querySelectorAll('section article').length);
+	expect(remaining).toBe(0);
 
-  // The click-cursor marker is created on the page so the user can follow the automation.
-  const hasCursor = await page.evaluate(() =>
-    [...document.body.querySelectorAll('div')].some((d) => d.textContent === '👆')
-  );
-  expect(hasCursor).toBe(true);
+	// The click-cursor marker is created on the page so the user can follow the automation.
+	const hasCursor = await page.evaluate(() =>
+		[...document.body.querySelectorAll('div')].some((d) => d.textContent === '👆')
+	);
+	expect(hasCursor).toBe(true);
 });

@@ -29,17 +29,17 @@ Each action module exports exactly one object:
 
 ```ts
 interface ContentActionDefinition {
-  isEmpty(): boolean;                        // nothing left on this page
-  run(params: RunParams): Promise<number>;   // click/confirm/retry loop; returns count
+	isEmpty(): boolean; // nothing left on this page
+	run(params: RunParams): Promise<number>; // click/confirm/retry loop; returns count
 }
 ```
 
 ```ts
 interface RunParams {
-  requestId: string;
-  waitAfterDelete: number;
-  waitBetweenRetryDeleteAttempts: number;
-  userName?: string;   // X only
+	requestId: string;
+	waitAfterDelete: number;
+	waitBetweenRetryDeleteAttempts: number;
+	userName?: string; // X only
 }
 ```
 
@@ -98,12 +98,12 @@ item to act on. The host does not poll `isEmpty` and does not reload between rou
 
 The host builds the target URL before navigating, using the platform and action:
 
-| Platform | Action                           | URL                                                      |
-|----------|----------------------------------|----------------------------------------------------------|
-| X        | posts                            | `https://x.com/search?q=from%3A{user}&src=typed_query`  |
-| X        | replies                          | `https://x.com/{user}/with_replies`                      |
-| X        | reposts                          | `https://x.com/{user}`                                   |
-| X        | likes                            | `https://x.com/{user}/likes`                             |
-| X        | following                        | `https://x.com/{user}/following`                         |
-| YouTube  | comments                         | `https://myactivity.google.com/page?hl=en&page=youtube_comments` |
-| YouTube  | likes                            | `https://www.youtube.com/playlist?list=LL`               |
+| Platform | Action    | URL                                                              |
+| -------- | --------- | ---------------------------------------------------------------- |
+| X        | posts     | `https://x.com/search?q=from%3A{user}&src=typed_query`           |
+| X        | replies   | `https://x.com/{user}/with_replies`                              |
+| X        | reposts   | `https://x.com/{user}`                                           |
+| X        | likes     | `https://x.com/{user}/likes`                                     |
+| X        | following | `https://x.com/{user}/following`                                 |
+| YouTube  | comments  | `https://myactivity.google.com/page?hl=en&page=youtube_comments` |
+| YouTube  | likes     | `https://www.youtube.com/playlist?list=LL`                       |

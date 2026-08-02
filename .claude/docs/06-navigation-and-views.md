@@ -28,13 +28,13 @@ Settings                         (footer)
 SvelteKit's file-based router, running as an SPA (`ssr = false`, `adapter-static` with an
 `index.html` fallback). One route per nav key:
 
-| Route       | Renders                                                              |
-|-------------|----------------------------------------------------------------------|
-| `/`         | redirects to `/settings`                                             |
+| Route       | Renders                                                                 |
+| ----------- | ----------------------------------------------------------------------- |
+| `/`         | redirects to `/settings`                                                |
 | `/x`        | nothing — the site webview covers the content area; the panel is subnav |
-| `/youtube`  | nothing — same                                                       |
-| `/log`      | `LogView`                                                            |
-| `/settings` | `SettingsView`                                                       |
+| `/youtube`  | nothing — same                                                          |
+| `/log`      | `LogView`                                                               |
+| `/settings` | `SettingsView`                                                          |
 
 The window has no address bar, so the URL is an internal detail; it exists because the router
 needs one, not because anyone reads it.
@@ -57,6 +57,7 @@ They render **as the `subnav` snippet of `SidebarShell`** — indented under the
 YouTube nav item while the sidebar is expanded. Each action is one `ActionRow`.
 
 **Idle**
+
 - "Show" (list icon) → `site.navigate`, opens the correct page in the SiteWebView.
 - "Delete" (trash icon) → `site.runAction`.
 - Both are disabled until `loginStore.loggedIn[platform]` is true (a `siteLogin` push) and
@@ -67,6 +68,7 @@ YouTube nav item while the sidebar is expanded. Each action is one `ActionRow`.
   restores the site. It has to stay an effect: the dialog also closes itself on Esc.
 
 **Running**
+
 - The row that is deleting is marked with the accent tint.
 - `RunStatus` appears above the sidebar footer: label, running count, an indeterminate
   progress bar, and Stop.

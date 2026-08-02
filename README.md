@@ -20,7 +20,6 @@ and the app clicks the same buttons you would — just without stopping. Deletio
 deliberately paced; the waits between them are configurable and exist to keep the platforms
 from treating you as a bot.
 
-
 ```mermaid
 %%{init: {"flowchart": {"diagramPadding": 125}}}%%
 flowchart LR
@@ -43,6 +42,7 @@ flowchart LR
 ## 🚀 Features
 
 ### X (Twitter)
+
 - 🔍 **View** all posts, reposts, replies, likes, and followings
 - 🗑️ **Bulk delete** all posts
 - 🗑️ **Bulk delete** all reposts
@@ -51,13 +51,13 @@ flowchart LR
 - 👤 **Unfollow** all followings
 
 ### YouTube
+
 - 🔍 **View** all your YouTube comments via Google My Activity
 - 🗑️ **Bulk delete** all YouTube comments
 - 🔍 **View** all liked videos
 - 🖤 **Remove** all liked videos
 
 ---
-
 
 ## 🛠️ Requirements
 
@@ -83,7 +83,6 @@ Once your system meets the requirements, follow these steps to install **CleanMy
 ---
 
 ## 🎬 See It in Action
-
 
 ### X
 
@@ -131,7 +130,7 @@ Once your system meets the requirements, follow these steps to install **CleanMy
   <img src="./assets/youtube-delete-likes.gif" alt="Unfollow Accounts GIF" width="700" />
 </details>
 
-### App 
+### App
 
 <details>
   <summary><strong>Settings</strong></summary>
@@ -140,7 +139,6 @@ Once your system meets the requirements, follow these steps to install **CleanMy
 </details>
 
 ---
-
 
 ## 🧟‍♂️ Advanced: Run the Deletion Engine Manually
 
@@ -175,26 +173,30 @@ The result is `dist/content/content.js`.
    `window.__cmp`; nothing is deleted yet.
 5. Start the run:
    ```js
-   __cmp.run('x', 'deletePosts', JSON.stringify({
-     requestId: 'manual',
-     waitAfterDelete: 1000,
-     waitBetweenRetryDeleteAttempts: 1000
-   }));
+   __cmp.run(
+   	'x',
+   	'deletePosts',
+   	JSON.stringify({
+   		requestId: 'manual',
+   		waitAfterDelete: 1000,
+   		waitBetweenRetryDeleteAttempts: 1000
+   	})
+   );
    ```
 
 `__cmp.run` returns immediately and works through the page in the background; it stops
 on its own once nothing deletable is left. `__cmp.isEmpty('x', 'deletePosts')` reports
 whether the current page still has anything to delete.
 
-| Platform | Action | Open this page first |
-| --- | --- | --- |
-| `x` | `deletePosts` | [`x.com/search?q=from:USERNAME`](https://x.com/search?q=from%3AUSERNAME&src=typed_query) |
-| `x` | `deleteReplies` | [`x.com/USERNAME/with_replies`](https://x.com/) |
-| `x` | `deleteReposts` | [`x.com/USERNAME`](https://x.com/) |
-| `x` | `deleteLikes` | [`x.com/USERNAME/likes`](https://x.com/) |
-| `x` | `deleteFollowing` | [`x.com/USERNAME/following`](https://x.com/) |
-| `youtube` | `deleteComments` | [My Activity → YouTube comments](https://myactivity.google.com/page?hl=en&page=youtube_comments) |
-| `youtube` | `deleteLikes` | [Liked videos playlist](https://www.youtube.com/playlist?list=LL) |
+| Platform  | Action            | Open this page first                                                                             |
+| --------- | ----------------- | ------------------------------------------------------------------------------------------------ |
+| `x`       | `deletePosts`     | [`x.com/search?q=from:USERNAME`](https://x.com/search?q=from%3AUSERNAME&src=typed_query)         |
+| `x`       | `deleteReplies`   | [`x.com/USERNAME/with_replies`](https://x.com/)                                                  |
+| `x`       | `deleteReposts`   | [`x.com/USERNAME`](https://x.com/)                                                               |
+| `x`       | `deleteLikes`     | [`x.com/USERNAME/likes`](https://x.com/)                                                         |
+| `x`       | `deleteFollowing` | [`x.com/USERNAME/following`](https://x.com/)                                                     |
+| `youtube` | `deleteComments`  | [My Activity → YouTube comments](https://myactivity.google.com/page?hl=en&page=youtube_comments) |
+| `youtube` | `deleteLikes`     | [Liked videos playlist](https://www.youtube.com/playlist?list=LL)                                |
 
 > **Note:** `deleteReplies` additionally needs your handle, since it has to tell your own
 > replies apart from the posts they answer — add `userName: 'USERNAME'` to the JSON.
@@ -243,8 +245,8 @@ We welcome contributions to **CleanMyPosts**! If you’d like to improve the pro
 
 Thank you for helping make **CleanMyPosts** better!
 
-
 ---
+
 ## ⚠️ Disclaimer
 
 This tool automates actions in a web browser.
@@ -259,8 +261,6 @@ If you encounter any issues or bugs, please [report them here](https://github.co
 
 ---
 
-
 ## 🌟 Thank You for Starring!
-
 
 [![Star History Chart](https://api.star-history.com/svg?repos=thorstenalpers/CleanMyPosts&type=date&legend=top-left)](https://www.star-history.com/#thorstenalpers/CleanMyPosts&type=date&legend=top-left)

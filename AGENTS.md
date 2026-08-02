@@ -25,12 +25,12 @@ All documentation, comments, and diagram labels are written in **English**.
 
 ## Stack
 
-| Layer     | Technology                                                        |
-|-----------|-------------------------------------------------------------------|
-| Host      | Tauri 2 (Rust) in `src-tauri/`, WebView2                           |
-| UI        | SvelteKit (SPA, `adapter-static`, no SSR), Svelte 5, TypeScript    |
-| UI kit    | shadcn-svelte (`new-york`, `neutral`), Tailwind v4                |
-| Contracts | Zod — one source for types and runtime validation                 |
+| Layer     | Technology                                                                              |
+| --------- | --------------------------------------------------------------------------------------- |
+| Host      | Tauri 2 (Rust) in `src-tauri/`, WebView2                                                |
+| UI        | SvelteKit (SPA, `adapter-static`, no SSR), Svelte 5, TypeScript                         |
+| UI kit    | shadcn-svelte (`new-york`, `neutral`), Tailwind v4                                      |
+| Contracts | Zod — one source for types and runtime validation                                       |
 | Tests     | `cargo test` (host), Vitest + happy-dom + Testing Library (UI), Playwright (engine e2e) |
 
 No native UI toolkit: the host window is two child webviews and a startup skeleton.
@@ -84,25 +84,25 @@ cargo test --manifest-path src-tauri/Cargo.toml
 - Rust: `cargo fmt` and `cargo clippy -- -D warnings` are both CI gates.
 - TypeScript: no `any`, Zod schemas as the type source, selectors as named constants at
   the top of each engine module.
-- Comments only when the *why* is non-obvious. Never describe what the code does.
+- Comments only when the _why_ is non-obvious. Never describe what the code does.
 - No features, abstractions, or error handling beyond what the task needs.
 
 ## Documentation
 
 Read selectively, not all of it.
 
-| When you work on …              | read                                                                                   |
-|---------------------------------|----------------------------------------------------------------------------------------|
-| Product decisions, UX flow      | [00-product-vision.md](.agents/docs/00-product-vision.md)                              |
-| Projects, layers, WebView2      | [01-architecture.md](.agents/docs/01-architecture.md)                                  |
-| Bridge, RPC, push events        | [02-bridge-contract.md](.agents/docs/02-bridge-contract.md)                            |
-| Content script, selectors       | [04-content-script.md](.agents/docs/04-content-script.md)                              |
-| Sidebar, routing, views         | [06-navigation-and-views.md](.agents/docs/06-navigation-and-views.md)                  |
-| Delete features per platform    | [08-feature-delete.md](.agents/docs/08-feature-delete.md)                              |
-| Settings view                   | [09-feature-settings.md](.agents/docs/09-feature-settings.md)                          |
-| Colors, typography, tokens      | [10-design-system.md](.agents/docs/10-design-system.md)                                |
-| Svelte rules                    | [11-frontend-conventions.md](.agents/docs/11-frontend-conventions.md)                  |
-| Tests, CI, logging              | [12-testing-and-quality.md](.agents/docs/12-testing-and-quality.md)                    |
-| Privacy, threat model           | [13-security-and-privacy.md](.agents/docs/13-security-and-privacy.md)                  |
-| Order, acceptance criteria      | [14-roadmap.md](.agents/docs/14-roadmap.md)                                            |
-| Why a decision was made         | [adr/](.agents/docs/adr/)                                                              |
+| When you work on …           | read                                                                  |
+| ---------------------------- | --------------------------------------------------------------------- |
+| Product decisions, UX flow   | [00-product-vision.md](.agents/docs/00-product-vision.md)             |
+| Projects, layers, WebView2   | [01-architecture.md](.agents/docs/01-architecture.md)                 |
+| Bridge, RPC, push events     | [02-bridge-contract.md](.agents/docs/02-bridge-contract.md)           |
+| Content script, selectors    | [04-content-script.md](.agents/docs/04-content-script.md)             |
+| Sidebar, routing, views      | [06-navigation-and-views.md](.agents/docs/06-navigation-and-views.md) |
+| Delete features per platform | [08-feature-delete.md](.agents/docs/08-feature-delete.md)             |
+| Settings view                | [09-feature-settings.md](.agents/docs/09-feature-settings.md)         |
+| Colors, typography, tokens   | [10-design-system.md](.agents/docs/10-design-system.md)               |
+| Svelte rules                 | [11-frontend-conventions.md](.agents/docs/11-frontend-conventions.md) |
+| Tests, CI, logging           | [12-testing-and-quality.md](.agents/docs/12-testing-and-quality.md)   |
+| Privacy, threat model        | [13-security-and-privacy.md](.agents/docs/13-security-and-privacy.md) |
+| Order, acceptance criteria   | [14-roadmap.md](.agents/docs/14-roadmap.md)                           |
+| Why a decision was made      | [adr/](.agents/docs/adr/)                                             |

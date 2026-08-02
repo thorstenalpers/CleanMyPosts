@@ -2,12 +2,12 @@
 
 ## Where each test belongs
 
-| Level               | Tool                               | Covers                                                    |
-|---------------------|------------------------------------|-----------------------------------------------------------|
-| Engine modules      | Vitest + happy-dom + fixtures      | selectors, click loops, retry conditions, stop detection  |
-| Stores, bridge client | Vitest                           | state transitions, error paths, `requestId` correlation   |
-| Components, views   | Vitest + Testing Library           | idle/running/done/error states, confirmation dialog       |
-| Host logic          | `cargo test`                       | URL building, handle sanitising, settings round-trip, log buffer, timestamp shape |
+| Level                 | Tool                          | Covers                                                                            |
+| --------------------- | ----------------------------- | --------------------------------------------------------------------------------- |
+| Engine modules        | Vitest + happy-dom + fixtures | selectors, click loops, retry conditions, stop detection                          |
+| Stores, bridge client | Vitest                        | state transitions, error paths, `requestId` correlation                           |
+| Components, views     | Vitest + Testing Library      | idle/running/done/error states, confirmation dialog                               |
+| Host logic            | `cargo test`                  | URL building, handle sanitising, settings round-trip, log buffer, timestamp shape |
 
 ## The tests this project actually needs
 

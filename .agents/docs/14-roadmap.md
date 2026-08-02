@@ -5,38 +5,39 @@ met — not when the code is written.
 
 Phases 1–4 shipped as v2.1.4. Phase 6 is the current work.
 
-## Phase 1 — Scaffold *(done)*
+## Phase 1 — Scaffold _(done)_
 
 Desktop shell with two WebView2 controls, Vite dual build (chrome + content), chrome bridge
 with Zod contract and mock, sidebar navigation, log view, settings, CI.
 
-## Phase 2 — Delete on YouTube *(done)*
+## Phase 2 — Delete on YouTube _(done)_
 
 Content script for `deleteComments` and `deleteLikes`, YouTube navigation and login
 detection, progress push events, retry-across-reloads loop.
 
-## Phase 3 — Delete on X *(done)*
+## Phase 3 — Delete on X _(done)_
 
 Content script for `deletePosts`, `deleteReplies`, `deleteReposts`, `deleteLikes`,
 `deleteFollowing`. Username detection.
 
-## Phase 4 — Polish and release *(done)*
+## Phase 4 — Polish and release _(done)_
 
 Installer (Inno Setup), auto-updater feed, confirmation dialog, theme toggle, sidebar
 collapse, persistent log, about section with version and links.
 
-## Phase 5 — UI rebuild *(done)*
+## Phase 5 — UI rebuild _(done)_
 
 Merged platform panels, app-wide run status, grouped settings with visible descriptions,
 terminal-style log, configurable theme and accent colour.
 
-## Phase 6 — Tauri host *(current)*
+## Phase 6 — Tauri host _(current)_
 
 Replace the .NET host with a Rust one and delete the old one. See
 [adr/0002-tauri-host.md](adr/0002-tauri-host.md) for the decision and its trade-offs;
 [adr/0001-winui3-host.md](adr/0001-winui3-host.md) is the record it supersedes.
 
 **Scope**
+
 - Tauri 2 host: one window, two child webviews, layout driven from the UI.
 - Content script compiled into the binary; nothing written next to the executable.
 - NSIS installer and signed updater artifacts from `tauri build`.
@@ -44,6 +45,7 @@ Replace the .NET host with a Rust one and delete the old one. See
   invisible above `tauri-host.ts`.
 
 **Acceptance**
+
 - [x] `cargo test`, Vitest, and the Playwright e2e suite are green.
 - [x] Settings survive a restart.
 - [x] The installed app carries no loose script tree.

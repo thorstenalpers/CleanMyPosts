@@ -1,4 +1,4 @@
-name: "Deploy Release"
+name: 'Deploy Release'
 
 on:
   workflow_dispatch: # manual trigger
@@ -14,116 +14,116 @@ jobs:
     runs-on: windows-latest
 
     env:
-      Tauri_Config: "src-tauri/tauri.conf.json"
-      FORCE_COLOR: "true"
+      Tauri_Config: 'src-tauri/tauri.conf.json'
+      FORCE_COLOR: 'true'
 
     steps:
-    - name: Checkout main
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-        ref: main
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: main
 
-    - name: Install Node
-      uses: actions/setup-node@v4
-      with:
-        node-version: 22
-        cache: npm
-        cache-dependency-path: package-lock.json
+      - name: Install Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
 
-    - name: Install Rust
-      uses: dtolnay/rust-toolchain@stable
-      with:
-        targets: x86_64-pc-windows-msvc
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc
 
-    - name: Cache cargo
-      uses: swatinem/rust-cache@v2
-      with:
-        workspaces: src-tauri
+      - name: Cache cargo
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
 
-    - name: Install dependencies
-      run: npm ci
+      - name: Install dependencies
+        run: npm ci
 
-    - name: Run tests
-      run: npm run test
+      - name: Run tests
+        run: npm run test
 
-    - name: Typecheck
-      run: npm run check
+      - name: Typecheck
+        run: npm run check
 
-    - name: Extract Version
-      id: get_version
-      shell: pwsh
-      run: |
-        $version = (Get-Content "${{ env.Tauri_Config }}" -Raw | ConvertFrom-Json).version
-        if (-not $version) {
-          Write-Error "No version in ${{ env.Tauri_Config }}"
-          exit 1
-        }
-        echo "VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Append
-        "version=$version" >> $env:GITHUB_OUTPUT
-
-    # Signs the NSIS installer. With a pubkey configured but no private key, tauri build
-    # produces the installer and *then* exits with an error, so a release missing this
-    # secret fails the job rather than shipping an installer nobody can update from.
-    - name: Build installer and updater artifacts
-      env:
-        TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-        TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
-      run: npx tauri build
-
-    - name: Collect artifacts
-      shell: pwsh
-      run: |
-        $bundle = "src-tauri/target/release/bundle/nsis"
-        New-Item -ItemType Directory -Force artifacts | Out-Null
-        Copy-Item "$bundle/*-setup.exe" artifacts/
-        Copy-Item "$bundle/*-setup.exe.sig" artifacts/
-        Get-ChildItem artifacts | Format-Table Name, Length
-
-    # `tauri build` does not emit latest.json itself; the endpoint in tauri.conf.json
-    # expects this exact shape, and the signature is the one produced next to the installer.
-    - name: Generate latest.json
-      shell: pwsh
-      run: |
-        $version = "${{ env.VERSION }}"
-        $setup = Get-ChildItem artifacts/*-setup.exe | Select-Object -First 1
-        $signature = Get-Content "$($setup.FullName).sig" -Raw
-        $url = "https://github.com/${{ github.repository }}/releases/download/v$version/$($setup.Name)"
-
-        $notes = "See release-notes/v$version.md"
-        $notesPath = "release-notes/v$version.md"
-        if (Test-Path $notesPath) { $notes = Get-Content $notesPath -Raw }
-
-        @{
-          version = "v$version"
-          notes = $notes
-          pub_date = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
-          platforms = @{
-            "windows-x86_64" = @{
-              signature = $signature.Trim()
-              url = $url
-            }
+      - name: Extract Version
+        id: get_version
+        shell: pwsh
+        run: |
+          $version = (Get-Content "${{ env.Tauri_Config }}" -Raw | ConvertFrom-Json).version
+          if (-not $version) {
+            Write-Error "No version in ${{ env.Tauri_Config }}"
+            exit 1
           }
-        } | ConvertTo-Json -Depth 5 | Set-Content artifacts/latest.json -Encoding UTF8
+          echo "VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "version=$version" >> $env:GITHUB_OUTPUT
 
-        Get-Content artifacts/latest.json
+      # Signs the NSIS installer. With a pubkey configured but no private key, tauri build
+      # produces the installer and *then* exits with an error, so a release missing this
+      # secret fails the job rather than shipping an installer nobody can update from.
+      - name: Build installer and updater artifacts
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        run: npx tauri build
 
-    - name: Create Git Tag
-      run: |
-        git config user.name "github-actions[bot]"
-        git config user.email "github-actions[bot]@users.noreply.github.com"
-        git tag -a "v${{ env.VERSION }}" -m "Release v${{ env.VERSION }}"
-        git push origin "v${{ env.VERSION }}"
+      - name: Collect artifacts
+        shell: pwsh
+        run: |
+          $bundle = "src-tauri/target/release/bundle/nsis"
+          New-Item -ItemType Directory -Force artifacts | Out-Null
+          Copy-Item "$bundle/*-setup.exe" artifacts/
+          Copy-Item "$bundle/*-setup.exe.sig" artifacts/
+          Get-ChildItem artifacts | Format-Table Name, Length
 
-    - name: Create GitHub Release
-      uses: softprops/action-gh-release@v1
-      with:
-        tag_name: "v${{ env.VERSION }}"
-        name: "CleanMyPosts ${{ env.VERSION }}"
-        body_path: ./release-notes/v${{ env.VERSION }}.md
-        files: |
-          artifacts/*-setup.exe
-          artifacts/*-setup.exe.sig
-          artifacts/latest.json
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # `tauri build` does not emit latest.json itself; the endpoint in tauri.conf.json
+      # expects this exact shape, and the signature is the one produced next to the installer.
+      - name: Generate latest.json
+        shell: pwsh
+        run: |
+          $version = "${{ env.VERSION }}"
+          $setup = Get-ChildItem artifacts/*-setup.exe | Select-Object -First 1
+          $signature = Get-Content "$($setup.FullName).sig" -Raw
+          $url = "https://github.com/${{ github.repository }}/releases/download/v$version/$($setup.Name)"
+
+          $notes = "See release-notes/v$version.md"
+          $notesPath = "release-notes/v$version.md"
+          if (Test-Path $notesPath) { $notes = Get-Content $notesPath -Raw }
+
+          @{
+            version = "v$version"
+            notes = $notes
+            pub_date = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
+            platforms = @{
+              "windows-x86_64" = @{
+                signature = $signature.Trim()
+                url = $url
+              }
+            }
+          } | ConvertTo-Json -Depth 5 | Set-Content artifacts/latest.json -Encoding UTF8
+
+          Get-Content artifacts/latest.json
+
+      - name: Create Git Tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "v${{ env.VERSION }}" -m "Release v${{ env.VERSION }}"
+          git push origin "v${{ env.VERSION }}"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: 'v${{ env.VERSION }}'
+          name: 'CleanMyPosts ${{ env.VERSION }}'
+          body_path: ./release-notes/v${{ env.VERSION }}.md
+          files: |
+            artifacts/*-setup.exe
+            artifacts/*-setup.exe.sig
+            artifacts/latest.json
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -11,26 +11,26 @@ import path from 'node:path';
  * than relying on an external stylesheet.
  */
 export default defineConfig({
-  plugins: [
-    tailwindcss(),
-    // css: 'injected' — component-scoped styles (e.g. svelte-sonner's own <style> block) are
-    // normally extracted to a separate .css file, which this single-file build can't load.
-    svelte({ preprocess: vitePreprocess(), compilerOptions: { css: 'injected' } })
-  ],
-  resolve: {
-    alias: {
-      $lib: path.resolve(__dirname, 'src/lib')
-    }
-  },
-  build: {
-    outDir: 'dist/content',
-    emptyOutDir: true,
-    sourcemap: true,
-    lib: {
-      entry: path.resolve(__dirname, 'src/content-entry.ts'),
-      name: '__cmpContentScript',
-      formats: ['iife'],
-      fileName: () => 'content.js'
-    }
-  }
+	plugins: [
+		tailwindcss(),
+		// css: 'injected' — component-scoped styles (e.g. svelte-sonner's own <style> block) are
+		// normally extracted to a separate .css file, which this single-file build can't load.
+		svelte({ preprocess: vitePreprocess(), compilerOptions: { css: 'injected' } })
+	],
+	resolve: {
+		alias: {
+			$lib: path.resolve(__dirname, 'src/lib')
+		}
+	},
+	build: {
+		outDir: 'dist/content',
+		emptyOutDir: true,
+		sourcemap: true,
+		lib: {
+			entry: path.resolve(__dirname, 'src/content-entry.ts'),
+			name: '__cmpContentScript',
+			formats: ['iife'],
+			fileName: () => 'content.js'
+		}
+	}
 });

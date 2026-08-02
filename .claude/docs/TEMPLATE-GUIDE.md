@@ -29,13 +29,13 @@ The layout — `AGENTS.md` in the root, details under `.agents/docs/`, skills un
 
 ## What is transferable
 
-| File | Transferable because |
-|---|---|
-| `11-frontend-conventions.md` | Svelte 5 runes and the shadcn-svelte import style hold in any Svelte project |
-| `12-testing-and-quality.md` | test split, CI scope, and the log rules are project-independent |
-| `10-design-system.md` | the structure (tokens, typography, layout, motion, a11y) stays; only the color statement changes |
-| `02-bridge-contract.md` | valid anywhere a WebView2 app talks to a host |
-| `README.md` | index and maintenance rules |
+| File                         | Transferable because                                                                             |
+| ---------------------------- | ------------------------------------------------------------------------------------------------ |
+| `11-frontend-conventions.md` | Svelte 5 runes and the shadcn-svelte import style hold in any Svelte project                     |
+| `12-testing-and-quality.md`  | test split, CI scope, and the log rules are project-independent                                  |
+| `10-design-system.md`        | the structure (tokens, typography, layout, motion, a11y) stays; only the color statement changes |
+| `02-bridge-contract.md`      | valid anywhere a WebView2 app talks to a host                                                    |
+| `README.md`                  | index and maintenance rules                                                                      |
 
 ## Rules that keep the setup healthy
 

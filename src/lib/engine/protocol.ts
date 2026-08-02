@@ -12,52 +12,54 @@
 
 export type Platform = 'x' | 'youtube';
 
-export type XAction = 'deletePosts' | 'deleteReplies' | 'deleteReposts' | 'deleteLikes' | 'deleteFollowing';
+export type XAction =
+	'deletePosts' | 'deleteReplies' | 'deleteReposts' | 'deleteLikes' | 'deleteFollowing';
 export type YouTubeAction = 'deleteComments' | 'deleteLikes';
 
 export interface RunParams {
-  requestId: string;
-  waitAfterDelete: number;
-  waitBetweenRetryDeleteAttempts: number;
-  userName?: string;
+	requestId: string;
+	waitAfterDelete: number;
+	waitBetweenRetryDeleteAttempts: number;
+	userName?: string;
 }
 
 export interface ContentLogMessage {
-  type: 'log';
-  level: 'info' | 'warning' | 'error';
-  message: string;
+	type: 'log';
+	level: 'info' | 'warning' | 'error';
+	message: string;
 }
 
 export interface ContentProgressMessage {
-  type: 'progress';
-  requestId: string;
-  deletedCount: number;
-  message?: string;
+	type: 'progress';
+	requestId: string;
+	deletedCount: number;
+	message?: string;
 }
 
 export interface ContentDoneMessage {
-  type: 'done';
-  requestId: string;
-  deletedCount: number;
+	type: 'done';
+	requestId: string;
+	deletedCount: number;
 }
 
 export interface ContentErrorMessage {
-  type: 'error';
-  requestId: string;
-  message: string;
+	type: 'error';
+	requestId: string;
+	message: string;
 }
 
-export type ContentMessage = ContentLogMessage | ContentProgressMessage | ContentDoneMessage | ContentErrorMessage;
+export type ContentMessage =
+	ContentLogMessage | ContentProgressMessage | ContentDoneMessage | ContentErrorMessage;
 
 export interface CmpApi {
-  run(platform: Platform, action: XAction | YouTubeAction, paramsJson: string): void;
-  isEmpty(platform: Platform, action: XAction | YouTubeAction): boolean;
-  getUserName(): string;
-  getLoginStatus(): string;
+	run(platform: Platform, action: XAction | YouTubeAction, paramsJson: string): void;
+	isEmpty(platform: Platform, action: XAction | YouTubeAction): boolean;
+	getUserName(): string;
+	getLoginStatus(): string;
 }
 
 declare global {
-  interface Window {
-    __cmp?: CmpApi;
-  }
+	interface Window {
+		__cmp?: CmpApi;
+	}
 }

@@ -14,10 +14,9 @@
 
 	let { value, useSystemAccent, onChange, onUseSystemAccentChange }: Props = $props();
 
-	let draft = $state('');
-	$effect(() => {
-		draft = value;
-	});
+	// Writable derived: follows the committed value, but the field can hold a half-typed
+	// hex until it parses.
+	let draft = $derived(value);
 
 	function commitDraft(next: string): void {
 		draft = next;
@@ -87,7 +86,8 @@
 				maxlength={7}
 				disabled={useSystemAccent}
 				value={draft}
-				oninput={(e) => commitDraft(e.currentTarget.value)}
+				oninput={(e: Event & { currentTarget: HTMLInputElement }) =>
+					commitDraft(e.currentTarget.value)}
 			/>
 		</div>
 	</div>

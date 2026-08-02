@@ -5,7 +5,12 @@ import { createRawSnippet } from 'svelte';
 const goto = vi.fn();
 const url = { pathname: '/settings' };
 
-vi.mock('$app/navigation', () => ({ goto: (path: string) => goto(path) }));
+vi.mock('$app/navigation', () => ({
+	goto: (path: string) => {
+		goto(path);
+	}
+}));
+vi.mock('$app/paths', () => ({ resolve: (path: string) => path }));
 vi.mock('$app/state', () => ({
 	get page() {
 		return { url };

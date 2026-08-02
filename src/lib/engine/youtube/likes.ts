@@ -68,7 +68,7 @@ function dismissSurveyBanner(): void {
 }
 
 function findMenuButton(videoItem: HTMLElement, itemType: VideoItemType): HTMLElement | null {
-	let menuButton: HTMLElement | null = null;
+	let menuButton: HTMLElement | null;
 
 	if (itemType === 'playlist') {
 		const menuRenderer = videoItem.querySelector('ytd-menu-renderer');

@@ -67,6 +67,7 @@ describe('postsAction.run', () => {
 
 	it('deletes the visible post, reports progress, and stops once none remain', async () => {
 		buildTweetFixture();
+		// eslint-disable-next-line @typescript-eslint/unbound-method -- it is a vi.fn spy; there is no `this` to lose.
 		const postMessage = window.chrome!.webview!.postMessage as ReturnType<typeof vi.fn>;
 
 		const deletedCount = await postsAction.run({

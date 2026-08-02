@@ -33,7 +33,7 @@
 	let checkingUpdates = $state(false);
 
 	$effect(() => {
-		bridge.call('app.getInfo', undefined).then((info) => (appInfo = info));
+		void bridge.call('app.getInfo', undefined).then((info) => (appInfo = info));
 	});
 
 	const themes: { value: AppTheme; label: string; icon: typeof SunIcon }[] = [
@@ -122,8 +122,8 @@
 				<AccentPicker
 					value={settingsStore.settings.accentColor}
 					useSystemAccent={settingsStore.settings.useSystemAccent}
-					onChange={(accentColor) => commit({ accentColor })}
-					onUseSystemAccentChange={(useSystemAccent) => commit({ useSystemAccent })}
+					onChange={(accentColor: string) => commit({ accentColor })}
+					onUseSystemAccentChange={(useSystemAccent: boolean) => commit({ useSystemAccent })}
 				/>
 			</div>
 		</SettingSection>
@@ -169,7 +169,7 @@
 							step="100"
 							class="h-8 w-24 text-right tabular-nums"
 							value={settingsStore.settings.timeouts[field.key]}
-							onchange={(e) =>
+							onchange={(e: Event & { currentTarget: HTMLInputElement }) =>
 								commit({
 									timeouts: {
 										...settingsStore.settings.timeouts,

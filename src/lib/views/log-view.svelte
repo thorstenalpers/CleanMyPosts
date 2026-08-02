@@ -40,7 +40,7 @@
 
 	$effect(() => {
 		// Touch `entries` so this re-runs whenever a line arrives.
-		entries.length;
+		void entries.length;
 		if (follow && scroller) {
 			scroller.scrollTop = scroller.scrollHeight;
 		}

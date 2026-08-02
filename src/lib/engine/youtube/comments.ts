@@ -53,9 +53,7 @@ async function clickDeleteButton(waitBetweenRetryDeleteAttempts: number): Promis
 	const deleteButton = findDeleteButton();
 	if (!deleteButton) return false;
 
-	highlightElement(
-		(deleteButton.closest('div[role="listitem"]') as HTMLElement | null) ?? deleteButton
-	);
+	highlightElement(deleteButton.closest('div[role="listitem"]') ?? deleteButton);
 	clickWithCursor(deleteButton);
 	await delay(waitBetweenRetryDeleteAttempts);
 

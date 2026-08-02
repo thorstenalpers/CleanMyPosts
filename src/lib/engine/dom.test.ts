@@ -13,7 +13,7 @@ describe('delay', () => {
 	it('resolves after the given time', async () => {
 		vi.useFakeTimers();
 		const spy = vi.fn();
-		delay(1000).then(spy);
+		void delay(1000).then(spy);
 
 		await vi.advanceTimersByTimeAsync(999);
 		expect(spy).not.toHaveBeenCalled();

@@ -24,7 +24,7 @@ async function clickUnfollowButtonWithConfirm(
 	const btn = findUnfollowButton();
 	if (!isVisible(btn)) return false;
 
-	highlightElement((btn.closest('[data-testid="UserCell"]') as HTMLElement | null) ?? btn);
+	highlightElement(btn.closest('[data-testid="UserCell"]') ?? btn);
 	clickWithCursor(btn);
 	await delay(waitBeforeTryClickDelete);
 

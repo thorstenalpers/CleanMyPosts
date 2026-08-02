@@ -19,7 +19,7 @@ export function createMockHost(handlers: MockHandlers) {
 	const host: WebView2Host = {
 		postMessage(message: unknown) {
 			const request = message as { id: string; method: BridgeMethodName; params: unknown };
-			const handler = handlers[request.method] as MockHandler<BridgeMethodName> | undefined;
+			const handler = handlers[request.method];
 
 			const reply = (data: unknown) => {
 				const event = { data } as WebView2MessageEvent;

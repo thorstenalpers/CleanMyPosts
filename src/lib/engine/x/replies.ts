@@ -41,7 +41,7 @@ async function tryClickDeleteMenuItem(attempts: number, baseDelay: number): Prom
 		for (const item of document.querySelectorAll("[role='menuitem']")) {
 			const span = item.querySelector('span');
 			if (span?.innerText.toLowerCase().includes('delete')) {
-				clickWithCursor(span as HTMLElement);
+				clickWithCursor(span);
 				return true;
 			}
 		}

@@ -2,6 +2,7 @@
 	import { onMount, type Snippet } from 'svelte';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { ModeWatcher, setMode } from 'mode-watcher';
 	import { createBridgeClient } from '$lib/bridge/client';
 	import { createTauriHost, isTauri } from '$lib/bridge/tauri-host';
@@ -90,7 +91,7 @@
 	] satisfies NavItem<NavKey>[]);
 
 	function onNavigate(key: NavKey): void {
-		void goto(`/${key}`);
+		void goto(resolve(`/${key}`));
 		if (key === 'x' || key === 'youtube') {
 			void bridge.call('site.hide', { hide: false });
 			void bridge.call('site.navigate', {
@@ -104,7 +105,7 @@
 
 	$effect(() => {
 		if (activeKey === 'log' && !settingsStore.settings.showLogs) {
-			void goto('/settings');
+			void goto(resolve('/settings'));
 		}
 	});
 

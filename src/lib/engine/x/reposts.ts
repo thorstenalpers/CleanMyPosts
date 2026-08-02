@@ -36,7 +36,7 @@ async function clickUnretweetButtonWithRetry(waitTime: number, maxTries = 5): Pr
 	for (let attempt = 0; attempt < maxTries; attempt++) {
 		const btn = findUnretweetButton();
 		if (isVisible(btn)) {
-			highlightElement((btn.closest('article') as HTMLElement | null) ?? btn);
+			highlightElement(btn.closest('article') ?? btn);
 			clickWithCursor(btn);
 			await delay(500);
 

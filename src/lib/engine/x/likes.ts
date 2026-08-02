@@ -20,7 +20,7 @@ async function clickUnlikeButton(waitTime: number): Promise<boolean> {
 	const btn = findUnlikeButton();
 	if (!isVisible(btn)) return false;
 
-	highlightElement((btn.closest('article') as HTMLElement | null) ?? btn);
+	highlightElement(btn.closest('article') ?? btn);
 	clickWithCursor(btn);
 	await delay(waitTime);
 

@@ -59,6 +59,14 @@ cargo test --manifest-path src-tauri/Cargo.toml
 `npm run build` has to run before anything touches the Rust crate: `include_str!` needs
 `dist/content/content.js` to exist before cargo can parse the crate at all.
 
+**Changing anything in `src-tauri/icons/` needs a forced rebuild.** `tauri_build` only
+declares `tauri.conf.json` as an input, so cargo sees no reason to re-embed the icon and the
+binary keeps the old one — silently, with a successful build:
+
+```bash
+cargo clean -p cleanmyposts && cargo build --manifest-path src-tauri/Cargo.toml
+```
+
 ## Hard rules
 
 1. **No platform API.** No OAuth, no token storage, no API key.

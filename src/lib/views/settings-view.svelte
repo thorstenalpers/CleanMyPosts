@@ -237,6 +237,11 @@
 					Third-party licenses
 				</Button>
 			</div>
+
+			<p class="pb-1 text-xs text-muted-foreground">
+				Not affiliated with, endorsed by, or sponsored by X Corp. or Google LLC. X and YouTube are
+				trademarks of their respective owners.
+			</p>
 		</SettingSection>
 	</div>
 </div>

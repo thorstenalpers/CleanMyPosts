@@ -51,7 +51,7 @@ reason. Scroll position is not preserved — the log re-arms follow-to-bottom on
 ## Platform panels (X and YouTube)
 
 `XView` / `YouTubeView` are thin declarations: each lists its action groups and hands them to
-the shared `views/platform-panel.svelte`. Adding a platform means adding a list, not a view.
+the shared `$lib/views/platform-panel.svelte`. Adding a platform means adding a list, not a view.
 
 They render **as the `subnav` snippet of `SidebarShell`** — indented under the active X /
 YouTube nav item while the sidebar is expanded. Each action is one `ActionRow`.

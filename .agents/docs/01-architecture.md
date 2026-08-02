@@ -97,7 +97,7 @@ src/                             # SvelteKit app
 ├── lib/components/              # app components + ui/ (shadcn-svelte)
 ├── lib/stores/                  # Svelte 5 runes stores
 ├── lib/theme/                   # accent colour → OKLCH tokens
-├── views/                       # XView, YouTubeView, LogView, SettingsView
+├── lib/views/                   # XView, YouTubeView, LogView, SettingsView
 └── content-entry.ts             # content build entry (sets window.__cmp)
 src-tauri/                       # Rust host
 ├── src/main.rs                  # entry point, calls lib.rs
@@ -139,7 +139,7 @@ The retry-until-empty loop lives in the engine, inside the page. The host does n
 - `src/lib/components/**` does not import the bridge. Props in, events out.
 - `src/lib/engine/**` has no knowledge of the chrome bridge and no imports from
   `src/lib/components/**`. It must be self-contained — it runs in a foreign document.
-- `src/views/**` reads stores; it does not call bridge methods directly.
+- `src/lib/views/**` reads stores; it does not call bridge methods directly.
 - The host knows no DOM selectors. It only knows which `(platform, action)` to run.
 
 ## Adding a platform
@@ -147,7 +147,7 @@ The retry-until-empty loop lives in the engine, inside the page. The host does n
 1. `src/lib/engine/<platform>/` — one module per delete action, each exporting a
    `ContentActionDefinition`.
 2. Register in `engine/protocol.ts` and `bridge/contract.ts`.
-3. A view under `src/views/` and a sidebar entry.
+3. A view under `src/lib/views/` and a sidebar entry.
 4. URL builder case in `target_url` (`commands/site.rs`), plus the origin guard in
    `site_init_script` (`lib.rs`).
 

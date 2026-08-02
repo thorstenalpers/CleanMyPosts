@@ -14,8 +14,8 @@
   import { Toaster } from '$lib/components/ui/sonner';
   import SidebarShell, { type NavItem } from '$lib/components/sidebar-shell.svelte';
   import RunStatus from '$lib/components/run-status.svelte';
-  import XView from '../views/x-view.svelte';
-  import YouTubeView from '../views/youtube-view.svelte';
+  import XView from '$lib/views/x-view.svelte';
+  import YouTubeView from '$lib/views/youtube-view.svelte';
   import { applyAccent } from '$lib/theme/accent';
   import XIcon from '$lib/components/icons/x-icon.svelte';
   import YouTubeIcon from '$lib/components/icons/youtube-icon.svelte';

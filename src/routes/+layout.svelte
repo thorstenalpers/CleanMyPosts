@@ -54,6 +54,10 @@
 
 	type NavKey = 'x' | 'youtube' | 'log' | 'settings';
 
+	// Settings lives at `/` rather than `/settings`: `/` is the file the webview opens, and
+	// it has to be the prerendered shell, not a redirect that waits for the router.
+	const ROUTES = { x: '/x', youtube: '/youtube', log: '/log', settings: '/' } as const;
+
 	const activeKey = $derived((page.url.pathname.split('/')[1] || 'settings') as NavKey);
 	let sidebarExpanded = $state(true);
 
@@ -91,7 +95,7 @@
 	] satisfies NavItem<NavKey>[]);
 
 	function onNavigate(key: NavKey): void {
-		void goto(resolve(`/${key}`));
+		void goto(resolve(ROUTES[key]));
 		if (key === 'x' || key === 'youtube') {
 			void bridge.call('site.hide', { hide: false });
 			void bridge.call('site.navigate', {
@@ -105,7 +109,7 @@
 
 	$effect(() => {
 		if (activeKey === 'log' && !settingsStore.settings.showLogs) {
-			void goto(resolve('/settings'));
+			void goto(resolve(ROUTES.settings));
 		}
 	});
 

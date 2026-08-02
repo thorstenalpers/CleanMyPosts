@@ -28,7 +28,7 @@ All documentation, comments, and diagram labels are written in **English**.
 | Layer     | Technology                                                                              |
 | --------- | --------------------------------------------------------------------------------------- |
 | Host      | Tauri 2 (Rust) in `src-tauri/`, WebView2                                                |
-| UI        | SvelteKit (SPA, `adapter-static`, no SSR), Svelte 5, TypeScript                         |
+| UI        | SvelteKit (prerendered, `adapter-static`), Svelte 5, TypeScript                         |
 | UI kit    | shadcn-svelte (`new-york`, `neutral`), Tailwind v4                                      |
 | Contracts | Zod — one source for types and runtime validation                                       |
 | Tests     | `cargo test` (host), Vitest + happy-dom + Testing Library (UI), Playwright (engine e2e) |

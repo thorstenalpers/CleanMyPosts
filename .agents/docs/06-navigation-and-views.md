@@ -25,16 +25,21 @@ Settings                         (footer)
 
 ## Routing
 
-SvelteKit's file-based router, running as an SPA (`ssr = false`, `adapter-static` with an
-`index.html` fallback). One route per nav key:
+SvelteKit's file-based router. Every route is **prerendered** (`ssr = true`, `prerender = true`,
+`adapter-static` without a fallback), so the HTML the webview opens already contains the
+shell — the sidebar is on screen before any JavaScript runs. One route per nav key:
 
-| Route       | Renders                                                                 |
-| ----------- | ----------------------------------------------------------------------- |
-| `/`         | redirects to `/settings`                                                |
-| `/x`        | nothing — the site webview covers the content area; the panel is subnav |
-| `/youtube`  | nothing — same                                                          |
-| `/log`      | `LogView`                                                               |
-| `/settings` | `SettingsView`                                                          |
+| Route      | Renders                                                                 |
+| ---------- | ----------------------------------------------------------------------- |
+| `/`        | `SettingsView` — the file the webview opens, so it carries the shell    |
+| `/x`       | nothing — the site webview covers the content area; the panel is subnav |
+| `/youtube` | nothing — same                                                          |
+| `/log`     | `LogView`                                                               |
+
+Settings sits at `/`, not at `/settings`: the entry point has to be the prerendered shell.
+A redirect there would put the router — and therefore the JavaScript bundle — in front of
+the first paint, which is exactly what prerendering is meant to avoid. The nav key → path
+map lives in `+layout.svelte` as `ROUTES`.
 
 The window has no address bar, so the URL is an internal detail; it exists because the router
 needs one, not because anyone reads it.

@@ -1,4 +1,5 @@
-// The host is a desktop window, not a server: there is nothing to render ahead of time and
-// no request to render it for. Every route is client-side only.
-export const ssr = false;
-export const prerender = false;
+// Prerendered, so the shell — sidebar, header, the active page — is already in the HTML
+// the webview receives. It paints before any JavaScript has run; hydration only takes over
+// the interactivity afterwards.
+export const prerender = true;
+export const ssr = true;

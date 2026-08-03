@@ -33,28 +33,44 @@ never learned that the host changed.
 
 ### RPC methods
 
-| Method                      | Params                                      | Result                          |
-| --------------------------- | ------------------------------------------- | ------------------------------- |
-| `app.getInfo`               | —                                           | `{ version, homepageUrl, … }`   |
-| `settings.get`              | —                                           | `AppSettings`                   |
-| `settings.set`              | `AppSettings`                               | —                               |
-| `site.navigate`             | `{ platform, action }`                      | `{ ok: boolean }`               |
-| `site.runAction`            | `{ requestId, platform, action, timeouts }` | `{ deletedCount }`              |
-| `site.reload`               | —                                           | —                               |
-| `site.hide`                 | `{ hide: boolean }`                         | —                               |
-| `layout.setSidebarExpanded` | `{ expanded: boolean }`                     | —                               |
-| `updater.checkForUpdates`   | —                                           | `{ updateAvailable, message? }` |
-| `system.openUrl`            | `{ url }`                                   | —                               |
-| `system.openLicense`        | —                                           | —                               |
-| `log.getBuffer`             | —                                           | `LogEntry[]`                    |
+| Method                    | Params                                      | Result                          |
+| ------------------------- | ------------------------------------------- | ------------------------------- |
+| `app.getInfo`             | —                                           | `{ version, homepageUrl, … }`   |
+| `settings.get`            | —                                           | `AppSettings`                   |
+| `settings.set`            | `AppSettings`                               | —                               |
+| `site.navigate`           | `{ platform, action }`                      | `{ ok: boolean }`               |
+| `site.runAction`          | `{ requestId, platform, action, timeouts }` | `{ deletedCount }`              |
+| `site.reload`             | —                                           | —                               |
+| `site.hide`               | `{ hide: boolean }`                         | —                               |
+| `site.show`               | `{ platform }`                              | —                               |
+| `layout.setChromeWidth`   | `{ width }`                                 | —                               |
+| `layout.setBackground`    | `{ color: '#RRGGBB' }`                      | —                               |
+| `updater.checkForUpdates` | —                                           | `{ updateAvailable, message? }` |
+| `system.openUrl`          | `{ url }`                                   | —                               |
+| `system.openLicense`      | —                                           | —                               |
+| `log.getBuffer`           | —                                           | `LogEntry[]`                    |
 
 **The caller mints `requestId`** for `site.runAction`. Push events outlive the RPC
 round-trip and must be attributable to their trigger.
 
-`site.hide` and `layout.setSidebarExpanded` drive the shell layout: the first parks the
-site webview off-screen and stretches the chrome webview over the window, the second
-toggles the sidebar column between 240px and 56px. See
-[01-architecture.md](01-architecture.md).
+`site.show`, `site.hide` and `layout.setChromeWidth` drive the shell layout. `site.show`
+brings a platform's webview forward, `site.hide` parks every site webview off-screen and
+stretches the chrome webview over the window, and `setChromeWidth` sets the chrome column
+to whatever the UI currently fills it with. The host does not know how the UI is composed —
+the layout adds up the sidebar (240px or 56px) and the action panel (224px, only while it is
+open) and reports the sum. The site column starts where the chrome ends.
+See [01-architecture.md](01-architecture.md).
+
+`layout.setBackground` exists for one reason: resizing a webview exposes pixels the page has
+not drawn into yet, and WebView2 fills those with black until it catches up — a band that
+flashes as the action panel opens. The UI hands the host the colour the shell is about to
+paint, so the gap is invisible instead. The colour is **rasterised, not parsed**: the
+computed value is `oklch(…)` and so is what canvas reports from `fillStyle`, so the UI draws
+one pixel and reads it back to get sRGB bytes.
+
+**`site.show` is not `site.navigate`.** Showing a platform must never load a URL: each
+platform's webview keeps its page for the whole session, and re-navigating it on every
+visit is the same as discarding it. Only the Show and Delete actions navigate.
 
 ### Push events (host → UI, no request)
 
@@ -91,10 +107,13 @@ type YouTubeAction = 'showComments' | 'deleteComments' | 'showLikes' | 'deleteLi
 ```ts
 type AppSettings = {
 	theme: 'Default' | 'Light' | 'Dark';
+	language: 'System' | 'en' | 'de';
+	showIntro: boolean;
 	showLogs: boolean;
+	showX: boolean;
+	showYouTube: boolean;
 	confirmDeletion: boolean;
-	accentColor: string; // '#RRGGBB'
-	useSystemAccent: boolean; // follow the Windows accent colour
+	themePreset: 'Default' | 'Claude' | 'Cosmic' | 'Supabase' | 'Graphite';
 	timeouts: {
 		waitAfterDelete: number; // ms between individual deletions
 		waitBetweenRetryDeleteAttempts: number;

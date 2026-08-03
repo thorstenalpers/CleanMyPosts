@@ -50,17 +50,27 @@ Replace the .NET host with a Rust one and delete the old one. See
 - [x] Settings survive a restart.
 - [x] The installed app carries no loose script tree.
 - [x] The C# host, its tests, and the solution are gone.
-- [ ] `accentColor` and `useSystemAccent` exist in the Rust `AppSettings`; without them
-      `settings.get` fails the UI's Zod validation.
 - [ ] Window geometry survives a restart (the .NET host did this, the Rust host does not).
 - [ ] The updater `pubkey` in `tauri.conf.json` is the real one, and a release built from
       it updates an installed app.
+
+## Phase 7 — Navigation rework _(done)_
+
+Overview as the landing page, Settings moved to `/settings`, and the platform actions taken
+out of the sidebar into a panel of their own beside it so the nav items stop moving under
+the pointer. The nav item toggles that panel open and shut, so its width is only spent while
+it is in use.
+
+One site webview per platform, both alive for the whole session: a shared one had to be
+re-navigated on every switch, which discarded the page the user was on.
+`layout.setSidebarExpanded` became `layout.setChromeWidth` — the host stores what the UI
+reports instead of guessing how it is composed.
 
 ## What is deliberately deferred
 
 - MSIX packaging — it would force a signing certificate into the release pipeline.
 - Additional platforms (Reddit, Mastodon, GitHub), only if a new platform genuinely costs
-  only an engine module and a list in a view.
+  only an engine module and a list in `$lib/actions.ts`.
 
 ## Known gaps
 

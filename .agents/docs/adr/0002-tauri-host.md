@@ -53,7 +53,7 @@ Supporting decisions taken with it:
   startup skeleton, and there is no Mica backdrop or custom title bar. Tracked in
   [14-roadmap.md](14-roadmap.md).
 - The xUnit test that compared `contract.ts` against the registered handlers is gone, and
-  nothing checks host/UI contract drift now. The `accentColor` gap in the Rust
+  nothing checks host/UI contract drift now. The `accentColor` gap that used to exist in the Rust
   `AppSettings` is exactly the kind of drift it used to catch.
 - Building from source now needs the Rust toolchain, and `npm run build` has to run before
   cargo can parse the crate at all — `include_str!` resolves at compile time.

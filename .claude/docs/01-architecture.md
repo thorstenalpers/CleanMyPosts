@@ -29,23 +29,34 @@ requirement is WebView2, which is preinstalled on Windows 11 and on current Wind
 
 ```
 main window (Tauri)
-├── chrome webview ── column 0 (240px expanded / 56px collapsed) ── Svelte app
-└── site webview ──── column 1 (rest) ── x.com / youtube.com + injected __cmp
+├── chrome webview ─── column 0 (sidebar 240/56px + action panel 224px) ── Svelte app
+├── site-x webview ─── column 1 (rest) ── x.com + injected __cmp
+└── site-youtube ───── column 1 (rest) ── youtube.com + injected __cmp
 ```
 
-Both webviews are children of one window, positioned by hand in `layout_webviews`
+**One site webview per platform, both alive for the whole session.** A single shared one
+had to be re-navigated on every switch, and re-navigating is the same thing as throwing the
+page away — scroll position, opened threads and half-finished logins went with it. Only one
+is on screen at a time; the other is parked.
+
+All three webviews are children of one window, positioned by hand in `layout_webviews`
 (`lib.rs`) on every resize and on every layout change the UI requests.
 
 **chrome webview** — the SvelteKit app, served from `build/`. It always renders the
-sidebar. For Settings and Log it takes the full window width via `site.hide`.
+sidebar, plus the action panel beside it while one is open. For Overview, Settings and Log
+it takes the full window width via `site.hide`. Its width is whatever the UI reports
+through `layout.setChromeWidth`; the host stores that number and nothing else.
 
-**site webview** — the embedded browser where the user is logged in to X and YouTube. The
-content-script IIFE is registered with `initialization_script_for_all_frames`, so it
-survives every navigation without re-injection.
+**site webviews** — the embedded browsers where the user is logged in to X and YouTube,
+one per platform. The content-script IIFE is registered with
+`initialization_script_for_all_frames` on both, so it survives every navigation without
+re-injection. Which one is on screen follows `site.show`; that call moves a webview and
+never navigates it.
 
-**Hiding the site view parks it off-screen instead of resizing it to zero.** A zero-sized
-webview stops laying out, which would reset the platform page's scroll position every time
-the user glances at Settings.
+**A site view that is not on screen is parked off-screen, never resized to zero.** A
+zero-sized webview stops laying out, which would reset the platform page's scroll position
+every time the user glances at Settings — or at the other platform. Both site views keep
+the size they will come back at, so returning to one is a move, not a reflow.
 
 ## The engine talks WebView2, the host is Tauri
 
@@ -80,9 +91,14 @@ Both come from Tauri's `app_config_dir` / local data dir. The log buffer is in m
 ## Startup sequence
 
 1. `run()` builds the Tauri app, loads `settings.json`, and manages `AppState`.
-2. The main window is created, then the chrome webview, then the site webview — the latter
-   loads x.com straight away so the username is known before the user first opens X.
-3. The SvelteKit app mounts, loads settings and log, and routes to `/settings`.
+2. The main window is created, then **the chrome webview first** — its page is a local
+   prerendered file, so it paints as soon as it exists. The two site webviews are queued
+   onto the main thread rather than built inline: constructing an external webview is
+   synchronous work and x.com and youtube.com start fetching the moment they exist, which
+   held the window empty for seconds when it happened before the UI was up. The layout and
+   the site commands already tolerate a webview that does not exist yet.
+3. The SvelteKit app mounts on `/` (Overview), loads settings and log, and reports its
+   width and site visibility to the host.
 4. Resizes re-run `layout_webviews`.
 
 ## Projects
@@ -92,12 +108,15 @@ src/                             # SvelteKit app
 ├── app.html                     # HTML shell + static start-up placeholder
 ├── routes/                      # +layout.svelte (shell) + one page per nav key
 ├── lib/app-context.ts           # bridge + stores handed from layout to pages
+├── lib/actions.ts               # the per-platform action groups, shared by panel + overview
+├── lib/layout.ts                # sidebar and panel widths, reported to the host
 ├── lib/bridge/                  # client.ts, contract.ts, tauri-host.ts, mock.ts
 ├── lib/engine/                  # content script: protocol.ts, dom.ts, x/, youtube/
 ├── lib/components/              # app components + ui/ (shadcn-svelte)
 ├── lib/stores/                  # Svelte 5 runes stores
-├── lib/theme/                   # accent colour → OKLCH tokens
-├── lib/views/                   # XView, YouTubeView, LogView, SettingsView
+├── lib/i18n/                    # en.ts is the source catalogue, de.ts is typed against it
+├── lib/theme/                   # colour presets + the transition-safe theme swap
+├── lib/views/                   # OverviewView, XView, YouTubeView, LogView, SettingsView
 └── content-entry.ts             # content build entry (sets window.__cmp)
 src-tauri/                       # Rust host
 ├── src/main.rs                  # entry point, calls lib.rs
@@ -121,7 +140,8 @@ e2e/                             # Playwright specs against DOM fixtures
 `commands/site.rs` owns everything a run needs:
 
 1. `site.navigate` builds the target URL for the requested `(platform, action)` pair and
-   assigns it to the site webview.
+   assigns it to that platform's site webview. Only the panel's Show and Delete buttons
+   trigger this — merely opening a platform never navigates it.
 2. `site.runAction` registers the request id in `state::Runs`, then evals
    `window.__cmp.run(platform, action, paramsJson)` in the page.
 3. Content-script messages come back through `content_message` into `bridge.rs`: `progress`

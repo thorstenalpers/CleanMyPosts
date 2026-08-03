@@ -47,9 +47,11 @@ bridge. Keep the logic-free presentation in the component.
 
 ## Routing
 
-`+layout.svelte` owns the bridge, the four stores, and the sidebar, and hands them down
-through `$lib/app-context.ts`. A `+page.svelte` is a two-line file: pull what it needs out of
-the context, render the matching view.
+`+layout.svelte` owns the bridge, the four stores, the sidebar and the action rail, and
+hands them down through `$lib/app-context.ts` — including `openPlatform`, so a page can
+send the user to X or YouTube without re-implementing the `site.*` calls that go with it.
+A `+page.svelte` is a two-line file: pull what it needs out of the context, render the
+matching view.
 
 The active nav item is derived from `page.url.pathname`, never from local state — otherwise
 the sidebar and the URL can disagree.
@@ -58,11 +60,39 @@ the sidebar and the URL can disagree.
 filters, sort order, selections — belongs in a store, not in the page component. `LogStore`
 holds the log filters for exactly this reason.
 
+## Language
+
+`src/lib/i18n/` holds one catalogue per language. `en.ts` is the source: its keys are the
+`MessageKey` type, so `de.ts` is typed as `Record<MessageKey, string>` and a key added in
+English fails to compile until it is translated.
+
+`t(key, params)` reads `i18n.locale` on every call, which is what makes a language change
+re-render the whole app from one assignment in the layout. That is also why it has to stay a
+call in the markup — hoisting it into a `const` freezes the string at the language it was
+first read in.
+
+`{name}` placeholders are filled by `t`. The text around them belongs to the sentence so a
+translator can move it; nothing is assembled by concatenating fragments in a component.
+
+**Brand names are not message keys.** CleanMyPosts, X and YouTube read the same in every
+language, and a key for them would only invite someone to translate one. For the same reason
+`NavItem.label` takes finished text rather than a key: the layout translates what needs it
+and passes the rest through.
+
+Message keys travel where the text used to. `ActionGroupDef.label` and `.plural` are keys,
+because one group is named in the panel, the confirm dialog and a toast, and
+`ActionRunner.currentLabel` carries a key so the sidebar and the overview can each render
+the running action in the current language.
+
+`language` is a setting like any other, so it is stored by the host rather than in
+`localStorage` — the app already has one place that survives a restart. `System` resolves
+against the browser locale, which inside the chrome webview is the language Windows runs in.
+
 ## shadcn-svelte
 
 - Existing components first. Use `npx shadcn-svelte@latest add` instead of hand-rolling.
-- Compose instead of reinventing: the settings page is form controls inside
-  `setting-section` / `setting-row`, not bespoke layout per screen.
+- Compose instead of reinventing: the settings page is `setting-row` form controls inside
+  `ui/card`, not bespoke layout per screen.
 - Small primitives the registry does not carry (`badge`, `progress`) are written by hand into
   `ui/` in the same style rather than pulling in a dependency for twenty lines.
 - Built-in variants (`variant="outline"`, `size="sm"`) before custom classes.

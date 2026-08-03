@@ -52,8 +52,10 @@ Replace the .NET host with a Rust one and delete the old one. See
 - [x] The C# host, its tests, and the solution are gone.
 - [x] Window geometry survives a restart, via `tauri-plugin-window-state` (size, position and
       maximized only — a window restored hidden or undecorated cannot be recovered from).
-- [ ] The updater `pubkey` in `tauri.conf.json` is the real one, and a release built from
-      it updates an installed app.
+- [x] The updater `pubkey` in `tauri.conf.json` is the real one. See
+      [12-testing-and-quality.md](12-testing-and-quality.md) for rotation.
+- [ ] A release built from it updates an installed app — unproven until `Deploy Release`
+      has run once with the `TAURI_SIGNING_PRIVATE_KEY` secret in place.
 
 ## Phase 7 — Navigation rework _(done)_
 

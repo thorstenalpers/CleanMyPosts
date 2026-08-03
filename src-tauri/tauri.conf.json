@@ -25,7 +25,7 @@
 	},
 	"plugins": {
 		"updater": {
-			"pubkey": "REPLACE_WITH_PUBLIC_KEY",
+			"pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEI2QzdGNjQwNjBGMURENkIKUldScjNmRmdRUGJIdHIzOWR1RS9ET1hZNVVJODVMZ1FzblZLSTlrL2tpMzF2UEhzWWpGUHVWYTkK",
 			"endpoints": [
 				"https://github.com/thorstenalpers/CleanMyPosts/releases/latest/download/latest.json"
 			]

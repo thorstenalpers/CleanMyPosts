@@ -1,11 +1,13 @@
 <script lang="ts">
 	import type { Component } from 'svelte';
 	import { cn } from '$lib/utils';
+	import { t } from '$lib/i18n/index.svelte';
+	import type { MessageKey } from '$lib/i18n/index.svelte';
 	import ListIcon from '@lucide/svelte/icons/list';
 	import Trash2Icon from '@lucide/svelte/icons/trash-2';
 
 	interface Props {
-		label: string;
+		label: MessageKey;
 		icon: Component;
 		disabled?: boolean;
 		/** Marks the row whose deletion is currently running. */
@@ -29,13 +31,13 @@
 	)}
 >
 	<Icon class={cn('size-3.5 shrink-0', active ? 'text-primary' : 'text-muted-foreground')} />
-	<span class="flex-1 truncate text-[13px]">{label}</span>
+	<span class="flex-1 truncate text-[13px]">{t(label)}</span>
 
 	<!-- Buttons stay in the layout at all times; only their contrast is revealed on hover,
        so the row never reflows and keyboard users always see a target. -->
 	<button
 		type="button"
-		aria-label={`Show ${label}`}
+		aria-label={t('action.show', { label: t(label) })}
 		{disabled}
 		onclick={onShow}
 		class={cn(
@@ -47,7 +49,7 @@
 	</button>
 	<button
 		type="button"
-		aria-label={`Delete all ${label}`}
+		aria-label={t('action.delete', { label: t(label) })}
 		{disabled}
 		onclick={onDelete}
 		class={cn(

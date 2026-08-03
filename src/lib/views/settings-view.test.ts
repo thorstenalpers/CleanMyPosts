@@ -14,10 +14,13 @@ function setup(overrides: MockHandlers = {}) {
 		}),
 		'settings.get': () => ({
 			theme: 'Default',
+			language: 'System',
+			showIntro: true,
 			showLogs: false,
+			showX: true,
+			showYouTube: true,
 			confirmDeletion: true,
-			accentColor: '#3B82F6',
-			useSystemAccent: false,
+			themePreset: 'Default' as const,
 			timeouts: {
 				waitAfterDelete: 500,
 				waitBetweenRetryDeleteAttempts: 500,

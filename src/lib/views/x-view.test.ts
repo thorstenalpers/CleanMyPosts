@@ -14,10 +14,13 @@ function setup(confirmDeletion: boolean, overrides: MockHandlers = {}) {
 	const { client, emit } = createMockHost({
 		'settings.get': () => ({
 			theme: 'Default',
+			language: 'System',
+			showIntro: true,
 			showLogs: false,
+			showX: true,
+			showYouTube: true,
 			confirmDeletion,
-			accentColor: '#3B82F6',
-			useSystemAccent: false,
+			themePreset: 'Default' as const,
 			timeouts: { waitAfterDelete: 1, waitBetweenRetryDeleteAttempts: 1, waitAfterDocumentLoad: 1 }
 		}),
 		'site.navigate': navigate,
@@ -45,7 +48,14 @@ describe('XView', () => {
 	it('navigates when a Show button is clicked', async () => {
 		const { client, emit, settingsStore, loginStore, runner, navigate } = setup(true);
 		await loadAndLogin(settingsStore, emit);
-		render(XView, { bridge: client, settingsStore, loginStore, runner });
+		render(XView, {
+			bridge: client,
+			settingsStore,
+			loginStore,
+			runner,
+			open: true,
+			onClose: () => {}
+		});
 
 		await fireEvent.click(screen.getByRole('button', { name: 'Show Posts' }));
 
@@ -57,7 +67,14 @@ describe('XView', () => {
 	it('disables all action buttons until the host reports the user is logged in', async () => {
 		const { client, emit, settingsStore, loginStore, runner } = setup(true);
 		await settingsStore.load();
-		render(XView, { bridge: client, settingsStore, loginStore, runner });
+		render(XView, {
+			bridge: client,
+			settingsStore,
+			loginStore,
+			runner,
+			open: true,
+			onClose: () => {}
+		});
 
 		expect(screen.getAllByRole('button', { name: /show/i })[0]).toBeDisabled();
 
@@ -70,7 +87,14 @@ describe('XView', () => {
 	it('opens a confirmation dialog before deleting when confirmDeletion is enabled', async () => {
 		const { client, emit, settingsStore, loginStore, runner, runAction } = setup(true);
 		await loadAndLogin(settingsStore, emit);
-		render(XView, { bridge: client, settingsStore, loginStore, runner });
+		render(XView, {
+			bridge: client,
+			settingsStore,
+			loginStore,
+			runner,
+			open: true,
+			onClose: () => {}
+		});
 
 		await fireEvent.click(screen.getByRole('button', { name: 'Delete all Posts' }));
 
@@ -90,7 +114,14 @@ describe('XView', () => {
 	it('cancelling the confirmation dialog does not run the delete action', async () => {
 		const { client, emit, settingsStore, loginStore, runner, runAction } = setup(true);
 		await loadAndLogin(settingsStore, emit);
-		render(XView, { bridge: client, settingsStore, loginStore, runner });
+		render(XView, {
+			bridge: client,
+			settingsStore,
+			loginStore,
+			runner,
+			open: true,
+			onClose: () => {}
+		});
 
 		await fireEvent.click(screen.getByRole('button', { name: 'Delete all Posts' }));
 		expect(await screen.findByText('Delete all posts?')).toBeInTheDocument();
@@ -103,7 +134,14 @@ describe('XView', () => {
 	it('deletes immediately without a dialog when confirmDeletion is disabled', async () => {
 		const { client, emit, settingsStore, loginStore, runner, runAction } = setup(false);
 		await loadAndLogin(settingsStore, emit);
-		render(XView, { bridge: client, settingsStore, loginStore, runner });
+		render(XView, {
+			bridge: client,
+			settingsStore,
+			loginStore,
+			runner,
+			open: true,
+			onClose: () => {}
+		});
 
 		await fireEvent.click(screen.getByRole('button', { name: 'Delete all Posts' }));
 

@@ -3,6 +3,7 @@
 	import { Input } from '$lib/components/ui/input';
 	import { Badge } from '$lib/components/ui/badge';
 	import { cn } from '$lib/utils';
+	import { t } from '$lib/i18n/index.svelte';
 	import Trash2Icon from '@lucide/svelte/icons/trash-2';
 	import ArrowDownIcon from '@lucide/svelte/icons/arrow-down';
 	import SearchIcon from '@lucide/svelte/icons/search';
@@ -17,10 +18,10 @@
 	let scroller = $state<HTMLDivElement | undefined>(undefined);
 
 	const levels = [
-		{ value: 'all' as const, label: 'All' },
-		{ value: 'info' as const, label: 'Info' },
-		{ value: 'warning' as const, label: 'Warning' },
-		{ value: 'error' as const, label: 'Error' }
+		{ value: 'all' as const, label: 'log.level.all' as const },
+		{ value: 'info' as const, label: 'log.level.info' as const },
+		{ value: 'warning' as const, label: 'log.level.warning' as const },
+		{ value: 'error' as const, label: 'log.level.error' as const }
 	];
 
 	// Newest last, like a terminal: the interesting line is the one that just arrived.
@@ -60,13 +61,13 @@
 
 <div class="flex h-full flex-col">
 	<header class="flex shrink-0 flex-wrap items-center gap-2 border-b px-4 py-2.5">
-		<h1 class="mr-1 text-[13px] font-semibold tracking-tight">Log</h1>
+		<h1 class="mr-1 text-[13px] font-semibold tracking-tight">{t('log.title')}</h1>
 
 		{#if counts.error > 0}
-			<Badge variant="destructive">{counts.error} errors</Badge>
+			<Badge variant="destructive">{t('log.errors', { count: counts.error })}</Badge>
 		{/if}
 		{#if counts.warning > 0}
-			<Badge>{counts.warning} warnings</Badge>
+			<Badge>{t('log.warnings', { count: counts.warning })}</Badge>
 		{/if}
 
 		<div class="relative ml-auto">
@@ -74,14 +75,14 @@
 				class="pointer-events-none absolute top-1/2 left-2 size-3.5 -translate-y-1/2 text-muted-foreground"
 			/>
 			<Input
-				placeholder="Filter…"
+				placeholder={t('log.filter')}
 				bind:value={logStore.messageFilter}
 				class="h-8 w-44 pl-7 text-xs"
-				aria-label="Filter log messages"
+				aria-label={t('log.filterLabel')}
 			/>
 		</div>
 
-		<div class="flex gap-0.5" role="group" aria-label="Filter by level">
+		<div class="flex gap-0.5" role="group" aria-label={t('log.levelLabel')}>
 			{#each levels as level (level.value)}
 				{@const active = logStore.levelFilter === level.value}
 				<button
@@ -93,7 +94,7 @@
 						active ? 'bg-primary/10 text-foreground' : 'text-muted-foreground hover:bg-muted'
 					)}
 				>
-					{level.label}
+					{t(level.label)}
 				</button>
 			{/each}
 		</div>
@@ -104,14 +105,14 @@
 			class="flex h-8 cursor-pointer items-center gap-1.5 rounded-md border border-border px-2 text-xs font-medium transition-colors duration-150 hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
 		>
 			<Trash2Icon class="size-3.5" />
-			Clear
+			{t('log.clear')}
 		</button>
 	</header>
 
 	<div bind:this={scroller} onscroll={onScroll} class="min-h-0 flex-1 overflow-y-auto">
 		{#if entries.length === 0}
 			<p class="p-6 text-center text-xs text-muted-foreground">
-				{logStore.entries.length === 0 ? 'Nothing logged yet.' : 'No entries match the filter.'}
+				{logStore.entries.length === 0 ? t('log.empty') : t('log.noMatch')}
 			</p>
 		{:else}
 			<ul class="divide-y divide-border/40 font-mono text-xs">
@@ -146,7 +147,7 @@
 			class="absolute right-6 bottom-6 flex h-8 cursor-pointer items-center gap-1.5 rounded-full border border-border bg-background px-3 text-xs font-medium shadow-sm transition-colors duration-150 hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
 		>
 			<ArrowDownIcon class="size-3.5" />
-			Jump to latest
+			{t('log.jump')}
 		</button>
 	{/if}
 </div>

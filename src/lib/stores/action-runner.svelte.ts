@@ -1,18 +1,20 @@
 import type { BridgeClient } from '$lib/bridge/client';
 import type { ActionResult, Platform, SiteAction, TimeoutSettings } from '$lib/bridge/contract';
+import type { MessageKey } from '$lib/i18n/index.svelte';
 
 export interface RunActionInput {
 	platform: Platform;
 	action: SiteAction;
 	timeouts: TimeoutSettings;
-	label: string;
+	/** A message key: the running action is named in the sidebar and in the overview. */
+	label: MessageKey;
 }
 
 /** Drives a single `site.runAction` call and tracks its live progress events. */
 export class ActionRunner {
 	running = $state(false);
 	deletedSoFar = $state(0);
-	currentLabel = $state('');
+	currentLabel = $state<MessageKey | undefined>(undefined);
 
 	private currentRequestId: string | undefined;
 

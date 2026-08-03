@@ -8,10 +8,13 @@ describe('BridgeClient', () => {
 		const { client } = createMockHost({
 			'settings.get': () => ({
 				theme: 'Light',
+				language: 'System',
+				showIntro: true,
 				showLogs: true,
+				showX: true,
+				showYouTube: true,
 				confirmDeletion: false,
-				accentColor: '#3B82F6',
-				useSystemAccent: false,
+				themePreset: 'Default' as const,
 				timeouts: {
 					waitAfterDelete: 100,
 					waitBetweenRetryDeleteAttempts: 200,

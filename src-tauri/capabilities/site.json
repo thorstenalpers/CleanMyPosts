@@ -1,8 +1,8 @@
 {
 	"$schema": "../gen/schemas/desktop-schema.json",
 	"identifier": "site",
-	"description": "The platform page being cleaned. Scoped to the 'site' webview and to the exact origins the delete engine runs on, so no other remote page can reach the host.",
-	"webviews": ["site"],
+	"description": "The platform pages being cleaned, one webview per platform. Scoped to those webviews and to the exact origins the delete engine runs on, so no other remote page can reach the host.",
+	"webviews": ["site-x", "site-youtube"],
 	"remote": {
 		"urls": [
 			"https://x.com",

@@ -2,16 +2,29 @@
 	import { toast } from 'svelte-sonner';
 	import type { BridgeClient } from '$lib/bridge/client';
 	import type { SettingsStore } from '$lib/stores/settings.svelte';
-	import { AppSettingsSchema, type AppInfo, type AppTheme } from '$lib/bridge/contract';
+	import {
+		AppSettingsSchema,
+		type AppInfo,
+		type AppTheme,
+		type Language
+	} from '$lib/bridge/contract';
+	import { THEME_PRESETS } from '$lib/theme/preset';
+	import { LANGUAGES, t } from '$lib/i18n/index.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { Switch } from '$lib/components/ui/switch';
-	import SettingSection from '$lib/components/setting-section.svelte';
+	import {
+		Card,
+		CardHeader,
+		CardTitle,
+		CardDescription,
+		CardContent
+	} from '$lib/components/ui/card';
 	import SettingRow from '$lib/components/setting-row.svelte';
-	import AccentPicker from '$lib/components/accent-picker.svelte';
 	import { cn } from '$lib/utils';
 	import PaletteIcon from '@lucide/svelte/icons/palette';
 	import ShieldIcon from '@lucide/svelte/icons/shield';
+	import PanelLeftIcon from '@lucide/svelte/icons/panel-left';
 	import TimerIcon from '@lucide/svelte/icons/timer';
 	import InfoIcon from '@lucide/svelte/icons/info';
 	import SunIcon from '@lucide/svelte/icons/sun';
@@ -36,30 +49,35 @@
 		void bridge.call('app.getInfo', undefined).then((info) => (appInfo = info));
 	});
 
-	const themes: { value: AppTheme; label: string; icon: typeof SunIcon }[] = [
-		{ value: 'Light', label: 'Light', icon: SunIcon },
-		{ value: 'Dark', label: 'Dark', icon: MoonIcon },
-		{ value: 'Default', label: 'System', icon: LaptopIcon }
+	const themes = [
+		{ value: 'Light' as AppTheme, label: 'settings.mode.light' as const, icon: SunIcon },
+		{ value: 'Dark' as AppTheme, label: 'settings.mode.dark' as const, icon: MoonIcon },
+		{ value: 'Default' as AppTheme, label: 'settings.mode.system' as const, icon: LaptopIcon }
 	];
+
+	/** `System` is the only entry with a translated label; every language names itself. */
+	function languageLabel(id: Language, label: string): string {
+		return id === 'System' ? t('settings.language.system') : label;
+	}
 
 	const timeoutFields = [
 		{
 			key: 'waitAfterDocumentLoad',
 			id: 'wait-after-document-load',
-			label: 'After a page loads',
-			description: 'How long to let the page settle before the first deletion.'
+			label: 'settings.timing.afterLoad',
+			description: 'settings.timing.afterLoad.description'
 		},
 		{
 			key: 'waitAfterDelete',
 			id: 'wait-after-delete',
-			label: 'Between deletions',
-			description: 'Pause after each removed item. The main brake against automation detection.'
+			label: 'settings.timing.betweenDeletes',
+			description: 'settings.timing.betweenDeletes.description'
 		},
 		{
 			key: 'waitBetweenRetryDeleteAttempts',
 			id: 'wait-between-retries',
-			label: 'Between retries',
-			description: 'Pause before retrying an item that did not disappear.'
+			label: 'settings.timing.betweenRetries',
+			description: 'settings.timing.betweenRetries.description'
 		}
 	] as const;
 
@@ -67,7 +85,7 @@
 		const merged = { ...settingsStore.settings, ...next };
 		const parsed = AppSettingsSchema.safeParse(merged);
 		if (!parsed.success) {
-			toast.error('Invalid settings value.');
+			toast.error(t('settings.invalid'));
 			return;
 		}
 		await settingsStore.update(parsed.data);
@@ -78,7 +96,7 @@
 		try {
 			const result = await bridge.call('updater.checkForUpdates', undefined);
 			if (!result.updateAvailable) {
-				toast.info(result.message ?? 'No updates available.');
+				toast.info(result.message ?? t('settings.noUpdates'));
 			}
 		} finally {
 			checkingUpdates = false;
@@ -86,162 +104,282 @@
 	}
 </script>
 
+{#snippet cardTitle(title: string, icon: typeof PaletteIcon)}
+	{@const Icon = icon}
+	<CardTitle class="flex items-center gap-2">
+		<Icon class="size-3.5 text-muted-foreground" />
+		{title}
+	</CardTitle>
+{/snippet}
+
 <div class="h-full overflow-y-auto">
 	<div class="mx-auto flex max-w-2xl flex-col gap-4 p-5">
 		<header>
-			<h1 class="text-xl font-semibold tracking-tight">Settings</h1>
-			<p class="mt-0.5 text-xs text-muted-foreground">Changes are saved as you make them.</p>
+			<h1 class="text-xl font-semibold tracking-tight">{t('settings.title')}</h1>
+			<p class="mt-0.5 text-xs text-muted-foreground">{t('settings.subtitle')}</p>
 		</header>
 
-		<SettingSection title="Appearance" icon={PaletteIcon}>
-			<SettingRow label="Theme" description="Follow Windows or pick a fixed mode.">
-				{#snippet control()}
-					<div class="flex gap-1" role="group" aria-label="Theme">
-						{#each themes as theme (theme.value)}
-							{@const active = settingsStore.settings.theme === theme.value}
-							<button
-								type="button"
-								aria-pressed={active}
-								onclick={() => commit({ theme: theme.value })}
-								class={cn(
-									'flex h-8 cursor-pointer items-center gap-1.5 rounded-md border px-2.5 text-xs font-medium transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
-									active
-										? 'border-primary/40 bg-primary/10 text-foreground'
-										: 'border-border text-muted-foreground hover:bg-muted'
-								)}
-							>
-								<theme.icon class="size-3.5" />
-								{theme.label}
-							</button>
-						{/each}
-					</div>
-				{/snippet}
-			</SettingRow>
-
-			<div class="py-3">
-				<AccentPicker
-					value={settingsStore.settings.accentColor}
-					useSystemAccent={settingsStore.settings.useSystemAccent}
-					onChange={(accentColor: string) => commit({ accentColor })}
-					onUseSystemAccentChange={(useSystemAccent: boolean) => commit({ useSystemAccent })}
-				/>
-			</div>
-		</SettingSection>
-
-		<SettingSection title="Safety" icon={ShieldIcon}>
-			<SettingRow
-				label="Confirm before deleting"
-				description="Ask once per run. Deletions cannot be undone."
-				for="confirm-deletion"
-			>
-				{#snippet control()}
-					<Switch
-						id="confirm-deletion"
-						checked={settingsStore.settings.confirmDeletion}
-						onCheckedChange={(checked: boolean) => commit({ confirmDeletion: checked })}
-					/>
-				{/snippet}
-			</SettingRow>
-
-			<SettingRow
-				label="Show log tab"
-				description="Adds a live log of every action to the sidebar."
-				for="show-logs"
-			>
-				{#snippet control()}
-					<Switch
-						id="show-logs"
-						checked={settingsStore.settings.showLogs}
-						onCheckedChange={(checked: boolean) => commit({ showLogs: checked })}
-					/>
-				{/snippet}
-			</SettingRow>
-		</SettingSection>
-
-		<SettingSection title="Timing" icon={TimerIcon}>
-			{#each timeoutFields as field (field.key)}
-				<SettingRow label={field.label} description={field.description} for={field.id}>
+		<Card>
+			<CardHeader>
+				{@render cardTitle(t('settings.appearance'), PaletteIcon)}
+				<CardDescription>{t('settings.appearance.description')}</CardDescription>
+			</CardHeader>
+			<CardContent class="divide-y divide-border/60">
+				<SettingRow label={t('settings.mode')} description={t('settings.mode.description')}>
 					{#snippet control()}
-						<Input
-							id={field.id}
-							type="number"
-							min="0"
-							step="100"
-							class="h-8 w-24 text-right tabular-nums"
-							value={settingsStore.settings.timeouts[field.key]}
-							onchange={(e: Event & { currentTarget: HTMLInputElement }) =>
-								commit({
-									timeouts: {
-										...settingsStore.settings.timeouts,
-										[field.key]: Number(e.currentTarget.value)
-									}
-								})}
-						/>
-						<span class="w-5 text-xs text-muted-foreground">ms</span>
+						<div class="flex gap-1" role="group" aria-label={t('settings.mode')}>
+							{#each themes as theme (theme.value)}
+								{@const active = settingsStore.settings.theme === theme.value}
+								<button
+									type="button"
+									aria-pressed={active}
+									onclick={() => commit({ theme: theme.value })}
+									class={cn(
+										'flex h-8 cursor-pointer items-center gap-1.5 rounded-md border px-2.5 text-xs font-medium transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
+										active
+											? 'border-primary/40 bg-primary/10 text-foreground'
+											: 'border-border text-muted-foreground hover:bg-muted'
+									)}
+								>
+									<theme.icon class="size-3.5" />
+									{t(theme.label)}
+								</button>
+							{/each}
+						</div>
 					{/snippet}
 				</SettingRow>
-			{/each}
-			<p class="py-2.5 text-xs leading-relaxed text-muted-foreground">
-				Raising these is always safe. Lowering them makes deletion faster but more likely to be
-				flagged as automation.
-			</p>
-		</SettingSection>
 
-		<SettingSection title="About" icon={InfoIcon}>
-			<SettingRow
-				label="CleanMyPosts"
-				description={appInfo ? `Version ${appInfo.version}` : 'Loading version…'}
-			>
-				{#snippet control()}
-					<Button
-						variant="outline"
-						size="sm"
-						class="h-8"
-						disabled={checkingUpdates}
-						onclick={checkForUpdates}
-					>
-						<RefreshCwIcon class={cn(checkingUpdates && 'animate-spin')} />
-						Check for updates
-					</Button>
-				{/snippet}
-			</SettingRow>
+				<SettingRow label={t('settings.colour')} description={t('settings.colour.description')}>
+					{#snippet control()}
+						<div
+							class="flex flex-wrap justify-end gap-1"
+							role="group"
+							aria-label={t('settings.colour')}
+						>
+							{#each THEME_PRESETS as preset (preset.id)}
+								{@const active = settingsStore.settings.themePreset === preset.id}
+								<button
+									type="button"
+									aria-pressed={active}
+									onclick={() => commit({ themePreset: preset.id })}
+									class={cn(
+										'flex h-8 cursor-pointer items-center rounded-md border px-2.5 text-xs font-medium transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
+										active
+											? 'border-primary/40 bg-primary/10 text-foreground'
+											: 'border-border text-muted-foreground hover:bg-muted'
+									)}
+								>
+									{preset.label}
+								</button>
+							{/each}
+						</div>
+					{/snippet}
+				</SettingRow>
 
-			<div class="flex flex-wrap gap-2 py-2.5">
-				{#if appInfo}
-					<Button
-						variant="ghost"
-						size="sm"
-						class="h-8"
-						onclick={() => bridge.call('system.openUrl', { url: appInfo!.homepageUrl })}
-					>
-						<ExternalLinkIcon />
-						Project on GitHub
-					</Button>
-					<Button
-						variant="ghost"
-						size="sm"
-						class="h-8"
-						onclick={() => bridge.call('system.openUrl', { url: appInfo!.reportBugUrl })}
-					>
-						<BugIcon />
-						Report a bug
-					</Button>
-				{/if}
-				<Button
-					variant="ghost"
-					size="sm"
-					class="h-8"
-					onclick={() => bridge.call('system.openLicense', undefined)}
+				<SettingRow label={t('settings.language')} description={t('settings.language.description')}>
+					{#snippet control()}
+						<div
+							class="flex flex-wrap justify-end gap-1"
+							role="group"
+							aria-label={t('settings.language')}
+						>
+							{#each LANGUAGES as language (language.id)}
+								{@const active = settingsStore.settings.language === language.id}
+								<button
+									type="button"
+									aria-pressed={active}
+									onclick={() => commit({ language: language.id })}
+									class={cn(
+										'flex h-8 cursor-pointer items-center rounded-md border px-2.5 text-xs font-medium transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
+										active
+											? 'border-primary/40 bg-primary/10 text-foreground'
+											: 'border-border text-muted-foreground hover:bg-muted'
+									)}
+								>
+									{languageLabel(language.id, language.label)}
+								</button>
+							{/each}
+						</div>
+					{/snippet}
+				</SettingRow>
+			</CardContent>
+		</Card>
+
+		<Card>
+			<CardHeader>
+				{@render cardTitle(t('settings.navigation'), PanelLeftIcon)}
+				<CardDescription>{t('settings.navigation.description')}</CardDescription>
+			</CardHeader>
+			<CardContent class="divide-y divide-border/60">
+				<SettingRow
+					label={t('settings.showX')}
+					description={t('settings.showX.description')}
+					for="show-x"
 				>
-					<FileTextIcon />
-					Third-party licenses
-				</Button>
-			</div>
+					{#snippet control()}
+						<Switch
+							id="show-x"
+							checked={settingsStore.settings.showX}
+							onCheckedChange={(checked: boolean) => commit({ showX: checked })}
+						/>
+					{/snippet}
+				</SettingRow>
 
-			<p class="pb-1 text-xs text-muted-foreground">
-				Not affiliated with, endorsed by, or sponsored by X Corp. or Google LLC. X and YouTube are
-				trademarks of their respective owners.
-			</p>
-		</SettingSection>
+				<SettingRow
+					label={t('settings.showYouTube')}
+					description={t('settings.showYouTube.description')}
+					for="show-youtube"
+				>
+					{#snippet control()}
+						<Switch
+							id="show-youtube"
+							checked={settingsStore.settings.showYouTube}
+							onCheckedChange={(checked: boolean) => commit({ showYouTube: checked })}
+						/>
+					{/snippet}
+				</SettingRow>
+
+				<SettingRow
+					label={t('settings.showIntro')}
+					description={t('settings.showIntro.description')}
+					for="show-intro"
+				>
+					{#snippet control()}
+						<Switch
+							id="show-intro"
+							checked={settingsStore.settings.showIntro}
+							onCheckedChange={(checked: boolean) => commit({ showIntro: checked })}
+						/>
+					{/snippet}
+				</SettingRow>
+
+				<SettingRow
+					label={t('settings.showLog')}
+					description={t('settings.showLog.description')}
+					for="show-logs"
+				>
+					{#snippet control()}
+						<Switch
+							id="show-logs"
+							checked={settingsStore.settings.showLogs}
+							onCheckedChange={(checked: boolean) => commit({ showLogs: checked })}
+						/>
+					{/snippet}
+				</SettingRow>
+			</CardContent>
+		</Card>
+
+		<Card>
+			<CardHeader>
+				{@render cardTitle(t('settings.safety'), ShieldIcon)}
+				<CardDescription>{t('settings.safety.description')}</CardDescription>
+			</CardHeader>
+			<CardContent class="divide-y divide-border/60">
+				<SettingRow
+					label={t('settings.confirm')}
+					description={t('settings.confirm.description')}
+					for="confirm-deletion"
+				>
+					{#snippet control()}
+						<Switch
+							id="confirm-deletion"
+							checked={settingsStore.settings.confirmDeletion}
+							onCheckedChange={(checked: boolean) => commit({ confirmDeletion: checked })}
+						/>
+					{/snippet}
+				</SettingRow>
+			</CardContent>
+		</Card>
+
+		<Card>
+			<CardHeader>
+				{@render cardTitle(t('settings.timing'), TimerIcon)}
+				<CardDescription>{t('settings.timing.description')}</CardDescription>
+			</CardHeader>
+			<CardContent class="divide-y divide-border/60">
+				{#each timeoutFields as field (field.key)}
+					<SettingRow label={t(field.label)} description={t(field.description)} for={field.id}>
+						{#snippet control()}
+							<Input
+								id={field.id}
+								type="number"
+								min="0"
+								step="100"
+								class="h-8 w-24 text-right tabular-nums"
+								value={settingsStore.settings.timeouts[field.key]}
+								onchange={(e: Event & { currentTarget: HTMLInputElement }) =>
+									commit({
+										timeouts: {
+											...settingsStore.settings.timeouts,
+											[field.key]: Number(e.currentTarget.value)
+										}
+									})}
+							/>
+							<span class="w-5 text-xs text-muted-foreground">ms</span>
+						{/snippet}
+					</SettingRow>
+				{/each}
+			</CardContent>
+		</Card>
+
+		<Card>
+			<CardHeader>
+				{@render cardTitle(t('settings.about'), InfoIcon)}
+				<CardDescription>{t('settings.about.description')}</CardDescription>
+			</CardHeader>
+			<CardContent class="divide-y divide-border/60">
+				<SettingRow
+					label="CleanMyPosts"
+					description={appInfo
+						? t('settings.version', { version: appInfo.version })
+						: t('settings.versionLoading')}
+				>
+					{#snippet control()}
+						<Button
+							variant="outline"
+							size="sm"
+							class="h-8"
+							disabled={checkingUpdates}
+							onclick={checkForUpdates}
+						>
+							<RefreshCwIcon class={cn(checkingUpdates && 'animate-spin')} />
+							{t('settings.checkUpdates')}
+						</Button>
+					{/snippet}
+				</SettingRow>
+
+				<div class="flex flex-wrap gap-2 py-2.5">
+					{#if appInfo}
+						<Button
+							variant="ghost"
+							size="sm"
+							class="h-8"
+							onclick={() => bridge.call('system.openUrl', { url: appInfo!.homepageUrl })}
+						>
+							<ExternalLinkIcon />
+							{t('settings.github')}
+						</Button>
+						<Button
+							variant="ghost"
+							size="sm"
+							class="h-8"
+							onclick={() => bridge.call('system.openUrl', { url: appInfo!.reportBugUrl })}
+						>
+							<BugIcon />
+							{t('settings.reportBug')}
+						</Button>
+					{/if}
+					<Button
+						variant="ghost"
+						size="sm"
+						class="h-8"
+						onclick={() => bridge.call('system.openLicense', undefined)}
+					>
+						<FileTextIcon />
+						{t('settings.licenses')}
+					</Button>
+				</div>
+			</CardContent>
+		</Card>
 	</div>
 </div>

@@ -1,11 +1,11 @@
 <script lang="ts" module>
-	export const SIDEBAR_EXPANDED_WIDTH = 240;
-	export const SIDEBAR_COLLAPSED_WIDTH = 56;
-
 	export interface NavItem<TKey extends string> {
 		key: TKey;
+		/** Already translated by the caller: brand names are not message keys. */
 		label: string;
 		icon: Component;
+		/** Extra classes for the icon only — where a platform's own mark carries its colour. */
+		iconClass?: string;
 		/** Rendered as a dot next to the label — connection state, not a count. */
 		status?: 'connected' | 'disconnected';
 		/** Pins the item to the bottom of the sidebar instead of the top group. */
@@ -16,20 +16,17 @@
 <script lang="ts" generics="TKey extends string">
 	import type { Component, Snippet } from 'svelte';
 	import { cn } from '$lib/utils';
+	import { t } from '$lib/i18n/index.svelte';
 	import PanelLeftIcon from '@lucide/svelte/icons/panel-left';
 
 	interface Props<TKey extends string> {
 		navItems: NavItem<TKey>[];
 		activeKey: TKey;
-		onNavigate: (key: TKey) => void;
+		/** The button is passed along so a caller can anchor something to it — a native menu has to be told where to pop up. */
+		onNavigate: (key: TKey, button: HTMLButtonElement) => void;
 		expanded?: boolean;
-		/** Called with the resulting pixel width whenever expanded/collapsed — used by the injected overlay to push page content aside. Unused by the local app's own flex layout. */
-		onWidthChange?: (widthPx: number) => void;
-		/** Rendered indented directly under the active nav item when the sidebar is expanded. */
-		subnav?: Snippet<[TKey]>;
 		/** Pinned above the footer — the running-action bar goes here. */
 		status?: Snippet;
-		children?: Snippet;
 	}
 
 	let {
@@ -37,18 +34,11 @@
 		activeKey,
 		onNavigate,
 		expanded = $bindable(true),
-		onWidthChange,
-		subnav,
-		status,
-		children
+		status
 	}: Props<TKey> = $props();
 
 	const topItems = $derived(navItems.filter((item) => !item.footer));
 	const footerItems = $derived(navItems.filter((item) => item.footer));
-
-	$effect(() => {
-		onWidthChange?.(expanded ? SIDEBAR_EXPANDED_WIDTH : SIDEBAR_COLLAPSED_WIDTH);
-	});
 </script>
 
 {#snippet navButton(item: NavItem<TKey>)}
@@ -57,25 +47,30 @@
 		type="button"
 		aria-current={active ? 'page' : undefined}
 		title={expanded ? undefined : item.label}
-		onclick={() => onNavigate(item.key)}
+		onclick={(event: MouseEvent & { currentTarget: HTMLButtonElement }) =>
+			onNavigate(item.key, event.currentTarget)}
 		class={cn(
-			'group relative flex h-9 w-full cursor-pointer items-center gap-2.5 rounded-md text-sm transition-colors duration-150',
+			'group relative flex h-9 w-full cursor-pointer items-center gap-2.5 overflow-hidden rounded-md text-sm',
+			'transition-[background-color,color,transform] duration-150',
 			'focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
+			// The row leans a hair towards the page it would open, and the icon grows with it.
+			'hover:translate-x-0.5 [&_svg]:transition-transform [&_svg]:duration-150 hover:[&_svg]:scale-110',
 			expanded ? 'px-2.5' : 'justify-center px-0',
 			active
-				? 'bg-primary/10 font-medium text-foreground'
+				? 'bg-primary/10 font-semibold text-primary'
 				: 'text-muted-foreground hover:bg-muted hover:text-foreground'
 		)}
 	>
-		<!-- Accent rail marks the active item; aria-current carries the same meaning for AT. -->
+		<!-- Slides in rather than appearing, which is the difference between a state and a
+		     flicker. aria-current carries the same meaning for AT. -->
 		<span
 			aria-hidden="true"
 			class={cn(
-				'absolute top-1.5 bottom-1.5 left-0 w-[3px] rounded-r-full bg-primary transition-opacity duration-150',
-				active ? 'opacity-100' : 'opacity-0'
+				'absolute top-1.5 bottom-1.5 left-0 w-[3px] rounded-r-full bg-primary transition-transform duration-200',
+				active ? 'translate-x-0' : '-translate-x-1.5'
 			)}
 		></span>
-		<item.icon class="size-4 shrink-0" />
+		<item.icon class={cn('size-4 shrink-0', item.iconClass)} />
 		{#if expanded}
 			<span class="flex-1 truncate text-left">{item.label}</span>
 			{#if item.status}
@@ -86,7 +81,9 @@
 						item.status === 'connected' ? 'bg-primary' : 'bg-muted-foreground/40'
 					)}
 				></span>
-				<span class="sr-only">{item.status === 'connected' ? 'Signed in' : 'Not signed in'}</span>
+				<span class="sr-only">
+					{item.status === 'connected' ? t('site.signedIn') : t('site.signedOut')}
+				</span>
 			{/if}
 		{/if}
 	</button>
@@ -94,38 +91,33 @@
 
 <aside
 	class={cn(
-		'flex h-full flex-col overflow-hidden border-r bg-card/70 backdrop-blur-xl transition-[width] duration-150',
+		'cmp-sidebar flex h-full flex-col overflow-hidden border-r transition-[width] duration-150',
 		expanded ? 'w-60' : 'w-14'
 	)}
 >
-	<div
-		class={cn('flex h-9 shrink-0 items-center', expanded ? 'justify-end pr-1.5' : 'justify-center')}
-	>
+	<!-- Folded down to the rail the toggle is the only thing left up here, which is where
+	     the way out belongs. -->
+	<div class={cn('flex h-12 shrink-0 items-center gap-1 px-2', !expanded && 'justify-center')}>
 		<button
 			type="button"
 			onclick={() => (expanded = !expanded)}
-			aria-label={expanded ? 'Collapse menu' : 'Expand menu'}
+			aria-label={expanded ? t('nav.collapse') : t('nav.expand')}
 			aria-expanded={expanded}
-			class="flex size-8 cursor-pointer items-center justify-center rounded-md text-muted-foreground transition-colors duration-150 hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+			class="flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-md text-muted-foreground transition-colors duration-150 hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
 		>
 			<PanelLeftIcon class="size-4" />
 		</button>
+		{#if expanded}
+			<span class="truncate text-[13px] font-semibold tracking-tight">CleanMyPosts</span>
+		{/if}
 	</div>
 
 	<div class="min-h-0 flex-1 overflow-y-auto px-1.5">
 		<nav class="flex flex-col gap-0.5">
 			{#each topItems as item (item.key)}
 				{@render navButton(item)}
-				{#if expanded && activeKey === item.key && subnav}
-					<div class="my-1 ml-4 border-l border-border/60 pl-1.5">
-						{@render subnav(item.key)}
-					</div>
-				{/if}
 			{/each}
 		</nav>
-		{#if expanded}
-			{@render children?.()}
-		{/if}
 	</div>
 
 	{#if status && expanded}

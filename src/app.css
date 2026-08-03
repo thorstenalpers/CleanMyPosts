@@ -1,4 +1,5 @@
 @import 'tailwindcss';
+@import './themes.css';
 
 @custom-variant dark (&:is(.dark *));
 
@@ -9,8 +10,8 @@
 	--card-foreground: oklch(0.145 0 0);
 	--popover: oklch(1 0 0);
 	--popover-foreground: oklch(0.145 0 0);
-	--primary: var(--accent-base);
-	--primary-foreground: var(--accent-on);
+	--primary: oklch(0.52 0.22 262);
+	--primary-foreground: oklch(0.99 0 0);
 	--secondary: oklch(0.97 0 0);
 	--secondary-foreground: oklch(0.205 0 0);
 	--muted: oklch(0.97 0 0);
@@ -21,13 +22,19 @@
 	--destructive-foreground: oklch(0.985 0 0);
 	--border: oklch(0.922 0 0);
 	--input: oklch(0.922 0 0);
-	--ring: var(--accent-base);
+	--ring: oklch(0.52 0.22 262);
 	--radius: 0.75rem;
 
-	/* Overwritten at runtime from the accent colour in settings (see $lib/theme/accent.ts). */
-	--accent-base: oklch(0.623 0.188 259.8);
-	--accent-base-hover: oklch(0.563 0.188 259.8);
-	--accent-on: oklch(0.985 0 0);
+	/* The hero band. Deliberately dark in both modes — it is the one surface that carries
+	   the app's identity rather than its content, and it reads as the same object whether
+	   the rest of the window is light or dark. */
+	--hero-from: oklch(0.17 0.04 264);
+	--hero-via: oklch(0.24 0.09 264);
+	--hero-to: oklch(0.45 0.19 262);
+	--hero-foreground: oklch(0.98 0.01 264);
+
+	/* Platform marks. These are logos, not UI state — see 10-design-system.md. */
+	--brand-youtube: #ff0033;
 }
 
 .dark {
@@ -37,8 +44,8 @@
 	--card-foreground: oklch(0.985 0 0);
 	--popover: oklch(0.205 0 0);
 	--popover-foreground: oklch(0.985 0 0);
-	--primary: var(--accent-base);
-	--primary-foreground: var(--accent-on);
+	--primary: oklch(0.66 0.19 262);
+	--primary-foreground: oklch(0.15 0.02 264);
 	--secondary: oklch(0.269 0 0);
 	--secondary-foreground: oklch(0.985 0 0);
 	--muted: oklch(0.269 0 0);
@@ -49,7 +56,8 @@
 	--destructive-foreground: oklch(0.985 0 0);
 	--border: oklch(1 0 0 / 10%);
 	--input: oklch(1 0 0 / 15%);
-	--ring: var(--accent-base);
+	--ring: oklch(0.66 0.19 262);
+	--brand-youtube: #ff3355;
 }
 
 @theme inline {
@@ -72,13 +80,45 @@
 	--color-border: var(--border);
 	--color-input: var(--input);
 	--color-ring: var(--ring);
-	--color-accent-base: var(--accent-base);
-	--color-accent-base-hover: var(--accent-base-hover);
-	--color-accent-on: var(--accent-on);
 	--radius-sm: calc(var(--radius) - 4px);
 	--radius-md: calc(var(--radius) - 2px);
 	--radius-lg: var(--radius);
 	--radius-xl: calc(var(--radius) + 4px);
+}
+
+/* Entry only. The exit cannot be animated without keeping the element around, and a JS
+   transition would drag the Web Animations API into every component test for it. */
+/* Blue bleeding into black, which is the whole look: one band rather than three blocks. */
+.cmp-hero {
+	background-image: linear-gradient(135deg, var(--hero-from), var(--hero-via) 45%, var(--hero-to));
+	color: var(--hero-foreground);
+}
+
+/* The sidebar picks the same gradient up at a fraction of its strength, so the two read as
+   one surface instead of a panel sitting on a background. */
+.cmp-sidebar {
+	/* Mixed in sRGB on purpose: in oklch the path from blue to white swings through pink,
+	   which tinted the whole sidebar the one colour this app reserves for deletion. */
+	background-image: linear-gradient(
+		180deg,
+		color-mix(in srgb, var(--primary) 7%, var(--card)),
+		var(--card)
+	);
+}
+
+.cmp-brand-youtube {
+	color: var(--brand-youtube);
+}
+
+@keyframes cmp-panel-in {
+	from {
+		opacity: 0;
+		transform: translateX(-12px);
+	}
+	to {
+		opacity: 1;
+		transform: none;
+	}
 }
 
 @keyframes cmp-indeterminate {

@@ -3,45 +3,29 @@
 	import type { SettingsStore } from '$lib/stores/settings.svelte';
 	import type { SiteLoginStore } from '$lib/stores/site-login.svelte';
 	import type { ActionRunner } from '$lib/stores/action-runner.svelte';
-	import PlatformPanel, { type ActionGroupDef } from './platform-panel.svelte';
-	import MessageSquareIcon from '@lucide/svelte/icons/message-square';
-	import HeartIcon from '@lucide/svelte/icons/heart';
+	import { YOUTUBE_GROUPS } from '$lib/actions';
+	import PlatformPanel from './platform-panel.svelte';
 
 	interface Props {
 		bridge: BridgeClient;
 		settingsStore: SettingsStore;
 		loginStore: SiteLoginStore;
 		runner: ActionRunner;
+		open: boolean;
+		onClose: () => void;
 	}
 
-	let { bridge, settingsStore, loginStore, runner }: Props = $props();
-
-	const groups: ActionGroupDef[] = [
-		{
-			key: 'comments',
-			label: 'Comments',
-			icon: MessageSquareIcon,
-			showAction: 'showComments',
-			deleteAction: 'deleteComments',
-			plural: 'comments'
-		},
-		{
-			key: 'likes',
-			label: 'Likes',
-			icon: HeartIcon,
-			showAction: 'showLikes',
-			deleteAction: 'deleteLikes',
-			plural: 'liked videos'
-		}
-	];
+	let { bridge, settingsStore, loginStore, runner, open, onClose }: Props = $props();
 </script>
 
 <PlatformPanel
 	{bridge}
 	{settingsStore}
 	{runner}
+	{open}
+	{onClose}
 	platform="youtube"
 	platformLabel="YouTube"
-	{groups}
+	groups={YOUTUBE_GROUPS}
 	loggedIn={!!loginStore.loggedIn.youtube}
 />

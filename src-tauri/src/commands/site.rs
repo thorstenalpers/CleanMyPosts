@@ -1,6 +1,7 @@
 use crate::error::{Error, Result};
 use crate::state::{AppState, Run};
 use serde_json::{json, Value};
+use tauri::utils::config::Color;
 use tauri::{AppHandle, Manager};
 use tokio::sync::oneshot;
 
@@ -74,7 +75,7 @@ pub fn navigate(app: &AppHandle, params: &Value) -> Result<Value> {
     })?;
 
     let site = app
-        .get_webview("site")
+        .get_webview(crate::site_webview_label(platform))
         .ok_or_else(|| Error::Site("site webview is gone".into()))?;
     site.eval(format!("window.location.assign({});", json!(url)))?;
     Ok(json!({ "ok": true }))
@@ -135,7 +136,7 @@ pub async fn run_action(app: AppHandle, params: &Value) -> Result<Value> {
     );
 
     let evaluated = app
-        .get_webview("site")
+        .get_webview(crate::site_webview_label(platform))
         .ok_or_else(|| Error::Site("site webview is gone".into()))
         .and_then(|site| site.eval(&script).map_err(Error::from));
 
@@ -175,7 +176,7 @@ pub fn cancel_action(app: &AppHandle, params: &Value) -> Result<Value> {
     }
     drop(runs);
 
-    if let Some(site) = app.get_webview("site") {
+    if let Some(site) = app.get_webview(crate::active_site_webview_label()) {
         let _ = site.eval("window.location.reload();");
     }
     Ok(Value::Null)
@@ -187,19 +188,29 @@ pub fn hide(app: &AppHandle, params: &Value) -> Result<Value> {
     Ok(Value::Null)
 }
 
+pub fn show(app: &AppHandle, params: &Value) -> Result<Value> {
+    let platform = params
+        .get("platform")
+        .and_then(Value::as_str)
+        .ok_or(Error::MissingParam("platform"))?;
+    crate::show_site(app, platform);
+    Ok(Value::Null)
+}
+
 pub fn reload(app: &AppHandle) -> Result<Value> {
-    if let Some(site) = app.get_webview("site") {
+    if let Some(site) = app.get_webview(crate::active_site_webview_label()) {
         site.eval("window.location.reload();")?;
     }
     Ok(Value::Null)
 }
 
-pub fn set_sidebar_expanded(app: &AppHandle, params: &Value) -> Result<Value> {
-    let expanded = params
-        .get("expanded")
-        .and_then(Value::as_bool)
-        .unwrap_or(true);
-    crate::set_sidebar_expanded(app, expanded);
+pub fn set_chrome_width(app: &AppHandle, params: &Value) -> Result<Value> {
+    let width = params
+        .get("width")
+        .and_then(Value::as_f64)
+        .map(|value| value.round().max(1.0) as u32)
+        .unwrap_or(crate::DEFAULT_CHROME_WIDTH);
+    crate::set_chrome_width(app, width);
     Ok(Value::Null)
 }
 
@@ -282,5 +293,57 @@ mod tests {
         assert_eq!(engine_action("deleteComments"), Some("deleteComments"));
         assert_eq!(engine_action("showPosts"), None);
         assert_eq!(engine_action("nonsense"), None);
+    }
+}
+
+/// Paints the window and the chrome webview in the app's own background colour.
+///
+/// Resizing a webview exposes pixels the page has not drawn into yet, and WebView2 fills
+/// those with its default — a black band for as long as it takes the page to repaint. That
+/// is what the user sees when the action panel opens. Giving the surfaces the colour the
+/// page is about to paint anyway makes the gap invisible instead of black.
+pub fn set_background(app: &AppHandle, params: &Value) -> Result<Value> {
+    let hex = params
+        .get("color")
+        .and_then(Value::as_str)
+        .ok_or(Error::MissingParam("color"))?;
+    let color = parse_hex_color(hex).ok_or_else(|| Error::Message(format!("bad colour {hex}")))?;
+
+    if let Some(window) = app.get_window("main") {
+        let _ = window.set_background_color(Some(color));
+    }
+    if let Some(chrome) = app.get_webview("chrome") {
+        let _ = chrome.set_background_color(Some(color));
+    }
+    Ok(Value::Null)
+}
+
+fn parse_hex_color(hex: &str) -> Option<Color> {
+    let digits = hex.strip_prefix('#')?;
+    if digits.len() != 6 {
+        return None;
+    }
+    let channel = |at: usize| u8::from_str_radix(&digits[at..at + 2], 16).ok();
+    Some(Color(channel(0)?, channel(2)?, channel(4)?, 255))
+}
+
+#[cfg(test)]
+mod background_tests {
+    use super::parse_hex_color;
+
+    #[test]
+    fn parses_a_six_digit_hex_colour() {
+        let color = parse_hex_color("#1A2B3C").expect("valid");
+        assert_eq!(
+            (color.0, color.1, color.2, color.3),
+            (0x1A, 0x2B, 0x3C, 255)
+        );
+    }
+
+    #[test]
+    fn rejects_anything_that_is_not_six_hex_digits() {
+        assert!(parse_hex_color("1A2B3C").is_none());
+        assert!(parse_hex_color("#ABC").is_none());
+        assert!(parse_hex_color("#GGGGGG").is_none());
     }
 }

@@ -20,9 +20,11 @@ pub async fn dispatch(app: AppHandle, method: String, params: Value) -> Result<V
         "site.runAction" => site::run_action(app, &params).await,
         "site.cancelAction" => site::cancel_action(&app, &params),
         "site.hide" => site::hide(&app, &params),
+        "site.show" => site::show(&app, &params),
         "site.reload" => site::reload(&app),
 
-        "layout.setSidebarExpanded" => site::set_sidebar_expanded(&app, &params),
+        "layout.setChromeWidth" => site::set_chrome_width(&app, &params),
+        "layout.setBackground" => site::set_background(&app, &params),
 
         "updater.checkForUpdates" => system::check_for_updates(&app).await,
         "system.openUrl" => system::open_url(&params),

@@ -1,0 +1,87 @@
+/* Colour presets, switchable at runtime.
+ *
+ * Each preset is a class on <html> that overrides only the accent-carrying tokens —
+ * primary, ring, and the accent pair. Backgrounds, cards and borders stay on the neutral
+ * base from app.css, so a preset changes the app's colour identity without disturbing its
+ * contrast relationships, and adding one costs no component changes.
+ *
+ * `--destructive` is deliberately absent from every preset: red means deletion here, and a
+ * theme must not be able to repaint the one colour that carries a warning.
+ *
+ * Light/dark is a separate axis: `.dark` and `.theme-x` both sit on <html>, so the dark
+ * variants are written as `.dark.theme-x`, not nested.
+ *
+ * Every selector is anchored to `:root`. app.css declares its base tokens on `:root`, and a
+ * bare `.theme-x` carries the same specificity — source order would win and the preset
+ * would change nothing in light mode.
+ *
+ * Values from tweakcn (https://tweakcn.com), retrieved 2026-08-01.
+ */
+
+/* Claude — warm terracotta */
+:root.theme-claude {
+	--primary: #c96442;
+	--primary-foreground: #ffffff;
+	--ring: #c96442;
+	--accent: #e9e6dc;
+	--accent-foreground: #28261b;
+}
+
+:root.dark.theme-claude {
+	--primary: #d97757;
+	--primary-foreground: #ffffff;
+	--ring: #d97757;
+	--accent: #35322b;
+	--accent-foreground: #f5f4ee;
+}
+
+/* Cosmic — violet */
+:root.theme-cosmic {
+	--primary: #6e56cf;
+	--primary-foreground: #ffffff;
+	--ring: #6e56cf;
+	--accent: #d8e6ff;
+	--accent-foreground: #2a2a4a;
+}
+
+:root.dark.theme-cosmic {
+	--primary: #a48fff;
+	--primary-foreground: #0f0f1a;
+	--ring: #a48fff;
+	--accent: #303060;
+	--accent-foreground: #e2e2f5;
+}
+
+/* Supabase — green */
+:root.theme-supabase {
+	--primary: #3ecf8e;
+	--primary-foreground: #10281d;
+	--ring: #3ecf8e;
+	--accent: #ededed;
+	--accent-foreground: #202020;
+}
+
+:root.dark.theme-supabase {
+	--primary: #4ade80;
+	--primary-foreground: #06110b;
+	--ring: #4ade80;
+	--accent: #313131;
+	--accent-foreground: #fafafa;
+}
+
+/* Graphite — cool steel, the quietest of the set */
+:root.theme-graphite {
+	--primary: #4a5a5a;
+	--primary-foreground: #ffffff;
+	--ring: #4a5a5a;
+	--accent: #d9dede;
+	--accent-foreground: #263030;
+}
+
+:root.dark.theme-graphite {
+	--primary: #8fb0b0;
+	--primary-foreground: #141c1c;
+	--ring: #8fb0b0;
+	--accent: #333d3d;
+	--accent-foreground: #d9dede;
+}

@@ -12,10 +12,13 @@ describe('AppSettingsSchema', () => {
 	it('accepts a valid settings payload', () => {
 		const result = AppSettingsSchema.safeParse({
 			theme: 'Dark',
+			language: 'System',
+			showIntro: true,
 			showLogs: false,
+			showX: true,
+			showYouTube: true,
 			confirmDeletion: true,
-			accentColor: '#3B82F6',
-			useSystemAccent: false,
+			themePreset: 'Default',
 			timeouts: {
 				waitAfterDelete: 500,
 				waitBetweenRetryDeleteAttempts: 500,
@@ -28,7 +31,11 @@ describe('AppSettingsSchema', () => {
 	it('rejects an unknown theme', () => {
 		const result = AppSettingsSchema.safeParse({
 			theme: 'Neon',
+			language: 'System',
+			showIntro: true,
 			showLogs: false,
+			showX: true,
+			showYouTube: true,
 			confirmDeletion: true,
 			timeouts: {
 				waitAfterDelete: 500,
@@ -42,7 +49,11 @@ describe('AppSettingsSchema', () => {
 	it('rejects negative timeout values', () => {
 		const result = AppSettingsSchema.safeParse({
 			theme: 'Default',
+			language: 'System',
+			showIntro: true,
 			showLogs: false,
+			showX: true,
+			showYouTube: true,
 			confirmDeletion: true,
 			timeouts: {
 				waitAfterDelete: -1,

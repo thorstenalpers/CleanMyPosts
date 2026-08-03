@@ -24,8 +24,14 @@ impl Default for TimeoutSettings {
 #[serde(rename_all = "camelCase")]
 pub struct AppSettings {
     pub theme: String,
+    pub language: String,
+    pub show_intro: bool,
     pub show_logs: bool,
+    pub show_x: bool,
+    #[serde(rename = "showYouTube")]
+    pub show_youtube: bool,
     pub confirm_deletion: bool,
+    pub theme_preset: String,
     pub timeouts: TimeoutSettings,
 }
 
@@ -33,8 +39,13 @@ impl Default for AppSettings {
     fn default() -> Self {
         Self {
             theme: "Default".into(),
+            language: "System".into(),
+            show_intro: true,
             show_logs: false,
+            show_x: true,
+            show_youtube: true,
             confirm_deletion: true,
+            theme_preset: "Default".into(),
             timeouts: TimeoutSettings::default(),
         }
     }

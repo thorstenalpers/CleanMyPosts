@@ -1,5 +1,6 @@
 import { getContext, setContext } from 'svelte';
 import type { BridgeClient } from '$lib/bridge/client';
+import type { Platform } from '$lib/bridge/contract';
 import type { SettingsStore } from '$lib/stores/settings.svelte';
 import type { LogStore } from '$lib/stores/log.svelte';
 import type { SiteLoginStore } from '$lib/stores/site-login.svelte';
@@ -11,6 +12,8 @@ export interface AppContext {
 	logStore: LogStore;
 	loginStore: SiteLoginStore;
 	runner: ActionRunner;
+	/** Routing plus the site calls that go with it — the layout owns both, pages borrow them. */
+	openPlatform: (platform: Platform) => void;
 }
 
 const KEY = Symbol('cmp-app');

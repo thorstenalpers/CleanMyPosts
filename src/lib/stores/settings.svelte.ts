@@ -3,10 +3,13 @@ import type { AppSettings } from '$lib/bridge/contract';
 
 const FALLBACK_SETTINGS: AppSettings = {
 	theme: 'Default',
+	language: 'System',
+	showIntro: true,
 	showLogs: false,
+	showX: true,
+	showYouTube: true,
 	confirmDeletion: true,
-	accentColor: '#3B82F6',
-	useSystemAccent: true,
+	themePreset: 'Default',
 	timeouts: {
 		waitAfterDelete: 500,
 		waitBetweenRetryDeleteAttempts: 500,

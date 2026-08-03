@@ -21,14 +21,23 @@ export const TimeoutSettingsSchema = z.object({
 });
 export type TimeoutSettings = z.infer<typeof TimeoutSettingsSchema>;
 
-export const AccentColorSchema = z.string().regex(/^#[0-9a-fA-F]{6}$/);
+/** `System` follows the language Windows runs in; the rest are fixed. */
+export const LanguageSchema = z.enum(['System', 'en', 'de']);
+export type Language = z.infer<typeof LanguageSchema>;
+
+/** The colour identity. `Default` is the neutral base; the rest are classes on <html> (see src/themes.css). */
+export const ThemePresetSchema = z.enum(['Default', 'Claude', 'Cosmic', 'Supabase', 'Graphite']);
+export type ThemePreset = z.infer<typeof ThemePresetSchema>;
 
 export const AppSettingsSchema = z.object({
 	theme: AppThemeSchema,
+	language: LanguageSchema,
+	showIntro: z.boolean(),
 	showLogs: z.boolean(),
+	showX: z.boolean(),
+	showYouTube: z.boolean(),
 	confirmDeletion: z.boolean(),
-	accentColor: AccentColorSchema,
-	useSystemAccent: z.boolean(),
+	themePreset: ThemePresetSchema,
 	timeouts: TimeoutSettingsSchema
 });
 export type AppSettings = z.infer<typeof AppSettingsSchema>;
@@ -113,9 +122,19 @@ export const BridgeMethods = {
 	/** Stops an in-flight `site.runAction`; that call then resolves with the count deleted so far. */
 	'site.cancelAction': { params: z.object({ requestId: z.string() }), result: voidSchema },
 	'site.hide': { params: z.object({ hide: z.boolean() }), result: voidSchema },
+	/** Brings a platform's webview forward without navigating it — each platform keeps its own page for the whole session. */
+	'site.show': { params: z.object({ platform: PlatformSchema }), result: voidSchema },
 	'site.reload': { params: voidSchema, result: voidSchema },
-	/** Resizes the host's sidebar column so it tracks the sidebar's expanded/collapsed width (no content bleed). */
-	'layout.setSidebarExpanded': { params: z.object({ expanded: z.boolean() }), result: voidSchema },
+	/** Resizes the host's chrome column to the width the UI occupies — the site column starts where it ends. */
+	'layout.setChromeWidth': {
+		params: z.object({ width: z.number().positive() }),
+		result: voidSchema
+	},
+	/** The colour the host paints where nothing has been drawn yet, so a resize does not flash. */
+	'layout.setBackground': {
+		params: z.object({ color: z.string().regex(/^#[0-9a-fA-F]{6}$/) }),
+		result: voidSchema
+	},
 	'updater.checkForUpdates': { params: voidSchema, result: UpdateCheckResultSchema },
 	'system.openUrl': { params: z.object({ url: z.string() }), result: voidSchema },
 	'system.openLicense': { params: voidSchema, result: voidSchema },

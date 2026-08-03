@@ -14,10 +14,13 @@ function setup(confirmDeletion: boolean) {
 	const { client, emit } = createMockHost({
 		'settings.get': () => ({
 			theme: 'Default',
+			language: 'System',
+			showIntro: true,
 			showLogs: false,
+			showX: true,
+			showYouTube: true,
 			confirmDeletion,
-			accentColor: '#3B82F6',
-			useSystemAccent: false,
+			themePreset: 'Default' as const,
 			timeouts: { waitAfterDelete: 1, waitBetweenRetryDeleteAttempts: 1, waitAfterDocumentLoad: 1 }
 		}),
 		'site.navigate': navigate,
@@ -39,7 +42,14 @@ describe('YouTubeView', () => {
 		const { client, emit, settingsStore, loginStore, runner, navigate } = setup(true);
 		await settingsStore.load();
 		emit({ event: 'siteLogin', payload: { platform: 'youtube', loggedIn: true } });
-		render(YouTubeView, { bridge: client, settingsStore, loginStore, runner });
+		render(YouTubeView, {
+			bridge: client,
+			settingsStore,
+			loginStore,
+			runner,
+			open: true,
+			onClose: () => {}
+		});
 
 		await fireEvent.click(screen.getByRole('button', { name: 'Show Comments' }));
 
@@ -52,7 +62,14 @@ describe('YouTubeView', () => {
 		const { client, emit, settingsStore, loginStore, runner, runAction } = setup(true);
 		await settingsStore.load();
 		emit({ event: 'siteLogin', payload: { platform: 'youtube', loggedIn: true } });
-		render(YouTubeView, { bridge: client, settingsStore, loginStore, runner });
+		render(YouTubeView, {
+			bridge: client,
+			settingsStore,
+			loginStore,
+			runner,
+			open: true,
+			onClose: () => {}
+		});
 
 		await fireEvent.click(screen.getByRole('button', { name: 'Delete all Likes' }));
 

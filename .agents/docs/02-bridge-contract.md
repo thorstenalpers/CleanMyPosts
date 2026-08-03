@@ -40,7 +40,7 @@ never learned that the host changed.
 | `settings.set`            | `AppSettings`                               | —                               |
 | `site.navigate`           | `{ platform, action }`                      | `{ ok: boolean }`               |
 | `site.runAction`          | `{ requestId, platform, action, timeouts }` | `{ deletedCount }`              |
-| `site.reload`             | —                                           | —                               |
+| `site.cancelAction`       | `{ requestId }`                             | —                               |
 | `site.hide`               | `{ hide: boolean }`                         | —                               |
 | `site.show`               | `{ platform }`                              | —                               |
 | `layout.setChromeWidth`   | `{ width }`                                 | —                               |

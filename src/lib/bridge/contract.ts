@@ -124,7 +124,6 @@ export const BridgeMethods = {
 	'site.hide': { params: z.object({ hide: z.boolean() }), result: voidSchema },
 	/** Brings a platform's webview forward without navigating it — each platform keeps its own page for the whole session. */
 	'site.show': { params: z.object({ platform: PlatformSchema }), result: voidSchema },
-	'site.reload': { params: voidSchema, result: voidSchema },
 	/** Resizes the host's chrome column to the width the UI occupies — the site column starts where it ends. */
 	'layout.setChromeWidth': {
 		params: z.object({ width: z.number().positive() }),

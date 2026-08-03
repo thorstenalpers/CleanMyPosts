@@ -91,7 +91,6 @@ export function defaultMockHandlers(): MockHandlers {
 		'site.cancelAction': () => undefined,
 		'site.hide': () => undefined,
 		'site.show': () => undefined,
-		'site.reload': () => undefined,
 		'layout.setChromeWidth': () => undefined,
 		'layout.setBackground': () => undefined,
 		'updater.checkForUpdates': () => ({ updateAvailable: false }),

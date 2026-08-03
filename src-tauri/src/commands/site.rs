@@ -197,13 +197,6 @@ pub fn show(app: &AppHandle, params: &Value) -> Result<Value> {
     Ok(Value::Null)
 }
 
-pub fn reload(app: &AppHandle) -> Result<Value> {
-    if let Some(site) = app.get_webview(crate::active_site_webview_label()) {
-        site.eval("window.location.reload();")?;
-    }
-    Ok(Value::Null)
-}
-
 pub fn set_chrome_width(app: &AppHandle, params: &Value) -> Result<Value> {
     let width = params
         .get("width")

@@ -30,12 +30,14 @@ describe('BridgeClient', () => {
 
 	it('rejects the call when the host reports an error', async () => {
 		const { client } = createMockHost({
-			'site.reload': () => {
+			'site.hide': () => {
 				throw new Error('site webview not ready');
 			}
 		});
 
-		await expect(client.call('site.reload', undefined)).rejects.toThrow('site webview not ready');
+		await expect(client.call('site.hide', { hide: true })).rejects.toThrow(
+			'site webview not ready'
+		);
 	});
 
 	it('rejects when no handler exists for the method', async () => {

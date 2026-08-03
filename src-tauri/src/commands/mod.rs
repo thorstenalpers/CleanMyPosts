@@ -21,7 +21,6 @@ pub async fn dispatch(app: AppHandle, method: String, params: Value) -> Result<V
         "site.cancelAction" => site::cancel_action(&app, &params),
         "site.hide" => site::hide(&app, &params),
         "site.show" => site::show(&app, &params),
-        "site.reload" => site::reload(&app),
 
         "layout.setChromeWidth" => site::set_chrome_width(&app, &params),
         "layout.setBackground" => site::set_background(&app, &params),

@@ -11,8 +11,10 @@ There are **two** protocols. They are never mixed.
 
 Zod is the single source: types **and** runtime validation come from the same schemas.
 Every method lives in a central `BridgeMethods` map. A handler without an entry does not
-exist. `dispatch` in `src-tauri/src/commands/` has a matching arm per method; nothing
-currently checks that the two lists agree, so adding a method means touching both by hand.
+exist. `dispatch` in `src-tauri/src/commands/` has a matching arm per method. Adding a method
+still means touching both by hand — but `dispatch-parity.test.ts` reads the `match` and fails
+the build if the two lists have drifted, so forgetting one half is caught in CI rather than
+by a user.
 
 `tauri-host.ts` adapts Tauri's `invoke` and event channel to the `{ id, ok, result }`
 envelope `BridgeClient` already speaks, which is why the client, the schemas, and the stores

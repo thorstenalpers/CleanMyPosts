@@ -8,8 +8,8 @@ use serde_json::Value;
 use tauri::AppHandle;
 
 /// The one place a bridge method name is mapped to code. Every entry here needs a matching
-/// entry in the UI's `BridgeMethods` map (`src/lib/bridge/contract.ts`); nothing checks
-/// that automatically, so the two move together by hand.
+/// entry in the UI's `BridgeMethods` map (`src/lib/bridge/contract.ts`). The two move
+/// together by hand, and `dispatch-parity.test.ts` parses this match to prove they still do.
 pub async fn dispatch(app: AppHandle, method: String, params: Value) -> Result<Value> {
     match method.as_str() {
         "app.getInfo" => system::get_info(),

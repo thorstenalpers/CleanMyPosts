@@ -20,6 +20,8 @@ Three places decide whether the app is trustworthy:
    `delete*` must agree, and an unknown pair must have no target at all.
 3. **Settings serialisation.** The UI validates against camelCase Zod schemas, so a rename
    on the Rust side would break the contract silently rather than at compile time.
+4. **Bridge parity.** The same problem one level up: `contract.ts` and the host's `dispatch`
+   are two lists nothing reconciles. See below.
 
 ## What is not tested
 
@@ -27,8 +29,11 @@ No E2E tests against live platforms. They need real accounts, delete real data, 
 whenever a platform changes something — which the fixture test catches earlier and more
 reliably.
 
-There is no automated check that the Rust `dispatch` arms and the methods in `contract.ts`
-still line up; the C# host had one and it has not been replaced.
+The one thing not covered by a compiler is now covered by a test: `dispatch-parity.test.ts`
+reads the `match` in `src-tauri/src/commands/mod.rs` and compares its arms to the keys of
+`BridgeMethods`. Two hand-kept lists of the same thing in two languages, and a method added
+to only one of them breaks at runtime rather than at build. The C# host had this check; the
+Rust port lost it.
 
 `cargo fmt --check` and `cargo clippy -- -D warnings` are CI gates: a warning is something
 to fix, not to live with.

@@ -33,8 +33,10 @@ All documentation, comments, and diagram labels are written in **English**.
 | Contracts | Zod — one source for types and runtime validation                                       |
 | Tests     | `cargo test` (host), Vitest + happy-dom + Testing Library (UI), Playwright (engine e2e) |
 
-No native UI toolkit: the host window is two child webviews and a startup skeleton.
-Everything visible is Svelte.
+No native UI toolkit: the host window is nothing but child webviews. Everything visible is
+Svelte, and the chrome page is prerendered, so the sidebar is in the HTML the webview
+receives and paints before any script has run — there is no skeleton because there is no gap
+for one to fill.
 
 Two Vite build targets: `chrome` (the SvelteKit app, prerendered to `build/` by
 `adapter-static` and served by Tauri) and `content` (injected script; a single IIFE that sets

@@ -77,4 +77,10 @@ reports instead of guessing how it is composed.
 
 ## Known gaps
 
-- No startup skeleton: the window shows the webviews as they load.
+- The assistant's round trip has never been run: no provider key is set and no `claude`
+  binary has been located from the app, so `assistant.ask` has never made a real call in
+  either direction. Everything under it is unit-tested; the call itself is not.
+- The strict CSP is only proven to compile. Tauri's nonce tokens are in the binary, but no
+  one has watched the app run under it.
+- `.agents/skills/` and `.claude/skills/` are still byte-identical committed copies. Both are
+  vendored from `skills-lock.json`, so neither is hand-edited.

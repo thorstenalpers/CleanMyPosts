@@ -71,10 +71,10 @@ cargo clean -p cleanmyposts && cargo build --manifest-path src-tauri/Cargo.toml
 
 1. **No platform API.** No OAuth, no token storage, no API key.
 2. **No user data stored.** No SQLite, no database, and none of the user's posts, likes, comments,
-   or account content is ever written to disk or cached. The only file written is the app's own
-   `settings.json` (theme, log visibility, confirmation, timeouts). The log buffer is in memory
-   only. The login session lives solely in the WebView2 profile (cookies, which the platform
-   manages).
+   or account content is ever written to disk or cached. The only files written are the app's own
+   `settings.json` (theme, log visibility, confirmation, timeouts) and `.window-state.json`
+   (size, position, maximized). The log buffer is in memory only. The login session lives solely
+   in the WebView2 profile (cookies, which the platform manages).
 3. **Nothing is written next to the executable.** Every runtime path comes from Tauri's
    `app_config_dir`/`app_local_data_dir` (`%AppData%\com.thorstenalpers.cleanmyposts`,
    `%LocalAppData%\com.thorstenalpers.cleanmyposts`). An installed app cannot write to its

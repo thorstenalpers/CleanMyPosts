@@ -13,9 +13,16 @@ use tauri::{
     webview::WebviewBuilder, window::WindowBuilder, LogicalPosition, LogicalSize, Manager,
     WebviewUrl, WindowEvent,
 };
+use tauri_plugin_window_state::{StateFlags, WindowExt};
 
 /// The expanded sidebar on its own — what the chrome is worth before any rail beside it.
 pub const DEFAULT_CHROME_WIDTH: u32 = 240;
+
+/// Geometry only. `VISIBLE`, `DECORATIONS` and `FULLSCREEN` are deliberately left out: a
+/// window restored hidden or undecorated is a launch the user cannot recover from.
+const WINDOW_STATE_FLAGS: StateFlags = StateFlags::SIZE
+    .union(StateFlags::POSITION)
+    .union(StateFlags::MAXIMIZED);
 
 /// One webview per platform, both alive for the whole session. A single shared one had to
 /// be re-navigated on every switch, which is the same thing as throwing the page away:
@@ -164,6 +171,11 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
+        .plugin(
+            tauri_plugin_window_state::Builder::new()
+                .with_state_flags(WINDOW_STATE_FLAGS)
+                .build(),
+        )
         .invoke_handler(tauri::generate_handler![content_message, bridge_call])
         .setup(|app| {
             let settings_path = app
@@ -183,6 +195,10 @@ pub fn run() {
                 .title("CleanMyPosts")
                 .inner_size(1200.0, 800.0)
                 .build()?;
+
+            // Before the size is read: every child webview below is positioned against it,
+            // and a window that grows after they are placed leaves them at the old rectangle.
+            let _ = window.restore_state(WINDOW_STATE_FLAGS);
 
             let scale = window.scale_factor()?;
             let size = window.inner_size()?.to_logical::<f64>(scale);

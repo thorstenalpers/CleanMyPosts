@@ -50,7 +50,8 @@ Replace the .NET host with a Rust one and delete the old one. See
 - [x] Settings survive a restart.
 - [x] The installed app carries no loose script tree.
 - [x] The C# host, its tests, and the solution are gone.
-- [ ] Window geometry survives a restart (the .NET host did this, the Rust host does not).
+- [x] Window geometry survives a restart, via `tauri-plugin-window-state` (size, position and
+      maximized only — a window restored hidden or undecorated cannot be recovered from).
 - [ ] The updater `pubkey` in `tauri.conf.json` is the real one, and a release built from
       it updates an installed app.
 

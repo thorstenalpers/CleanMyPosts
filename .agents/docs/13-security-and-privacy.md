@@ -12,6 +12,7 @@ deletes data irreversibly.
 | -------------------------- | ------------------------- | ------------------------------------------- |
 | Platform session (cookies) | WebView2 user profile     | as in the browser; the app never reads them |
 | Settings                   | `%AppData%\CleanMyPosts\` | file-system rights of the Windows account   |
+| Window geometry            | `%AppData%\CleanMyPosts\` | file-system rights of the Windows account   |
 | Log                        | ring buffer in memory     | contains no user content                    |
 
 There is no local database of user content, no pre-deletion export file, no key store.

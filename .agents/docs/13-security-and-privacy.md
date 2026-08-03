@@ -30,6 +30,14 @@ What does not exist cannot leak.
    only on the listed remote origins. A page from x.com cannot call bridge methods.
 4. **No outbound traffic other than to the sites the user opens**, plus an optional update
    check. No telemetry, no crash reporting, no analytics — not opt-out, but not present.
+5. **The chrome webview runs under a strict CSP**, set in `tauri.conf.json`. No remote origin
+   of any kind, and `object-src`, `base-uri`, `frame-ancestors` and `form-action` are all
+   `'none'`. Tauri hashes the bundled inline scripts at compile time, so
+   `script-src 'self'` holds without a `'unsafe-inline'` escape; `style-src` keeps
+   `'unsafe-inline'` because Svelte and Tailwind set styles on the element. The policy is
+   injected only into assets Tauri serves — the site webviews load remote pages and are
+   governed by `capabilities/site.json` instead, which is why tightening this cannot break
+   deletion.
 
 ## Threats that are real
 

@@ -125,4 +125,17 @@ mod tests {
         // business, not this test's.
         let _ = locate(Some("   "));
     }
+
+    /// The only test that proves the local source works end to end: `candidates()` is a
+    /// claim about where Claude Code installs itself, and writing a prompt to stdin and
+    /// reading stdout is a claim about how it behaves. Neither can be checked without the
+    /// real binary, which is why this is ignored by default rather than absent.
+    ///
+    /// `cargo test --manifest-path src-tauri/Cargo.toml -- --ignored answers_from_the_real_cli`
+    #[test]
+    #[ignore = "spends a turn of the developer's own Claude Code account"]
+    fn answers_from_the_real_cli() {
+        let answer = ask(None, "Reply with the single word: pong").unwrap();
+        assert!(answer.to_lowercase().contains("pong"), "answered: {answer}");
+    }
 }

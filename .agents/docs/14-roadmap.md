@@ -77,9 +77,12 @@ reports instead of guessing how it is composed.
 
 ## Known gaps
 
-- The assistant's round trip has never been run: no provider key is set and no `claude`
-  binary has been located from the app, so `assistant.ask` has never made a real call in
-  either direction. Everything under it is unit-tested; the call itself is not.
+- Half the assistant's round trip is unproven. The **local** source works end to end —
+  `assistant::cli::tests::answers_from_the_real_cli` runs a prompt through the real binary
+  and is ignored by default because it spends a turn of the developer's own account. The
+  **hosted** side has never made a request: no provider key has been set, so nothing has
+  exercised a dialect, a key header, or the error-scrubbing path against a live endpoint.
+  Their bodies and envelopes are unit-tested against fixtures.
 - The strict CSP is only proven to compile. Tauri's nonce tokens are in the binary, but no
   one has watched the app run under it.
 - `.agents/skills/` and `.claude/skills/` are still byte-identical committed copies. Both are

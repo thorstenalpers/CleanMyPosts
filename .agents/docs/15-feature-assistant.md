@@ -9,8 +9,10 @@ until the user picks a source.
 Two kinds of source, and the choice is the user's:
 
 - **`claude-code`** (the default) — the Claude Code binary already on the machine, run as
-  `claude --print` with the prompt on stdin. No key, and nothing leaves this app: whatever
-  that binary does with the network is its own business, under the user's own account.
+  `claude --print --output-format text` with the prompt on stdin. On the argument list it
+  would hit both a length limit and a quoting problem; the prompt carries the log. No key,
+  and nothing leaves this app: whatever that binary does with the network is its own
+  business, under the user's own account.
 - **A hosted provider** — Google AI, Groq, OpenAI, Anthropic or Mistral. Needs an API key,
   and is the only thing in this app that puts data on the network on purpose.
 
@@ -44,6 +46,19 @@ more, the HTTP request is made in the host so the key is read only at the moment
 and any error on the way back has the key string replaced with `***` before the window sees
 it. Storing an empty key deletes the entry — that is what the dialog's Forget button sends,
 and it is the only way a key ever leaves.
+
+## Proving it works
+
+`candidates()` is a claim about where Claude Code installs itself, and stdin-in/stdout-out is
+a claim about how it behaves. Neither survives a unit test, so there is one integration test,
+ignored by default because it spends a turn:
+
+```bash
+cargo test --manifest-path src-tauri/Cargo.toml -- --ignored answers_from_the_real_cli
+```
+
+There is no equivalent for the hosted side — it would need a real key and would bill the
+person running it.
 
 ## Files
 

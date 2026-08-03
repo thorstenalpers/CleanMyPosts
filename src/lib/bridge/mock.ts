@@ -79,6 +79,9 @@ export function defaultMockHandlers(): MockHandlers {
 			showYouTube: true,
 			confirmDeletion: true,
 			themePreset: 'Default',
+			showAssistant: true,
+			assistantSource: 'claude-code',
+			assistantCliPath: '',
 			timeouts: {
 				waitAfterDelete: 500,
 				waitBetweenRetryDeleteAttempts: 500,
@@ -96,6 +99,21 @@ export function defaultMockHandlers(): MockHandlers {
 		'updater.checkForUpdates': () => ({ updateAvailable: false }),
 		'system.openUrl': () => undefined,
 		'system.openLicense': () => undefined,
-		'log.getBuffer': () => []
+		'log.getBuffer': () => [],
+		'assistant.getSources': () => ({
+			local: { found: false, path: null, version: null },
+			providers: [
+				{
+					id: 'gemini',
+					label: 'Google AI',
+					model: 'gemini-2.0-flash',
+					freeKeyUrl: 'https://aistudio.google.com/api-keys',
+					hasKey: false
+				}
+			]
+		}),
+		'assistant.setKey': () => undefined,
+		'assistant.openFreeKeyUrl': () => undefined,
+		'assistant.ask': () => ({ text: 'The mock host does not answer questions.' })
 	};
 }

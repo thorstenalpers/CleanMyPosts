@@ -19,6 +19,7 @@ repo root — hard rules there, details here. All docs are written in English.
 | [12-testing-and-quality.md](12-testing-and-quality.md)   | Test pyramid, CI, logging              |
 | [13-security-and-privacy.md](13-security-and-privacy.md) | Threat model, data handling            |
 | [14-roadmap.md](14-roadmap.md)                           | Phases with acceptance criteria        |
+| [15-feature-assistant.md](15-feature-assistant.md)       | Sources, providers, keys, the prompt   |
 | [adr/](adr/)                                             | Decisions worth their own record       |
 
 ## Rules for these files

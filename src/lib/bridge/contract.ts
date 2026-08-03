@@ -38,9 +38,37 @@ export const AppSettingsSchema = z.object({
 	showYouTube: z.boolean(),
 	confirmDeletion: z.boolean(),
 	themePreset: ThemePresetSchema,
+	showAssistant: z.boolean(),
+	/** `claude-code` for the local binary, otherwise a provider id from `assistant.getSources`. */
+	assistantSource: z.string(),
+	/** Empty means: look in the places Claude Code installs itself. */
+	assistantCliPath: z.string(),
 	timeouts: TimeoutSettingsSchema
 });
 export type AppSettings = z.infer<typeof AppSettingsSchema>;
+
+/** The id the local Claude Code binary answers to, alongside the hosted providers. */
+export const LOCAL_ASSISTANT_SOURCE = 'claude-code';
+
+export const AssistantProviderSchema = z.object({
+	id: z.string(),
+	label: z.string(),
+	model: z.string(),
+	freeKeyUrl: z.string().nullable(),
+	/** Whether a key is in the credential store — never the key, which cannot be read back. */
+	hasKey: z.boolean()
+});
+export type AssistantProvider = z.infer<typeof AssistantProviderSchema>;
+
+export const AssistantSourcesSchema = z.object({
+	local: z.object({
+		found: z.boolean(),
+		path: z.string().nullable(),
+		version: z.string().nullable()
+	}),
+	providers: z.array(AssistantProviderSchema)
+});
+export type AssistantSources = z.infer<typeof AssistantSourcesSchema>;
 
 export const PlatformSchema = z.enum(['x', 'youtube']);
 export type Platform = z.infer<typeof PlatformSchema>;
@@ -137,7 +165,19 @@ export const BridgeMethods = {
 	'updater.checkForUpdates': { params: voidSchema, result: UpdateCheckResultSchema },
 	'system.openUrl': { params: z.object({ url: z.string() }), result: voidSchema },
 	'system.openLicense': { params: voidSchema, result: voidSchema },
-	'log.getBuffer': { params: voidSchema, result: z.array(LogEntrySchema) }
+	'log.getBuffer': { params: voidSchema, result: z.array(LogEntrySchema) },
+	'assistant.getSources': { params: voidSchema, result: AssistantSourcesSchema },
+	/** An empty key forgets the stored one; that is what the reset button sends. */
+	'assistant.setKey': {
+		params: z.object({ provider: z.string(), key: z.string() }),
+		result: voidSchema
+	},
+	/** Takes a provider id, not a URL — the address comes from the host's own table. */
+	'assistant.openFreeKeyUrl': { params: z.object({ provider: z.string() }), result: voidSchema },
+	'assistant.ask': {
+		params: z.object({ prompt: z.string() }),
+		result: z.object({ text: z.string() })
+	}
 } as const;
 
 export type BridgeMethodName = keyof typeof BridgeMethods;

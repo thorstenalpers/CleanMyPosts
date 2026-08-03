@@ -21,6 +21,9 @@ function setup(confirmDeletion: boolean, overrides: MockHandlers = {}) {
 			showYouTube: true,
 			confirmDeletion,
 			themePreset: 'Default' as const,
+			showAssistant: true,
+			assistantSource: 'claude-code',
+			assistantCliPath: '',
 			timeouts: { waitAfterDelete: 1, waitBetweenRetryDeleteAttempts: 1, waitAfterDocumentLoad: 1 }
 		}),
 		'site.navigate': navigate,

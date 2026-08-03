@@ -67,6 +67,9 @@ function hideYouTube() {
 			showYouTube: false,
 			confirmDeletion: true,
 			themePreset: 'Default',
+			showAssistant: true,
+			assistantSource: 'claude-code',
+			assistantCliPath: '',
 			timeouts: {
 				waitAfterDelete: 500,
 				waitBetweenRetryDeleteAttempts: 500,

@@ -4,8 +4,10 @@
 	import type { SettingsStore } from '$lib/stores/settings.svelte';
 	import {
 		AppSettingsSchema,
+		LOCAL_ASSISTANT_SOURCE,
 		type AppInfo,
 		type AppTheme,
+		type AssistantSources,
 		type Language
 	} from '$lib/bridge/contract';
 	import { THEME_PRESETS } from '$lib/theme/preset';
@@ -21,6 +23,7 @@
 		CardContent
 	} from '$lib/components/ui/card';
 	import SettingRow from '$lib/components/setting-row.svelte';
+	import ApiKeysDialog from '$lib/components/api-keys-dialog.svelte';
 	import { cn } from '$lib/utils';
 	import PaletteIcon from '@lucide/svelte/icons/palette';
 	import ShieldIcon from '@lucide/svelte/icons/shield';
@@ -34,6 +37,8 @@
 	import ExternalLinkIcon from '@lucide/svelte/icons/external-link';
 	import BugIcon from '@lucide/svelte/icons/bug';
 	import FileTextIcon from '@lucide/svelte/icons/file-text';
+	import SparklesIcon from '@lucide/svelte/icons/sparkles';
+	import KeyRoundIcon from '@lucide/svelte/icons/key-round';
 
 	interface Props {
 		bridge: BridgeClient;
@@ -44,10 +49,31 @@
 
 	let appInfo = $state<AppInfo | undefined>(undefined);
 	let checkingUpdates = $state(false);
+	let sources = $state<AssistantSources | undefined>(undefined);
+	let keysOpen = $state(false);
 
 	$effect(() => {
 		void bridge.call('app.getInfo', undefined).then((info) => (appInfo = info));
 	});
+
+	async function loadSources(): Promise<void> {
+		sources = await bridge.call('assistant.getSources', undefined);
+	}
+
+	$effect(() => {
+		void loadSources();
+	});
+
+	const usingLocal = $derived(settingsStore.settings.assistantSource === LOCAL_ASSISTANT_SOURCE);
+	const activeProvider = $derived(
+		sources?.providers.find((entry) => entry.id === settingsStore.settings.assistantSource)
+	);
+
+	/** Re-read after every write: `hasKey` is the only thing the store will say about a key. */
+	async function setKey(provider: string, key: string): Promise<void> {
+		await bridge.call('assistant.setKey', { provider, key });
+		await loadSources();
+	}
 
 	const themes = [
 		{ value: 'Light' as AppTheme, label: 'settings.mode.light' as const, icon: SunIcon },
@@ -266,6 +292,103 @@
 						/>
 					{/snippet}
 				</SettingRow>
+
+				<SettingRow
+					label={t('settings.showAssistant')}
+					description={t('settings.showAssistant.description')}
+					for="show-assistant"
+				>
+					{#snippet control()}
+						<Switch
+							id="show-assistant"
+							checked={settingsStore.settings.showAssistant}
+							onCheckedChange={(checked: boolean) => commit({ showAssistant: checked })}
+						/>
+					{/snippet}
+				</SettingRow>
+			</CardContent>
+		</Card>
+
+		<Card>
+			<CardHeader>
+				{@render cardTitle(t('settings.assistant'), SparklesIcon)}
+				<CardDescription>{t('settings.assistant.description')}</CardDescription>
+			</CardHeader>
+			<CardContent class="divide-y divide-border/60">
+				<SettingRow
+					label={t('settings.assistant.source')}
+					description={usingLocal
+						? sources?.local.found
+							? t('settings.assistant.cliFound', {
+									version: sources.local.version ?? sources.local.path ?? ''
+								})
+							: t('settings.assistant.cliMissing')
+						: t('settings.assistant.provider.description')}
+				>
+					{#snippet control()}
+						<div class="flex gap-1" role="group" aria-label={t('settings.assistant.source')}>
+							{#each [{ value: LOCAL_ASSISTANT_SOURCE, label: t('settings.assistant.local') }, { value: 'hosted', label: t('settings.assistant.hosted') }] as choice (choice.value)}
+								{@const active = choice.value === LOCAL_ASSISTANT_SOURCE ? usingLocal : !usingLocal}
+								<button
+									type="button"
+									aria-pressed={active}
+									onclick={() =>
+										commit({
+											assistantSource:
+												choice.value === LOCAL_ASSISTANT_SOURCE
+													? LOCAL_ASSISTANT_SOURCE
+													: (activeProvider?.id ??
+														sources?.providers[0]?.id ??
+														LOCAL_ASSISTANT_SOURCE)
+										})}
+									class={cn(
+										'flex h-8 cursor-pointer items-center rounded-md border px-2.5 text-xs font-medium transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
+										active
+											? 'border-primary/40 bg-primary/10 text-foreground'
+											: 'border-border text-muted-foreground hover:bg-muted'
+									)}
+								>
+									{choice.label}
+								</button>
+							{/each}
+						</div>
+					{/snippet}
+				</SettingRow>
+
+				{#if usingLocal}
+					<SettingRow
+						label={t('settings.assistant.cliPath')}
+						description={t('settings.assistant.cliPath.description')}
+						for="assistant-cli-path"
+					>
+						{#snippet control()}
+							<Input
+								id="assistant-cli-path"
+								class="h-8 w-64 font-mono text-xs"
+								placeholder={t('settings.assistant.cliPath.placeholder')}
+								value={settingsStore.settings.assistantCliPath}
+								onchange={async (e: Event & { currentTarget: HTMLInputElement }) => {
+									await commit({ assistantCliPath: e.currentTarget.value });
+									await loadSources();
+								}}
+							/>
+						{/snippet}
+					</SettingRow>
+				{:else}
+					<SettingRow
+						label={t('settings.assistant.provider')}
+						description={activeProvider
+							? `${activeProvider.label} · ${activeProvider.model}`
+							: t('settings.assistant.provider.description')}
+					>
+						{#snippet control()}
+							<Button variant="outline" size="sm" class="h-8" onclick={() => (keysOpen = true)}>
+								<KeyRoundIcon />
+								{t('settings.assistant.keys')}
+							</Button>
+						{/snippet}
+					</SettingRow>
+				{/if}
 			</CardContent>
 		</Card>
 
@@ -383,3 +506,14 @@
 		</Card>
 	</div>
 </div>
+
+{#if sources}
+	<ApiKeysDialog
+		bind:open={keysOpen}
+		providers={sources.providers}
+		selected={settingsStore.settings.assistantSource}
+		onSelect={(provider: string) => commit({ assistantSource: provider })}
+		onSetKey={setKey}
+		onOpenFreeKeyUrl={(provider: string) => bridge.call('assistant.openFreeKeyUrl', { provider })}
+	/>
+{/if}

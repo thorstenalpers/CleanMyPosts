@@ -1,3 +1,4 @@
+pub mod assistant;
 pub mod settings;
 pub mod site;
 pub mod system;
@@ -30,6 +31,11 @@ pub async fn dispatch(app: AppHandle, method: String, params: Value) -> Result<V
         "system.openLicense" => system::open_license(&app),
 
         "log.getBuffer" => system::get_log_buffer(&app),
+
+        "assistant.getSources" => assistant::get_sources(&app),
+        "assistant.setKey" => assistant::set_key(&params),
+        "assistant.openFreeKeyUrl" => assistant::open_free_key_url(&params),
+        "assistant.ask" => assistant::ask(app, &params).await,
 
         other => Err(Error::Message(format!("unknown bridge method \"{other}\""))),
     }

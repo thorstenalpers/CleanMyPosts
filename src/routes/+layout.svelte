@@ -26,6 +26,7 @@
 	import YouTubeIcon from '$lib/components/icons/youtube-icon.svelte';
 	import HouseIcon from '@lucide/svelte/icons/house';
 	import ScrollTextIcon from '@lucide/svelte/icons/scroll-text';
+	import SparklesIcon from '@lucide/svelte/icons/sparkles';
 	import SettingsIcon from '@lucide/svelte/icons/settings';
 	import '../app.css';
 
@@ -55,7 +56,7 @@
 	// even after the user navigates away from the rail that started it.
 	const runner = new ActionRunner(bridge);
 
-	type NavKey = 'overview' | 'x' | 'youtube' | 'log' | 'settings';
+	type NavKey = 'overview' | 'x' | 'youtube' | 'log' | 'assistant' | 'settings';
 
 	// The overview sits at `/`: `/` is the file the webview opens, and it has to be the
 	// prerendered shell, not a redirect that waits for the router.
@@ -64,6 +65,7 @@
 		x: '/x',
 		youtube: '/youtube',
 		log: '/log',
+		assistant: '/assistant',
 		settings: '/settings'
 	} as const;
 
@@ -179,6 +181,9 @@
 			: []),
 		...(settingsStore.settings.showLogs
 			? [{ key: 'log' as const, label: t('nav.log'), icon: ScrollTextIcon }]
+			: []),
+		...(settingsStore.settings.showAssistant
+			? [{ key: 'assistant' as const, label: t('nav.assistant'), icon: SparklesIcon }]
 			: []),
 		{ key: 'settings' as const, label: t('nav.settings'), icon: SettingsIcon, footer: true }
 	] satisfies NavItem<NavKey>[]);

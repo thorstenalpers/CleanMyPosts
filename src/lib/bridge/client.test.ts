@@ -15,6 +15,9 @@ describe('BridgeClient', () => {
 				showYouTube: true,
 				confirmDeletion: false,
 				themePreset: 'Default' as const,
+				showAssistant: true,
+				assistantSource: 'claude-code',
+				assistantCliPath: '',
 				timeouts: {
 					waitAfterDelete: 100,
 					waitBetweenRetryDeleteAttempts: 200,

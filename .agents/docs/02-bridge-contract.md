@@ -33,25 +33,34 @@ never learned that the host changed.
 
 ### RPC methods
 
-| Method                    | Params                                      | Result                          |
-| ------------------------- | ------------------------------------------- | ------------------------------- |
-| `app.getInfo`             | —                                           | `{ version, homepageUrl, … }`   |
-| `settings.get`            | —                                           | `AppSettings`                   |
-| `settings.set`            | `AppSettings`                               | —                               |
-| `site.navigate`           | `{ platform, action }`                      | `{ ok: boolean }`               |
-| `site.runAction`          | `{ requestId, platform, action, timeouts }` | `{ deletedCount }`              |
-| `site.cancelAction`       | `{ requestId }`                             | —                               |
-| `site.hide`               | `{ hide: boolean }`                         | —                               |
-| `site.show`               | `{ platform }`                              | —                               |
-| `layout.setChromeWidth`   | `{ width }`                                 | —                               |
-| `layout.setBackground`    | `{ color: '#RRGGBB' }`                      | —                               |
-| `updater.checkForUpdates` | —                                           | `{ updateAvailable, message? }` |
-| `system.openUrl`          | `{ url }`                                   | —                               |
-| `system.openLicense`      | —                                           | —                               |
-| `log.getBuffer`           | —                                           | `LogEntry[]`                    |
+| Method                     | Params                                      | Result                          |
+| -------------------------- | ------------------------------------------- | ------------------------------- |
+| `app.getInfo`              | —                                           | `{ version, homepageUrl, … }`   |
+| `settings.get`             | —                                           | `AppSettings`                   |
+| `settings.set`             | `AppSettings`                               | —                               |
+| `site.navigate`            | `{ platform, action }`                      | `{ ok: boolean }`               |
+| `site.runAction`           | `{ requestId, platform, action, timeouts }` | `{ deletedCount }`              |
+| `site.cancelAction`        | `{ requestId }`                             | —                               |
+| `site.hide`                | `{ hide: boolean }`                         | —                               |
+| `site.show`                | `{ platform }`                              | —                               |
+| `layout.setChromeWidth`    | `{ width }`                                 | —                               |
+| `layout.setBackground`     | `{ color: '#RRGGBB' }`                      | —                               |
+| `updater.checkForUpdates`  | —                                           | `{ updateAvailable, message? }` |
+| `system.openUrl`           | `{ url }`                                   | —                               |
+| `system.openLicense`       | —                                           | —                               |
+| `log.getBuffer`            | —                                           | `LogEntry[]`                    |
+| `assistant.getSources`     | —                                           | `{ local, providers[] }`        |
+| `assistant.setKey`         | `{ provider, key }`                         | —                               |
+| `assistant.openFreeKeyUrl` | `{ provider }`                              | —                               |
+| `assistant.ask`            | `{ prompt }`                                | `{ text }`                      |
 
 **The caller mints `requestId`** for `site.runAction`. Push events outlive the RPC
 round-trip and must be attributable to their trigger.
+
+**No method reads an API key back.** `assistant.getSources` reports `hasKey` per provider and
+nothing more; `assistant.setKey` with an empty string forgets the stored one.
+`assistant.openFreeKeyUrl` takes a provider id rather than a URL, so no address the frontend
+invents can be handed to the shell.
 
 `site.show`, `site.hide` and `layout.setChromeWidth` drive the shell layout. `site.show`
 brings a platform's webview forward, `site.hide` parks every site webview off-screen and
@@ -114,6 +123,9 @@ type AppSettings = {
 	showYouTube: boolean;
 	confirmDeletion: boolean;
 	themePreset: 'Default' | 'Claude' | 'Cosmic' | 'Supabase' | 'Graphite';
+	showAssistant: boolean;
+	assistantSource: string;
+	assistantCliPath: string;
 	timeouts: {
 		waitAfterDelete: number; // ms between individual deletions
 		waitBetweenRetryDeleteAttempts: number;

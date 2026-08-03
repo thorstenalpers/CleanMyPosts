@@ -21,6 +21,9 @@ function setup(overrides: MockHandlers = {}) {
 			showYouTube: true,
 			confirmDeletion: true,
 			themePreset: 'Default' as const,
+			showAssistant: true,
+			assistantSource: 'claude-code',
+			assistantCliPath: '',
 			timeouts: {
 				waitAfterDelete: 500,
 				waitBetweenRetryDeleteAttempts: 500,
@@ -31,6 +34,18 @@ function setup(overrides: MockHandlers = {}) {
 			settingsSet(params);
 			return undefined;
 		},
+		'assistant.getSources': () => ({
+			local: { found: false, path: null, version: null },
+			providers: [
+				{
+					id: 'gemini',
+					label: 'Google AI',
+					model: 'gemini-2.0-flash',
+					freeKeyUrl: 'https://aistudio.google.com/api-keys',
+					hasKey: false
+				}
+			]
+		}),
 		'updater.checkForUpdates': () => ({ updateAvailable: false, message: 'No updates available.' }),
 		'system.openUrl': () => undefined,
 		'system.openLicense': () => undefined,

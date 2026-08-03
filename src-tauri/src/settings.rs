@@ -32,6 +32,11 @@ pub struct AppSettings {
     pub show_youtube: bool,
     pub confirm_deletion: bool,
     pub theme_preset: String,
+    pub show_assistant: bool,
+    /// `claude-code` for the local binary, otherwise a provider id from `assistant::providers`.
+    pub assistant_source: String,
+    /// Empty means: look in the places Claude Code installs itself.
+    pub assistant_cli_path: String,
     pub timeouts: TimeoutSettings,
 }
 
@@ -46,6 +51,9 @@ impl Default for AppSettings {
             show_youtube: true,
             confirm_deletion: true,
             theme_preset: "Default".into(),
+            show_assistant: true,
+            assistant_source: crate::assistant::LOCAL.into(),
+            assistant_cli_path: String::new(),
             timeouts: TimeoutSettings::default(),
         }
     }
@@ -143,6 +151,9 @@ mod tests {
 
         assert!(json.contains("\"showLogs\""));
         assert!(json.contains("\"confirmDeletion\""));
+        assert!(json.contains("\"showAssistant\""));
+        assert!(json.contains("\"assistantSource\""));
+        assert!(json.contains("\"assistantCliPath\""));
         assert!(json.contains("\"waitAfterDelete\""));
         assert!(json.contains("\"waitBetweenRetryDeleteAttempts\""));
         assert!(json.contains("\"waitAfterDocumentLoad\""));

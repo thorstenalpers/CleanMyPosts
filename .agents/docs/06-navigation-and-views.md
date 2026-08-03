@@ -10,7 +10,7 @@
 │ 𝕏 X               •  │ Posts      ▤ 🗑   │  ← one ActionRow per group
 │ ▶ YouTube         •  │ Replies    ▤ 🗑   │
 │ ≡ Log                │ Reposts    ▤ 🗑   │
-│                      │ Likes      ▤ 🗑   │
+│ ✦ Assistant          │ Likes      ▤ 🗑   │
 │ [ running-action ]   │ Following  ▤ 🗑   │
 │ ──────────────────── │                   │
 │ ⚙ Settings           │                   │
@@ -19,8 +19,8 @@
 ```
 
 - `•` is the connection dot, `[ running-action ]` only while a deletion runs, `Settings` is
-  pinned to the footer. X, YouTube and Log each appear only while their switch in the
-  Navigation settings is on; a route whose item is gone bounces back to the overview, and
+  pinned to the footer. X, YouTube, Log and Assistant each appear only while their switch in
+  the Navigation settings is on; a route whose item is gone bounces back to the overview, and
   the same guard catches any URL the sidebar does not offer.
 - **The actions are a column of their own, not a submenu.** Opening X used to push YouTube
   five rows down and back up again; a column beside the nav leaves every item where the user

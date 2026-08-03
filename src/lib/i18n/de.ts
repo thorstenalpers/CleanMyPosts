@@ -4,6 +4,7 @@ import type { MessageKey } from './en';
 export const de: Record<MessageKey, string> = {
 	'nav.overview': 'Übersicht',
 	'nav.log': 'Protokoll',
+	'nav.assistant': 'Assistent',
 	'nav.settings': 'Einstellungen',
 	'nav.collapse': 'Menü einklappen',
 	'nav.expand': 'Menü ausklappen',
@@ -112,6 +113,9 @@ export const de: Record<MessageKey, string> = {
 		'Die Karte auf der Übersicht, die erklärt, wie die App arbeitet.',
 	'settings.showLog': 'Protokoll anzeigen',
 	'settings.showLog.description': 'Ein Live-Protokoll jeder Aktion als eigene Seite.',
+	'settings.showAssistant': 'Assistent anzeigen',
+	'settings.showAssistant.description':
+		'Eine Seite, die Fragen zur App und zum Protokoll beantwortet.',
 
 	'settings.safety': 'Sicherheit',
 	'settings.safety.description':
@@ -131,6 +135,45 @@ export const de: Record<MessageKey, string> = {
 	'settings.timing.betweenRetries': 'Zwischen Wiederholungen',
 	'settings.timing.betweenRetries.description':
 		'Pause, bevor ein Eintrag erneut versucht wird, der nicht verschwunden ist.',
+
+	'settings.assistant': 'Assistent',
+	'settings.assistant.description':
+		'Woher Antworten kommen. Das lokale Programm sendet nichts aus dieser App; ein gehosteter Anbieter ist das Einzige hier, das Daten ins Netz gibt.',
+	'settings.assistant.source': 'Quelle',
+	'settings.assistant.local': 'Claude Code auf diesem Rechner',
+	'settings.assistant.hosted': 'Ein gehosteter Anbieter',
+	'settings.assistant.cliPath': 'Pfad zum Programm',
+	'settings.assistant.cliPath.description':
+		'Leer lassen, um dort zu suchen, wo Claude Code sich installiert.',
+	'settings.assistant.cliPath.placeholder': 'claude.exe',
+	'settings.assistant.cliFound': 'Gefunden: {version}',
+	'settings.assistant.cliMissing': 'Auf diesem Rechner nicht gefunden.',
+	'settings.assistant.provider': 'Anbieter',
+	'settings.assistant.provider.description':
+		'Welches gehostete Modell antwortet, und sein Schlüssel.',
+	'settings.assistant.keys': 'API-Schlüssel',
+	'settings.assistant.keys.title': 'API-Schlüssel',
+	'settings.assistant.keys.description':
+		'Schlüssel liegen in der Windows-Anmeldeinformationsverwaltung, nie in einer Datei dieser App. Ein Schlüssel lässt sich nicht zurücklesen — nur ersetzen oder vergessen.',
+	'settings.assistant.keys.placeholder': 'Schlüssel einfügen, um ihn zu speichern',
+	'settings.assistant.keys.stored': 'Gespeichert',
+	'settings.assistant.keys.saved': 'Übernommen',
+	'settings.assistant.keys.none': 'Kein Schlüssel',
+	'settings.assistant.keys.free': 'Kostenlosen Schlüssel holen',
+	'settings.assistant.keys.forget': 'Vergessen',
+	'settings.assistant.keys.close': 'Fertig',
+
+	'assistant.title': 'Assistent',
+	'assistant.subtitle': 'Fragen dazu, was diese App tut, und dazu, was im Protokoll steht.',
+	'assistant.placeholder': 'Warum wurden 12 Beiträge nicht gelöscht?',
+	'assistant.ask': 'Fragen',
+	'assistant.asking': 'Wird gefragt…',
+	'assistant.noSource':
+		'Es ist noch keine Quelle eingerichtet. Wähle eine in den Einstellungen — Claude Code auf diesem Rechner oder einen Anbieterschlüssel.',
+	'assistant.openSettings': 'Einstellungen öffnen',
+	'assistant.sendsLog':
+		'Die Frage geht zusammen mit dem Protokoll und einer Beschreibung der App raus. Das Protokoll enthält nie Beitragsinhalte, Kontonamen oder Cookies.',
+	'assistant.clear': 'Leeren',
 
 	'settings.about': 'Über',
 	'settings.about.description':

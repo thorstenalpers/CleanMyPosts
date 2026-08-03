@@ -11,6 +11,7 @@
 export const en = {
 	'nav.overview': 'Overview',
 	'nav.log': 'Log',
+	'nav.assistant': 'Assistant',
 	'nav.settings': 'Settings',
 	'nav.collapse': 'Collapse menu',
 	'nav.expand': 'Expand menu',
@@ -117,6 +118,8 @@ export const en = {
 	'settings.showIntro.description': 'The panel on the overview that explains how the app works.',
 	'settings.showLog': 'Show log',
 	'settings.showLog.description': 'A live log of every action, as its own page.',
+	'settings.showAssistant': 'Show assistant',
+	'settings.showAssistant.description': 'A page that answers questions about the app and the log.',
 
 	'settings.safety': 'Safety',
 	'settings.safety.description':
@@ -136,6 +139,44 @@ export const en = {
 	'settings.timing.betweenRetries': 'Between retries',
 	'settings.timing.betweenRetries.description':
 		'Pause before retrying an item that did not disappear.',
+
+	'settings.assistant': 'Assistant',
+	'settings.assistant.description':
+		'Where answers come from. The local binary sends nothing from this app; a hosted provider is the one thing here that puts data on the network.',
+	'settings.assistant.source': 'Source',
+	'settings.assistant.local': 'Claude Code on this machine',
+	'settings.assistant.hosted': 'A hosted provider',
+	'settings.assistant.cliPath': 'Path to the binary',
+	'settings.assistant.cliPath.description':
+		'Leave empty to look where Claude Code installs itself.',
+	'settings.assistant.cliPath.placeholder': 'claude.exe',
+	'settings.assistant.cliFound': 'Found: {version}',
+	'settings.assistant.cliMissing': 'Not found on this machine.',
+	'settings.assistant.provider': 'Provider',
+	'settings.assistant.provider.description': 'Which hosted model answers, and its API key.',
+	'settings.assistant.keys': 'API keys',
+	'settings.assistant.keys.title': 'API keys',
+	'settings.assistant.keys.description':
+		'Keys go into the Windows Credential Manager, never into a file this app owns. A key cannot be read back — only replaced or forgotten.',
+	'settings.assistant.keys.placeholder': 'Paste a key to store it',
+	'settings.assistant.keys.stored': 'Stored',
+	'settings.assistant.keys.saved': 'Saved',
+	'settings.assistant.keys.none': 'No key',
+	'settings.assistant.keys.free': 'Get a free key',
+	'settings.assistant.keys.forget': 'Forget',
+	'settings.assistant.keys.close': 'Done',
+
+	'assistant.title': 'Assistant',
+	'assistant.subtitle': 'Questions about what this app does, and about what the log says.',
+	'assistant.placeholder': 'Why did 12 posts not get deleted?',
+	'assistant.ask': 'Ask',
+	'assistant.asking': 'Asking…',
+	'assistant.noSource':
+		'No source is set up yet. Pick one in the settings — Claude Code on this machine, or a provider key.',
+	'assistant.openSettings': 'Open the settings',
+	'assistant.sendsLog':
+		'The question is sent together with the log and a description of the app. The log never contains post content, handles or cookies.',
+	'assistant.clear': 'Clear',
 
 	'settings.about': 'About',
 	'settings.about.description':

@@ -1,3 +1,4 @@
+mod assistant;
 mod bridge;
 mod commands;
 mod error;

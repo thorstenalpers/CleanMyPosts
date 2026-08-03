@@ -17,7 +17,7 @@ WebView2 browser with injected JavaScript.
 
 The Rust host orchestrates: navigate to the correct URL, call `window.__cmp.run(platform,
 action, params)`, relay progress push events to the chrome UI. The retry loop itself runs
-in the page. No DOM parsing on the host side. No local storage of any kind.
+in the page. No DOM parsing on the host side. Nothing off a platform page is ever stored.
 
 ## Language
 
@@ -69,19 +69,28 @@ cargo clean -p cleanmyposts && cargo build --manifest-path src-tauri/Cargo.toml
 
 ## Hard rules
 
-1. **No platform API.** No OAuth, no token storage, no API key.
+1. **No platform API.** No OAuth and no platform token, ever — deletion is browser automation
+   and stays that way. The one credential the app knows about is an optional **assistant** API
+   key for a hosted model, which has nothing to do with X or YouTube and never touches them.
+   It lives in the Windows Credential Manager, never in a file this app owns, and it cannot be
+   read back into the UI.
 2. **No user data stored.** No SQLite, no database, and none of the user's posts, likes, comments,
    or account content is ever written to disk or cached. The only files written are the app's own
-   `settings.json` (theme, log visibility, confirmation, timeouts) and `.window-state.json`
-   (size, position, maximized). The log buffer is in memory only. The login session lives solely
-   in the WebView2 profile (cookies, which the platform manages).
+   `settings.json` (theme, log visibility, confirmation, timeouts, assistant source) and
+   `.window-state.json` (size, position, maximized). The log buffer is in memory only. The login
+   session lives solely in the WebView2 profile (cookies, which the platform manages).
 3. **Nothing is written next to the executable.** Every runtime path comes from Tauri's
    `app_config_dir`/`app_local_data_dir` (`%AppData%\com.thorstenalpers.cleanmyposts`,
    `%LocalAppData%\com.thorstenalpers.cleanmyposts`). An installed app cannot write to its
    own directory.
 4. **All UI ↔ host communication goes through the bridge.** Two distinct protocols, never
    mixed: [02-bridge-contract.md](.agents/docs/02-bridge-contract.md).
-5. **No telemetry.** No outbound traffic other than to the sites the user opens themselves.
+5. **No telemetry.** No analytics, no crash reporting, nothing the user did not ask for. Beyond
+   the sites the user opens, the app talks to exactly two kinds of host, both on request: the
+   update endpoint, and — only when the user picks a hosted assistant provider and only when
+   they press Ask — that provider. What goes with a question is the log and a fixed description
+   of the app, nothing else. The default assistant source is the local `claude` binary, which
+   sends nothing from here at all.
 6. **Content script modules in `src/lib/engine/` have no knowledge of the chrome bridge**
    and import nothing from `src/lib/components/`. They run inside a foreign document.
 7. **Components in `src/lib/components/` are bridge-free** (props in, events out) so they can
@@ -115,6 +124,7 @@ Read selectively, not all of it.
 | Sidebar, routing, views      | [06-navigation-and-views.md](.agents/docs/06-navigation-and-views.md) |
 | Delete features per platform | [08-feature-delete.md](.agents/docs/08-feature-delete.md)             |
 | Settings view                | [09-feature-settings.md](.agents/docs/09-feature-settings.md)         |
+| Assistant, providers, keys   | [15-feature-assistant.md](.agents/docs/15-feature-assistant.md)       |
 | Colors, typography, tokens   | [10-design-system.md](.agents/docs/10-design-system.md)               |
 | Svelte rules                 | [11-frontend-conventions.md](.agents/docs/11-frontend-conventions.md) |
 | Tests, CI, logging           | [12-testing-and-quality.md](.agents/docs/12-testing-and-quality.md)   |

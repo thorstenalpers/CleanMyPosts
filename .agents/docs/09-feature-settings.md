@@ -4,7 +4,11 @@
 
 All settings live in one file, `settings.json` under Tauri's `app_config_dir`
 (`%AppData%\com.thorstenalpers.cleanmyposts\`), owned by `SettingsStore`
-(`src-tauri/src/settings.rs`). Window position and size are not persisted.
+(`src-tauri/src/settings.rs`). Window size, position and maximized state live beside it in
+`.window-state.json`, written by `tauri-plugin-window-state`.
+
+The assistant's API keys are the one thing that is **not** here: they go into the Windows
+Credential Manager. See [15-feature-assistant.md](15-feature-assistant.md).
 
 It is read once on start-up and written immediately on every change. The enum is stored as
 its name, not a number, so the file stays readable.
@@ -25,6 +29,9 @@ type AppSettings = {
 	showYouTube: boolean;
 	confirmDeletion: boolean;
 	themePreset: 'Default' | 'Claude' | 'Cosmic' | 'Supabase' | 'Graphite';
+	showAssistant: boolean;
+	assistantSource: string; // 'claude-code' for the local binary, else a provider id
+	assistantCliPath: string; // empty: look where Claude Code installs itself
 	timeouts: {
 		waitAfterDelete: number; // ms — pause between individual delete actions
 		waitBetweenRetryDeleteAttempts: number;
@@ -39,10 +46,12 @@ A form in the chrome UI at `/settings`. It calls `settings.get` on load and `set
 on every change. The host pushes a `settingsChanged` event whenever settings change so
 other views stay in sync.
 
-Five cards — Appearance, Navigation, Safety, Timing, About — each with a `CardDescription`
-saying what the group is for, and `SettingRow`s inside. Appearance holds the mode switch
-(System / Light / Dark), the colour preset picker and the language picker. Navigation holds the four visibility
-switches: X, YouTube, the overview's introduction card and the log. The introduction also
+Six cards — Appearance, Navigation, Assistant, Safety, Timing, About — each with a
+`CardDescription` saying what the group is for, and `SettingRow`s inside. Appearance holds the
+mode switch (System / Light / Dark), the colour preset picker and the language picker.
+Navigation holds the five visibility switches: X, YouTube, the overview's introduction card,
+the log and the assistant. Assistant holds the source choice — the local binary with its path
+field, or a hosted provider with a button into the API-keys dialog. The introduction also
 carries its own tick box, so dismissing it never needs a trip to the settings — but turning
 it back on does, which is why the switch exists at all. Hiding a platform only takes it out of the sidebar and the
 overview — its webview stays loaded and signed in, so switching it back on costs nothing.

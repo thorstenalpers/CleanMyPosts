@@ -23,7 +23,8 @@
 	},
 	"devDependencies": {
 		"@eslint/js": "^10.0.1",
-		"@lucide/svelte": "^1.26.0",
+		"@internationalized/date": "^3.12.3",
+		"@lucide/svelte": "^1.28.0",
 		"@playwright/test": "^1.62.0",
 		"@sveltejs/adapter-static": "^3.0.10",
 		"@sveltejs/kit": "^2.70.2",
@@ -49,7 +50,7 @@
 		"svelte-check": "^4.1.5",
 		"svelte-sonner": "^1.1.1",
 		"tailwind-merge": "^3.6.0",
-		"tailwind-variants": "^3.2.2",
+		"tailwind-variants": "^3.3.0",
 		"tailwindcss": "^4.3.3",
 		"typescript": "^5.9.3",
 		"typescript-eslint": "^8.65.0",

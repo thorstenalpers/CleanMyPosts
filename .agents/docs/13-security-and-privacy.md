@@ -59,6 +59,15 @@ in a store this project would then be responsible for.
    governed by `capabilities/site.json` instead, which is why tightening this cannot break
    deletion.
 
+   To re-check it after a change: serve `build/` over HTTP with the policy pasted into
+   `index.html` as a `<meta http-equiv="Content-Security-Policy">`, relaxing `script-src` to
+   include `'unsafe-inline'` — a meta tag cannot carry the nonce Tauri adds at compile time,
+   and without that relaxation every page simply fails to hydrate and tells you nothing about
+   the other directives. Then walk the routes. **Do not use a console reader**: a CSP refusal
+   is emitted by the browser, not through `console.*`, so it will report nothing either way.
+   Look at the DOM — `document.documentElement.style.colorScheme` is empty when the inline
+   scripts were blocked.
+
 ## Threats that are real
 
 - **Deleting in the wrong account.** Two X accounts can both be open. The account handle

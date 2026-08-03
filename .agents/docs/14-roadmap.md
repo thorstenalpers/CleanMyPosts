@@ -83,7 +83,13 @@ reports instead of guessing how it is composed.
   **hosted** side has never made a request: no provider key has been set, so nothing has
   exercised a dialect, a key header, or the error-scrubbing path against a live endpoint.
   Their bodies and envelopes are unit-tested against fixtures.
-- The strict CSP is only proven to compile. Tauri's nonce tokens are in the binary, but no
-  one has watched the app run under it.
+- The strict CSP has not been watched inside the real Tauri window. It has been tested
+  against the built bundle served over HTTP with the policy as a `<meta>` tag: every route
+  hydrates, the stylesheet loads, the icons render and the API-keys dialog portals open, with
+  no directive refusing anything. The same probe with `script-src 'self'` and no nonce leaves
+  the page unhydrated, which is the negative control — so Tauri's compile-time nonce is
+  load-bearing, and that the packaged app applies it correctly is the part still untested.
+  (CSP refusals are browser-generated, not `console.*`, so a console reader does not see
+  them. The DOM state is the evidence.)
 - `.agents/skills/` and `.claude/skills/` are still byte-identical committed copies. Both are
   vendored from `skills-lock.json`, so neither is hand-edited.

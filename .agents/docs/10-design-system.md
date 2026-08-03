@@ -26,20 +26,38 @@ above rather than the rule simply being dropped.
 The accent is user-chosen, so it must never be the only signal for a state: selection and
 focus are also carried by shape, position, and text.
 
-### Gradients
+### The hero
 
-Two surfaces flow rather than sit in blocks, which is where the app gets its character:
+One surface flows rather than sitting in a block, and it is where the app gets its character:
+`.cmp-hero`, the overview's opening band, blue bleeding into near-black. Dark in **both**
+modes on purpose — it carries the app's identity rather than its content, so it should read as
+the same object whether the window around it is light or dark. Its own text colour comes with
+it (`--hero-foreground`), so everything inside uses `text-current/…`.
 
-- `.cmp-hero` — the overview's opening band, blue bleeding into near-black. Dark in **both**
-  modes on purpose: it carries the app's identity rather than its content, so it should read
-  as the same object whether the window around it is light or dark. Its own text colour comes
-  with it (`--hero-foreground`), so everything inside uses `text-current/…`.
-- `.cmp-sidebar` — the same gradient at a fraction of its strength, so the sidebar and the
-  page read as one surface instead of a panel on a background.
+The sidebar used to pick that gradient up at a fraction of its strength. It no longer does.
 
-`color-mix` for the sidebar is **in sRGB, not oklch**: the oklch path from blue to white
-swings through pink, which tinted the entire sidebar in the one colour this app reserves for
-deletion.
+### The sidebar is outside the accent system
+
+One flat neutral surface, and not a trace of `--primary` in it. Its own tokens, so nothing
+about it moves when a colour preset repaints the rest of the app:
+
+| Token                    | What it paints                          |
+| ------------------------ | --------------------------------------- |
+| `--nav-surface`          | the rail itself                         |
+| `--nav-foreground`       | a resting row — near-black on light     |
+| `--nav-muted`            | the fold toggle at rest                 |
+| `--nav-hover`            | a hovered **or** current row: dark grey |
+| `--nav-hover-foreground` | its text and icons: white               |
+
+Hover and "you are here" are the same dark chip. Nothing else in the rail carries a fill, so
+one filled row is unambiguous even though both states look alike — the current row is also
+bold, keeps the 3px bar, and carries `aria-current`, which is three signals against hover's
+one. A platform's icon uses `text-current` rather than `foreground` for the same reason: on a
+dark chip a mark pinned to `foreground` would turn black on grey.
+
+This is the one place the "accent means _you are here_" rule in the table above does not
+apply. Navigation is the frame around the content, and a frame that changes hue with the
+theme is the thing the eye keeps re-reading.
 
 ## Tokens
 
@@ -86,12 +104,12 @@ they climb look broken.
 Layout-bearing components live in `src/lib/components/` and take props in, events out —
 never the bridge. The set that carries the app's identity:
 
-| Component       | Role                                                                                                                                                                                                                                                                                         |
-| --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `sidebar-shell` | Nav rail, fold toggle and word mark in its header. The active item slides a 3px accent bar in from the left **and** carries `aria-current`, plus an optional connection dot. Rows lean 2px towards the page they would open and their icon grows with them. Expanded 240px / collapsed 56px. |
-| `action-row`    | One delete-able category. Show + Delete buttons stay in the layout at all times and only gain contrast on hover, so rows never reflow.                                                                                                                                                       |
-| `run-status`    | Pinned above the sidebar footer while a deletion runs: label, running count, indeterminate progress, Stop. Survives navigating away.                                                                                                                                                         |
-| `setting-row`   | One setting inside a settings card. Every row carries a visible description — a toggle that deletes data must say so before it is flipped.                                                                                                                                                   |
+| Component       | Role                                                                                                                                                                                                                                                                                                                                                          |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `sidebar-shell` | Nav rail, fold toggle and word mark in its header. The active item is a dark chip that slides a 3px bar in from the left **and** carries `aria-current`, plus an optional connection dot. Rows lean 2px towards the page they would open and their icon grows with them. Expanded 240px / collapsed 56px. Neutral throughout — see the sidebar section above. |
+| `action-row`    | One delete-able category. Show + Delete buttons stay in the layout at all times and only gain contrast on hover, so rows never reflow.                                                                                                                                                                                                                        |
+| `run-status`    | Pinned above the sidebar footer while a deletion runs: label, running count, indeterminate progress, Stop. Survives navigating away.                                                                                                                                                                                                                          |
+| `setting-row`   | One setting inside a settings card. Every row carries a visible description — a toggle that deletes data must say so before it is flipped.                                                                                                                                                                                                                    |
 
 Overview and Settings are built from `ui/card`: one card per group, its `CardDescription`
 carrying the sentence that used to sit loose in the section body.

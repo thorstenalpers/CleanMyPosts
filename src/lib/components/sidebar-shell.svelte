@@ -56,9 +56,8 @@
 			// The row leans a hair towards the page it would open, and the icon grows with it.
 			'hover:translate-x-0.5 [&_svg]:transition-transform [&_svg]:duration-150 hover:[&_svg]:scale-110',
 			expanded ? 'px-2.5' : 'justify-center px-0',
-			active
-				? 'bg-primary/10 font-semibold text-primary'
-				: 'text-muted-foreground hover:bg-muted hover:text-foreground'
+			'hover:bg-nav-hover hover:text-nav-hover-foreground',
+			active ? 'bg-nav-hover font-semibold text-nav-hover-foreground' : 'text-nav-foreground'
 		)}
 	>
 		<!-- Slides in rather than appearing, which is the difference between a state and a
@@ -66,7 +65,7 @@
 		<span
 			aria-hidden="true"
 			class={cn(
-				'absolute top-1.5 bottom-1.5 left-0 w-[3px] rounded-r-full bg-primary transition-transform duration-200',
+				'absolute top-1.5 bottom-1.5 left-0 w-[3px] rounded-r-full bg-nav-hover-foreground transition-transform duration-200',
 				active ? 'translate-x-0' : '-translate-x-1.5'
 			)}
 		></span>
@@ -78,7 +77,7 @@
 					aria-hidden="true"
 					class={cn(
 						'size-1.5 shrink-0 rounded-full',
-						item.status === 'connected' ? 'bg-primary' : 'bg-muted-foreground/40'
+						item.status === 'connected' ? 'bg-current' : 'bg-current opacity-30'
 					)}
 				></span>
 				<span class="sr-only">
@@ -103,7 +102,7 @@
 			onclick={() => (expanded = !expanded)}
 			aria-label={expanded ? t('nav.collapse') : t('nav.expand')}
 			aria-expanded={expanded}
-			class="flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-md text-muted-foreground transition-colors duration-150 hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+			class="flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-md text-nav-muted transition-colors duration-150 hover:bg-nav-hover hover:text-nav-hover-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
 		>
 			<PanelLeftIcon class="size-4" />
 		</button>

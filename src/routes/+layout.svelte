@@ -162,8 +162,9 @@
 						key: 'x' as const,
 						label: 'X',
 						icon: XIcon,
-						// The X mark is black on light and white on dark — which is `foreground`.
-						iconClass: 'text-foreground',
+						// The X mark takes the row's own colour: on a hovered or current row that
+						// is white, and a mark pinned to `foreground` would go black on grey there.
+						iconClass: 'text-current',
 						status: loginStore.loggedIn.x ? ('connected' as const) : ('disconnected' as const)
 					}
 				]

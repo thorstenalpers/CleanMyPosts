@@ -35,6 +35,17 @@
 
 	/* Platform marks. These are logos, not UI state — see 10-design-system.md. */
 	--brand-youtube: #ff0033;
+
+	/* The sidebar is deliberately outside the accent system: a colour preset repaints the
+	   app's identity, and the navigation is the one surface that should not move when it
+	   does. Neutral only, and no `--primary` anywhere in it. */
+	--nav-surface: oklch(0.985 0 0);
+	--nav-foreground: oklch(0.13 0 0);
+	--nav-muted: oklch(0.42 0 0);
+	/* Hover and the current page are the same chip: dark grey carrying white. Nothing else
+	   in the sidebar has a fill, so one filled row is unambiguously "here". */
+	--nav-hover: oklch(0.32 0 0);
+	--nav-hover-foreground: oklch(1 0 0);
 }
 
 .dark {
@@ -58,6 +69,12 @@
 	--input: oklch(1 0 0 / 15%);
 	--ring: oklch(0.66 0.19 262);
 	--brand-youtube: #ff3355;
+
+	--nav-surface: oklch(0.19 0 0);
+	--nav-foreground: oklch(0.97 0 0);
+	--nav-muted: oklch(0.68 0 0);
+	--nav-hover: oklch(0.4 0 0);
+	--nav-hover-foreground: oklch(1 0 0);
 }
 
 @theme inline {
@@ -84,6 +101,11 @@
 	--radius-md: calc(var(--radius) - 2px);
 	--radius-lg: var(--radius);
 	--radius-xl: calc(var(--radius) + 4px);
+	--color-nav-surface: var(--nav-surface);
+	--color-nav-foreground: var(--nav-foreground);
+	--color-nav-muted: var(--nav-muted);
+	--color-nav-hover: var(--nav-hover);
+	--color-nav-hover-foreground: var(--nav-hover-foreground);
 }
 
 /* Entry only. The exit cannot be animated without keeping the element around, and a JS
@@ -94,16 +116,12 @@
 	color: var(--hero-foreground);
 }
 
-/* The sidebar picks the same gradient up at a fraction of its strength, so the two read as
-   one surface instead of a panel sitting on a background. */
+/* Flat and neutral. It used to pick the hero's gradient up at a fraction of its strength,
+   which tied the navigation to whichever accent the colour preset was on; a sidebar that
+   changes hue with a theme is the one thing in the window that should stay put. */
 .cmp-sidebar {
-	/* Mixed in sRGB on purpose: in oklch the path from blue to white swings through pink,
-	   which tinted the whole sidebar the one colour this app reserves for deletion. */
-	background-image: linear-gradient(
-		180deg,
-		color-mix(in srgb, var(--primary) 7%, var(--card)),
-		var(--card)
-	);
+	background-color: var(--nav-surface);
+	color: var(--nav-foreground);
 }
 
 .cmp-brand-youtube {

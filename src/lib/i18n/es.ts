@@ -242,12 +242,15 @@ export const es: Record<MessageKey, string> = {
 	'settings.notifications': 'Notificaciones',
 	'settings.notifications.description':
 		'Un aviso corto cuando termina una ejecución. Desaparece solo al cabo de un segundo.',
-	'settings.telemetry': 'Datos de diagnóstico',
-	'settings.telemetry.description':
-		'Esta app no envía telemetría a ninguna parte. El interruptor controla el registro local, el único rastro que guarda.',
 	'settings.autoConsent': 'Cerrar avisos de cookies',
 	'settings.autoConsent.description':
 		'Cierra los avisos de consentimiento automáticamente, usando el botón de rechazo cuando el aviso ofrece uno.',
+	'settings.reset.title': 'Restablecer',
+	'settings.reset.description': 'Devuelve todos los ajustes al estado de una instalación nueva.',
+	'settings.reset.action': 'Restablecer valores',
+	'settings.reset.confirmBody':
+		'Todos los ajustes vuelven a su valor predeterminado, incluidos el tema, el idioma y el asistente. Las sesiones iniciadas y el registro no se tocan.',
+	'settings.reset.done': 'Ajustes restablecidos',
 	'settings.debugLogging': 'Registro detallado',
 	'settings.debugLogging.description':
 		'Anota lo que la página de la plataforma ofreció realmente cuando un borrado no encontró el camino. Útil para un informe de error, ruidoso en el resto de casos.',

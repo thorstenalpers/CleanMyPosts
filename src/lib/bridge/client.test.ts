@@ -15,7 +15,6 @@ describe('BridgeClient', () => {
 				showYouTube: true,
 				confirmDeletion: false,
 				notifications: true,
-				telemetry: true,
 				debugLogging: false,
 				autoConsent: true,
 				persistSession: true,

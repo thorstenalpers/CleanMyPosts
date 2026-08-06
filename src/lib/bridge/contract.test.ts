@@ -19,7 +19,6 @@ describe('AppSettingsSchema', () => {
 			showYouTube: true,
 			confirmDeletion: true,
 			notifications: true,
-			telemetry: true,
 			debugLogging: false,
 			autoConsent: true,
 			persistSession: true,
@@ -47,7 +46,6 @@ describe('AppSettingsSchema', () => {
 			showYouTube: true,
 			confirmDeletion: true,
 			notifications: true,
-			telemetry: true,
 			autoConsent: true,
 			persistSession: true,
 			timeouts: {
@@ -69,7 +67,6 @@ describe('AppSettingsSchema', () => {
 			showYouTube: true,
 			confirmDeletion: true,
 			notifications: true,
-			telemetry: true,
 			autoConsent: true,
 			persistSession: true,
 			timeouts: {

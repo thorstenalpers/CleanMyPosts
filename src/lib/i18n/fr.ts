@@ -244,12 +244,15 @@ export const fr: Record<MessageKey, string> = {
 	'settings.notifications': 'Notifications',
 	'settings.notifications.description':
 		'Un court message à la fin d’une exécution. Il disparaît tout seul après une seconde.',
-	'settings.telemetry': 'Données de diagnostic',
-	'settings.telemetry.description':
-		'Cette app n’envoie aucune télémétrie nulle part. L’interrupteur commande le journal local, la seule trace qu’elle garde.',
 	'settings.autoConsent': 'Fermer les bandeaux de cookies',
 	'settings.autoConsent.description':
 		'Ferme les bandeaux de consentement automatiquement, en prenant le bouton de refus quand il y en a un.',
+	'settings.reset.title': 'Réinitialiser',
+	'settings.reset.description': 'Remet tous les réglages dans l’état d’une nouvelle installation.',
+	'settings.reset.action': 'Rétablir les valeurs par défaut',
+	'settings.reset.confirmBody':
+		'Tous les réglages reviennent à leur valeur par défaut, y compris le thème, la langue et l’assistant. Les sessions connectées et le journal ne sont pas touchés.',
+	'settings.reset.done': 'Réglages réinitialisés',
 	'settings.debugLogging': 'Journal détaillé',
 	'settings.debugLogging.description':
 		"Note ce que la page de la plateforme proposait réellement quand une suppression n'a pas abouti. Utile pour un rapport de bogue, bruyant sinon.",

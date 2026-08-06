@@ -63,8 +63,6 @@ export const AppSettingsSchema = z.object({
 	confirmDeletion: z.boolean(),
 	/** Toasts when a run ends. Off means the log is the only place a result is reported. */
 	notifications: z.boolean(),
-	/** There is no telemetry; this governs the local log buffer, which is all there is. */
-	telemetry: z.boolean(),
 	/**
 	 * Keeps the engine's `debug` lines instead of dropping them. Off by default: they are
 	 * verbose and quote what a platform page actually showed, which is more than a normal log
@@ -181,6 +179,7 @@ export const BridgeMethods = {
 	'app.getInfo': { params: voidSchema, result: AppInfoSchema },
 	'settings.get': { params: voidSchema, result: AppSettingsSchema },
 	'settings.set': { params: AppSettingsSchema, result: voidSchema },
+	'settings.reset': { params: voidSchema, result: AppSettingsSchema },
 	'site.navigate': {
 		params: z.object({ platform: PlatformSchema, action: SiteActionSchema }),
 		result: z.object({ ok: z.boolean() })

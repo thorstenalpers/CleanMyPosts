@@ -1,4 +1,10 @@
-import type { BridgeMethodName, BridgeParams, BridgeResult, PushEvent } from './contract';
+import type {
+	AppSettings,
+	BridgeMethodName,
+	BridgeParams,
+	BridgeResult,
+	PushEvent
+} from './contract';
 import type { WebView2Host, WebView2MessageEvent } from './webview2.d.ts';
 import { createBridgeClient, type BridgeClient } from './client';
 
@@ -62,6 +68,33 @@ export function createMockHost(handlers: MockHandlers) {
 	return { client, emit };
 }
 
+/** One shape for `settings.get` and `settings.reset`, so the two cannot drift. */
+function mockSettings(): AppSettings {
+	return {
+		theme: 'Default',
+		language: 'System',
+		showIntro: true,
+		showLogs: true,
+		showX: true,
+		showYouTube: true,
+		confirmDeletion: true,
+		notifications: true,
+		debugLogging: false,
+		autoConsent: true,
+		persistSession: true,
+		themePreset: 'default',
+		showAssistant: true,
+		assistantSource: 'claude-code',
+		assistantCliPath: '',
+		engineScript: '',
+		timeouts: {
+			waitAfterDelete: 500,
+			waitBetweenRetryDeleteAttempts: 500,
+			waitAfterDocumentLoad: 3000
+		}
+	};
+}
+
 /** Default handlers covering every method with harmless fake data — a safe base for `vite dev`. */
 export function defaultMockHandlers(): MockHandlers {
 	return {
@@ -71,31 +104,9 @@ export function defaultMockHandlers(): MockHandlers {
 			reportBugUrl: 'https://github.com/thorstenalpers/CleanMyPosts/issues',
 			troubleshootingUrl: 'https://github.com/thorstenalpers/CleanMyPosts#-troubleshooting'
 		}),
-		'settings.get': () => ({
-			theme: 'Default',
-			language: 'System',
-			showIntro: true,
-			showLogs: true,
-			showX: true,
-			showYouTube: true,
-			confirmDeletion: true,
-			notifications: true,
-			telemetry: true,
-			debugLogging: false,
-			autoConsent: true,
-			persistSession: true,
-			themePreset: 'default',
-			showAssistant: true,
-			assistantSource: 'claude-code',
-			assistantCliPath: '',
-			engineScript: '',
-			timeouts: {
-				waitAfterDelete: 500,
-				waitBetweenRetryDeleteAttempts: 500,
-				waitAfterDocumentLoad: 3000
-			}
-		}),
+		'settings.get': () => mockSettings(),
 		'settings.set': () => undefined,
+		'settings.reset': () => mockSettings(),
 		'site.navigate': () => ({ ok: true }),
 		'site.runAction': () => ({ deletedCount: 0 }),
 		'site.cancelAction': () => undefined,

@@ -224,11 +224,14 @@ export const zh: Record<MessageKey, string> = {
 	'settings.general.description': '应用提供哪些页面。隐藏一个平台不会让你退出登录。',
 	'settings.notifications': '通知',
 	'settings.notifications.description': '一次运行结束时的简短提示，一秒后自动消失。',
-	'settings.telemetry': '诊断数据',
-	'settings.telemetry.description':
-		'本应用不向任何地方发送遥测。这个开关管的是本地日志 —— 它保留的唯一记录。',
 	'settings.autoConsent': '关闭 Cookie 横幅',
 	'settings.autoConsent.description': '自动关闭同意横幅；横幅提供拒绝按钮时优先按拒绝。',
+	'settings.reset.title': '重置',
+	'settings.reset.description': '将所有设置恢复为全新安装时的状态。',
+	'settings.reset.action': '恢复默认设置',
+	'settings.reset.confirmBody':
+		'所有设置都会恢复默认值，包括主题、语言和助手。已登录的会话和日志不受影响。',
+	'settings.reset.done': '设置已重置',
 	'settings.debugLogging': '详细日志',
 	'settings.debugLogging.description':
 		'当删除无法进行时，记录平台页面实际提供了什么。写缺陷报告时有用，其余时候只是噪音。',

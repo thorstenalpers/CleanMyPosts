@@ -242,12 +242,16 @@ export const it: Record<MessageKey, string> = {
 	'settings.notifications': 'Notifiche',
 	'settings.notifications.description':
 		'Un breve messaggio quando un’esecuzione finisce. Sparisce da solo dopo un secondo.',
-	'settings.telemetry': 'Dati diagnostici',
-	'settings.telemetry.description':
-		'Questa app non invia telemetria da nessuna parte. L’interruttore governa il registro locale, l’unica traccia che tiene.',
 	'settings.autoConsent': 'Chiudi i banner dei cookie',
 	'settings.autoConsent.description':
 		'Chiude da sé i banner di consenso, usando il pulsante che rifiuta dove il banner ne offre uno.',
+	'settings.reset.title': 'Ripristina',
+	'settings.reset.description':
+		'Riporta tutte le impostazioni allo stato di una nuova installazione.',
+	'settings.reset.action': 'Ripristina i valori predefiniti',
+	'settings.reset.confirmBody':
+		'Tutte le impostazioni tornano al valore predefinito, tema, lingua e assistente compresi. Le sessioni attive e il registro non vengono toccati.',
+	'settings.reset.done': 'Impostazioni ripristinate',
 	'settings.debugLogging': 'Registro dettagliato',
 	'settings.debugLogging.description':
 		"Annota cosa offriva davvero la pagina della piattaforma quando un'eliminazione non è riuscita. Utile per una segnalazione, rumoroso altrimenti.",

@@ -241,12 +241,15 @@ export const pt: Record<MessageKey, string> = {
 	'settings.notifications': 'Notificações',
 	'settings.notifications.description':
 		'Uma mensagem curta quando uma execução acaba. Desaparece sozinha ao fim de um segundo.',
-	'settings.telemetry': 'Dados de diagnóstico',
-	'settings.telemetry.description':
-		'Esta app não envia telemetria para lado nenhum. O interruptor comanda o registo local, o único rasto que guarda.',
 	'settings.autoConsent': 'Fechar avisos de cookies',
 	'settings.autoConsent.description':
 		'Fecha os avisos de consentimento sozinha, usando o botão que recusa sempre que o aviso tem um.',
+	'settings.reset.title': 'Repor',
+	'settings.reset.description': 'Coloca todas as definições no estado de uma instalação nova.',
+	'settings.reset.action': 'Repor predefinições',
+	'settings.reset.confirmBody':
+		'Todas as definições voltam ao valor predefinido, incluindo o tema, o idioma e o assistente. As sessões iniciadas e o registo não são alterados.',
+	'settings.reset.done': 'Definições repostas',
 	'settings.debugLogging': 'Registo detalhado',
 	'settings.debugLogging.description':
 		'Regista o que a página da plataforma ofereceu de facto quando uma eliminação não encontrou caminho. Útil para um relatório de erro, ruidoso nos restantes casos.',

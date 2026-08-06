@@ -10,7 +10,6 @@ const FALLBACK_SETTINGS: AppSettings = {
 	showYouTube: true,
 	confirmDeletion: true,
 	notifications: true,
-	telemetry: true,
 	debugLogging: false,
 	autoConsent: true,
 	persistSession: true,

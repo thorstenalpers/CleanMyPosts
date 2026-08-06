@@ -31,3 +31,14 @@ pub fn set(app: &AppHandle, params: Value) -> Result<Value> {
     push_event(app, "settingsChanged", serde_json::to_value(&next)?);
     Ok(Value::Null)
 }
+
+/// Every setting back to what a fresh install has.
+///
+/// Routed through `set` so a reset is not a second path that can forget a step: it persists,
+/// pushes the switch to the loaded pages, and announces the change exactly as any other
+/// change does.
+pub fn reset(app: &AppHandle) -> Result<Value> {
+    let defaults = AppSettings::default();
+    set(app, serde_json::to_value(&defaults)?)?;
+    Ok(serde_json::to_value(&defaults)?)
+}

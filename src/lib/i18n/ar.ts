@@ -230,12 +230,15 @@ export const ar: Record<MessageKey, string> = {
 		'ما الصفحات التي يقدّمها التطبيق. إخفاء منصة لا يسجّل خروجك منها.',
 	'settings.notifications': 'الإشعارات',
 	'settings.notifications.description': 'رسالة قصيرة عند انتهاء التشغيل. تختفي وحدها بعد ثانية.',
-	'settings.telemetry': 'بيانات التشخيص',
-	'settings.telemetry.description':
-		'لا يرسل هذا التطبيق أي بيانات قياس عن بُعد إلى أي جهة. هذا المفتاح يتحكم في السجل المحلي، وهو الأثر الوحيد الذي يحتفظ به.',
 	'settings.autoConsent': 'إغلاق لافتات الكوكيز',
 	'settings.autoConsent.description':
 		'إغلاق لافتات الموافقة تلقائيًا، مع اختيار زر الرفض حيثما توفّره اللافتة.',
+	'settings.reset.title': 'إعادة تعيين',
+	'settings.reset.description': 'يعيد كل الإعدادات إلى حالة التثبيت الجديد.',
+	'settings.reset.action': 'إعادة التعيين إلى الافتراضي',
+	'settings.reset.confirmBody':
+		'تعود كل الإعدادات إلى قيمتها الافتراضية، بما في ذلك المظهر واللغة والمساعد. لا تتأثر الجلسات المسجَّلة ولا السجل.',
+	'settings.reset.done': 'تمت إعادة تعيين الإعدادات',
 	'settings.debugLogging': 'سجل مفصّل',
 	'settings.debugLogging.description':
 		'يسجّل ما عرضته صفحة المنصة فعليًا عندما لا يجد الحذف طريقه. مفيد لتقرير الأخطاء، ومزعج فيما عدا ذلك.',

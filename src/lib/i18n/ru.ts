@@ -236,12 +236,15 @@ export const ru: Record<MessageKey, string> = {
 	'settings.notifications': 'Уведомления',
 	'settings.notifications.description':
 		'Короткое сообщение в конце запуска. Через секунду исчезает само.',
-	'settings.telemetry': 'Диагностические данные',
-	'settings.telemetry.description':
-		'Это приложение не отправляет телеметрию никуда. Переключатель управляет локальным журналом — единственной записью, которую оно ведёт.',
 	'settings.autoConsent': 'Закрывать баннеры о cookie',
 	'settings.autoConsent.description':
 		'Закрывать баннеры согласия автоматически, выбирая кнопку отказа там, где она есть.',
+	'settings.reset.title': 'Сброс',
+	'settings.reset.description': 'Возвращает все настройки к состоянию новой установки.',
+	'settings.reset.action': 'Сбросить настройки',
+	'settings.reset.confirmBody':
+		'Все настройки вернутся к значениям по умолчанию, включая тему, язык и помощника. Выполненные входы и журнал не затрагиваются.',
+	'settings.reset.done': 'Настройки сброшены',
 	'settings.debugLogging': 'Подробный журнал',
 	'settings.debugLogging.description':
 		'Записывает, что на самом деле предлагала страница платформы, когда удаление не нашло пути. Полезно для отчёта об ошибке, в остальном — шум.',

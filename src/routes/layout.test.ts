@@ -67,7 +67,6 @@ function hideYouTube() {
 			showYouTube: false,
 			confirmDeletion: true,
 			notifications: true,
-			telemetry: true,
 			debugLogging: false,
 			autoConsent: true,
 			persistSession: true,

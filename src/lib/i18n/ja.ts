@@ -232,12 +232,15 @@ export const ja: Record<MessageKey, string> = {
 	'settings.notifications': '通知',
 	'settings.notifications.description':
 		'実行が終わったときの短いメッセージ。1 秒で自然に消えます。',
-	'settings.telemetry': '診断データ',
-	'settings.telemetry.description':
-		'このアプリはテレメトリをどこにも送りません。このスイッチが決めるのはローカルのログ、唯一残る記録です。',
 	'settings.autoConsent': 'Cookie バナーを閉じる',
 	'settings.autoConsent.description':
 		'同意バナーを自動で閉じます。拒否のボタンがあるバナーでは、そちらを押します。',
+	'settings.reset.title': 'リセット',
+	'settings.reset.description': 'すべての設定を新規インストール直後の状態に戻します。',
+	'settings.reset.action': '初期設定に戻す',
+	'settings.reset.confirmBody':
+		'テーマ、言語、アシスタントを含むすべての設定が初期値に戻ります。ログイン状態とログはそのままです。',
+	'settings.reset.done': '設定をリセットしました',
 	'settings.debugLogging': '詳細ログ',
 	'settings.debugLogging.description':
 		'削除が進まなかったとき、プラットフォームのページが実際に何を示していたかを記録します。不具合報告には有用、それ以外では雑音です。',

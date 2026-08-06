@@ -16,6 +16,7 @@ pub async fn dispatch(app: AppHandle, method: String, params: Value) -> Result<V
 
         "settings.get" => settings::get(&app),
         "settings.set" => settings::set(&app, params),
+        "settings.reset" => settings::reset(&app),
 
         "site.navigate" => site::navigate(&app, &params),
         "site.runAction" => site::run_action(app, &params).await,

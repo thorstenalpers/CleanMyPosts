@@ -40,9 +40,6 @@ pub struct AppSettings {
     /// A toast when a run ends. Off leaves the log as the only report.
     #[serde(default = "yes")]
     pub notifications: bool,
-    /// There is no telemetry anywhere in this app; this governs the local log buffer.
-    #[serde(default = "yes")]
-    pub telemetry: bool,
     /// Whether the engine's `debug` lines are kept. Off by default — they quote what a
     /// platform page showed, which is more than the ordinary log carries.
     #[serde(default)]
@@ -77,7 +74,6 @@ impl Default for AppSettings {
             show_youtube: true,
             confirm_deletion: true,
             notifications: true,
-            telemetry: true,
             debug_logging: false,
             auto_consent: true,
             persist_session: true,

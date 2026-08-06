@@ -236,12 +236,15 @@ export const hi: Record<MessageKey, string> = {
 	'settings.notifications': 'सूचनाएँ',
 	'settings.notifications.description':
 		'दौर ख़त्म होने पर एक छोटा संदेश। एक सेकंड बाद अपने आप चला जाता है।',
-	'settings.telemetry': 'डायग्नोस्टिक डेटा',
-	'settings.telemetry.description':
-		'यह ऐप कहीं कोई टेलीमेट्री नहीं भेजता। यह स्विच स्थानीय लॉग को तय करता है — इकलौता रिकॉर्ड जो वह रखता है।',
 	'settings.autoConsent': 'कुकी बैनर हटाएँ',
 	'settings.autoConsent.description':
 		'सहमति बैनर अपने आप बंद करें, और जहाँ बैनर मना करने वाला बटन देता है, वही दबाएँ।',
+	'settings.reset.title': 'रीसेट',
+	'settings.reset.description': 'सभी सेटिंग्स को नई स्थापना जैसी स्थिति में लौटाता है।',
+	'settings.reset.action': 'डिफ़ॉल्ट पर रीसेट करें',
+	'settings.reset.confirmBody':
+		'थीम, भाषा और सहायक सहित सभी सेटिंग्स अपने डिफ़ॉल्ट पर लौट आती हैं। साइन-इन सत्र और लॉग अछूते रहते हैं।',
+	'settings.reset.done': 'सेटिंग्स रीसेट हो गईं',
 	'settings.debugLogging': 'विस्तृत लॉग',
 	'settings.debugLogging.description':
 		'जब कोई विलोपन रास्ता न पाए, तो यह दर्ज करता है कि प्लेटफ़ॉर्म पृष्ठ ने वास्तव में क्या दिखाया। बग रिपोर्ट के लिए उपयोगी, अन्यथा शोर।',

@@ -244,12 +244,16 @@ export const de: Record<MessageKey, string> = {
 	'settings.notifications': 'Benachrichtigungen',
 	'settings.notifications.description':
 		'Eine kurze Meldung, wenn ein Durchlauf endet. Sie verschwindet nach einer Sekunde von selbst.',
-	'settings.telemetry': 'Diagnosedaten',
-	'settings.telemetry.description':
-		'Diese App sendet keinerlei Telemetrie. Der Schalter steuert das lokale Protokoll — die einzige Aufzeichnung, die sie führt.',
 	'settings.autoConsent': 'Cookie-Banner wegklicken',
 	'settings.autoConsent.description':
 		'Zustimmungsbanner automatisch schließen, und zwar über den ablehnenden Knopf, wo das Banner einen anbietet.',
+	'settings.reset.title': 'Zurücksetzen',
+	'settings.reset.description':
+		'Setzt alle Einstellungen auf den Stand einer Neuinstallation zurück.',
+	'settings.reset.action': 'Auf Standard zurücksetzen',
+	'settings.reset.confirmBody':
+		'Alle Einstellungen gehen auf ihren Standardwert zurück, auch Design, Sprache und Assistent. Angemeldete Sitzungen und das Protokoll bleiben unberührt.',
+	'settings.reset.done': 'Einstellungen zurückgesetzt',
 	'settings.debugLogging': 'Ausführliches Protokoll',
 	'settings.debugLogging.description':
 		'Hält fest, was eine Plattform-Seite tatsächlich angeboten hat, wenn ein Löschvorgang nicht weiterkam. Nützlich für einen Fehlerbericht, sonst nur Lärm.',

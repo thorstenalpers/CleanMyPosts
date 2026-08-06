@@ -23,6 +23,7 @@
 	} from '$lib/components/ui/card';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import SettingRow from '$lib/components/setting-row.svelte';
+	import { ConfirmDialog } from '$lib/components/ui/alert-dialog';
 	import ApiKeysDialog from '$lib/components/api-keys-dialog.svelte';
 	import EngineScriptDialog from '$lib/components/engine-script-dialog.svelte';
 	import { cn } from '$lib/utils';
@@ -121,6 +122,27 @@
 			return;
 		}
 		await settingsStore.update(parsed.data);
+	}
+
+	let resetOpen = $state(false);
+
+	/**
+	 * Hands the whole file back to its defaults.
+	 *
+	 * The host answers with what it wrote rather than the view rebuilding the defaults from
+	 * its own idea of them — those live in Rust, and two copies would drift.
+	 */
+	async function resetAll(): Promise<void> {
+		try {
+			const defaults = await bridge.call('settings.reset', undefined);
+			await settingsStore.update(defaults);
+			resetOpen = false;
+			notify(settingsStore, 'success', t('settings.reset.done'));
+		} catch (error) {
+			// Left open on purpose: the settings are untouched, and a dialog that closes on a
+			// failure claims the work was done.
+			notify(settingsStore, 'error', error instanceof Error ? error.message : String(error));
+		}
 	}
 </script>
 
@@ -302,20 +324,6 @@
 				</SettingRow>
 
 				<SettingRow
-					label={t('settings.telemetry')}
-					description={t('settings.telemetry.description')}
-					for="telemetry"
-				>
-					{#snippet control()}
-						<Switch
-							id="telemetry"
-							checked={settingsStore.settings.telemetry}
-							onCheckedChange={(checked: boolean) => commit({ telemetry: checked })}
-						/>
-					{/snippet}
-				</SettingRow>
-
-				<SettingRow
 					label={t('settings.debugLogging')}
 					description={t('settings.debugLogging.description')}
 					for="debug-logging"
@@ -324,7 +332,6 @@
 						<Switch
 							id="debug-logging"
 							checked={settingsStore.settings.debugLogging}
-							disabled={!settingsStore.settings.telemetry}
 							onCheckedChange={(checked: boolean) => commit({ debugLogging: checked })}
 						/>
 					{/snippet}
@@ -529,8 +536,30 @@
 				</SettingRow>
 			</CardContent>
 		</Card>
+
+		<Card>
+			<CardHeader>
+				{@render cardTitle(t('settings.reset.title'), RotateCcwIcon)}
+				<CardDescription>{t('settings.reset.description')}</CardDescription>
+			</CardHeader>
+			<CardContent>
+				<Button variant="outline" size="sm" class="h-8" onclick={() => (resetOpen = true)}>
+					<RotateCcwIcon />
+					{t('settings.reset.action')}
+				</Button>
+			</CardContent>
+		</Card>
 	</div>
 </div>
+
+<ConfirmDialog
+	bind:open={resetOpen}
+	title={t('settings.reset.title')}
+	description={t('settings.reset.confirmBody')}
+	confirmLabel={t('settings.reset.action')}
+	cancelLabel={t('confirm.cancel')}
+	onConfirm={resetAll}
+/>
 
 <EngineScriptDialog
 	bind:open={engineOpen}

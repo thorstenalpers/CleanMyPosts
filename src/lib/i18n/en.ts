@@ -246,12 +246,15 @@ export const en = {
 	'settings.notifications': 'Notifications',
 	'settings.notifications.description':
 		'A short message when a run ends. It fades by itself after a second.',
-	'settings.telemetry': 'Diagnostic data',
-	'settings.telemetry.description':
-		'This app sends no telemetry anywhere. The switch controls the local log, which is the only record it keeps.',
 	'settings.autoConsent': 'Dismiss cookie banners',
 	'settings.autoConsent.description':
 		'Click consent banners away automatically, taking the rejecting button wherever the banner offers one.',
+	'settings.reset.title': 'Reset',
+	'settings.reset.description': 'Puts every setting back to the way a fresh installation starts.',
+	'settings.reset.action': 'Reset to defaults',
+	'settings.reset.confirmBody':
+		'Every setting goes back to its default, including the theme, the language and the assistant. Signed-in sessions and the log are not touched.',
+	'settings.reset.done': 'Settings reset',
 	'settings.debugLogging': 'Verbose logging',
 	'settings.debugLogging.description':
 		'Records what a platform page actually offered when a deletion could not find its way. Useful for a bug report, noisy otherwise.',

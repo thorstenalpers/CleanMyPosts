@@ -19,14 +19,9 @@ pub fn log(app: &AppHandle, level: &str, message: impl Into<String>) {
     };
     if let Some(state) = app.try_state::<AppState>() {
         let settings = state.settings.get();
-        // The diagnostics switch is enforced here rather than in the view: with it off the
-        // line must not exist at all, and a buffer the UI merely refuses to draw would still
-        // be a record of the run.
-        if !settings.telemetry {
-            return;
-        }
-        // Same reasoning one level down: a debug line nobody asked for is not written, not
-        // merely hidden.
+        // Enforced here rather than in the view: a debug line nobody asked for must not
+        // exist at all, and a buffer the UI merely refuses to draw would still be a record
+        // of the run.
         if entry.level == "debug" && !settings.debug_logging {
             return;
         }

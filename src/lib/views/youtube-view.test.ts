@@ -21,7 +21,6 @@ function setup(confirmDeletion: boolean) {
 			showYouTube: true,
 			confirmDeletion,
 			notifications: true,
-			telemetry: true,
 			debugLogging: false,
 			autoConsent: true,
 			persistSession: true,

@@ -26,17 +26,14 @@ from treating you as a bot.
 
 ### X (Twitter)
 
-- 🗑️ **Bulk delete** all posts
-- 🗑️ **Bulk delete** all reposts
-- 🗑️ **Bulk delete** all replies
-- 🖤 **Remove** all likes
-- 👤 **Unfollow** all followings
-- 💣 **Delete everything** — every list above, one after another, from a single button
+- 🔍 **See a list first** — posts, replies, reposts, likes, followings
+- 🗑️ **Empty it** — any one of them, on its own
+- 💣 **Delete everything** — all five, one after another, from a single button
 
 ### YouTube
 
-- 🗑️ **Bulk delete** all YouTube comments
-- 🖤 **Remove** all liked videos
+- 🔍 **See a list first** — comments via Google My Activity, liked videos
+- 🗑️ **Empty it** — either one, on its own
 - 💣 **Delete everything** — comments and liked videos in one run
 
 Every delete asks for confirmation first, and the confirmation for **Delete everything**

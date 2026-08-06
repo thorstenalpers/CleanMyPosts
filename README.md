@@ -60,6 +60,27 @@ names each list it is about to empty. A finished run reports in the status bar �
 it worked, amber when it found nothing, red when it failed — and the number of items removed
 goes into the log.
 
+### 🤖 Assistant
+
+X and YouTube change their pages without warning, and when they do, a selector that worked
+last week finds nothing. The assistant is the answer to that, and it does three things:
+
+- 🩹 **Repair the engine** — hand it the log of a failed run and it writes a patch for the
+  delete logic. You read the patch, and only you decide whether to save it; the app never
+  applies one by itself, because that code runs inside your signed-in session.
+- 🐞 **File a bug report** — it turns the same log into a report a maintainer can act on,
+  and opens GitHub's issue form with the title and body already filled in. Pressing submit
+  stays with you.
+- 💬 **Ask a question** — about a run, a setting, or what the app just did.
+
+Every mode shows the exact text that would be sent **before** anything is sent, assembled
+from the same functions that build the request, so the preview cannot drift from it. Nothing
+leaves the machine until you press the button.
+
+It runs against [Claude Code](https://claude.com/claude-code) if it is installed on this
+machine, or against a provider of your choice with your own API key — and it can be switched
+off entirely in the settings.
+
 ---
 
 ## 🛠️ Requirements

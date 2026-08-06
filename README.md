@@ -9,35 +9,9 @@
 
 **CleanMyPosts** is a lightweight Windows desktop app that securely deletes all posts, reposts, replies, likes, and followings from your X (formerly Twitter) account, as well as YouTube comments, in bulk using browser automation.
 
----
-
-## ℹ️ How It Works
-
-**CleanMyPosts** automates the process of cleaning up your social media accounts by interacting with them through an embedded browser. The app sends JavaScript commands to perform actions such as **deleting posts, reposts, replies, likes, unfollowing accounts on X (Twitter)**, and **deleting YouTube comments via Google My Activity**. It retries actions automatically to ensure everything is removed efficiently.
-
-There is **no API, no OAuth, and no token**. You sign in exactly as you would in a browser,
-and the app clicks the same buttons you would — just without stopping. Deletions are
-deliberately paced; the waits between them are configurable and exist to keep the platforms
-from treating you as a bot.
-
-### Why a browser and not an API?
-
-Because neither platform will sell you the thing you actually want, and one of them will
-charge you for the detour.
-
-**Bulk deletion is not offered.** Not on X, not on YouTube. Their interfaces delete one item
-at a time, each behind its own menu and its own confirmation — which is fine for a mistake
-and hopeless for ten years of posting.
-
-**The programmatic route costs.** X keeps API access behind paid tiers, so deleting your own
-posts through it means paying a monthly fee for the privilege. YouTube's Data API is free but
-metered: every deletion spends from a daily quota that runs out long before a busy account is
-clean, and a large clean-up turns into a job spread over days.
-
-**Driving the browser costs nothing.** The app opens the same pages you would, in your own
-signed-in session, and presses the same buttons. No developer account, no key, no monthly
-fee, no quota — and nothing about you leaves the machine, because there is no server of ours
-for it to leave to.
+<p align="center">
+  <img src="./assets/CleanMyPosts_X.png" alt="CleanMyPosts cleaning up an X account" width="900" />
+</p>
 
 ---
 
@@ -134,6 +108,36 @@ open while a run is going, so the controls do not disappear mid-task.
   <br/>
   <img src="./assets/Assistant.png" alt="The assistant, showing what would be sent before it is sent" width="700" />
 </details>
+
+---
+
+## ℹ️ How It Works
+
+There is **no API, no OAuth, and no token**. You sign in exactly as you would in a browser,
+and the app clicks the same buttons you would — just without stopping. Deletions are
+deliberately paced; the waits between them are configurable and exist to keep the platforms
+from treating you as a bot.
+
+### Why a browser and not an API?
+
+Because neither platform will sell you the thing you actually want, and one of them will
+charge you for the detour.
+
+**Bulk deletion is not offered.** Not on X, not on YouTube. Their interfaces delete one item
+at a time, each behind its own menu and its own confirmation — which is fine for a mistake
+and hopeless for ten years of posting.
+
+**The programmatic route costs.** X keeps API access behind paid tiers, so deleting your own
+posts through it means paying a monthly fee for the privilege. YouTube's Data API is free but
+metered: every deletion spends from a daily quota that runs out long before a busy account is
+clean, and a large clean-up turns into a job spread over days.
+
+**Driving the browser costs nothing.** The app opens the same pages you would, in your own
+signed-in session, and presses the same buttons. No developer account, no key, no monthly
+fee, no quota — and nothing about you leaves the machine, because there is no server of ours
+for it to leave to.
+
+---
 
 ---
 

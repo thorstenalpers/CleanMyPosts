@@ -45,7 +45,7 @@ never learned that the host changed.
 | `site.cancelAction`        | `{ requestId }`                             | —                               |
 | `site.hide`                | `{ hide: boolean }`                         | —                               |
 | `site.show`                | `{ platform }`                              | —                               |
-| `layout.setChromeWidth`    | `{ width }`                                 | —                               |
+| `layout.setSiteInset`      | `{ left, top }`                             | —                               |
 | `layout.setBackground`     | `{ color: '#RRGGBB' }`                      | —                               |
 | `updater.checkForUpdates`  | —                                           | `{ updateAvailable, message? }` |
 | `system.openUrl`           | `{ url }`                                   | —                               |
@@ -64,12 +64,13 @@ nothing more; `assistant.setKey` with an empty string forgets the stored one.
 `assistant.openFreeKeyUrl` takes a provider id rather than a URL, so no address the frontend
 invents can be handed to the shell.
 
-`site.show`, `site.hide` and `layout.setChromeWidth` drive the shell layout. `site.show`
-brings a platform's webview forward, `site.hide` parks every site webview off-screen and
-stretches the chrome webview over the window, and `setChromeWidth` sets the chrome column
-to whatever the UI currently fills it with. The host does not know how the UI is composed —
-the layout adds up the sidebar (240px or 56px) and the action panel (224px, only while it is
-open) and reports the sum. The site column starts where the chrome ends.
+`site.show`, `site.hide` and `layout.setSiteInset` drive the shell layout. `site.show` brings
+a platform's webview forward, `site.hide` parks every site webview off-screen, and
+`setSiteInset` says where a site sits once it is on screen. The host does not know how the UI
+is composed — the layout adds up the sidebar (240px or 56px) and the action panel (224px,
+only while it is open) for `left`, and the header bar's height (44px) for `top`. The chrome
+webview always covers the whole window; the site is laid on top of it, inset by those two
+numbers.
 See [01-architecture.md](01-architecture.md).
 
 `layout.setBackground` exists for one reason: resizing a webview exposes pixels the page has

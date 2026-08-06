@@ -66,8 +66,9 @@ it is in use.
 
 One site webview per platform, both alive for the whole session: a shared one had to be
 re-navigated on every switch, which discarded the page the user was on.
-`layout.setSidebarExpanded` became `layout.setChromeWidth` — the host stores what the UI
-reports instead of guessing how it is composed.
+`layout.setSidebarExpanded` became `layout.setChromeWidth` and then `layout.setSiteInset` —
+the host stores what the UI reports instead of guessing how it is composed, and now that
+includes the header bar above the site as well as the columns beside it.
 
 ## What is deliberately deferred
 

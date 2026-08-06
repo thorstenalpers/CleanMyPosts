@@ -23,13 +23,39 @@ built per family rather than per provider.
 
 ## What a question carries
 
-Built in `src/lib/assistant-context.ts`, and deliberately only two things:
+Built in `src/lib/assistant-context.ts`, and deliberately only these:
 
-1. A fixed description of the app — what it deletes on each platform (read from the same
+1. The instructions: answer from what follows, say so when the log does not explain
+   something, and answer in the user's language.
+2. A fixed description of the app — what it deletes on each platform (read from the same
    `$lib/actions.ts` table the buttons use, so the list cannot drift), and why deletion is
    slow.
-2. The tail of the log buffer, at most 200 lines, with a note saying how many older ones were
+3. The known failures and their fixes — the same cases as the README's troubleshooting
+   section, condensed. Written here rather than fetched: an answer must not depend on the
+   network, and both copies are meant to be edited together.
+4. The tail of the log buffer, at most 200 lines, with a note saying how many older ones were
    dropped so the prompt cannot grow with the session.
+5. The question.
+
+It also carries **where the code is**: the repository URL, `AGENTS.md`, `.agents/docs/`, and
+the files under `src/lib/engine/`. The local source runs on the machine that has the
+checkout, so a path is worth more to it than a pasted excerpt — it is told to read the file
+rather than guess at it.
+
+**Patch mode** adds one more section. The user says what their page shows instead, and the
+prompt carries the live `window.__cmp.config` plus the rules for a usable answer: JavaScript
+only, change the least that solves it, never delete an entry another language depends on.
+Saving the answer as the engine script is a separate click — it is code that will run inside
+the user's signed-in session, so nothing about it happens because a model produced text.
+
+**The request can be read before it is sent.** The page's preview renders exactly these
+sections, built by calling the same functions `buildPrompt` calls — a preview assembled
+separately would be a second description of the request, and the one thing it must not be is
+approximately right. A test asserts each section it shows is contained in the prompt.
+
+The troubleshooting guide is named above the page's own heading, with a button into the
+README section on GitHub: most people arrive here after something failed, and the written
+answer is faster than asking for it.
 
 The log is the only runtime data that goes out, and it is the one thing the project already
 guarantees carries no post content, handles, cookies or tokens — see

@@ -13,13 +13,14 @@
 │ ✦ Assistant          │ Likes      ▤ 🗑   │
 │ [ running-action ]   │ Following  ▤ 🗑   │
 │ ──────────────────── │                   │
+│ ⓘ Info               │                   │
 │ ⚙ Settings           │                   │
 └──────────────────────┴───────────────────┘
   240px / 56px folded    224px, X + YouTube only
 ```
 
-- `•` is the connection dot, `[ running-action ]` only while a deletion runs, `Settings` is
-  pinned to the footer. X, YouTube, Log and Assistant each appear only while their switch in
+- `•` is the connection dot, `[ running-action ]` only while a deletion runs, `Settings` and
+  `Info` are pinned to the footer. X, YouTube, Log and Assistant each appear only while their switch in
   the Navigation settings is on; a route whose item is gone bounces back to the overview, and
   the same guard catches any URL the sidebar does not offer.
 - **The actions are a column of their own, not a submenu.** Opening X used to push YouTube
@@ -48,10 +49,17 @@ increments would be one IPC round-trip per frame. It does need
 `layout.setBackground`, though: growing the chrome exposes pixels the page has not painted
 yet, and WebView2 fills those with black until it catches up.
 
-**Every route is preloaded once the overview is up.** `preloadCode` on all five paths runs
-after the stores have loaded, so the first click on any page is a render rather than a chunk
-fetch. It is deliberately not part of the first paint — nothing is fetched for a page nobody
-has asked for until the visible one has settled.
+**Every route is preloaded, and nothing waits its turn.** `preloadCode` on all seven paths
+and both store loads are started together in `onMount`, none of them awaited in sequence: on
+a cold start the store round-trips and the chunk fetches are the same few hundred
+milliseconds, and running them one after the other spent it twice.
+
+**A click is taken before its page has arrived.** `goto` only resolves once the target
+module is in, so the sidebar used to sit unchanged after the first click on each page —
+long enough to look ignored. `pendingKey` is set on the click and cleared when the router
+arrives; `activeKey` prefers it, so the highlight, the fade and the action rail all move
+immediately. The reachability guard deliberately reads the _route_, not `activeKey`: a click
+still in flight is heading somewhere legal, and bouncing it there would cancel it.
 
 ## Routing
 
@@ -66,6 +74,21 @@ shell — the sidebar is on screen before any JavaScript runs. One route per nav
 | `/youtube`  | nothing — same                                                          |
 | `/log`      | `LogView`                                                               |
 | `/settings` | `SettingsView`                                                          |
+| `/info`     | `InfoView` — version, links and the legal notice                        |
+
+Every page sits under a **header bar** that runs the full width of the window: the page's
+icon and name, the location, and the language and mode buttons. The location is the route for
+the app's own pages and the site's real address for a platform — the window has no address
+bar, and on X or YouTube that is the one thing worth checking before trusting a page with an
+account.
+
+**The bar reaches over the site because the chrome webview does.** A webview is a rectangle,
+so an L-shaped chrome column — a bar along the top plus a sidebar down the left — cannot be
+one. Instead the chrome covers the whole window and the site is laid _on top of it_, inset by
+the sidebar (plus the rail when it is open) and by the bar's height. The sites are created
+after the chrome and therefore sit above it; everything the chrome paints underneath a
+visible site is simply covered. `layout.setSiteInset` carries both numbers, because the host
+cannot see either.
 
 The overview sits at `/`, not behind a redirect: the entry point has to be the prerendered
 shell. A redirect would put the router — and therefore the JavaScript bundle — in front of
@@ -83,8 +106,8 @@ Opening a platform from here goes through `openPlatform` on the app context: rou
 the `site.*` calls that belong with it live in the layout, and a page borrows them rather
 than repeating them.
 
-The window has no address bar, so the URL is an internal detail; it exists because the router
-needs one, not because anyone reads it.
+The window has no address bar of its own, which is why the header bar shows where the user
+is: the route for the app's own pages, the site's real address on a platform.
 
 **Routing unmounts the page it leaves.** State the user would be annoyed to lose therefore
 lives in a store: `LogStore` owns the log's message and level filters for exactly this
@@ -92,8 +115,13 @@ reason. Scroll position is not preserved — the log re-arms follow-to-bottom on
 
 `activeKey` is derived from `page.url.pathname`, never held separately. The per-platform action
 (Posts, Likes, Comments, …) is not a route — it is chosen within the action panel.
-`x` / `youtube` also drive the site (`site.show`); `overview` / `log` / `settings` hide it
-(`site.hide`) and render in the content area.
+`x` / `youtube` also drive the site (`site.show`); every other key hides it (`site.hide`) and
+renders in the content area.
+
+The language menu and the mode toggle float in the top corner of the content area rather than
+sitting in a bar of their own: every page brings its own header, and a bar above them all
+would push the overview's own heading down for two buttons. The log's header carries a
+trailing padding so its filter never lands underneath them.
 
 ## Platform actions (X and YouTube)
 
@@ -161,9 +189,9 @@ See [09-feature-settings.md](09-feature-settings.md).
   (`site.show`); a Svelte page (Overview, Settings, Log) parks every site webview and
   stretches the chrome webview over the whole window (`site.hide = true`). See
   [01-architecture.md](01-architecture.md) for the off-screen-parking mechanics.
-- The chrome column is as wide as what the UI puts in it: the sidebar (240px expanded /
-  56px folded) plus the action rail (224px) when one is shown. The numbers live in
-  `$lib/layout.ts` and are reported as one sum via `layout.setChromeWidth`.
-- The word mark sits in the sidebar header next to the fold toggle. There is no separate
-  top strip — the sidebar and the site webview both start at the top edge.
+- The site's inset is what the UI puts in front of it: the sidebar (240px expanded / 56px
+  folded) plus the action rail (224px) when one is shown, and the header bar (44px) above.
+  The numbers live in `$lib/layout.ts` and are reported via `layout.setSiteInset`.
+- The word mark sits in the sidebar header next to the fold toggle; the header bar runs above
+  both the sidebar and the site.
 - The log view is always reachable without interrupting a running action.

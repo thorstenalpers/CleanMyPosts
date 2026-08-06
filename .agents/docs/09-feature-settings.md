@@ -22,16 +22,22 @@ block start-up. That is the migration story; there is no version field and no mi
 ```ts
 type AppSettings = {
 	theme: 'Default' | 'Light' | 'Dark';
-	language: 'System' | 'en' | 'de'; // System follows the language Windows runs in
+	// System follows the language Windows runs in; `ar` also flips the shell to RTL
+	language: 'System' | 'en' | 'ar' | 'de' | 'es' | 'fr' | 'hi' | 'it' | 'ja' | 'pt' | 'ru' | 'zh';
 	showIntro: boolean; // the explainer card on the overview
 	showLogs: boolean;
 	showX: boolean; // whether the sidebar offers the platform at all
 	showYouTube: boolean;
 	confirmDeletion: boolean;
+	notifications: boolean; // the toast when a run ends; it fades after a second
+	telemetry: boolean; // there is none — this governs the local log buffer
+	autoConsent: boolean; // whether the content script clicks cookie banners away
+	persistSession: boolean; // off wipes the WebView2 profile at the next start
 	themePreset: 'Default' | 'Claude' | 'Cosmic' | 'Supabase' | 'Graphite';
 	showAssistant: boolean;
 	assistantSource: string; // 'claude-code' for the local binary, else a provider id
 	assistantCliPath: string; // empty: look where Claude Code installs itself
+	engineScript: string; // the user's own patch for the delete engine; empty = built-in
 	timeouts: {
 		waitAfterDelete: number; // ms — pause between individual delete actions
 		waitBetweenRetryDeleteAttempts: number;
@@ -46,15 +52,36 @@ A form in the chrome UI at `/settings`. It calls `settings.get` on load and `set
 on every change. The host pushes a `settingsChanged` event whenever settings change so
 other views stay in sync.
 
-Six cards — Appearance, Navigation, Assistant, Safety, Timing, About — each with a
-`CardDescription` saying what the group is for, and `SettingRow`s inside. Appearance holds the
-mode switch (System / Light / Dark), the colour preset picker and the language picker.
-Navigation holds the five visibility switches: X, YouTube, the overview's introduction card,
-the log and the assistant. Assistant holds the source choice — the local binary with its path
-field, or a hosted provider with a button into the API-keys dialog. The introduction also
-carries its own tick box, so dismissing it never needs a trip to the settings — but turning
-it back on does, which is why the switch exists at all. Hiding a platform only takes it out of the sidebar and the
-overview — its webview stays loaded and signed in, so switching it back on costs nothing.
+Four cards — **Appearance, General, Assistant, Automation** — each with a `CardDescription`
+saying what the group is for, and `SettingRow`s inside.
+
+- **Appearance**: the mode switch (System / Light / Dark), the colour preset picker and the
+  language picker. The language picker is a dropdown rather than a row of chips: twelve
+  entries do not fit a row, and the same list hangs off the globe button in the header bar.
+- **General**: which pages exist at all (X, YouTube, log, assistant, the overview's info
+  panel), plus notifications and diagnostics. Hiding a platform only takes it out of the
+  sidebar and the overview — its webview stays loaded and signed in, so switching it back on
+  costs nothing. **Keep me signed in** is the one switch here that only bites on the next
+  launch: `clear_webview_session` in `src-tauri/src/lib.rs` deletes the WebView2 profile
+  folder (`%LocalAppData%\com.thorstenalpers.cleanmyposts\EBWebView`) during `setup`, before
+  the first webview exists. That moment is the point — it is the only one at which nothing
+  holds the folder open, and `Webview::clear_all_browsing_data` was not usable instead
+  because it completes asynchronously with no way to wait, so the site webviews would race it.
+- **Assistant**: the source choice — the local binary with its path field, or a hosted
+  provider with a button into the API-keys dialog.
+- **Automation**: everything that decides how a run behaves — the confirmation, the cookie
+  banners, the three waits, and the engine script.
+
+`notifications` and `telemetry` are two switches that could be mistaken for each other and
+are not. A toast is a courtesy; the log is the record, and the diagnostics switch is enforced
+in `bridge::log` rather than in the view, because a buffer the UI merely refuses to draw
+would still be a record of the run. **There is no telemetry in this app** — nothing is sent
+anywhere, and the switch says so rather than pretending to govern a network call.
+
+The overview's info panel also carries its own tick box, so dismissing it never needs a trip
+to the settings — but turning it back on does, which is why the switch exists at all.
+
+What used to be the About card is now its own page, `/info`.
 
 ## Colour presets
 

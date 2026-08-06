@@ -45,7 +45,7 @@ All three webviews are children of one window, positioned by hand in `layout_web
 **chrome webview** — the SvelteKit app, served from `build/`. It always renders the
 sidebar, plus the action panel beside it while one is open. For Overview, Settings and Log
 it takes the full window width via `site.hide`. Its width is whatever the UI reports
-through `layout.setChromeWidth`; the host stores that number and nothing else.
+through `layout.setSiteInset`; the host stores that number and nothing else.
 
 **site webviews** — the embedded browsers where the user is logged in to X and YouTube,
 one per platform. The content-script IIFE is registered with
@@ -60,14 +60,28 @@ the size they will come back at, so returning to one is a move, not a reflow.
 
 ## The engine talks WebView2, the host is Tauri
 
-The delete engine posts through `chrome.webview.postMessage`, which only exists inside
-WebView2's own host channel. The init script shims that object onto
-`__TAURI__.core.invoke('content_message')`, so the engine — and its tests — stay unaware
-that the host changed. The same script guards on the origin: it runs on every top-level
-navigation the site webview makes, including anything the user clicks through to.
+The delete engine posts through `chrome.webview.postMessage`. The init script routes that
+onto `__TAURI_INTERNALS__.invoke('content_message')`, so the engine — and its tests — stay
+unaware that the host changed. The same script guards on the origin: it runs on every
+top-level navigation the site webview makes, including anything the user clicks through to.
+
+**It replaces the method, never the object.** `chrome.webview` already exists inside
+WebView2 — it is the runtime's own bridge — and assigning a replacement object over it fails
+_silently_: the engine keeps talking to a channel that drops every word, which from the app's
+side is indistinguishable from a platform that renamed a selector. The original method stays
+reachable too, because wry routes Tauri's own ipc through it
+(`window.ipc.postMessage = s => window.chrome.webview.postMessage(s)`). Those messages are
+strings and are handed straight back to the real bridge; the engine's are objects. Swallow
+the strings and the whole app loses its ipc.
+
+Each stage of the script sits in its own `try`/`catch`. The report that tells the app someone
+is signed in comes last, and an exception anywhere above it used to take the entire injected
+script down with no trace anywhere.
 
 `eval` has no return channel, so the page reports who is logged in (`siteInfo`) rather than
-the host asking for it.
+the host asking for it. The top frame polls its own state once a second and posts only when
+it changes: signing in is a client-side route on both platforms, so a report tied to document
+load would have the app stuck on "signed out" for the rest of the session.
 
 ## Web assets
 

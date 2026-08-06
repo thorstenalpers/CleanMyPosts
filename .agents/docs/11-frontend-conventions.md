@@ -62,9 +62,10 @@ holds the log filters for exactly this reason.
 
 ## Language
 
-`src/lib/i18n/` holds one catalogue per language. `en.ts` is the source: its keys are the
-`MessageKey` type, so `de.ts` is typed as `Record<MessageKey, string>` and a key added in
-English fails to compile until it is translated.
+`src/lib/i18n/` holds one catalogue per language: `en`, `ar`, `de`, `es`, `fr`, `hi`, `it`,
+`ja`, `pt`, `ru`, `zh`. `en.ts` is the source: its keys are the `MessageKey` type, so every
+other catalogue is typed as `Record<MessageKey, string>` and a key added in English fails to
+compile until it is translated.
 
 `t(key, params)` reads `i18n.locale` on every call, which is what makes a language change
 re-render the whole app from one assignment in the layout. That is also why it has to stay a
@@ -87,6 +88,23 @@ the running action in the current language.
 `language` is a setting like any other, so it is stored by the host rather than in
 `localStorage` — the app already has one place that survives a restart. `System` resolves
 against the browser locale, which inside the chrome webview is the language Windows runs in.
+It can be changed in two places, both writing that one setting: the settings page, and the
+globe button the shell floats in the top corner beside the mode toggle.
+
+**Arabic mirrors the shell.** `i18n.applyToDocument()` writes `lang` and `dir` on `<html>`,
+and everything that could not stay direction-neutral is a logical property — `border-e`,
+`ps-*`/`pe-*`, `start-0`, `text-start`, `rounded-e-*`. Only the two places where a transform
+carries the meaning need an explicit `rtl:` variant (the nav row's lean, and its active
+marker), and the action panel's entry keyframe has a mirrored twin in `app.css`. Nothing
+about the host changes: the chrome column stays on the left of the window, the sidebar moves
+to the far side of it.
+
+## Notifications
+
+Every toast goes through `$lib/notify.ts`. Two reasons for the indirection: the notifications
+switch silences all of them from one place, and the short duration (one second, three for a
+failure) is only acceptable because the log keeps the same line — nothing in this app is
+reported by a toast alone.
 
 ## shadcn-svelte
 

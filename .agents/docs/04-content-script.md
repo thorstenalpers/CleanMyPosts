@@ -12,6 +12,8 @@ src/lib/engine/
 ├── dom.ts               # delay, waitForElement, isVisible, postLog/postProgress/postDone/postError
 ├── types.ts             # ContentActionDefinition
 ├── content-entry.ts     # registers window.__cmp, routes (platform, action) → definition
+├── config.ts            # every selector and word the engine looks for; the patch point
+├── consent.ts           # clicks cookie banners away on every page load
 ├── x/
 │   ├── index.ts         # registers all X actions
 │   ├── posts.ts
@@ -84,6 +86,57 @@ language changes. Where only text remains, document the language dependency in t
   actions.
 - **Virtualized lists.** See "always delete the first matching element" above.
 - **UI language variants.** See `innerText` note above.
+- **Cookie banners.** `consent.ts` clicks them away. The script is registered as an
+  initialization script, so every navigation starts a fresh 20-second poll that stops at the
+  first banner it dismisses. A button only counts inside a container whose own text is about
+  cookies — otherwise "OK" on a delete dialog would qualify — and the wording is matched in
+  all eleven languages the app is translated into. **A declining button always wins over an
+  accepting one**: the goal is to get the bar out of the user's way, not to consent on their
+  behalf, and the accept branch only exists for banners that offer nothing else.
+
+## The configuration, and the user's patch
+
+Everything the engine searches for lives in `config.ts` as one mutable object, handed out as
+`window.__cmp.config`. Selectors carrying a `data-testid` are the same everywhere; labels and
+menu words are not, and neither is a regional variant that ships a different DOM. Those are
+what this exists for.
+
+`AppSettings.engineScript` is the user's own patch. The host wraps it in a `try`/`catch` and
+evaluates it **inside the page, immediately before each run** — not at page load, so saving a
+fix takes effect on the next action rather than the next navigation, and a syntax error in it
+costs the run nothing but a warning in the log. A patch is meant to be one line:
+
+```js
+window.__cmp.config.youtube.removeFromLikedText.push('beğenilenlerden kaldır');
+```
+
+The assistant can write one. Its patch mode puts the current config into the prompt and asks
+for runnable JavaScript and nothing else; saving the answer is a separate click by the user,
+because this is code that will run inside their signed-in session.
+
+`config.autoConsent` is the cookie-banner switch. It is baked into the initialization script
+at webview creation and pushed into already-loaded pages from `settings::set`, because the
+watcher is polling while the user flips it.
+
+## Who is signed in
+
+X and YouTube are told apart by the page's own host — one script is injected into both, and
+YouTube's avatar heuristic answers nothing on x.com. For X, "signed in" means **the handle is
+known**: every X url is built from it, so an account the engine cannot name is of no use. The
+handle comes from the profile link, and from the account button when the nav rail does not
+render one. A page showing neither reports `unknown` rather than signed out, so a slow render
+never reads as a sign-out.
+
+Those three selectors live in `config.ts` with the rest, which makes a `data-testid` X renames
+a one-line patch instead of a release. Each change of state is written to the log, so a user
+can see whether their sign-in reached the app at all.
+
+## The pointer
+
+`clickWithCursor` moves a marker to the element before clicking it, so a person can follow
+what the app is doing on their account. It is an inline SVG ring, not an emoji, and
+`content-entry` calls `hideCursor()` in the run's `finally`: a marker left on the page after
+the run reads as "still working" long after nothing is.
 
 ## Error handling
 

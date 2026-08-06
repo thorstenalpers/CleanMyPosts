@@ -1,6 +1,6 @@
 [package]
 name = "cleanmyposts"
-version = "2.1.4"
+version = "2.2.0"
 description = "Bulk-delete your posts, reposts, replies, likes and comments on X and YouTube"
 authors = ["thorstenalpers"]
 repository = "https://github.com/thorstenalpers/CleanMyPosts"

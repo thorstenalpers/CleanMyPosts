@@ -2,108 +2,136 @@ import {
 	clickWithCursor,
 	delay,
 	highlightElement,
+	postDebug,
 	postLog,
+	postMarkup,
 	postProgress,
 	waitForByScrolling
 } from '../dom';
+import { matchesAny, siteConfig } from '../config';
 import type { RunParams } from '../protocol';
 import type { DeleteActionDefinition } from '../types';
 
-/** Multilingual fragments of "Remove from Liked videos" menu items. */
-const REMOVE_PATTERNS = [
-	'remove from liked',
-	'remove from "liked',
-	'aus "videos, die ich mag" entfernen',
-	'videos, die ich mag',
-	'entfernen',
-	'supprimer de',
-	"j'aime",
-	'retirer de',
-	'eliminar de',
-	'me gusta',
-	'quitar de',
-	'rimuovi da',
-	'mi piace',
-	'remover de',
-	'gostei',
-	'verwijderen uit',
-	'usuń z',
-	'удалить из'
-];
-
 function matchesRemovePattern(text: string): boolean {
-	const lower = text.toLowerCase();
-	return REMOVE_PATTERNS.some((pattern) => lower.includes(pattern));
+	return matchesAny(text, siteConfig.youtube.removeFromLikedText);
 }
 
-type VideoItemType = 'playlist' | 'rich' | 'compact';
-interface VideoItem {
-	element: HTMLElement;
-	type: VideoItemType;
-}
-
-function findVideoItem(): VideoItem | null {
-	const playlist = document.querySelector<HTMLElement>(
-		'ytd-playlist-video-renderer:not([is-dismissed])'
-	);
-	if (playlist) return { element: playlist, type: 'playlist' };
-
-	const rich = document.querySelector<HTMLElement>('ytd-rich-item-renderer:not([is-dismissed])');
-	if (rich) return { element: rich, type: 'rich' };
-
-	const compact = document.querySelector<HTMLElement>(
-		'ytd-compact-video-renderer:not([is-dismissed])'
-	);
-	if (compact) return { element: compact, type: 'compact' };
-
+/**
+ * The first entry still in the list.
+ *
+ * Always searched fresh: the list is virtualised, so a node collected on an earlier pass is
+ * long gone. `hidden` and `is-dismissed` are how the old renderers marked a removed row; the
+ * new view models simply leave the document, which `unlikeVideo` checks for instead.
+ */
+function findVideoItem(): HTMLElement | null {
+	for (const item of document.querySelectorAll<HTMLElement>(siteConfig.youtube.videoItem)) {
+		if (!item.hasAttribute('is-dismissed') && !item.hasAttribute('hidden')) return item;
+	}
 	return null;
+}
+
+/**
+ * Why nothing was found — the line that used to be missing.
+ *
+ * "No videos" and "the markup moved" ended the run the same silent way, and from the log
+ * there was no telling which had happened. Naming the components actually on the page is
+ * what a patch for `config.youtube.videoItem` gets written from.
+ */
+function reportNothingFound(): void {
+	const seen = new Map<string, number>();
+	for (const el of document.querySelectorAll(
+		'[class*="LockupViewModel"], [class*="ViewModel"], [id="contents"] > *'
+	)) {
+		const name = el.tagName.toLowerCase();
+		seen.set(name, (seen.get(name) ?? 0) + 1);
+	}
+	const summary = [...seen.entries()]
+		.sort((a, b) => b[1] - a[1])
+		.slice(0, 6)
+		.map(([name, count]) => `${name} ×${count}`)
+		.join(', ');
+
+	postLog(
+		'warning',
+		summary
+			? `No liked video matched "${siteConfig.youtube.videoItem}". The list holds: ${summary}`
+			: 'No liked video found, and the list is empty — nothing left to remove.'
+	);
+	postMarkup(
+		'The list the selector ran against',
+		document.querySelector('#contents') ?? document.body
+	);
 }
 
 /** A Google feedback/survey dialog can pop up mid-run and, being modal, blocks the next click. */
 function dismissSurveyBanner(): void {
-	const closeBtn = document.querySelector<HTMLElement>('button[aria-label="Close this dialog"]');
+	const closeBtn = document.querySelector<HTMLElement>(siteConfig.youtube.closeDialog);
 	if (closeBtn && closeBtn.getBoundingClientRect().width > 0) {
 		clickWithCursor(closeBtn);
 	}
 }
 
-function findMenuButton(videoItem: HTMLElement, itemType: VideoItemType): HTMLElement | null {
-	let menuButton: HTMLElement | null;
-
-	if (itemType === 'playlist') {
-		const menuRenderer = videoItem.querySelector('ytd-menu-renderer');
-		menuButton =
-			menuRenderer?.querySelector('yt-icon-button#button button') ??
-			menuRenderer?.querySelector('button#button') ??
-			menuRenderer?.querySelector('button') ??
-			null;
-	} else {
-		menuButton =
-			videoItem.querySelector('button[aria-label*="ction"]') ??
-			videoItem.querySelector('button[aria-label*="menu"]') ??
-			videoItem.querySelector('button[aria-label*="Menu"]') ??
-			videoItem.querySelector('button[aria-label*="Mehr"]') ??
-			videoItem.querySelector('button[aria-label*="More"]') ??
-			videoItem.querySelector('button[aria-label*="plus"]') ??
-			videoItem.querySelector('button[aria-label*="más"]') ??
-			videoItem.querySelector('.shortsLockupViewModelHostOutsideMetadataMenu button') ??
-			videoItem.querySelector('ytd-menu-renderer button');
-	}
-
-	return menuButton ?? videoItem.querySelector('button[aria-label]');
+/**
+ * The ⋮ on an entry.
+ *
+ * By class rather than by `aria-label`: the label is translated — "Mehr Aktionen", "More
+ * actions", "Más acciones" — and matching on fragments of it meant carrying a word list for
+ * a button that has a perfectly stable class name.
+ */
+function findMenuButton(videoItem: HTMLElement): HTMLElement | null {
+	return (
+		videoItem.querySelector<HTMLElement>(siteConfig.youtube.itemMenu) ??
+		videoItem.querySelector<HTMLElement>('button[aria-label]')
+	);
 }
 
-async function clickMenuButton(
-	videoItem: HTMLElement,
-	itemType: VideoItemType,
-	waitTime: number
-): Promise<boolean> {
-	const menuButton = findMenuButton(videoItem, itemType);
-	if (!menuButton) return false;
+/** Whether a menu is open, judged by it actually holding entries. */
+function menuIsOpen(): boolean {
+	const popup = document.querySelector(siteConfig.youtube.likesPopup);
+	return popup !== null && popup.querySelector(siteConfig.youtube.likesPopupItem) !== null;
+}
 
+/**
+ * Opens the ⋮ menu, and makes sure it stayed open.
+ *
+ * The button is nested — `div › button-view-model › button` — and a click on the inner one
+ * bubbles. Where both levels act on it, the menu opens and closes in the same breath: "the
+ * submenu flashes and the click lands on nothing". Which level is the live one is not
+ * knowable from here, so the outcome decides: if the plain click left no menu behind, the
+ * full pointer sequence gets a turn, and vice versa.
+ */
+async function clickMenuButton(videoItem: HTMLElement, waitTime: number): Promise<boolean> {
+	const menuButton = findMenuButton(videoItem);
+	if (!menuButton) {
+		const buttons = [...videoItem.querySelectorAll('button')]
+			.map((button) => button.getAttribute('aria-label') ?? '(no label)')
+			.slice(0, 6)
+			.join(' | ');
+		postLog(
+			'warning',
+			`No menu button on <${videoItem.tagName.toLowerCase()}>. It offers: ${buttons}`
+		);
+		postMarkup('The row without a menu button', videoItem);
+		return false;
+	}
+
+	// A moment to settle in either case: these menus animate in, and `waitTime` is the same
+	// brake the settings already govern.
 	clickWithCursor(menuButton);
 	await delay(waitTime);
-	return true;
+	if (menuIsOpen()) return true;
+
+	postDebug('The menu did not stay open on a plain click; trying the full pointer sequence.');
+	clickWithCursor(menuButton, { pointerSequence: true });
+	await delay(waitTime);
+	if (menuIsOpen()) return true;
+
+	postLog(
+		'warning',
+		'The ⋮ menu would not stay open — neither a click nor a full mouse press opened it.'
+	);
+	postMarkup('The row whose menu would not open', videoItem);
+	return false;
 }
 
 function findRemoveMatch(
@@ -127,47 +155,50 @@ async function clickRemoveFromLiked(): Promise<boolean> {
 	for (const ms of delays) {
 		await delay(ms);
 
-		const shortsPopup =
-			document.querySelector('.ytContextualSheetLayoutContentContainer') ??
-			document.querySelector('yt-list-view-model');
-		if (shortsPopup) {
-			const match = findRemoveMatch(shortsPopup, 'yt-list-item-view-model', [
+		// One popup selector for all of YouTube's shapes — the old renderer, the new view model
+		// and the sheet the shorts player uses. Which one is on screen is not this loop's
+		// business; that it holds an entry saying "remove from liked" is.
+		const popup = document.querySelector(siteConfig.youtube.likesPopup);
+		if (popup) {
+			const match = findRemoveMatch(popup, siteConfig.youtube.likesPopupItem, [
+				'.ytListItemViewModelTitle',
 				'.yt-list-item-view-model__title',
 				'.yt-core-attributed-string',
+				'yt-formatted-string',
 				'[role="text"]'
 			]);
 			if (match) {
+				// The clickable node, not the wrapper: the view model puts the handler on an inner
+				// button, and clicking the host does nothing at all. This one takes the full mouse
+				// sequence — it commits on `pointerup` and ignores a bare click.
 				const target =
-					match.querySelector<HTMLElement>('.yt-list-item-view-model__container') ??
-					match.querySelector('div') ??
+					match.querySelector<HTMLElement>('button') ??
+					match.querySelector<HTMLElement>('.ytListItemViewModelTextWrapper') ??
+					match.querySelector<HTMLElement>('tp-yt-paper-item') ??
 					match;
-				clickWithCursor(target);
-				return true;
-			}
-		}
-
-		const popup = document.querySelector('ytd-menu-popup-renderer');
-		if (popup) {
-			const match = findRemoveMatch(popup, 'ytd-menu-service-item-renderer', [
-				'yt-formatted-string'
-			]);
-			if (match) {
-				const target = match.querySelector<HTMLElement>('tp-yt-paper-item') ?? match;
-				clickWithCursor(target);
-				return true;
-			}
-		}
-
-		const anyPopup = document.querySelector('[role="listbox"], [role="menu"]');
-		if (anyPopup) {
-			const match = findRemoveMatch(anyPopup, '[role="menuitem"], [role="option"]', []);
-			if (match) {
-				clickWithCursor(match);
+				clickWithCursor(target, { pointerSequence: true });
 				return true;
 			}
 		}
 	}
 
+	// Nothing matched in any of the three shapes. The wording is what decides here, so it is
+	// the wording that goes into the log — that is the line a patch is written from.
+	const seen = [...document.querySelectorAll<HTMLElement>(siteConfig.youtube.likesPopupItem)]
+		.map((item) => (item.textContent ?? '').trim().replace(/\s+/g, ' '))
+		.filter(Boolean)
+		.slice(0, 8);
+
+	postLog(
+		'warning',
+		seen.length > 0
+			? `No "remove from liked" entry among: ${seen.join(' | ')}`
+			: 'The item menu never opened — nothing to click.'
+	);
+	postMarkup(
+		'The menu that held no remove entry',
+		document.querySelector(siteConfig.youtube.likesPopup)
+	);
 	return false;
 }
 
@@ -179,11 +210,11 @@ async function closeMenu(): Promise<void> {
 }
 
 async function unlikeVideo(waitTime: number): Promise<boolean> {
-	const result = findVideoItem();
-	if (!result) return false;
+	const item = findVideoItem();
+	if (!item) return false;
 
-	highlightElement(result.element);
-	if (!(await clickMenuButton(result.element, result.type, waitTime))) return false;
+	highlightElement(item);
+	if (!(await clickMenuButton(item, waitTime))) return false;
 
 	if (!(await clickRemoveFromLiked())) {
 		await closeMenu();
@@ -192,20 +223,23 @@ async function unlikeVideo(waitTime: number): Promise<boolean> {
 
 	await delay(500);
 
+	// The item has to actually go. Reporting success regardless — which is what this loop used
+	// to do once the waits ran out — turned a menu entry that never took the click into an
+	// endless run against the same video, counting one deletion per pass.
 	const waitDelays = [200, 300, 500, 700, 1000, 1500];
 	for (const ms of waitDelays) {
 		await delay(ms);
-		if (result.element.hasAttribute('is-dismissed')) return true;
-		if (!document.contains(result.element)) return true;
-		if (result.element.hasAttribute('hidden')) return true;
+		if (!document.contains(item)) return true;
+		if (item.hasAttribute('is-dismissed') || item.hasAttribute('hidden')) return true;
 	}
 
-	return true;
+	postLog('warning', 'Clicked "remove from liked", but the video is still in the list.');
+	return false;
 }
 
 export const youTubeLikesAction: DeleteActionDefinition = {
 	isEmpty(): boolean {
-		return document.querySelector('ytd-playlist-video-renderer') === null;
+		return findVideoItem() === null;
 	},
 
 	async run(params: RunParams): Promise<number> {
@@ -227,7 +261,9 @@ export const youTubeLikesAction: DeleteActionDefinition = {
 				await delay(500);
 
 				if (window.scrollY === prevScroll) {
-					postLog('info', 'No scroll change; assuming no more videos.');
+					// The end of the list, or a page whose markup this engine no longer recognises.
+					// Those two used to look identical from the log.
+					reportNothingFound();
 					break;
 				}
 				continue;
@@ -241,6 +277,7 @@ export const youTubeLikesAction: DeleteActionDefinition = {
 				await delay(params.waitAfterDelete);
 			} else {
 				failures++;
+				postLog('info', `Attempt ${failures} of ${maxFailures} left this video in place.`);
 				await closeMenu();
 				await delay(500);
 			}

@@ -7,6 +7,7 @@ import {
 	postProgress,
 	waitForByScrolling
 } from '../dom';
+import { matchesAny, siteConfig } from '../config';
 import type { RunParams } from '../protocol';
 import type { DeleteActionDefinition } from '../types';
 
@@ -28,7 +29,7 @@ async function findCaretWithRetry(
 	delayMs = 200
 ): Promise<HTMLElement | null> {
 	for (let i = 0; i < maxRetries; i++) {
-		const caret = article.querySelector<HTMLElement>("button[aria-label='More']");
+		const caret = article.querySelector<HTMLElement>(siteConfig.x.articleCaret);
 		if (isVisible(caret)) return caret;
 		await delay(delayMs);
 	}
@@ -38,9 +39,9 @@ async function findCaretWithRetry(
 async function tryClickDeleteMenuItem(attempts: number, baseDelay: number): Promise<boolean> {
 	for (let i = 0; i < attempts; i++) {
 		await delay(baseDelay * (i + 1));
-		for (const item of document.querySelectorAll("[role='menuitem']")) {
+		for (const item of document.querySelectorAll(siteConfig.x.menuItem)) {
 			const span = item.querySelector('span');
-			if (span?.innerText.toLowerCase().includes('delete')) {
+			if (span && matchesAny(span.innerText, siteConfig.x.deleteMenuText)) {
 				clickWithCursor(span);
 				return true;
 			}
@@ -83,7 +84,7 @@ async function clickDeleteOnReply(
 
 export const repliesAction: DeleteActionDefinition = {
 	isEmpty(): boolean {
-		return document.querySelector('article') === null;
+		return document.querySelector(siteConfig.x.article) === null;
 	},
 
 	async run(params: RunParams): Promise<number> {

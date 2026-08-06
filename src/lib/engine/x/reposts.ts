@@ -7,22 +7,19 @@ import {
 	postProgress,
 	waitForByScrolling
 } from '../dom';
+import { siteConfig } from '../config';
 import type { RunParams } from '../protocol';
 import type { DeleteActionDefinition } from '../types';
 
-const UNRETWEET_SELECTOR = 'button[data-testid="unretweet"]';
-
 function findUnretweetButton(): HTMLButtonElement | null {
-	return document.querySelector<HTMLButtonElement>(UNRETWEET_SELECTOR);
+	return document.querySelector<HTMLButtonElement>(siteConfig.x.unretweet);
 }
 
 async function confirmUnretweet(waitTime: number, maxRetries = 5): Promise<boolean> {
 	for (let i = 0; i < maxRetries; i++) {
 		await delay(waitTime * (i + 1));
 
-		const menuItem = document.querySelector<HTMLElement>(
-			'div[role="menuitem"][data-testid="unretweetConfirm"]'
-		);
+		const menuItem = document.querySelector<HTMLElement>(siteConfig.x.unretweetConfirm);
 		if (isVisible(menuItem)) {
 			clickWithCursor(menuItem);
 			await delay(waitTime);
@@ -51,7 +48,7 @@ async function clickUnretweetButtonWithRetry(waitTime: number, maxTries = 5): Pr
 
 export const repostsAction: DeleteActionDefinition = {
 	isEmpty(): boolean {
-		return document.querySelector('article') === null;
+		return document.querySelector(siteConfig.x.article) === null;
 	},
 
 	async run(params: RunParams): Promise<number> {

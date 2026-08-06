@@ -7,13 +7,12 @@ import {
 	postProgress,
 	waitForByScrolling
 } from '../dom';
+import { siteConfig } from '../config';
 import type { RunParams } from '../protocol';
 import type { DeleteActionDefinition } from '../types';
 
-const UNLIKE_SELECTOR = 'button[data-testid="unlike"]';
-
 function findUnlikeButton(): HTMLButtonElement | null {
-	return document.querySelector<HTMLButtonElement>(UNLIKE_SELECTOR);
+	return document.querySelector<HTMLButtonElement>(siteConfig.x.unlike);
 }
 
 async function clickUnlikeButton(waitTime: number): Promise<boolean> {

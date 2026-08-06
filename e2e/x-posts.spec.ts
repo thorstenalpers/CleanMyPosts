@@ -14,6 +14,7 @@ interface ContentMessage {
 declare global {
 	interface Window {
 		__msgs: ContentMessage[];
+		__cursorSeen: boolean;
 	}
 }
 
@@ -34,6 +35,21 @@ test('deletePosts deletes every post and reports progress in a real browser', as
 	await page.addScriptTag({ path: contentScript });
 	await expect.poll(() => page.evaluate(() => typeof window.__cmp)).toBe('object');
 
+	// The pointer marker only exists while the run does, so it has to be watched for rather
+	// than looked for afterwards.
+	await page.evaluate(() => {
+		window.__cursorSeen = false;
+		new MutationObserver((records) => {
+			for (const record of records) {
+				for (const node of record.addedNodes) {
+					if (node instanceof HTMLElement && node.querySelector('svg circle')) {
+						window.__cursorSeen = true;
+					}
+				}
+			}
+		}).observe(document.body, { childList: true });
+	});
+
 	await page.evaluate(() =>
 		window.__cmp!.run(
 			'x',
@@ -53,9 +69,10 @@ test('deletePosts deletes every post and reports progress in a real browser', as
 	const remaining = await page.evaluate(() => document.querySelectorAll('section article').length);
 	expect(remaining).toBe(0);
 
-	// The click-cursor marker is created on the page so the user can follow the automation.
-	const hasCursor = await page.evaluate(() =>
-		[...document.body.querySelectorAll('div')].some((d) => d.textContent === '👆')
-	);
-	expect(hasCursor).toBe(true);
+	// Drawn while the app clicks, so the user can follow it — and taken away when the run
+	// ends, because a marker left standing reads as "still working".
+	expect(await page.evaluate(() => window.__cursorSeen)).toBe(true);
+	await expect
+		.poll(() => page.evaluate(() => document.body.querySelectorAll('svg circle').length))
+		.toBe(0);
 });

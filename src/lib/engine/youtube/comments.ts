@@ -6,18 +6,17 @@ import {
 	postProgress,
 	waitForByScrolling
 } from '../dom';
+import { matchesAny, siteConfig } from '../config';
 import type { RunParams } from '../protocol';
 import type { DeleteActionDefinition } from '../types';
 
-const DELETE_BUTTON_SELECTOR = 'button[aria-label^="Delete activity item"]';
-
 function findDeleteButton(): HTMLButtonElement | null {
-	return document.querySelector<HTMLButtonElement>(DELETE_BUTTON_SELECTOR);
+	return document.querySelector<HTMLButtonElement>(siteConfig.youtube.deleteActivity);
 }
 
 /** A Google feedback/survey dialog can pop up mid-run and, being modal, blocks the next click. */
 function dismissSurveyBanner(): void {
-	const closeBtn = document.querySelector<HTMLElement>('button[aria-label="Close this dialog"]');
+	const closeBtn = document.querySelector<HTMLElement>(siteConfig.youtube.closeDialog);
 	if (closeBtn && closeBtn.getBoundingClientRect().width > 0) {
 		clickWithCursor(closeBtn);
 	}
@@ -37,9 +36,12 @@ async function clickConfirmDeleteButton(): Promise<boolean> {
 			return true;
 		}
 
-		for (const btn of document.querySelectorAll<HTMLElement>('div[role="button"]')) {
-			const deleteSpan = btn.querySelector('span.Crf1o');
-			if (deleteSpan?.textContent?.toLowerCase().includes('delete')) {
+		for (const btn of document.querySelectorAll<HTMLElement>(siteConfig.youtube.confirmButton)) {
+			const deleteSpan = btn.querySelector(siteConfig.youtube.confirmLabel);
+			if (
+				deleteSpan &&
+				matchesAny(deleteSpan.textContent ?? '', siteConfig.youtube.confirmDeleteText)
+			) {
 				clickWithCursor(btn);
 				return true;
 			}
@@ -93,7 +95,7 @@ export const commentsAction: DeleteActionDefinition = {
 				window.scrollBy(0, 500);
 				await delay(500);
 
-				const loadMoreBtn = document.querySelector<HTMLElement>('button[jsname="T8gEfd"]');
+				const loadMoreBtn = document.querySelector<HTMLElement>(siteConfig.youtube.loadMore);
 				if (loadMoreBtn && loadMoreBtn.offsetParent !== null) {
 					clickWithCursor(loadMoreBtn);
 					await delay(1000);

@@ -7,13 +7,12 @@ import {
 	postProgress,
 	waitForByScrolling
 } from '../dom';
+import { siteConfig } from '../config';
 import type { RunParams } from '../protocol';
 import type { DeleteActionDefinition } from '../types';
 
-const UNFOLLOW_SELECTOR = 'button[data-testid$="-unfollow"]';
-
 function findUnfollowButton(): HTMLButtonElement | null {
-	return document.querySelector<HTMLButtonElement>(UNFOLLOW_SELECTOR);
+	return document.querySelector<HTMLButtonElement>(siteConfig.x.unfollow);
 }
 
 async function clickUnfollowButtonWithConfirm(
@@ -29,9 +28,7 @@ async function clickUnfollowButtonWithConfirm(
 	await delay(waitBeforeTryClickDelete);
 
 	for (let attempt = 0; attempt < maxConfirmAttempts; attempt++) {
-		const confirmBtn = document.querySelector<HTMLButtonElement>(
-			'button[data-testid="confirmationSheetConfirm"]'
-		);
+		const confirmBtn = document.querySelector<HTMLButtonElement>(siteConfig.x.confirm);
 		if (isVisible(confirmBtn)) {
 			clickWithCursor(confirmBtn);
 			return true;

@@ -10,8 +10,10 @@ function buildTweetFixture(): { root: HTMLElement; caret: HTMLButtonElement } {
 	root.innerHTML = `
     <div data-testid="primaryColumn">
       <section>
-        <article></article>
-        <button data-testid="caret">More</button>
+        <article data-testid="tweet">
+          <a href="/tester">tester</a>
+          <button data-testid="caret">More</button>
+        </article>
       </section>
     </div>
     <div role="menu">
@@ -73,7 +75,8 @@ describe('postsAction.run', () => {
 		const deletedCount = await postsAction.run({
 			requestId: 'req-1',
 			waitAfterDelete: 1,
-			waitBetweenRetryDeleteAttempts: 1
+			waitBetweenRetryDeleteAttempts: 1,
+			userName: 'tester'
 		});
 
 		expect(deletedCount).toBe(1);
@@ -89,7 +92,8 @@ describe('postsAction.run', () => {
 		const deletedCount = await postsAction.run({
 			requestId: 'req-2',
 			waitAfterDelete: 1,
-			waitBetweenRetryDeleteAttempts: 1
+			waitBetweenRetryDeleteAttempts: 1,
+			userName: 'tester'
 		});
 
 		expect(deletedCount).toBe(0);

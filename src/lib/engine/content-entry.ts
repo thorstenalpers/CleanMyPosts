@@ -1,6 +1,8 @@
-import { xActions, getUserName } from './x';
-import { youTubeActions, getLoginStatus } from './youtube';
-import { postDone, postError, postLog } from './dom';
+import { xActions, getUserName, getLoginStatus as getXLoginStatus } from './x';
+import { youTubeActions, getLoginStatus as getYouTubeLoginStatus } from './youtube';
+import { startConsentWatcher } from './consent';
+import { siteConfig } from './config';
+import { hideCursor, postDone, postError, postLog, showToast } from './dom';
 import type { CmpApi, Platform, RunParams, XAction, YouTubeAction } from './protocol';
 import type { DeleteActionDefinition } from './types';
 
@@ -32,7 +34,9 @@ const api: CmpApi = {
 				const message = error instanceof Error ? error.message : String(error);
 				postLog('error', `${platform}:${action} failed: ${message}`);
 				postError(params.requestId, message);
-			});
+			})
+			// Whatever the outcome: the run is over, so the pointer stops standing on the page.
+			.finally(hideCursor);
 	},
 
 	isEmpty(platform, action) {
@@ -40,7 +44,22 @@ const api: CmpApi = {
 	},
 
 	getUserName,
-	getLoginStatus
+	toast: showToast,
+
+	// The two platforms are told apart by their own host: this file is one script, injected
+	// into both, and answering an X page with YouTube's avatar heuristic reports nothing.
+	getLoginStatus() {
+		return window.location.host.includes('x.com') ? getXLoginStatus() : getYouTubeLoginStatus();
+	},
+
+	// Handed out, not copied: the host evaluates the user's patch against this object between
+	// page load and the run that follows, and the actions read it as they go.
+	config: siteConfig
 };
 
 window.__cmp = api;
+
+// This file is an initialization script, so every navigation on the site webview starts a
+// fresh watch — the cookie bar X shows on the first page of a session never survives to the
+// point where the user is asked to click something behind it.
+startConsentWatcher();

@@ -10,6 +10,8 @@
  * problem in the previous implementation.
  */
 
+import type { SiteConfig } from './config';
+
 export type Platform = 'x' | 'youtube';
 
 export type XAction =
@@ -25,7 +27,8 @@ export interface RunParams {
 
 export interface ContentLogMessage {
 	type: 'log';
-	level: 'info' | 'warning' | 'error';
+	/** `debug` is dropped by the host unless the setting is on — see `settings.debugLogging`. */
+	level: 'debug' | 'info' | 'warning' | 'error';
 	message: string;
 }
 
@@ -56,6 +59,13 @@ export interface CmpApi {
 	isEmpty(platform: Platform, action: XAction | YouTubeAction): boolean;
 	getUserName(): string;
 	getLoginStatus(): string;
+	/** Shows a result on the platform page — the only surface the app can reach while it shows. */
+	toast(message: string, kind: 'success' | 'info' | 'error'): void;
+	/**
+	 * What the engine looks for, live and writable. The host evaluates the user's own patch
+	 * against this before every run — see `$lib/engine/config.ts`.
+	 */
+	config: SiteConfig;
 }
 
 declare global {

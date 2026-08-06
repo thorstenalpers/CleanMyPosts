@@ -1,5 +1,6 @@
 import type { YouTubeAction } from '../protocol';
 import type { DeleteActionDefinition } from '../types';
+import { siteConfig } from '../config';
 import { commentsAction } from './comments';
 import { youTubeLikesAction } from './likes';
 
@@ -8,22 +9,13 @@ export const youTubeActions: Record<YouTubeAction, DeleteActionDefinition> = {
 	deleteLikes: youTubeLikesAction
 };
 
+/**
+ * Evidence of an account first, the sign-in prompt second. The three pages this runs on —
+ * youtube.com, the Liked playlist and My Activity — share no single marker, and My Activity
+ * carries account links whether or not anyone is signed in.
+ */
 export function getLoginStatus(): string {
-	const avatar = document.querySelector<HTMLImageElement>(
-		'button#avatar-btn img, yt-img-shadow#avatar img'
-	);
-	if (avatar?.src) return 'logged_in';
-
-	const signInLink = document.querySelector(
-		'a[href*="accounts.google.com"], ytd-button-renderer a[href*="ServiceLogin"]'
-	);
-	if (signInLink) return '';
-
-	if (document.querySelectorAll('div[role="listitem"]').length > 0) return 'logged_in';
-	if (document.querySelectorAll('button[aria-label^="Delete activity item"]').length > 0)
-		return 'logged_in';
-	if (document.querySelector('[data-activity-collection-name]')) return 'logged_in';
-	if (document.querySelectorAll('ytd-playlist-video-renderer').length > 0) return 'logged_in';
-
+	if (document.querySelector(siteConfig.youtube.signedIn)) return 'logged_in';
+	if (document.querySelector(siteConfig.youtube.signedOut)) return '';
 	return 'unknown';
 }

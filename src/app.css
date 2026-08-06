@@ -25,27 +25,20 @@
 	--ring: oklch(0.52 0.22 262);
 	--radius: 0.75rem;
 
-	/* The hero band. Deliberately dark in both modes — it is the one surface that carries
-	   the app's identity rather than its content, and it reads as the same object whether
-	   the rest of the window is light or dark. */
-	--hero-from: oklch(0.17 0.04 264);
-	--hero-via: oklch(0.24 0.09 264);
-	--hero-to: oklch(0.45 0.19 262);
-	--hero-foreground: oklch(0.98 0.01 264);
-
 	/* Platform marks. These are logos, not UI state — see 10-design-system.md. */
 	--brand-youtube: #ff0033;
 
-	/* The sidebar is deliberately outside the accent system: a colour preset repaints the
-	   app's identity, and the navigation is the one surface that should not move when it
-	   does. Neutral only, and no `--primary` anywhere in it. */
-	--nav-surface: oklch(0.985 0 0);
-	--nav-foreground: oklch(0.13 0 0);
-	--nav-muted: oklch(0.42 0 0);
-	/* Hover and the current page are the same chip: dark grey carrying white. Nothing else
-	   in the sidebar has a fill, so one filled row is unambiguously "here". */
-	--nav-hover: oklch(0.32 0 0);
-	--nav-hover-foreground: oklch(1 0 0);
+	/* The standard shadcn sidebar family rather than a set of our own. The colour presets in
+	   themes.css already carry values for these, so the navigation follows a preset instead of
+	   needing a second, parallel palette maintained by hand. */
+	--sidebar: oklch(0.985 0 0);
+	--sidebar-foreground: oklch(0.145 0 0);
+	--sidebar-primary: oklch(0.205 0 0);
+	--sidebar-primary-foreground: oklch(0.985 0 0);
+	--sidebar-accent: oklch(0.97 0 0);
+	--sidebar-accent-foreground: oklch(0.205 0 0);
+	--sidebar-border: oklch(0.922 0 0);
+	--sidebar-ring: oklch(0.708 0 0);
 }
 
 .dark {
@@ -70,11 +63,14 @@
 	--ring: oklch(0.66 0.19 262);
 	--brand-youtube: #ff3355;
 
-	--nav-surface: oklch(0.19 0 0);
-	--nav-foreground: oklch(0.97 0 0);
-	--nav-muted: oklch(0.68 0 0);
-	--nav-hover: oklch(0.4 0 0);
-	--nav-hover-foreground: oklch(1 0 0);
+	--sidebar: oklch(0.205 0 0);
+	--sidebar-foreground: oklch(0.985 0 0);
+	--sidebar-primary: oklch(0.922 0 0);
+	--sidebar-primary-foreground: oklch(0.205 0 0);
+	--sidebar-accent: oklch(0.269 0 0);
+	--sidebar-accent-foreground: oklch(0.985 0 0);
+	--sidebar-border: oklch(1 0 0 / 10%);
+	--sidebar-ring: oklch(0.556 0 0);
 }
 
 @theme inline {
@@ -101,27 +97,14 @@
 	--radius-md: calc(var(--radius) - 2px);
 	--radius-lg: var(--radius);
 	--radius-xl: calc(var(--radius) + 4px);
-	--color-nav-surface: var(--nav-surface);
-	--color-nav-foreground: var(--nav-foreground);
-	--color-nav-muted: var(--nav-muted);
-	--color-nav-hover: var(--nav-hover);
-	--color-nav-hover-foreground: var(--nav-hover-foreground);
-}
-
-/* Entry only. The exit cannot be animated without keeping the element around, and a JS
-   transition would drag the Web Animations API into every component test for it. */
-/* Blue bleeding into black, which is the whole look: one band rather than three blocks. */
-.cmp-hero {
-	background-image: linear-gradient(135deg, var(--hero-from), var(--hero-via) 45%, var(--hero-to));
-	color: var(--hero-foreground);
-}
-
-/* Flat and neutral. It used to pick the hero's gradient up at a fraction of its strength,
-   which tied the navigation to whichever accent the colour preset was on; a sidebar that
-   changes hue with a theme is the one thing in the window that should stay put. */
-.cmp-sidebar {
-	background-color: var(--nav-surface);
-	color: var(--nav-foreground);
+	--color-sidebar: var(--sidebar);
+	--color-sidebar-foreground: var(--sidebar-foreground);
+	--color-sidebar-primary: var(--sidebar-primary);
+	--color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+	--color-sidebar-accent: var(--sidebar-accent);
+	--color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+	--color-sidebar-border: var(--sidebar-border);
+	--color-sidebar-ring: var(--sidebar-ring);
 }
 
 .cmp-brand-youtube {
@@ -137,6 +120,22 @@
 		opacity: 1;
 		transform: none;
 	}
+}
+
+/* The panel slides out of the sidebar, and the sidebar changes sides in Arabic. */
+@keyframes cmp-panel-in-rtl {
+	from {
+		opacity: 0;
+		transform: translateX(12px);
+	}
+	to {
+		opacity: 1;
+		transform: none;
+	}
+}
+
+[dir='rtl'] [class*='cmp-panel-in'] {
+	animation-name: cmp-panel-in-rtl;
 }
 
 @keyframes cmp-indeterminate {

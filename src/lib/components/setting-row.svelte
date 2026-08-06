@@ -7,7 +7,8 @@
 		description?: string;
 		/** Ties the label to the control the caller renders. */
 		for?: string;
-		control: Snippet;
+		/** Optional: a row that only states something has nothing to operate. */
+		control?: Snippet;
 	}
 
 	let { label, description, for: htmlFor, control }: Props = $props();
@@ -21,6 +22,6 @@
 		{/if}
 	</div>
 	<div class="flex shrink-0 items-center gap-2">
-		{@render control()}
+		{@render control?.()}
 	</div>
 </div>

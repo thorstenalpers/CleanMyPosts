@@ -1,11 +1,13 @@
 import type { ThemePreset } from '$lib/bridge/contract';
 
 export const THEME_PRESETS: { id: ThemePreset; label: string }[] = [
-	{ id: 'Default', label: 'Blue' },
-	{ id: 'Claude', label: 'Claude' },
-	{ id: 'Cosmic', label: 'Cosmic' },
-	{ id: 'Supabase', label: 'Supabase' },
-	{ id: 'Graphite', label: 'Graphite' }
+	{ id: 'default', label: 'Default' },
+	{ id: 'caffeine', label: 'Caffeine' },
+	{ id: 'modern-minimal', label: 'Modern Minimal' },
+	{ id: 'mono', label: 'Mono' },
+	{ id: 'northern-lights', label: 'Northern Lights' },
+	{ id: 'twitter', label: 'Twitter' },
+	{ id: 'vercel', label: 'Vercel' }
 ];
 
 /**
@@ -45,7 +47,7 @@ export function applyThemeChange(mutate: () => void): void {
 }
 
 /**
- * `Default` is the neutral base in app.css, so it is the absence of a preset class.
+ * `default` is the neutral base in app.css, so it is the absence of a preset class.
  *
  * Re-applying the preset already on screen is skipped: every call suppresses transitions
  * for a moment, and this runs from an effect that also sees unrelated settings changes.
@@ -58,10 +60,7 @@ export function applyPreset(preset: ThemePreset): void {
 	applyThemeChange(() => {
 		const root = document.documentElement;
 		for (const entry of THEME_PRESETS) {
-			root.classList.toggle(
-				`theme-${entry.id.toLowerCase()}`,
-				entry.id === preset && entry.id !== 'Default'
-			);
+			root.classList.toggle(`theme-${entry.id}`, entry.id === preset && entry.id !== 'default');
 		}
 	});
 }

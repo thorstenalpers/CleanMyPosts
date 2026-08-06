@@ -7,6 +7,10 @@
 [![Donate](https://img.shields.io/badge/donate-PayPal-00457C?style=flat-square&logo=paypal&logoColor=white)](https://www.paypal.com/donate/?hosted_button_id=QYHGE9LA9SNAN)
 [![Stars](https://img.shields.io/github/stars/thorstenalpers/CleanMyPosts?style=flat-square&logo=github&label=stars)](https://github.com/thorstenalpers/CleanMyPosts)
 
+<p align="center">
+  <img src="./assets/X.webp" alt="Deleting posts on X from inside CleanMyPosts" width="820" />
+</p>
+
 **CleanMyPosts** is a lightweight Windows desktop app that securely deletes all posts, reposts, replies, likes, and followings from your X (formerly Twitter) account, as well as YouTube comments, in bulk using browser automation.
 
 ---
@@ -19,23 +23,6 @@ There is **no API, no OAuth, and no token**. You sign in exactly as you would in
 and the app clicks the same buttons you would — just without stopping. Deletions are
 deliberately paced; the waits between them are configurable and exist to keep the platforms
 from treating you as a bot.
-
-```mermaid
-%%{init: {"flowchart": {"diagramPadding": 125}}}%%
-flowchart LR
-    U["User"]
-    A["CleanMyPosts App"]
-    B["Embedded Browser"]
-    X["X (Twitter)"]
-    Y["YouTube"]
-
-    U -->A
-    A -->|Retry|B
-    A -->|Execute JS Actions|B
-    A -->|Refresh page|B
-    B -->X
-    B -->Y
-```
 
 ---
 
@@ -101,12 +88,6 @@ open while a run is going, so the controls do not disappear mid-task.
 </details>
 
 <details>
-  <summary><strong>X (Twitter)</strong></summary>
-  <br/>
-  <img src="./assets/X.webp" alt="Posts, replies, reposts, likes and followings on X" width="700" />
-</details>
-
-<details>
   <summary><strong>YouTube</strong></summary>
   <br/>
   <img src="./assets/Youtube.webp" alt="Comments and liked videos on YouTube" width="700" />
@@ -133,7 +114,7 @@ bundle's entry point; the result is a single dependency-free IIFE exposing `wind
 
 ### 🔧 Build the bundle
 
-Requires [Node.js](https://nodejs.org/) 20+:
+Requires [Node.js](https://nodejs.org/) 24+, the version CI builds with:
 
 ```bash
 npm ci && npm run build
@@ -229,11 +210,21 @@ side too.
 ## 🧑‍💻 Building from Source
 
 Requires the [Rust toolchain](https://rustup.rs/) and [Node.js 24+](https://nodejs.org/).
-Run the app in the real Tauri window, with hot reload:
 
 ```bash
-npm ci && npm run start
+npm ci
+npm run build
+npm run start
 ```
+
+`npm run build` before the first `npm run start` is not optional. The Rust crate compiles
+the delete engine into itself with `include_str!("../../dist/content/content.js")`, and
+`npm run start` does not produce that file — it runs Vite's dev server, which serves the
+interface and nothing else. Without the build the crate does not compile at all. The same
+applies after any change under `src/lib/engine/`: the app keeps running the bundle it was
+compiled with until it is rebuilt.
+
+`npm run start` then opens the real Tauri window, with hot reload for the interface.
 
 Build the installer:
 
@@ -255,8 +246,12 @@ npm run lint
 npm run check
 npm run test
 npm run test:e2e
-cargo test --manifest-path src-tauri/Cargo.toml
+cargo test --manifest-path src-tauri/Cargo.toml --lib
 ```
+
+`npm test` covers the interface and the engine; the Rust half has no npm script and is the
+line above. `npm run test:e2e` builds the engine bundle first and runs it in real Chromium
+against saved page markup — never against the live sites, so nothing is deleted for real.
 
 The architecture, the UI↔host bridge, and the design rules are documented under
 [`.agents/docs/`](.agents/docs/) — start at [AGENTS.md](AGENTS.md).

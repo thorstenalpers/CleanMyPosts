@@ -7,10 +7,6 @@
 [![Donate](https://img.shields.io/badge/donate-PayPal-00457C?style=flat-square&logo=paypal&logoColor=white)](https://www.paypal.com/donate/?hosted_button_id=QYHGE9LA9SNAN)
 [![Stars](https://img.shields.io/github/stars/thorstenalpers/CleanMyPosts?style=flat-square&logo=github&label=stars)](https://github.com/thorstenalpers/CleanMyPosts)
 
-<p align="center">
-  <img src="./assets/X.webp" alt="Deleting posts on X from inside CleanMyPosts" width="820" />
-</p>
-
 **CleanMyPosts** is a lightweight Windows desktop app that securely deletes all posts, reposts, replies, likes, and followings from your X (formerly Twitter) account, as well as YouTube comments, in bulk using browser automation.
 
 ---
@@ -85,6 +81,12 @@ open while a run is going, so the controls do not disappear mid-task.
   <summary><strong>Overview</strong></summary>
   <br/>
   <img src="./assets/Overview.png" alt="The overview, listing what each platform can clean" width="700" />
+</details>
+
+<details>
+  <summary><strong>X (Twitter)</strong></summary>
+  <br/>
+  <img src="./assets/X.webp" alt="Posts, replies, reposts, likes and followings on X" width="700" />
 </details>
 
 <details>

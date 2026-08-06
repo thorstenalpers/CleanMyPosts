@@ -9,13 +9,11 @@
 
 **CleanMyPosts** is a lightweight Windows desktop app that securely deletes all posts, reposts, replies, likes, and followings from your X (formerly Twitter) account, as well as YouTube comments, in bulk using browser automation.
 
-<p align="center">
-  <img src="./assets/CleanMyPosts_X.png" alt="CleanMyPosts cleaning up an X account" width="900" />
-</p>
-
 ---
 
 ## 🚀 Features
+
+<img align="right" src="./assets/CleanMyPosts_X.png" alt="CleanMyPosts cleaning up an X account" width="460" />
 
 ### X (Twitter)
 
@@ -54,6 +52,8 @@ leaves the machine until you press the button.
 It runs against [Claude Code](https://claude.com/claude-code) if it is installed on this
 machine, or against a provider of your choice with your own API key — and it can be switched
 off entirely in the settings.
+
+<br clear="both" />
 
 ---
 
@@ -136,8 +136,6 @@ clean, and a large clean-up turns into a job spread over days.
 signed-in session, and presses the same buttons. No developer account, no key, no monthly
 fee, no quota — and nothing about you leaves the machine, because there is no server of ours
 for it to leave to.
-
----
 
 ---
 

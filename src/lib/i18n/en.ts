@@ -9,12 +9,19 @@
  * a translator can move them.
  */
 export const en = {
+	'app.tagline': 'Deletes posts, likes and comments',
+
 	'nav.overview': 'Overview',
 	'nav.log': 'Log',
 	'nav.assistant': 'Assistant',
 	'nav.settings': 'Settings',
+	'nav.info': 'Info',
 	'nav.collapse': 'Collapse menu',
 	'nav.expand': 'Expand menu',
+
+	'header.toDark': 'Switch to dark mode',
+	'header.toLight': 'Switch to light mode',
+	'header.language': 'Language',
 
 	'site.signedIn': 'Signed in',
 	'site.signedOut': 'Not signed in',
@@ -22,6 +29,12 @@ export const en = {
 
 	'action.show': 'Show {label}',
 	'action.delete': 'Delete all {label}',
+	'action.deleteAll': 'Delete everything',
+	'confirm.all.title': 'Delete everything on {platform}?',
+	'confirm.all.description':
+		'Emptied one after the other, on {platform}: {lists}. This cannot be undone.',
+	'run.allDone': '{count} items deleted in total.',
+	'run.allPartly': '{count} items deleted, {failed} lists failed.',
 	'action.close': 'Close {platform} actions',
 
 	'group.posts': 'Posts',
@@ -82,6 +95,7 @@ export const en = {
 	'log.filterLabel': 'Filter log messages',
 	'log.levelLabel': 'Filter by level',
 	'log.level.all': 'All',
+	'log.level.debug': 'Debug',
 	'log.level.info': 'Info',
 	'log.level.warning': 'Warning',
 	'log.level.error': 'Error',
@@ -114,7 +128,7 @@ export const en = {
 	'settings.showX.description': 'Posts, replies, reposts, likes, following.',
 	'settings.showYouTube': 'Show YouTube',
 	'settings.showYouTube.description': 'Comments and liked videos.',
-	'settings.showIntro': 'Show the introduction',
+	'settings.showIntro': 'Show the info',
 	'settings.showIntro.description': 'The panel on the overview that explains how the app works.',
 	'settings.showLog': 'Show log',
 	'settings.showLog.description': 'A live log of every action, as its own page.',
@@ -144,6 +158,9 @@ export const en = {
 	'settings.assistant.description':
 		'Where answers come from. The local binary sends nothing from this app; a hosted provider is the one thing here that puts data on the network.',
 	'settings.assistant.source': 'Source',
+	'settings.assistant.off': 'Off',
+	'settings.assistant.off.description':
+		'The assistant is switched off and does not appear in the sidebar.',
 	'settings.assistant.local': 'Claude Code on this machine',
 	'settings.assistant.hosted': 'A hosted provider',
 	'settings.assistant.cliPath': 'Path to the binary',
@@ -168,6 +185,9 @@ export const en = {
 
 	'assistant.title': 'Assistant',
 	'assistant.subtitle': 'Questions about what this app does, and about what the log says.',
+	'assistant.placeholder.patch': 'The menu on my page says "Remove from Liked videos" instead',
+	'assistant.placeholder.report':
+		'Deleting likes stopped after three videos and the menu closed by itself',
 	'assistant.placeholder': 'Why did 12 posts not get deleted?',
 	'assistant.ask': 'Ask',
 	'assistant.asking': 'Asking…',
@@ -177,6 +197,19 @@ export const en = {
 	'assistant.sendsLog':
 		'The question is sent together with the log and a description of the app. The log never contains post content, handles or cookies.',
 	'assistant.clear': 'Clear',
+	'assistant.troubleshooting': 'Troubleshooting',
+	'assistant.troubleshooting.hint':
+		'Most failures have a known cause and a known fix. The guide lists them — and this assistant is given the same list along with your log.',
+	'assistant.preview.show': 'Show what is sent',
+	'assistant.preview.hide': 'Hide what is sent',
+	'assistant.preview.description':
+		'The request, exactly as it would leave this machine. Nothing beyond this is added.',
+	'assistant.preview.role': 'Instructions',
+	'assistant.preview.app': 'About the app',
+	'assistant.preview.fixes': 'Known failures and fixes',
+	'assistant.preview.log': 'The log',
+	'assistant.preview.question': 'Your question',
+	'assistant.preview.noQuestion': 'Type a question above to see it here.',
 
 	'settings.about': 'About',
 	'settings.about.description':
@@ -187,7 +220,80 @@ export const en = {
 	'settings.noUpdates': 'No updates available.',
 	'settings.github': 'Project on GitHub',
 	'settings.reportBug': 'Report a bug',
-	'settings.licenses': 'Third-party licenses'
+	'settings.licenses': 'Third-party licenses',
+
+	'info.title': 'Info',
+	'info.subtitle': 'What this app is, where it came from, and what it is built on.',
+	'info.app.title': 'CleanMyPosts',
+	'info.app.body':
+		'A Windows app that clears out what you have posted, liked and followed, one platform at a time. It works the way you would: it opens the page in a browser window and clicks through it, until there is nothing left to remove.',
+	'info.developer': 'Developer',
+	'info.version.title': 'This installation',
+	'info.version.description': 'Updates are downloaded and installed by the app itself.',
+	'info.links.title': 'Links',
+	'info.links.description': 'All of it is open: the code, the issues, and what it is built on.',
+	'info.github.description': 'The source, the releases, and the history behind them.',
+	'info.reportBug.description':
+		'Something did not get deleted, or got deleted twice? This is where it goes.',
+	'info.licenses.description': 'The open-source libraries this app ships, and their terms.',
+	'info.legal.title': 'Legal',
+	'info.troubleshooting.description':
+		'The failures that come up again and again, and what to do about each.',
+
+	'settings.general': 'General',
+	'settings.general.description':
+		'Which pages the app offers. Hiding a platform does not sign you out of it.',
+	'settings.notifications': 'Notifications',
+	'settings.notifications.description':
+		'A short message when a run ends. It fades by itself after a second.',
+	'settings.telemetry': 'Diagnostic data',
+	'settings.telemetry.description':
+		'This app sends no telemetry anywhere. The switch controls the local log, which is the only record it keeps.',
+	'settings.autoConsent': 'Dismiss cookie banners',
+	'settings.autoConsent.description':
+		'Click consent banners away automatically, taking the rejecting button wherever the banner offers one.',
+	'settings.debugLogging': 'Verbose logging',
+	'settings.debugLogging.description':
+		'Records what a platform page actually offered when a deletion could not find its way. Useful for a bug report, noisy otherwise.',
+	'settings.persistSession': 'Keep me signed in',
+	'settings.persistSession.description':
+		'Keep the WebView2 cache and cookies between launches. Off throws them away at every start, so X and YouTube open signed out.',
+	'settings.automation': 'Automation',
+	'settings.automation.description': 'How a run behaves, and what it clicks.',
+	'settings.engine': 'Delete engine',
+	'settings.engine.none': 'Built-in behaviour',
+	'settings.engine.active': 'Your own script, {count} lines',
+	'settings.engine.edit': 'Edit',
+	'settings.engine.reset': 'Reset',
+	'settings.engine.save': 'Save',
+	'settings.engine.hint':
+		'Runs in the platform page before each action. `window.__cmp.config` holds every selector and every word the engine looks for — change what your language or region needs. A broken script costs the run nothing: it is caught, logged, and the built-in behaviour goes on.',
+	'settings.engine.placeholder': "window.__cmp.config.youtube.removeFromLikedText.push('…');",
+
+	'assistant.report': 'Report a problem',
+	'assistant.report.hint':
+		'The assistant turns the log into a bug report. You read it, then GitHub opens with the form filled in — filing it stays your click, because an issue is public.',
+	'assistant.report.open': 'Report on GitHub',
+	'assistant.preview.report': 'Bug report',
+	'assistant.mode': 'What this request is',
+	'assistant.mode.question': 'Question',
+	'assistant.patch': 'AI Repair (experimental)',
+	'assistant.patch.hint':
+		'When a run deletes nothing, the page is usually worded differently than the app expects. Describe what you see - the menu item, the button - and the assistant writes a small script. Saved, it runs inside the platform page before every deletion, so read it first.',
+	'assistant.patch.apply': 'Save this fix',
+	'assistant.patch.applied': 'Saved. The next run uses it.',
+	'assistant.openInCli': 'Continue in Claude Code',
+	'assistant.dismiss': 'Dismiss',
+
+	'header.url': 'You are here',
+
+	'log.column.time': 'Time',
+	'log.column.level': 'Level',
+	'log.column.message': 'Message',
+	'log.sortBy': 'Sort by {column}',
+
+	'assistant.preview.source': 'Where the code is',
+	'assistant.preview.patch': 'The patching task'
 } as const;
 
 export type MessageKey = keyof typeof en;

@@ -1,17 +1,43 @@
 import type { Language } from '$lib/bridge/contract';
 import { en, type MessageKey } from './en';
+import { ar } from './ar';
 import { de } from './de';
+import { es } from './es';
+import { fr } from './fr';
+import { hi } from './hi';
+import { it } from './it';
+import { ja } from './ja';
+import { pt } from './pt';
+import { ru } from './ru';
+import { zh } from './zh';
 
 export type { MessageKey };
 
-const CATALOGUES = { en, de } as const;
+const CATALOGUES = { en, ar, de, es, fr, hi, it, ja, pt, ru, zh } as const;
 type Locale = keyof typeof CATALOGUES;
 
+/** English first, then by endonym — each language names itself, so nothing here is translated. */
 export const LANGUAGES: { id: Language; label: string }[] = [
 	{ id: 'System', label: 'settings.language.system' },
 	{ id: 'en', label: 'English' },
-	{ id: 'de', label: 'Deutsch' }
+	{ id: 'ar', label: 'العربية' },
+	{ id: 'de', label: 'Deutsch' },
+	{ id: 'es', label: 'Español' },
+	{ id: 'fr', label: 'Français' },
+	{ id: 'hi', label: 'हिन्दी' },
+	{ id: 'it', label: 'Italiano' },
+	{ id: 'pt', label: 'Português' },
+	{ id: 'ja', label: '日本語' },
+	{ id: 'ru', label: 'Русский' },
+	{ id: 'zh', label: '中文' }
 ];
+
+/** Scripts that run right to left. The whole shell mirrors for these. */
+const RTL: ReadonlySet<Locale> = new Set<Locale>(['ar']);
+
+function isLocale(value: string): value is Locale {
+	return value in CATALOGUES;
+}
 
 /**
  * The app's language.
@@ -26,7 +52,19 @@ class I18n {
 	get locale(): Locale {
 		if (this.setting !== 'System') return this.setting;
 		const preferred = typeof navigator === 'undefined' ? 'en' : navigator.language;
-		return preferred.toLowerCase().startsWith('de') ? 'de' : 'en';
+		const base = preferred.split('-')[0]?.toLowerCase() ?? 'en';
+		return isLocale(base) ? base : 'en';
+	}
+
+	get isRtl(): boolean {
+		return RTL.has(this.locale);
+	}
+
+	/** `lang` for screen readers and hyphenation, `dir` so Arabic mirrors the whole shell. */
+	applyToDocument(): void {
+		if (typeof document === 'undefined') return;
+		document.documentElement.lang = this.locale;
+		document.documentElement.dir = this.isRtl ? 'rtl' : 'ltr';
 	}
 }
 

@@ -2,12 +2,19 @@ import type { MessageKey } from './en';
 
 /** Typed against `MessageKey`, so a key added in English fails to compile until it lands here. */
 export const de: Record<MessageKey, string> = {
+	'app.tagline': 'Löscht Posts, Likes und Kommentare',
+
 	'nav.overview': 'Übersicht',
 	'nav.log': 'Protokoll',
 	'nav.assistant': 'Assistent',
 	'nav.settings': 'Einstellungen',
+	'nav.info': 'Info',
 	'nav.collapse': 'Menü einklappen',
 	'nav.expand': 'Menü ausklappen',
+
+	'header.toDark': 'Zu dunklem Modus wechseln',
+	'header.toLight': 'Zu hellem Modus wechseln',
+	'header.language': 'Sprache',
 
 	'site.signedIn': 'Angemeldet',
 	'site.signedOut': 'Nicht angemeldet',
@@ -16,6 +23,12 @@ export const de: Record<MessageKey, string> = {
 
 	'action.show': '{label} anzeigen',
 	'action.delete': 'Alle {label} löschen',
+	'action.deleteAll': 'Alles löschen',
+	'confirm.all.title': 'Alles auf {platform} löschen?',
+	'confirm.all.description':
+		'Nacheinander geleert, auf {platform}: {lists}. Das lässt sich nicht rückgängig machen.',
+	'run.allDone': 'Insgesamt {count} Einträge gelöscht.',
+	'run.allPartly': '{count} Einträge gelöscht, {failed} Listen fehlgeschlagen.',
 	'action.close': 'Aktionen für {platform} schließen',
 
 	'group.posts': 'Beiträge',
@@ -76,6 +89,7 @@ export const de: Record<MessageKey, string> = {
 	'log.filterLabel': 'Protokollmeldungen filtern',
 	'log.levelLabel': 'Nach Stufe filtern',
 	'log.level.all': 'Alle',
+	'log.level.debug': 'Debug',
 	'log.level.info': 'Info',
 	'log.level.warning': 'Warnung',
 	'log.level.error': 'Fehler',
@@ -108,7 +122,7 @@ export const de: Record<MessageKey, string> = {
 	'settings.showX.description': 'Beiträge, Antworten, Reposts, Likes, Gefolgt.',
 	'settings.showYouTube': 'YouTube anzeigen',
 	'settings.showYouTube.description': 'Kommentare und gelikte Videos.',
-	'settings.showIntro': 'Einführung anzeigen',
+	'settings.showIntro': 'Info anzeigen',
 	'settings.showIntro.description':
 		'Die Karte auf der Übersicht, die erklärt, wie die App arbeitet.',
 	'settings.showLog': 'Protokoll anzeigen',
@@ -140,6 +154,9 @@ export const de: Record<MessageKey, string> = {
 	'settings.assistant.description':
 		'Woher Antworten kommen. Das lokale Programm sendet nichts aus dieser App; ein gehosteter Anbieter ist das Einzige hier, das Daten ins Netz gibt.',
 	'settings.assistant.source': 'Quelle',
+	'settings.assistant.off': 'Aus',
+	'settings.assistant.off.description':
+		'Der Assistent ist ausgeschaltet und erscheint nicht in der Seitenleiste.',
 	'settings.assistant.local': 'Claude Code auf diesem Rechner',
 	'settings.assistant.hosted': 'Ein gehosteter Anbieter',
 	'settings.assistant.cliPath': 'Pfad zum Programm',
@@ -165,6 +182,10 @@ export const de: Record<MessageKey, string> = {
 
 	'assistant.title': 'Assistent',
 	'assistant.subtitle': 'Fragen dazu, was diese App tut, und dazu, was im Protokoll steht.',
+	'assistant.placeholder.patch':
+		'Bei mir heißt der Menüeintrag „Aus „Videos, die ich mag“ entfernen“',
+	'assistant.placeholder.report':
+		'Das Löschen der Likes stoppte nach drei Videos und das Menü schloss sich von selbst',
 	'assistant.placeholder': 'Warum wurden 12 Beiträge nicht gelöscht?',
 	'assistant.ask': 'Fragen',
 	'assistant.asking': 'Wird gefragt…',
@@ -174,6 +195,19 @@ export const de: Record<MessageKey, string> = {
 	'assistant.sendsLog':
 		'Die Frage geht zusammen mit dem Protokoll und einer Beschreibung der App raus. Das Protokoll enthält nie Beitragsinhalte, Kontonamen oder Cookies.',
 	'assistant.clear': 'Leeren',
+	'assistant.troubleshooting': 'Fehlerbehebung',
+	'assistant.troubleshooting.hint':
+		'Die meisten Fehlschläge haben eine bekannte Ursache und eine bekannte Lösung. Die Anleitung zählt sie auf — und dieser Assistent bekommt dieselbe Liste zusammen mit deinem Protokoll.',
+	'assistant.preview.show': 'Anzeigen, was gesendet wird',
+	'assistant.preview.hide': 'Ausblenden, was gesendet wird',
+	'assistant.preview.description':
+		'Die Anfrage, genau so, wie sie diesen Rechner verlassen würde. Mehr wird nicht angehängt.',
+	'assistant.preview.role': 'Anweisungen',
+	'assistant.preview.app': 'Über die App',
+	'assistant.preview.fixes': 'Bekannte Fehler und Lösungen',
+	'assistant.preview.log': 'Das Protokoll',
+	'assistant.preview.question': 'Deine Frage',
+	'assistant.preview.noQuestion': 'Tippe oben eine Frage, um sie hier zu sehen.',
 
 	'settings.about': 'Über',
 	'settings.about.description':
@@ -184,5 +218,78 @@ export const de: Record<MessageKey, string> = {
 	'settings.noUpdates': 'Keine Updates verfügbar.',
 	'settings.github': 'Projekt auf GitHub',
 	'settings.reportBug': 'Fehler melden',
-	'settings.licenses': 'Lizenzen Dritter'
+	'settings.licenses': 'Lizenzen Dritter',
+
+	'info.title': 'Info',
+	'info.subtitle': 'Was diese App ist, woher sie kommt und worauf sie aufbaut.',
+	'info.app.title': 'CleanMyPosts',
+	'info.app.body':
+		'Eine Windows-App, die aufräumt, was du gepostet, geliked und abonniert hast — eine Plattform nach der anderen. Sie geht dabei vor wie du selbst: Sie öffnet die Seite in einem Browserfenster und klickt sich durch, bis nichts mehr zu entfernen ist.',
+	'info.developer': 'Entwickler',
+	'info.version.title': 'Diese Installation',
+	'info.version.description': 'Updates lädt und installiert die App selbst.',
+	'info.links.title': 'Links',
+	'info.links.description': 'Alles liegt offen: der Code, die Fehler und das, worauf sie aufbaut.',
+	'info.github.description': 'Der Quelltext, die Releases und die Geschichte dahinter.',
+	'info.reportBug.description':
+		'Etwas wurde nicht gelöscht — oder gleich zweimal? Hier gehört es hin.',
+	'info.licenses.description': 'Die Open-Source-Bibliotheken in dieser App und ihre Bedingungen.',
+	'info.legal.title': 'Rechtliches',
+	'info.troubleshooting.description':
+		'Die Fehler, die immer wieder auftauchen, und was jeweils dagegen hilft.',
+
+	'settings.general': 'Allgemein',
+	'settings.general.description':
+		'Welche Seiten die App anbietet. Eine Plattform auszublenden meldet dich nicht ab.',
+	'settings.notifications': 'Benachrichtigungen',
+	'settings.notifications.description':
+		'Eine kurze Meldung, wenn ein Durchlauf endet. Sie verschwindet nach einer Sekunde von selbst.',
+	'settings.telemetry': 'Diagnosedaten',
+	'settings.telemetry.description':
+		'Diese App sendet keinerlei Telemetrie. Der Schalter steuert das lokale Protokoll — die einzige Aufzeichnung, die sie führt.',
+	'settings.autoConsent': 'Cookie-Banner wegklicken',
+	'settings.autoConsent.description':
+		'Zustimmungsbanner automatisch schließen, und zwar über den ablehnenden Knopf, wo das Banner einen anbietet.',
+	'settings.debugLogging': 'Ausführliches Protokoll',
+	'settings.debugLogging.description':
+		'Hält fest, was eine Plattform-Seite tatsächlich angeboten hat, wenn ein Löschvorgang nicht weiterkam. Nützlich für einen Fehlerbericht, sonst nur Lärm.',
+	'settings.persistSession': 'Angemeldet bleiben',
+	'settings.persistSession.description':
+		'Cache und Cookies von WebView2 über Neustarts hinweg behalten. Aus verwirft sie bei jedem Start — X und YouTube öffnen dann abgemeldet.',
+	'settings.automation': 'Automatisierung',
+	'settings.automation.description': 'Wie ein Durchlauf sich verhält und worauf er klickt.',
+	'settings.engine': 'Lösch-Engine',
+	'settings.engine.none': 'Eingebautes Verhalten',
+	'settings.engine.active': 'Dein eigenes Skript, {count} Zeilen',
+	'settings.engine.edit': 'Bearbeiten',
+	'settings.engine.reset': 'Zurücksetzen',
+	'settings.engine.save': 'Speichern',
+	'settings.engine.hint':
+		'Läuft in der Plattformseite vor jeder Aktion. In `window.__cmp.config` stehen alle Selektoren und alle Wörter, nach denen die Engine sucht — ändere, was deine Sprache oder Region braucht. Ein kaputtes Skript kostet den Durchlauf nichts: Es wird abgefangen, protokolliert, und das eingebaute Verhalten läuft weiter.',
+	'settings.engine.placeholder': "window.__cmp.config.youtube.removeFromLikedText.push('…');",
+
+	'assistant.report': 'Fehler melden',
+	'assistant.report.hint':
+		'Der Assistent macht aus dem Protokoll einen Fehlerbericht. Du liest ihn, dann öffnet sich GitHub mit ausgefülltem Formular — abschicken bleibt dein Klick, denn ein Issue ist öffentlich.',
+	'assistant.report.open': 'Auf GitHub melden',
+	'assistant.preview.report': 'Fehlerbericht',
+	'assistant.mode': 'Worum es bei dieser Anfrage geht',
+	'assistant.mode.question': 'Frage',
+	'assistant.patch': 'AI Repair (experimentell)',
+	'assistant.patch.hint':
+		'Wenn ein Durchlauf nichts löscht, steht auf der Seite meist etwas anderes, als die App erwartet. Beschreibe, was du siehst - den Menüeintrag, den Knopf - und der Assistent schreibt ein kleines Skript. Gespeichert läuft es vor jedem Löschvorgang in der Plattform-Seite, lies es also vorher.',
+	'assistant.patch.apply': 'Anpassung speichern',
+	'assistant.patch.applied': 'Gespeichert. Der nächste Durchlauf nutzt es.',
+	'assistant.openInCli': 'In Claude Code weitermachen',
+	'assistant.dismiss': 'Ausblenden',
+
+	'header.url': 'Du bist hier',
+
+	'log.column.time': 'Zeit',
+	'log.column.level': 'Stufe',
+	'log.column.message': 'Meldung',
+	'log.sortBy': 'Nach {column} sortieren',
+
+	'assistant.preview.source': 'Wo der Code liegt',
+	'assistant.preview.patch': 'Der Auftrag für das Skript'
 };

@@ -60,6 +60,26 @@ pub fn active_site_webview_label() -> &'static str {
     *ACTIVE_SITE.lock().expect("active site mutex")
 }
 
+/// The colour the window wears until the page paints its own.
+///
+/// Light and dark only. The exact shade belongs to the theme preset, which lives in CSS and
+/// arrives with the page — by then `layout.setBackground` has already corrected this.
+fn startup_background(window: &tauri::Window, theme: &str) -> tauri::utils::config::Color {
+    let dark = match theme {
+        "Dark" => true,
+        "Light" => false,
+        _ => window
+            .theme()
+            .map(|t| t == tauri::Theme::Dark)
+            .unwrap_or(false),
+    };
+    if dark {
+        tauri::utils::config::Color(10, 10, 10, 255)
+    } else {
+        tauri::utils::config::Color(255, 255, 255, 255)
+    }
+}
+
 /// The delete engine, built by `npm run build:content`. Injected verbatim so the
 /// TypeScript under `src/lib/engine` stays the single source of truth.
 const CONTENT_SCRIPT: &str = include_str!("../../dist/content/content.js");
@@ -346,6 +366,14 @@ pub fn run() {
             // and a window that grows after they are placed leaves them at the old rectangle.
             let _ = window.restore_state(WINDOW_STATE_FLAGS);
 
+            // WebView2 fills a surface with white until the page paints into it. That is a
+            // blink in a packaged build, where the page is a prerendered file, and the whole
+            // of Vite's cold start under `tauri dev` — several seconds of white glare on a
+            // dark theme. The UI refines this to the preset's exact colour once it is up;
+            // this is only about what fills the surface before there is a page to ask.
+            let base = startup_background(&window, &app.state::<AppState>().settings.get().theme);
+            let _ = window.set_background_color(Some(base));
+
             let scale = window.scale_factor()?;
             let size = window.inner_size()?.to_logical::<f64>(scale);
 
@@ -354,7 +382,7 @@ pub fn run() {
             // something on screen — its page is a local prerendered file, so it paints as
             // soon as it exists.
             window.add_child(
-                WebviewBuilder::new("chrome", WebviewUrl::default()),
+                WebviewBuilder::new("chrome", WebviewUrl::default()).background_color(base),
                 LogicalPosition::new(0.0, 0.0),
                 LogicalSize::new(size.width, size.height),
             )?;

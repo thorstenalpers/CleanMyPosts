@@ -17,6 +17,7 @@
 	import SidebarShell, { type NavItem } from '$lib/components/sidebar-shell.svelte';
 	import PageHeader from '$lib/components/page-header.svelte';
 	import StatusBar from '$lib/components/status-bar.svelte';
+	import BootSplash from '$lib/components/boot-splash.svelte';
 	import XView from '$lib/views/x-view.svelte';
 	import YouTubeView from '$lib/views/youtube-view.svelte';
 	import {
@@ -319,6 +320,8 @@
      inside that strip and gets cut off, because a separate webview is painting over
      everything below it. The left column is the one place with room in both states. -->
 <Toaster position="bottom-left" />
+
+<BootSplash />
 
 <div bind:this={shell} class="flex h-screen bg-background">
 	<SidebarShell {navItems} {activeKey} {onNavigate} bind:expanded={sidebarExpanded} />

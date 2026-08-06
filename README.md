@@ -223,9 +223,3 @@ MIT licence, without warranty of any kind.
 ## 🐞 Report a Bug
 
 If you encounter any issues or bugs, please [report them here](https://github.com/thorstenalpers/CleanMyPosts/issues).
-
----
-
-## 🌟 Thank You for Starring!
-
-[![Star History Chart](https://api.star-history.com/svg?repos=thorstenalpers/CleanMyPosts&type=date&legend=top-left)](https://www.star-history.com/#thorstenalpers/CleanMyPosts&type=date&legend=top-left)

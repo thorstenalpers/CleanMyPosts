@@ -205,9 +205,18 @@ Thank you for helping make **CleanMyPosts** better!
 
 ## ⚠️ Disclaimer
 
-This tool automates actions in a web browser.
-Use it at your own risk.
-The author is not affiliated with X (formerly Twitter) or Google.
+This tool automates a web browser to delete your own content. It uses no API and no token —
+it presses the same buttons you would, in your own signed-in session.
+
+**Deletions are permanent.** Nothing here can undo them, and neither platform offers a way
+back. Look at a list before you empty it.
+
+**Automation may conflict with the platforms' terms of use.** They restrict automated
+access, and the consequence would fall on your account rather than on this software. You use
+it at your own risk.
+
+The author is not affiliated with X (formerly Twitter) or Google. Provided as-is under the
+MIT licence, without warranty of any kind.
 
 ---
 

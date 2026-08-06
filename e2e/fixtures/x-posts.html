@@ -5,12 +5,33 @@
     <title>x.com posts fixture</title>
   </head>
   <body>
+    <!-- Shaped after the real page: the caret lives inside the article it belongs to, and the
+         author is a link to their profile. The engine tells the user's own posts from anyone
+         else's by exactly those two things. -->
     <div data-testid="primaryColumn">
       <section>
-        <article data-post="1">Post 1</article>
-        <button data-testid="caret" data-post="1">More</button>
-        <article data-post="2">Post 2</article>
-        <button data-testid="caret" data-post="2">More</button>
+        <article data-post="1">
+          <a href="/testuser">Test User</a>
+          <span>Post 1</span>
+          <button data-testid="caret" data-post="1">More</button>
+        </article>
+
+        <!-- A repost of someone else's post. It carries the user's own profile link too, which
+             is why the unretweet marker has to be what rules it out — deleting here would open
+             a stranger's menu, where there is no delete entry at all. -->
+        <article data-post="repost">
+          <a href="/testuser">Test User</a>
+          <a href="/someoneelse">Someone Else</a>
+          <span>Reposted</span>
+          <button data-testid="unretweet">Undo repost</button>
+          <button data-testid="caret" data-post="repost">More</button>
+        </article>
+
+        <article data-post="2">
+          <a href="/testuser">Test User</a>
+          <span>Post 2</span>
+          <button data-testid="caret" data-post="2">More</button>
+        </article>
       </section>
     </div>
 
@@ -21,12 +42,14 @@
     <button data-testid="confirmationSheetConfirm">Delete</button>
 
     <script>
-      // Simulate x.com removing the top post when the deletion is confirmed.
+      // Simulate x.com removing the post whose menu was opened when the deletion is confirmed.
       document
         .querySelector('button[data-testid="confirmationSheetConfirm"]')
         .addEventListener('click', () => {
-          document.querySelector('section article')?.remove();
-          document.querySelector('section button[data-testid="caret"]')?.remove();
+          const own = document.querySelector(
+            'section article:not(:has([data-testid="unretweet"]))'
+          );
+          own?.remove();
         });
     </script>
   </body>

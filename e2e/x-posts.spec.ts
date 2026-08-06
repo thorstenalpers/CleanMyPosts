@@ -54,7 +54,14 @@ test('deletePosts deletes every post and reports progress in a real browser', as
 		window.__cmp!.run(
 			'x',
 			'deletePosts',
-			JSON.stringify({ requestId: 'r1', waitAfterDelete: 1, waitBetweenRetryDeleteAttempts: 1 })
+			// The handle travels with every run in the app, and the engine refuses to touch a
+			// menu without it — it is what tells the user's own posts from a stranger's.
+			JSON.stringify({
+				requestId: 'r1',
+				userName: 'testuser',
+				waitAfterDelete: 1,
+				waitBetweenRetryDeleteAttempts: 1
+			})
 		)
 	);
 
@@ -66,8 +73,11 @@ test('deletePosts deletes every post and reports progress in a real browser', as
 	expect(msgs.find((m) => m.type === 'done')?.deletedCount).toBe(2);
 	expect(msgs.filter((m) => m.type === 'progress').map((m) => m.deletedCount)).toEqual([1, 2]);
 
-	const remaining = await page.evaluate(() => document.querySelectorAll('section article').length);
-	expect(remaining).toBe(0);
+	// The repost survives: it is someone else's post, and its menu has no delete entry.
+	const remaining = await page.evaluate(() =>
+		[...document.querySelectorAll('section article')].map((a) => a.getAttribute('data-post'))
+	);
+	expect(remaining).toEqual(['repost']);
 
 	// Drawn while the app clicks, so the user can follow it — and taken away when the run
 	// ends, because a marker left standing reads as "still working".

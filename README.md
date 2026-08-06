@@ -161,6 +161,7 @@ itself, so a change to the engine only reaches the app once this has been rebuil
    	'deletePosts',
    	JSON.stringify({
    		requestId: 'manual',
+   		userName: 'USERNAME',
    		waitAfterDelete: 1000,
    		waitBetweenRetryDeleteAttempts: 1000
    	})
@@ -185,8 +186,11 @@ the same thing in the same order.
 | `youtube` | `deleteComments`  | [My Activity → YouTube comments](https://myactivity.google.com/page?hl=en&page=youtube_comments) |
 | `youtube` | `deleteLikes`     | [Liked videos playlist](https://www.youtube.com/playlist?list=LL)                                |
 
-> **Note:** `deleteReplies` additionally needs your handle, since it has to tell your own
-> replies apart from the posts they answer — add `userName: 'USERNAME'` to the JSON.
+> **Note:** `deletePosts` and `deleteReplies` need your handle in `userName`, and refuse to
+> open any menu without it. On a page that also shows other people's posts — a repost, or the
+> post a reply answers — the engine has to know which article is yours: opening a stranger's
+> menu finds "Report post" and no delete entry at all. The app passes the handle on every run;
+> by hand it has to be in the JSON.
 
 > **Note:** Make sure you are logged in to the relevant account before starting a run.
 

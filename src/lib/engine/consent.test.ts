@@ -82,6 +82,53 @@ describe('startConsentWatcher', () => {
 		document.body.innerHTML = '';
 	});
 
+	// Captured from a real youtube.com visit. The dialog carries a full language picker on top
+	// of the consent text, which puts its length far past what a "banner" was allowed to be —
+	// the two buttons were found every time and the container around them never counted.
+	it('dismisses the YouTube consent lightbox, language picker and all', () => {
+		const languages = [
+			'Afrikaans',
+			'Azərbaycan',
+			'Bahasa Indonesia',
+			'Bosanski',
+			'Català',
+			'Čeština',
+			'Dansk',
+			'Deutsch',
+			'English (UK)',
+			'Español (España)',
+			'Français (Canada)',
+			'Hrvatski',
+			'Íslenska',
+			'Kiswahili',
+			'Latviešu valoda',
+			'Nederlands',
+			'Português (Brasil)',
+			'Slovenčina',
+			'Tiếng Việt',
+			'Türkçe'
+		].join(' ');
+
+		banner(
+			`<div>Saving your choice ${languages.repeat(6)}
+			 We use <a>cookies and data</a>, including IP addresses, to deliver and maintain
+			 Google services, and to measure audience engagement.</div>
+			 <button id="reject" aria-label="Reject the use of cookies and other data for the purposes described">Reject all</button>
+			 <button id="accept" aria-label="Accept the use of cookies and other data for the purposes described">Accept all</button>
+			 <a id="more">More options</a>`
+		);
+		expect(document.body.textContent.length).toBeGreaterThan(1500);
+
+		const rejected = vi.fn();
+		const accepted = vi.fn();
+		document.getElementById('reject')!.addEventListener('click', rejected);
+		document.getElementById('accept')!.addEventListener('click', accepted);
+
+		expect(dismissConsentBanner()).toBe(true);
+		expect(rejected).toHaveBeenCalled();
+		expect(accepted).not.toHaveBeenCalled();
+	});
+
 	it('dismisses a banner that only appears after the page has loaded', async () => {
 		startConsentWatcher();
 		await vi.advanceTimersByTimeAsync(2000);

@@ -15,8 +15,14 @@ import { clickWithCursor, isVisible, postLog } from './dom';
 const CONSENT_CONTEXT =
 	/cookie|consent|zustimm|einwillig|privatsphäre|confidentialité|témoins|privacidad|privacidade|informativa|クッキー|同意|куки|ملفات تعريف الارتباط|كوكيز|कुकी/i;
 
-/** Longer than this and the "banner" is the page itself, not a bar. */
-const MAX_BANNER_TEXT = 1500;
+/**
+ * Longer than this and the "banner" is the page itself, not a bar.
+ *
+ * YouTube's consent lightbox carries 2238 characters of it, which is what the old 1500
+ * rejected — the buttons were found, the container around them never counted as a banner,
+ * and nothing was ever clicked.
+ */
+const MAX_BANNER_TEXT = 4000;
 
 const DECLINE =
 	/\b(refuse|reject|decline|deny)\b|only necessary|only essential|ablehnen|nur notwendige|nur erforderliche|rechazar|denegar|solo (las )?necesarias|refuser|tout refuser|rifiuta|solo necessari|recusar|rejeitar|отклонить|отказаться|только необходимые|拒否|同意しない|拒绝|不同意|رفض|अस्वीकार/i;
@@ -35,6 +41,10 @@ function label(el: Element): string {
 }
 
 function inConsentBanner(el: Element): boolean {
+	// The button often says what it is about itself — YouTube labels its two with "the use of
+	// cookies and other data". That survives a dialog growing past any length limit below.
+	if (CONSENT_CONTEXT.test(el.getAttribute('aria-label') ?? '')) return true;
+
 	let node: Element | null = el.parentElement;
 	for (let depth = 0; node && depth < MAX_ANCESTOR_DEPTH; depth++, node = node.parentElement) {
 		const text = node.textContent ?? '';

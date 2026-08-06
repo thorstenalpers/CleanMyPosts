@@ -21,9 +21,11 @@ pub async fn dispatch(app: AppHandle, method: String, params: Value) -> Result<V
         "site.runAction" => site::run_action(app, &params).await,
         "site.cancelAction" => site::cancel_action(&app, &params),
         "site.hide" => site::hide(&app, &params),
+        "site.toast" => site::toast(&app, &params),
+        "site.reload" => site::reload(&app, &params),
         "site.show" => site::show(&app, &params),
 
-        "layout.setChromeWidth" => site::set_chrome_width(&app, &params),
+        "layout.setSiteInset" => site::set_site_inset(&app, &params),
         "layout.setBackground" => site::set_background(&app, &params),
 
         "updater.checkForUpdates" => system::check_for_updates(&app).await,
@@ -36,6 +38,7 @@ pub async fn dispatch(app: AppHandle, method: String, params: Value) -> Result<V
         "assistant.setKey" => assistant::set_key(&params),
         "assistant.openFreeKeyUrl" => assistant::open_free_key_url(&params),
         "assistant.ask" => assistant::ask(app, &params).await,
+        "assistant.openInCli" => assistant::open_in_cli(&app, &params),
 
         other => Err(Error::Message(format!("unknown bridge method \"{other}\""))),
     }

@@ -7,21 +7,33 @@ use tokio::sync::oneshot;
 
 /// `show*` and `delete*` share a target because deleting always happens on the page that
 /// lists the items.
+///
+/// Every url asks for English, whatever the app is set to. The engine finds the menu entry it
+/// has to click by its wording, and one wording is testable where a hundred are not.
+///
+/// Asked for, not guaranteed: both platforms let the account's own language win, and in
+/// practice it usually does. The parameter costs nothing where it is ignored and saves the
+/// run where it is honoured, which is the whole case for keeping it.
 fn target_url(platform: &str, action: &str, user_name: &str) -> Option<String> {
     let user = urlencoding_minimal(user_name);
     let url = match (platform, action) {
         ("x", "showPosts" | "deletePosts") => {
-            format!("https://x.com/search?q=from%3A{user}&src=typed_query")
+            // Already carries a query, so the language joins it rather than starting a new one.
+            format!("https://x.com/search?q=from%3A{user}&src=typed_query&lang=en")
         }
-        ("x", "showReplies" | "deleteReplies") => format!("https://x.com/{user}/with_replies"),
-        ("x", "showReposts" | "deleteReposts") => format!("https://x.com/{user}"),
-        ("x", "showLikes" | "deleteLikes") => format!("https://x.com/{user}/likes"),
-        ("x", "showFollowing" | "deleteFollowing") => format!("https://x.com/{user}/following"),
+        ("x", "showReplies" | "deleteReplies") => {
+            format!("https://x.com/{user}/with_replies?lang=en")
+        }
+        ("x", "showReposts" | "deleteReposts") => format!("https://x.com/{user}?lang=en"),
+        ("x", "showLikes" | "deleteLikes") => format!("https://x.com/{user}/likes?lang=en"),
+        ("x", "showFollowing" | "deleteFollowing") => {
+            format!("https://x.com/{user}/following?lang=en")
+        }
         ("youtube", "showComments" | "deleteComments") => {
-            "https://myactivity.google.com/page?hl=en&page=youtube_comments".to_string()
+            "https://myactivity.google.com/page?page=youtube_comments&hl=en".to_string()
         }
         ("youtube", "showLikes" | "deleteLikes") => {
-            "https://www.youtube.com/playlist?list=LL".to_string()
+            "https://www.youtube.com/playlist?list=LL&hl=en".to_string()
         }
         _ => return None,
     };
@@ -46,6 +58,20 @@ fn engine_action(action: &str) -> Option<&'static str> {
         "deleteFollowing" => Some("deleteFollowing"),
         "deleteComments" => Some("deleteComments"),
         _ => None,
+    }
+}
+
+/// `showLikes` and `deleteLikes` are both about likes. The verb is already in the sentence
+/// around it, so repeating it read as "showing showLikes".
+fn subject(action: &str) -> String {
+    let stem = action
+        .strip_prefix("show")
+        .or_else(|| action.strip_prefix("delete"))
+        .unwrap_or(action);
+    let mut chars = stem.chars();
+    match chars.next() {
+        Some(first) => first.to_lowercase().chain(chars).collect(),
+        None => stem.to_string(),
     }
 }
 
@@ -78,6 +104,13 @@ pub fn navigate(app: &AppHandle, params: &Value) -> Result<Value> {
         .get_webview(crate::site_webview_label(platform))
         .ok_or_else(|| Error::Site("site webview is gone".into()))?;
     site.eval(format!("window.location.assign({});", json!(url)))?;
+    // The action, not the url: the address carries the user's handle, and this line is read
+    // by the assistant and can travel into a public bug report.
+    crate::bridge::log(
+        app,
+        "info",
+        format!("{platform}: showing {}", subject(action)),
+    );
     Ok(json!({ "ok": true }))
 }
 
@@ -107,6 +140,37 @@ pub async fn run_action(app: AppHandle, params: &Value) -> Result<Value> {
         .get("waitBetweenRetryDeleteAttempts")
         .and_then(Value::as_u64)
         .unwrap_or(500);
+    let wait_after_load = timeouts
+        .get("waitAfterDocumentLoad")
+        .and_then(Value::as_u64)
+        .unwrap_or(3000);
+
+    // A deletion only ever finds anything on the page that lists the thing being deleted, and
+    // the user may be looking at any page they clicked through to. Going there first is what
+    // separates "nothing to delete" from "not on the right page" — the two used to be the
+    // same outcome, with the same empty log.
+    // Scoped so the webview handle is dropped before the wait below: a `Webview` is not
+    // `Send`, and holding one across an `await` makes the whole command un-spawnable.
+    if let Some(url) = target_url(platform, action, &read_user_name(&app)) {
+        {
+            let site = app
+                .get_webview(crate::site_webview_label(platform))
+                .ok_or_else(|| Error::Site("site webview is gone".into()))?;
+            site.eval(format!(
+                "if (window.location.href !== {u}) window.location.assign({u});",
+                u = json!(url)
+            ))?;
+        }
+        crate::bridge::log(
+            &app,
+            "info",
+            format!("{platform}: opening the {} page", subject(action)),
+        );
+        // `eval` has no return channel, so the wait is unconditional. It is the same one the
+        // settings already expose for a page load, and nothing is lost when the page was
+        // already open: it is repainted long before this elapses.
+        tokio::time::sleep(std::time::Duration::from_millis(wait_after_load)).await;
+    }
 
     let (tx, rx) = oneshot::channel();
     {
@@ -127,9 +191,24 @@ pub async fn run_action(app: AppHandle, params: &Value) -> Result<Value> {
         "waitAfterDelete": wait_after_delete,
         "waitBetweenRetryDeleteAttempts": wait_between,
     });
+    // The user's own patch runs first, in a try/catch of its own: it is written by hand or by
+    // the assistant, and a syntax error in it must cost nothing more than the patch. Applied
+    // per run rather than at page load, so saving a fix takes effect on the next action
+    // instead of the next navigation.
+    let patch = app.state::<AppState>().settings.get().engine_script;
+    let patch_script = if patch.trim().is_empty() {
+        String::new()
+    } else {
+        format!(
+            "try {{ (function () {{ {patch} }})(); }} \
+             catch (e) {{ window.chrome.webview.postMessage({{ type: 'log', level: 'warning', \
+               message: 'The engine script from the settings failed: ' + e }}); }}"
+        )
+    };
+
     let script = format!(
         "(function () {{ var p = {run_params}; \
-           if (window.__cmp) {{ p.userName = window.__cmp.getUserName(); \
+           if (window.__cmp) {{ {patch_script} p.userName = window.__cmp.getUserName(); \
              window.__cmp.run('{platform}', '{engine}', JSON.stringify(p)); }} \
            else {{ window.chrome.webview.postMessage({{ type: 'error', requestId: '{request_id}', \
              message: 'The delete engine is not loaded on this page.' }}); }} }})();"
@@ -150,15 +229,52 @@ pub async fn run_action(app: AppHandle, params: &Value) -> Result<Value> {
         return Err(error);
     }
 
+    // The count belongs in the log, not only in the toast that carries it for five seconds:
+    // the log is what the assistant is asked against and what a bug report quotes.
+    let what = subject(action);
     match rx.await {
-        Ok(Ok(deleted)) => Ok(json!({ "deletedCount": deleted })),
-        Ok(Err(message)) => Err(Error::Message(message)),
-        Err(_) => Err(Error::Abandoned),
+        Ok(Ok(deleted)) => {
+            crate::bridge::log(
+                &app,
+                "info",
+                format!("{platform}: {deleted} {what} deleted"),
+            );
+            Ok(json!({ "deletedCount": deleted }))
+        }
+        Ok(Err(message)) => {
+            crate::bridge::log(
+                &app,
+                "error",
+                format!("{platform}: deleting {what} failed — {message}"),
+            );
+            Err(Error::Message(message))
+        }
+        Err(_) => {
+            crate::bridge::log(&app, "warning", format!("{platform}: the {what} run ended"));
+            Err(Error::Abandoned)
+        }
     }
 }
 
 /// Cancels by reloading the site webview: the engine has no cancellation primitive, so
 /// tearing down the page is what actually stops its click loop.
+/// Reloads a platform's page.
+///
+/// Called when a run ends: these platforms keep rendering the list they were handed, so the
+/// rows that were just deleted stay on screen until the page is fetched again. Without this
+/// the user is looking at items that no longer exist and cannot tell the run worked.
+pub fn reload(app: &AppHandle, params: &Value) -> Result<Value> {
+    let platform = params
+        .get("platform")
+        .and_then(Value::as_str)
+        .ok_or(Error::MissingParam("platform"))?;
+
+    if let Some(site) = app.get_webview(crate::site_webview_label(platform)) {
+        site.eval("window.location.reload();")?;
+    }
+    Ok(Value::Null)
+}
+
 pub fn cancel_action(app: &AppHandle, params: &Value) -> Result<Value> {
     let request_id = params
         .get("requestId")
@@ -197,13 +313,51 @@ pub fn show(app: &AppHandle, params: &Value) -> Result<Value> {
     Ok(Value::Null)
 }
 
-pub fn set_chrome_width(app: &AppHandle, params: &Value) -> Result<Value> {
-    let width = params
-        .get("width")
-        .and_then(Value::as_f64)
-        .map(|value| value.round().max(1.0) as u32)
-        .unwrap_or(crate::DEFAULT_CHROME_WIDTH);
-    crate::set_chrome_width(app, width);
+/// Puts a result on the platform page.
+///
+/// The app's own toasts cannot be seen while a platform is showing: its webview is composited
+/// over the window, and the chrome is left with the sidebar column and a 44px strip. The page
+/// is the only surface with room, so the message is handed to the engine that lives there.
+///
+/// Serialised through `serde_json`, not formatted into the script: the text is translated and
+/// carries counts and platform names, and a stray quote in it would be a syntax error inside
+/// someone's signed-in session.
+pub fn toast(app: &AppHandle, params: &Value) -> Result<Value> {
+    let platform = params
+        .get("platform")
+        .and_then(Value::as_str)
+        .ok_or(Error::MissingParam("platform"))?;
+    let message = params
+        .get("message")
+        .and_then(Value::as_str)
+        .ok_or(Error::MissingParam("message"))?;
+    let kind = params.get("kind").and_then(Value::as_str).unwrap_or("info");
+
+    if let Some(site) = app.get_webview(crate::site_webview_label(platform)) {
+        let script = format!(
+            "window.__cmp && window.__cmp.toast({}, {});",
+            serde_json::to_string(message).unwrap_or_else(|_| "\"\"".into()),
+            serde_json::to_string(kind).unwrap_or_else(|_| "\"info\"".into())
+        );
+        let _ = site.eval(&script);
+    }
+    Ok(Value::Null)
+}
+
+pub fn set_site_inset(app: &AppHandle, params: &Value) -> Result<Value> {
+    let read = |key: &str, fallback: u32| {
+        params
+            .get(key)
+            .and_then(Value::as_f64)
+            .map(|value| value.round().max(0.0) as u32)
+            .unwrap_or(fallback)
+    };
+    crate::set_site_inset(
+        app,
+        read("left", crate::DEFAULT_CHROME_WIDTH),
+        read("top", crate::DEFAULT_HEADER_HEIGHT),
+        read("bottom", 0),
+    );
     Ok(Value::Null)
 }
 
@@ -215,28 +369,35 @@ mod tests {
     fn builds_every_x_page() {
         assert_eq!(
             target_url("x", "deletePosts", "someuser").unwrap(),
-            "https://x.com/search?q=from%3Asomeuser&src=typed_query"
+            "https://x.com/search?q=from%3Asomeuser&src=typed_query&lang=en"
         );
         assert_eq!(
             target_url("x", "showReplies", "someuser").unwrap(),
-            "https://x.com/someuser/with_replies"
+            "https://x.com/someuser/with_replies?lang=en"
         );
         assert_eq!(
             target_url("x", "deleteReposts", "someuser").unwrap(),
-            "https://x.com/someuser"
+            "https://x.com/someuser?lang=en"
         );
         assert_eq!(
             target_url("x", "deleteLikes", "someuser").unwrap(),
-            "https://x.com/someuser/likes"
+            "https://x.com/someuser/likes?lang=en"
         );
         assert_eq!(
             target_url("x", "showFollowing", "someuser").unwrap(),
-            "https://x.com/someuser/following"
+            "https://x.com/someuser/following?lang=en"
         );
     }
 
     /// `show*` and `delete*` land on the same page; deleting happens where the items are
     /// listed, so a divergence here would send a delete run to a page with nothing on it.
+    #[test]
+    fn the_logged_subject_drops_the_verb() {
+        assert_eq!(subject("showLikes"), "likes");
+        assert_eq!(subject("deleteFollowing"), "following");
+        assert_eq!(subject("whatever"), "whatever");
+    }
+
     #[test]
     fn show_and_delete_share_a_target() {
         for (show, delete) in [
@@ -258,12 +419,25 @@ mod tests {
     fn youtube_pages_ignore_the_handle() {
         assert_eq!(
             target_url("youtube", "deleteComments", "").unwrap(),
-            "https://myactivity.google.com/page?hl=en&page=youtube_comments"
+            "https://myactivity.google.com/page?page=youtube_comments&hl=en"
         );
         assert_eq!(
             target_url("youtube", "showLikes", "").unwrap(),
-            "https://www.youtube.com/playlist?list=LL"
+            "https://www.youtube.com/playlist?list=LL&hl=en"
         );
+    }
+
+    /// The engine matches the menu entry by its wording, so every page it is sent to has to
+    /// come back in the one language that wording is written in.
+    #[test]
+    fn every_youtube_page_is_asked_for_in_english() {
+        for action in ["showComments", "deleteComments", "showLikes", "deleteLikes"] {
+            let url = target_url("youtube", action, "").unwrap();
+            assert!(
+                url.contains("hl=en"),
+                "{action} is not pinned to a language: {url}"
+            );
+        }
     }
 
     #[test]

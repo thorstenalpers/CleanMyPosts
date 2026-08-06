@@ -20,6 +20,8 @@ pub struct Runs(pub Mutex<HashMap<String, Run>>);
 #[derive(Default)]
 pub struct SiteInfo {
     pub user_name: String,
+    /// Per platform, so a sign-in is logged once rather than on every report the page makes.
+    pub logged_in: HashMap<String, bool>,
 }
 
 pub struct AppState {

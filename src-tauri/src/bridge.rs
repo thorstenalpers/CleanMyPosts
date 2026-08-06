@@ -18,6 +18,18 @@ pub fn log(app: &AppHandle, level: &str, message: impl Into<String>) {
         message: message.into(),
     };
     if let Some(state) = app.try_state::<AppState>() {
+        let settings = state.settings.get();
+        // The diagnostics switch is enforced here rather than in the view: with it off the
+        // line must not exist at all, and a buffer the UI merely refuses to draw would still
+        // be a record of the run.
+        if !settings.telemetry {
+            return;
+        }
+        // Same reasoning one level down: a debug line nobody asked for is not written, not
+        // merely hidden.
+        if entry.level == "debug" && !settings.debug_logging {
+            return;
+        }
         state.logs.push(entry.clone());
     }
     push_event(
@@ -44,26 +56,54 @@ pub fn handle_content_message(app: &AppHandle, message: &Value) {
                 .and_then(Value::as_str)
                 .unwrap_or("")
                 .to_string();
-            let logged_in = message
+            let status = message
                 .get("loginStatus")
                 .and_then(Value::as_str)
-                .is_some_and(|s| s == "logged_in")
-                || !user.is_empty();
+                .unwrap_or_default()
+                .to_string();
             let platform = match message.get("host").and_then(Value::as_str) {
                 Some(h) if h.contains("x.com") => "x",
                 Some(_) => "youtube",
                 None => return,
             };
 
+            let mut changed = true;
+            let mut logged_in = status == "logged_in" || !user.is_empty();
             if let Some(state) = app.try_state::<AppState>() {
+                let mut site = state.site.lock().expect("site mutex");
                 if !user.is_empty() {
-                    state.site.lock().expect("site mutex").user_name = user;
+                    site.user_name = user.clone();
                 }
+                // "unknown" is the page saying it cannot tell — a half-rendered document, or
+                // one of the other pages a platform spreads its account over. Treating that as
+                // a sign-out disabled the panel the moment a user opened their comments.
+                if !logged_in && status == "unknown" {
+                    logged_in = site.logged_in.get(platform).copied().unwrap_or(false);
+                }
+                changed = site.logged_in.insert(platform.into(), logged_in) != Some(logged_in);
+            }
+            // Once per change, and never for "unknown". A page that cannot tell yet is the
+            // normal first second of a load, and reporting it wrote a line saying nobody was
+            // signed in immediately before the line saying somebody was.
+            if changed && status != "unknown" {
+                // The handle stays out of it. This log is what the assistant is asked against
+                // and what a bug report carries to a public issue, and the app promises it
+                // holds no post content, no handle and nothing else that names a person.
+                let text = if logged_in {
+                    format!("{platform}: signed in")
+                } else {
+                    format!("{platform}: no signed-in account found (page reports \"{status}\")")
+                };
+                log(app, "info", text);
             }
             push_event(
                 app,
                 "siteLogin",
-                json!({ "platform": platform, "loggedIn": logged_in }),
+                json!({
+                    "platform": platform,
+                    "loggedIn": logged_in,
+                    "url": message.get("url").and_then(Value::as_str).unwrap_or_default(),
+                }),
             );
         }
         "log" => {

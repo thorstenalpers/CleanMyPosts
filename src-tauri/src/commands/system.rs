@@ -6,12 +6,16 @@ use tauri::{AppHandle, Manager};
 
 pub const HOMEPAGE_URL: &str = "https://github.com/thorstenalpers/CleanMyPosts";
 pub const REPORT_BUG_URL: &str = "https://github.com/thorstenalpers/CleanMyPosts/issues";
+/// The anchor GitHub generates for the README's "🩺 Troubleshooting" heading.
+pub const TROUBLESHOOTING_URL: &str =
+    "https://github.com/thorstenalpers/CleanMyPosts#-troubleshooting";
 
 pub fn get_info() -> Result<Value> {
     Ok(json!({
         "version": env!("CARGO_PKG_VERSION"),
         "homepageUrl": HOMEPAGE_URL,
         "reportBugUrl": REPORT_BUG_URL,
+        "troubleshootingUrl": TROUBLESHOOTING_URL,
     }))
 }
 

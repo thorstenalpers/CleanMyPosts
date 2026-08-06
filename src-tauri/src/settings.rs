@@ -20,6 +20,12 @@ impl Default for TimeoutSettings {
     }
 }
 
+/// Serde needs a function for a defaulted `bool`; these default to on, so a settings
+/// file written before they existed keeps behaving the way it did.
+fn yes() -> bool {
+    true
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AppSettings {
@@ -31,12 +37,32 @@ pub struct AppSettings {
     #[serde(rename = "showYouTube")]
     pub show_youtube: bool,
     pub confirm_deletion: bool,
+    /// A toast when a run ends. Off leaves the log as the only report.
+    #[serde(default = "yes")]
+    pub notifications: bool,
+    /// There is no telemetry anywhere in this app; this governs the local log buffer.
+    #[serde(default = "yes")]
+    pub telemetry: bool,
+    /// Whether the engine's `debug` lines are kept. Off by default — they quote what a
+    /// platform page showed, which is more than the ordinary log carries.
+    #[serde(default)]
+    pub debug_logging: bool,
+    /// Whether the content script dismisses cookie banners by itself.
+    #[serde(default = "yes")]
+    pub auto_consent: bool,
+    /// Off wipes the WebView2 profile at start-up, so both platforms open signed out.
+    #[serde(default = "yes")]
+    pub persist_session: bool,
     pub theme_preset: String,
     pub show_assistant: bool,
     /// `claude-code` for the local binary, otherwise a provider id from `assistant::providers`.
     pub assistant_source: String,
     /// Empty means: look in the places Claude Code installs itself.
     pub assistant_cli_path: String,
+    /// The user's own patch for the delete engine, evaluated in the site page before each
+    /// action. Empty means the engine's built-in configuration.
+    #[serde(default)]
+    pub engine_script: String,
     pub timeouts: TimeoutSettings,
 }
 
@@ -50,14 +76,33 @@ impl Default for AppSettings {
             show_x: true,
             show_youtube: true,
             confirm_deletion: true,
-            theme_preset: "Default".into(),
+            notifications: true,
+            telemetry: true,
+            debug_logging: false,
+            auto_consent: true,
+            persist_session: true,
+            theme_preset: "default".into(),
             show_assistant: true,
             assistant_source: crate::assistant::LOCAL.into(),
             assistant_cli_path: String::new(),
+            engine_script: String::new(),
             timeouts: TimeoutSettings::default(),
         }
     }
 }
+
+/// Kept in step with `ThemePresetSchema` in `src/lib/bridge/contract.ts` and the classes in
+/// `src/themes.css`. The host does not style anything; it only refuses to hand the UI a name
+/// the UI would reject.
+const THEME_PRESETS: [&str; 7] = [
+    "default",
+    "caffeine",
+    "modern-minimal",
+    "mono",
+    "northern-lights",
+    "twitter",
+    "vercel",
+];
 
 pub struct SettingsStore {
     path: PathBuf,
@@ -68,10 +113,16 @@ impl SettingsStore {
     /// Reads once at startup; a corrupt or missing file falls back to defaults rather
     /// than failing the launch, since settings are conveniences, not state the app needs.
     pub fn load(path: PathBuf) -> Self {
-        let current = std::fs::read_to_string(&path)
+        let mut current: AppSettings = std::fs::read_to_string(&path)
             .ok()
             .and_then(|text| serde_json::from_str(&text).ok())
             .unwrap_or_default();
+
+        // A preset that no longer exists would fail the UI's own schema check and take the
+        // whole settings call down with it, so a retired name reads as the neutral base.
+        if !THEME_PRESETS.contains(&current.theme_preset.as_str()) {
+            current.theme_preset = AppSettings::default().theme_preset;
+        }
 
         Self {
             path,
@@ -152,6 +203,7 @@ mod tests {
         assert!(json.contains("\"showLogs\""));
         assert!(json.contains("\"confirmDeletion\""));
         assert!(json.contains("\"showAssistant\""));
+        assert!(json.contains("\"persistSession\""));
         assert!(json.contains("\"assistantSource\""));
         assert!(json.contains("\"assistantCliPath\""));
         assert!(json.contains("\"waitAfterDelete\""));

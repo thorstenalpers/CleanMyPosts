@@ -49,7 +49,12 @@ const api: CmpApi = {
 	// The two platforms are told apart by their own host: this file is one script, injected
 	// into both, and answering an X page with YouTube's avatar heuristic reports nothing.
 	getLoginStatus() {
-		return window.location.host.includes('x.com') ? getXLoginStatus() : getYouTubeLoginStatus();
+		// Matched as a whole host, not as a substring: "x.com.example.net" contains "x.com"
+		// and is not X. The injected script already guards the origin, but that guard lives
+		// in another file and this one has to stand on its own.
+		const host = window.location.host;
+		const isX = host === 'x.com' || host.endsWith('.x.com');
+		return isX ? getXLoginStatus() : getYouTubeLoginStatus();
 	},
 
 	// Handed out, not copied: the host evaluates the user's patch against this object between

@@ -6,6 +6,11 @@ on:
   pull_request:
   workflow_dispatch:
 
+# Read-only by default: both jobs check out, build and test. Nothing here writes to the
+# repository, and an unset block grants whatever the repository default happens to be.
+permissions:
+  contents: read
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true

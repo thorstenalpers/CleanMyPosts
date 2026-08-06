@@ -60,3 +60,34 @@ describe('window.__cmp', () => {
 		expect(typeof window.__cmp!.getLoginStatus()).toBe('string');
 	});
 });
+
+describe('telling the two platforms apart', () => {
+	afterEach(() => {
+		document.body.innerHTML = '';
+	});
+
+	function on(host: string): void {
+		Object.defineProperty(window, 'location', {
+			value: { host, href: `https://${host}/` },
+			writable: true,
+			configurable: true
+		});
+	}
+
+	// The rule this exists for: a substring test also accepts "x.com.example.net".
+	it('reads a host that merely contains x.com as YouTube, not as X', () => {
+		document.body.innerHTML = '<button id="avatar-btn"><img src="https://e.test/a.png" /></button>';
+		on('x.com.example.net');
+
+		expect(window.__cmp!.getLoginStatus()).toBe('logged_in');
+	});
+
+	it('still recognises x.com and its subdomains', () => {
+		document.body.innerHTML = '<a data-testid="AppTabBar_Profile_Link" href="/someone"></a>';
+		on('x.com');
+		expect(window.__cmp!.getLoginStatus()).toBe('logged_in');
+
+		on('mobile.x.com');
+		expect(window.__cmp!.getLoginStatus()).toBe('logged_in');
+	});
+});

@@ -31,7 +31,9 @@ describe('OverviewView', () => {
 			onDismissIntro: vi.fn()
 		});
 
-		expect(screen.getByRole('heading', { name: 'Overview' })).toBeInTheDocument();
+		// The page is named by the shell's header bar now, so what proves it rendered is its
+		// own first line rather than a heading it no longer repeats.
+		expect(screen.getByText(/what is connected/i)).toBeInTheDocument();
 		expect(screen.getByText('Following')).toBeInTheDocument();
 		expect(screen.getByText('Comments')).toBeInTheDocument();
 		expect(screen.getByText('Nothing is running.')).toBeInTheDocument();
@@ -54,6 +56,26 @@ describe('OverviewView', () => {
 		emit({ event: 'siteLogin', payload: { platform: 'x', loggedIn: true } });
 
 		await waitFor(() => expect(screen.getByText('Signed in')).toBeInTheDocument());
+	});
+
+	it('holds the intro back until the real settings have arrived', async () => {
+		const { settingsStore, loginStore, logStore, runner } = setup();
+		render(OverviewView, {
+			settingsStore,
+			loginStore,
+			logStore,
+			runner,
+			onOpen: vi.fn(),
+			onDismissIntro: vi.fn()
+		});
+
+		// Still loading: the fallback says the intro is on, and a user who switched it off
+		// must not see it flash past.
+		expect(screen.queryByText(/how this works/i)).not.toBeInTheDocument();
+
+		await settingsStore.load();
+
+		await waitFor(() => expect(screen.getByText(/how this works/i)).toBeInTheDocument());
 	});
 
 	it('opens the platform the user picked', async () => {

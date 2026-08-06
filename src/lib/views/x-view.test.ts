@@ -20,10 +20,16 @@ function setup(confirmDeletion: boolean, overrides: MockHandlers = {}) {
 			showX: true,
 			showYouTube: true,
 			confirmDeletion,
-			themePreset: 'Default' as const,
+			notifications: true,
+			telemetry: true,
+			debugLogging: false,
+			autoConsent: true,
+			persistSession: true,
+			themePreset: 'default' as const,
 			showAssistant: true,
 			assistantSource: 'claude-code',
 			assistantCliPath: '',
+			engineScript: '',
 			timeouts: { waitAfterDelete: 1, waitBetweenRetryDeleteAttempts: 1, waitAfterDocumentLoad: 1 }
 		}),
 		'site.navigate': navigate,
@@ -65,6 +71,31 @@ describe('XView', () => {
 		await waitFor(() =>
 			expect(navigate).toHaveBeenCalledWith({ platform: 'x', action: 'showPosts' })
 		);
+	});
+
+	it('keeps the panel open on a show and marks the row that is on screen', async () => {
+		const onClose = vi.fn();
+		const { client, emit, settingsStore, loginStore, runner } = setup(true);
+		await loadAndLogin(settingsStore, emit);
+		render(XView, {
+			bridge: client,
+			settingsStore,
+			loginStore,
+			runner,
+			open: true,
+			onClose
+		});
+
+		await fireEvent.click(screen.getByRole('button', { name: 'Show Likes' }));
+
+		expect(onClose).not.toHaveBeenCalled();
+		await waitFor(() =>
+			expect(screen.getByRole('button', { name: 'Show Likes' })).toHaveAttribute(
+				'aria-current',
+				'page'
+			)
+		);
+		expect(screen.getByRole('button', { name: 'Show Posts' })).not.toHaveAttribute('aria-current');
 	});
 
 	it('disables all action buttons until the host reports the user is logged in', async () => {
@@ -111,6 +142,63 @@ describe('XView', () => {
 			expect(runAction).toHaveBeenCalledWith(
 				expect.objectContaining({ platform: 'x', action: 'deletePosts' })
 			)
+		);
+	});
+
+	// The panel is the only surface the app still owns while a platform is showing, so the
+	// outcome has to survive there rather than only in a toast that has already gone.
+	it('keeps the panel open through a run and records its outcome', async () => {
+		const onClose = vi.fn();
+		const { client, emit, settingsStore, loginStore, runner } = setup(false);
+		await loadAndLogin(settingsStore, emit);
+		render(XView, {
+			bridge: client,
+			settingsStore,
+			loginStore,
+			runner,
+			open: true,
+			onClose
+		});
+
+		await fireEvent.click(screen.getByRole('button', { name: 'Delete all Posts' }));
+
+		// The outcome lives on the runner now, which is what the status bar under the view
+		// reads — the panel is no longer the thing that remembers it.
+		await waitFor(() => expect(runner.lastResult.x?.message).toBe('3 posts cleaned.'));
+		// Closing here took the stop button and the result away with the click that started
+		// the run — the one moment the panel is worth the most.
+		expect(onClose).not.toHaveBeenCalled();
+	});
+
+	// A run opens its own page, so the highlight has to follow the deletion, not the last
+	// thing that was merely looked at.
+	it('moves the marked row to the action being deleted', async () => {
+		const { client, emit, settingsStore, loginStore, runner } = setup(false);
+		await loadAndLogin(settingsStore, emit);
+		render(XView, {
+			bridge: client,
+			settingsStore,
+			loginStore,
+			runner,
+			open: true,
+			onClose: () => {}
+		});
+
+		await fireEvent.click(screen.getByRole('button', { name: 'Show Reposts' }));
+		await waitFor(() =>
+			expect(screen.getByRole('button', { name: 'Show Reposts' })).toHaveAttribute('aria-current')
+		);
+
+		await fireEvent.click(screen.getByRole('button', { name: 'Delete all Replies' }));
+
+		await waitFor(() =>
+			expect(screen.getByRole('button', { name: 'Show Replies' })).toHaveAttribute(
+				'aria-current',
+				'page'
+			)
+		);
+		expect(screen.getByRole('button', { name: 'Show Reposts' })).not.toHaveAttribute(
+			'aria-current'
 		);
 	});
 

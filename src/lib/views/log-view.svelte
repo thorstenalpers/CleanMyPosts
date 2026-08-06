@@ -1,4 +1,5 @@
 <script lang="ts">
+	import type { LogEntry } from '$lib/bridge/contract';
 	import type { LogStore } from '$lib/stores/log.svelte';
 	import { Input } from '$lib/components/ui/input';
 	import { Badge } from '$lib/components/ui/badge';
@@ -6,6 +7,7 @@
 	import { t } from '$lib/i18n/index.svelte';
 	import Trash2Icon from '@lucide/svelte/icons/trash-2';
 	import ArrowDownIcon from '@lucide/svelte/icons/arrow-down';
+	import ArrowUpIcon from '@lucide/svelte/icons/arrow-up';
 	import SearchIcon from '@lucide/svelte/icons/search';
 
 	interface Props {
@@ -19,20 +21,62 @@
 
 	const levels = [
 		{ value: 'all' as const, label: 'log.level.all' as const },
+		{ value: 'debug' as const, label: 'log.level.debug' as const },
 		{ value: 'info' as const, label: 'log.level.info' as const },
 		{ value: 'warning' as const, label: 'log.level.warning' as const },
 		{ value: 'error' as const, label: 'log.level.error' as const }
 	];
 
-	// Newest last, like a terminal: the interesting line is the one that just arrived.
+	type Column = 'time' | 'level' | 'message';
+
+	// Time ascending by default: newest last, like a terminal, which is also what
+	// follow-to-bottom assumes. Any other order turns that off — see the effect below.
+	let sortBy = $state<Column>('time');
+	let ascending = $state(true);
+
+	const LEVEL_ORDER: Record<string, number> = { debug: 0, info: 1, warning: 2, error: 3 };
+
+	function compare(a: LogEntry, b: LogEntry): number {
+		if (sortBy === 'level') return LEVEL_ORDER[a.level]! - LEVEL_ORDER[b.level]!;
+		if (sortBy === 'message') return a.message.localeCompare(b.message);
+		return a.timestamp.localeCompare(b.timestamp);
+	}
+
 	const entries = $derived(
-		logStore.entries.filter(
-			(entry) =>
-				(logStore.levelFilter === 'all' || entry.level === logStore.levelFilter) &&
-				(logStore.messageFilter === '' ||
-					entry.message.toLowerCase().includes(logStore.messageFilter.toLowerCase()))
-		)
+		logStore.entries
+			.filter(
+				(entry) =>
+					(logStore.levelFilter === 'all' || entry.level === logStore.levelFilter) &&
+					(logStore.messageFilter === '' ||
+						entry.message.toLowerCase().includes(logStore.messageFilter.toLowerCase()))
+			)
+			// Sorted on a copy: `logStore.entries` is the arrival order, and the log's own
+			// notion of "latest" must not depend on how the table happens to be sorted.
+			.slice()
+			.sort((a, b) => (ascending ? compare(a, b) : -compare(a, b)))
 	);
+
+	const columns: {
+		key: Column;
+		label: 'log.column.time' | 'log.column.level' | 'log.column.message';
+		class: string;
+	}[] = [
+		{ key: 'time', label: 'log.column.time', class: 'w-24' },
+		{ key: 'level', label: 'log.column.level', class: 'w-20' },
+		{ key: 'message', label: 'log.column.message', class: '' }
+	];
+
+	function sort(column: Column): void {
+		if (sortBy === column) {
+			ascending = !ascending;
+		} else {
+			sortBy = column;
+			ascending = column !== 'time';
+		}
+	}
+
+	/** Following the tail only means anything while the table is in arrival order. */
+	const following = $derived(follow && sortBy === 'time' && ascending);
 
 	const counts = $derived({
 		warning: logStore.entries.filter((e) => e.level === 'warning').length,
@@ -42,7 +86,7 @@
 	$effect(() => {
 		// Touch `entries` so this re-runs whenever a line arrives.
 		void entries.length;
-		if (follow && scroller) {
+		if (following && scroller) {
 			scroller.scrollTop = scroller.scrollHeight;
 		}
 	});
@@ -61,8 +105,6 @@
 
 <div class="flex h-full flex-col">
 	<header class="flex shrink-0 flex-wrap items-center gap-2 border-b px-4 py-2.5">
-		<h1 class="mr-1 text-[13px] font-semibold tracking-tight">{t('log.title')}</h1>
-
 		{#if counts.error > 0}
 			<Badge variant="destructive">{t('log.errors', { count: counts.error })}</Badge>
 		{/if}
@@ -115,29 +157,63 @@
 				{logStore.entries.length === 0 ? t('log.empty') : t('log.noMatch')}
 			</p>
 		{:else}
-			<ul class="divide-y divide-border/40 font-mono text-xs">
-				{#each entries as entry, i (`${entry.timestamp}-${i}`)}
-					<li class={cn('flex gap-3 px-4 py-1.5', entry.level === 'error' && 'bg-destructive/5')}>
-						<time class="shrink-0 text-muted-foreground tabular-nums" datetime={entry.timestamp}>
-							{formatTime(entry.timestamp)}
-						</time>
-						<span
-							class={cn(
-								'w-12 shrink-0 uppercase',
-								entry.level === 'error' ? 'font-medium text-destructive' : 'text-muted-foreground',
-								entry.level === 'warning' && 'text-foreground'
-							)}
-						>
-							{entry.level === 'warning' ? 'warn' : entry.level}
-						</span>
-						<span class="break-words whitespace-pre-wrap">{entry.message}</span>
-					</li>
-				{/each}
-			</ul>
+			<table class="w-full font-mono text-xs">
+				<thead class="sticky top-0 z-10 bg-background/95 backdrop-blur">
+					<tr class="border-b text-muted-foreground">
+						{#each columns as column (column.key)}
+							<th
+								class={cn('p-0 text-start font-medium', column.class)}
+								aria-sort={sortBy === column.key
+									? ascending
+										? 'ascending'
+										: 'descending'
+									: 'none'}
+							>
+								<button
+									type="button"
+									onclick={() => sort(column.key)}
+									aria-label={t('log.sortBy', { column: t(column.label) })}
+									class="flex h-8 w-full cursor-pointer items-center gap-1 px-4 transition-colors duration-150 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+								>
+									{t(column.label)}
+									{#if sortBy === column.key}
+										{#if ascending}
+											<ArrowUpIcon class="size-3" />
+										{:else}
+											<ArrowDownIcon class="size-3" />
+										{/if}
+									{/if}
+								</button>
+							</th>
+						{/each}
+					</tr>
+				</thead>
+				<tbody class="divide-y divide-border/40">
+					{#each entries as entry, i (`${entry.timestamp}-${i}`)}
+						<tr class={cn(entry.level === 'error' && 'bg-destructive/5')}>
+							<td class="px-4 py-1.5 align-top text-muted-foreground tabular-nums">
+								<time datetime={entry.timestamp}>{formatTime(entry.timestamp)}</time>
+							</td>
+							<td
+								class={cn(
+									'px-4 py-1.5 align-top uppercase',
+									entry.level === 'error'
+										? 'font-medium text-destructive'
+										: 'text-muted-foreground',
+									entry.level === 'warning' && 'text-foreground'
+								)}
+							>
+								{entry.level === 'warning' ? 'warn' : entry.level}
+							</td>
+							<td class="px-4 py-1.5 break-words whitespace-pre-wrap">{entry.message}</td>
+						</tr>
+					{/each}
+				</tbody>
+			</table>
 		{/if}
 	</div>
 
-	{#if !follow}
+	{#if !following}
 		<button
 			type="button"
 			onclick={() => {

@@ -10,7 +10,8 @@ function setup(overrides: MockHandlers = {}) {
 		'app.getInfo': () => ({
 			version: '1.2.3',
 			homepageUrl: 'https://example.com/home',
-			reportBugUrl: 'https://example.com/bug'
+			reportBugUrl: 'https://example.com/bug',
+			troubleshootingUrl: 'https://example.com/troubleshooting'
 		}),
 		'settings.get': () => ({
 			theme: 'Default',
@@ -20,10 +21,16 @@ function setup(overrides: MockHandlers = {}) {
 			showX: true,
 			showYouTube: true,
 			confirmDeletion: true,
-			themePreset: 'Default' as const,
+			notifications: true,
+			telemetry: true,
+			debugLogging: false,
+			autoConsent: true,
+			persistSession: true,
+			themePreset: 'default' as const,
 			showAssistant: true,
 			assistantSource: 'claude-code',
 			assistantCliPath: '',
+			engineScript: '',
 			timeouts: {
 				waitAfterDelete: 500,
 				waitBetweenRetryDeleteAttempts: 500,
@@ -57,14 +64,6 @@ function setup(overrides: MockHandlers = {}) {
 }
 
 describe('SettingsView', () => {
-	it('shows the app version once app.getInfo resolves', async () => {
-		const { settingsStore } = setup();
-		await settingsStore.load();
-		render(SettingsView, { bridge: setup().client, settingsStore });
-
-		await waitFor(() => expect(screen.getByText(/1\.2\.3|CleanMyPosts/)).toBeInTheDocument());
-	});
-
 	it('sends an updated theme to the host when a theme button is clicked', async () => {
 		const { client, settingsStore, settingsSet } = setup();
 		await settingsStore.load();
@@ -74,6 +73,19 @@ describe('SettingsView', () => {
 
 		await waitFor(() =>
 			expect(settingsSet).toHaveBeenCalledWith(expect.objectContaining({ theme: 'Dark' }))
+		);
+	});
+
+	it('offers the engine script only as edit-or-reset, and resets to the built-in behaviour', async () => {
+		const { client, settingsStore, settingsSet } = setup();
+		await settingsStore.load();
+		settingsStore.settings = { ...settingsStore.settings, engineScript: 'window.x = 1;' };
+		render(SettingsView, { bridge: client, settingsStore });
+
+		await fireEvent.click(screen.getByRole('button', { name: /reset/i }));
+
+		await waitFor(() =>
+			expect(settingsSet).toHaveBeenCalledWith(expect.objectContaining({ engineScript: '' }))
 		);
 	});
 
@@ -88,19 +100,5 @@ describe('SettingsView', () => {
 		await waitFor(() =>
 			expect(settingsSet).toHaveBeenCalledWith(expect.objectContaining({ confirmDeletion: false }))
 		);
-	});
-
-	it('calls updater.checkForUpdates when the button is clicked', async () => {
-		const checkForUpdates = vi.fn(() => ({
-			updateAvailable: false,
-			message: 'No updates available.'
-		}));
-		const { client, settingsStore } = setup({ 'updater.checkForUpdates': checkForUpdates });
-		await settingsStore.load();
-		render(SettingsView, { bridge: client, settingsStore });
-
-		await fireEvent.click(screen.getByRole('button', { name: /check for updates/i }));
-
-		await waitFor(() => expect(checkForUpdates).toHaveBeenCalled());
 	});
 });

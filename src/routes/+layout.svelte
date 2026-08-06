@@ -15,10 +15,17 @@
 	import { setAppContext } from '$lib/app-context';
 	import { Toaster } from '$lib/components/ui/sonner';
 	import SidebarShell, { type NavItem } from '$lib/components/sidebar-shell.svelte';
-	import RunStatus from '$lib/components/run-status.svelte';
+	import PageHeader from '$lib/components/page-header.svelte';
+	import StatusBar from '$lib/components/status-bar.svelte';
 	import XView from '$lib/views/x-view.svelte';
 	import YouTubeView from '$lib/views/youtube-view.svelte';
-	import { ACTION_RAIL_WIDTH, SIDEBAR_COLLAPSED_WIDTH, SIDEBAR_EXPANDED_WIDTH } from '$lib/layout';
+	import {
+		ACTION_RAIL_WIDTH,
+		HEADER_HEIGHT,
+		STATUS_BAR_HEIGHT,
+		SIDEBAR_COLLAPSED_WIDTH,
+		SIDEBAR_EXPANDED_WIDTH
+	} from '$lib/layout';
 	import { applyPreset, applyThemeChange } from '$lib/theme/preset';
 	import { i18n, t } from '$lib/i18n/index.svelte';
 	import { cn } from '$lib/utils';
@@ -28,6 +35,7 @@
 	import ScrollTextIcon from '@lucide/svelte/icons/scroll-text';
 	import SparklesIcon from '@lucide/svelte/icons/sparkles';
 	import SettingsIcon from '@lucide/svelte/icons/settings';
+	import InfoIcon from '@lucide/svelte/icons/info';
 	import '../app.css';
 
 	/**
@@ -35,7 +43,7 @@
 	 * that slides in beside it for X/YouTube, and the Overview/Settings/Log pages in the
 	 * content area. Each platform has its own site webview in column 1, both loaded for the
 	 * whole session; `site.show` / `site.hide` decide which one is on screen and
-	 * `layout.setChromeWidth` tells the host how much room column 0 needs.
+	 * `layout.setSiteInset` tells the host where that column starts.
 	 */
 
 	interface Props {
@@ -56,7 +64,7 @@
 	// even after the user navigates away from the rail that started it.
 	const runner = new ActionRunner(bridge);
 
-	type NavKey = 'overview' | 'x' | 'youtube' | 'log' | 'assistant' | 'settings';
+	type NavKey = 'overview' | 'x' | 'youtube' | 'log' | 'assistant' | 'settings' | 'info';
 
 	// The overview sits at `/`: `/` is the file the webview opens, and it has to be the
 	// prerendered shell, not a redirect that waits for the router.
@@ -66,19 +74,42 @@
 		youtube: '/youtube',
 		log: '/log',
 		assistant: '/assistant',
-		settings: '/settings'
+		settings: '/settings',
+		info: '/info'
 	} as const;
 
-	const activeKey = $derived((page.url.pathname.split('/')[1] || 'overview') as NavKey);
+	const routeKey = $derived((page.url.pathname.split('/')[1] || 'overview') as NavKey);
 	let sidebarExpanded = $state(true);
 
-	let panelOpen = $state(false);
+	// Set on the click, cleared when the router arrives. `goto` only resolves once the target
+	// page's module is in, and on a cold start that module is still being fetched — waiting
+	// for it before moving the highlight is what made the first click on each page feel like
+	// the app had missed it.
+	let pendingKey = $state<NavKey | undefined>(undefined);
+	const activeKey = $derived(pendingKey ?? routeKey);
+
+	$effect(() => {
+		if (pendingKey === routeKey) pendingKey = undefined;
+	});
+
+	// The ✕ is the only thing that closes the actions, so it is the only thing that decides.
+	// Tracking the user's intent rather than the panel's visibility means nothing else in the
+	// app — a re-render, a push from the host, a route settling — can take the panel away
+	// behind their back.
+	// A dropdown in the header would otherwise open behind the platform's webview: the chrome
+	// only owns the strip above it. Same move the confirm dialog makes.
+	let headerMenuOpen = $state(false);
+
+	let panelClosedByUser = $state(false);
 	let shell = $state<HTMLElement | undefined>(undefined);
 
 	function onNavigate(key: NavKey): void {
 		const platform = key === 'x' || key === 'youtube' ? key : undefined;
-		// One item, two states: the first click opens the actions, the next one closes them.
-		panelOpen = !!platform && !(panelOpen && activeKey === key);
+		// Opening only, never toggling: the actions are what a platform is for, and the panel
+		// carries the running deletion and its result. Closing it is a deliberate click on its
+		// own ✕, not something a second click on the same nav item does by accident.
+		if (platform) panelClosedByUser = false;
+		pendingKey = key;
 		void goto(resolve(ROUTES[key]));
 	}
 
@@ -88,16 +119,23 @@
 		logStore,
 		loginStore,
 		runner,
-		openPlatform: (platform: Platform) => void goto(resolve(ROUTES[platform]))
+		openPlatform: (platform: Platform) => {
+			// Same as clicking the platform in the sidebar: arriving without its actions leaves
+			// the user on a page with nothing to do.
+			panelClosedByUser = false;
+			pendingKey = platform;
+			void goto(resolve(ROUTES[platform]));
+		}
 	});
 
-	onMount(async () => {
-		await Promise.all([settingsStore.load(), logStore.load()]);
-		// Every route is a prerendered file sitting next to this one, so pulling their modules
-		// in once the overview is up costs a few idle milliseconds and buys an instant first
-		// click on every other page. Deliberately after the stores: the visible page settles
-		// before anything is fetched for a page nobody has asked for yet.
-		await Promise.all(Object.values(ROUTES).map((path) => preloadCode(resolve(path))));
+	onMount(() => {
+		// Nothing is awaited in sequence here. The stores and the route modules are fetched
+		// side by side, and the shell stays usable while both are in flight: the sidebar
+		// renders from the default settings, and a click on a page whose module has not landed
+		// yet is taken and highlighted immediately, then served the moment it does.
+		void settingsStore.load();
+		void logStore.load();
+		for (const path of Object.values(ROUTES)) void preloadCode(resolve(path));
 	});
 
 	// Only on an actual change: `applyThemeChange` suppresses transitions for a moment, and
@@ -108,6 +146,10 @@
 	// reads `i18n.locale`, so one write here re-renders every string in the app.
 	$effect(() => {
 		i18n.setting = settingsStore.settings.language;
+		// `dir` on <html> is what mirrors the shell for Arabic; every layout rule that could
+		// not stay direction-neutral is written as a logical property, so this one write is
+		// the whole switch.
+		i18n.applyToDocument();
 	});
 
 	$effect(() => {
@@ -180,14 +222,34 @@
 					}
 				]
 			: []),
-		...(settingsStore.settings.showLogs
-			? [{ key: 'log' as const, label: t('nav.log'), icon: ScrollTextIcon }]
-			: []),
 		...(settingsStore.settings.showAssistant
-			? [{ key: 'assistant' as const, label: t('nav.assistant'), icon: SparklesIcon }]
+			? [
+					{
+						key: 'assistant' as const,
+						label: t('nav.assistant'),
+						icon: SparklesIcon
+					}
+				]
 			: []),
+		...(settingsStore.settings.showLogs
+			? [
+					{
+						key: 'log' as const,
+						label: t('nav.log'),
+						icon: ScrollTextIcon
+					}
+				]
+			: []),
+		// Info above Settings: the way out of the app sits at the very bottom.
+		{ key: 'info' as const, label: t('nav.info'), icon: InfoIcon, footer: true },
 		{ key: 'settings' as const, label: t('nav.settings'), icon: SettingsIcon, footer: true }
 	] satisfies NavItem<NavKey>[]);
+
+	// The bar over every page: which page it is, and where that is. `activeKey` rather than the
+	// route, so it moves with the click instead of with the module that answers it.
+	const current = $derived(
+		navItems.find((item) => item.key === activeKey) ?? { label: t('nav.overview'), icon: HouseIcon }
+	);
 
 	/** How long the local page gets to fade out before the site webview takes the stage. */
 	const HAND_OFF_MS = 140;
@@ -195,26 +257,32 @@
 	const railPlatform = $derived(
 		activeKey === 'x' || activeKey === 'youtube' ? activeKey : undefined
 	);
-	const panelVisible = $derived(!!railPlatform && panelOpen);
+	// Open whenever a platform is up, unless the user closed it themselves. Derived rather
+	// than stored, so nothing else in the app can flip it in passing.
+	const panelVisible = $derived(!!railPlatform && !panelClosedByUser);
+
+	/** For the app's own pages that is the route; for a platform it is the page's real address. */
+	const location = $derived(
+		railPlatform ? (loginStore.url[railPlatform] ?? ROUTES[railPlatform]) : ROUTES[activeKey]
+	);
 
 	// Hiding a page in the settings has to close the one you are standing on, and the same
 	// guard catches a URL that names a route the sidebar does not offer.
 	const reachable = $derived(new Set<string>(navItems.map((item) => item.key)));
 
+	// Against the route, not the optimistic key: a click that has not arrived yet is on its
+	// way to a page the sidebar does offer, and bouncing it here would cancel it mid-flight.
 	$effect(() => {
-		if (!reachable.has(activeKey)) void goto(resolve(ROUTES.overview));
+		if (!reachable.has(routeKey)) void goto(resolve(ROUTES.overview));
 	});
 
-	// Leaving a platform takes its actions with it.
-	$effect(() => {
-		if (!railPlatform) panelOpen = false;
-	});
-
-	// The rail pushes the site aside, so the site column starts where the chrome ends.
+	// The rail pushes the site aside, and the header bar pushes it down.
 	$effect(() => {
 		const sidebar = sidebarExpanded ? SIDEBAR_EXPANDED_WIDTH : SIDEBAR_COLLAPSED_WIDTH;
-		void bridge.call('layout.setChromeWidth', {
-			width: sidebar + (panelVisible ? ACTION_RAIL_WIDTH : 0)
+		void bridge.call('layout.setSiteInset', {
+			left: sidebar + (panelVisible ? ACTION_RAIL_WIDTH : 0),
+			top: HEADER_HEIGHT,
+			bottom: railPlatform ? STATUS_BAR_HEIGHT : 0
 		});
 	});
 
@@ -229,7 +297,10 @@
 	// into a sequence, which is what makes it read as one window rather than two.
 	$effect(() => {
 		const platform = railPlatform;
-		if (!platform) {
+		// A dropdown in the header is taller than the strip the chrome owns while a platform is
+		// up, so the platform steps aside for as long as one is open — otherwise the entries
+		// render behind a webview and the menu looks broken.
+		if (!platform || headerMenuOpen) {
 			void bridge.call('site.hide', { hide: true });
 			return;
 		}
@@ -243,54 +314,73 @@
      frames stop coming, so that rule can survive and kill every transition in the app.
      `applyThemeChange` does the same job with a timer that always fires. -->
 <ModeWatcher disableTransitions={false} />
-<Toaster />
-
-<svelte:window
-	onkeydown={(event: KeyboardEvent) => {
-		if (event.key === 'Escape') panelOpen = false;
-	}}
-/>
+<!-- Bottom left, and not by preference: while X or YouTube is showing, this page only owns
+     the sidebar column and a 44px strip above the site webview. A toast on the right lands
+     inside that strip and gets cut off, because a separate webview is painting over
+     everything below it. The left column is the one place with room in both states. -->
+<Toaster position="bottom-left" />
 
 <div bind:this={shell} class="flex h-screen bg-background">
-	<SidebarShell {navItems} {activeKey} {onNavigate} bind:expanded={sidebarExpanded}>
-		{#snippet status()}
-			{#if runner.running && runner.currentLabel}
-				<RunStatus
-					label={runner.currentLabel}
-					deletedCount={runner.deletedSoFar}
-					onStop={() => runner.cancel()}
+	<SidebarShell {navItems} {activeKey} {onNavigate} bind:expanded={sidebarExpanded} />
+
+	<!-- Everything right of the sidebar, stacked: the actions and the view side by side, and
+	     the status bar underneath both. It reaches under the actions because the run it
+	     reports was started there. -->
+	<div class="flex min-w-0 flex-1 flex-col">
+		<div class="flex min-h-0 flex-1">
+			{#if railPlatform === 'x'}
+				<XView
+					{bridge}
+					{settingsStore}
+					{loginStore}
+					{runner}
+					open={panelVisible}
+					onClose={() => (panelClosedByUser = true)}
+				/>
+			{:else if railPlatform === 'youtube'}
+				<YouTubeView
+					{bridge}
+					{settingsStore}
+					{loginStore}
+					{runner}
+					open={panelVisible}
+					onClose={() => (panelClosedByUser = true)}
 				/>
 			{/if}
-		{/snippet}
-	</SidebarShell>
 
-	{#if railPlatform === 'x'}
-		<XView
-			{bridge}
-			{settingsStore}
-			{loginStore}
-			{runner}
-			open={panelVisible}
-			onClose={() => (panelOpen = false)}
-		/>
-	{:else if railPlatform === 'youtube'}
-		<YouTubeView
-			{bridge}
-			{settingsStore}
-			{loginStore}
-			{runner}
-			open={panelVisible}
-			onClose={() => (panelOpen = false)}
-		/>
-	{/if}
+			<!-- The header sits over this column alone, not across the window: it spans exactly
+			     the rectangle the host gives the site webview (`left` counts the sidebar and the
+			     panel, `top` is this bar), so the two line up whether a local page or a platform
+			     is showing. It stays put while X or YouTube is up — that is what keeps saying
+			     where the user is — because only `main` below it fades. -->
+			<div class="flex min-w-0 flex-1 flex-col">
+				<PageHeader
+					title={current.label}
+					icon={current.icon}
+					iconOnly={activeKey === 'x'}
+					{location}
+					{settingsStore}
+					onMenuOpenChange={(open: boolean) => (headerMenuOpen = open)}
+				/>
 
-	<!-- Fades out before the host swaps in the site webview, and back in on the way home. -->
-	<main
-		class={cn(
-			'relative min-w-0 flex-1 overflow-hidden transition-opacity duration-150 ease-out',
-			railPlatform ? 'pointer-events-none opacity-0' : 'opacity-100'
-		)}
-	>
-		{@render children()}
-	</main>
+				<!-- Fades out before the host swaps in the site webview, and back on the way home. -->
+				<main
+					class={cn(
+						'relative min-h-0 flex-1 overflow-hidden transition-opacity duration-150 ease-out',
+						railPlatform ? 'pointer-events-none opacity-0' : 'opacity-100'
+					)}
+				>
+					{@render children()}
+				</main>
+			</div>
+		</div>
+
+		<!-- Under the actions as well as under the view: the run it reports was started in that
+		     column. The host shortens the site webview by exactly this height (`bottom` in the
+		     inset) — a webview cannot be painted over, so the room has to be real. The local
+		     pages have no run to report and get their full height back. -->
+		{#if railPlatform}
+			<StatusBar {runner} platform={railPlatform} />
+		{/if}
+	</div>
 </div>

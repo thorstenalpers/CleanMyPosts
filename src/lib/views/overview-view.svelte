@@ -85,13 +85,12 @@
 
 <div class="h-full overflow-y-auto">
 	<div class="mx-auto flex max-w-3xl flex-col gap-4 p-5">
-		<header>
-			<h1 class="text-xl font-semibold tracking-tight">{t('overview.title')}</h1>
-			<p class="mt-0.5 text-xs text-muted-foreground">{t('overview.subtitle')}</p>
-		</header>
+		<p class="text-xs text-muted-foreground">{t('overview.subtitle')}</p>
 
-		{#if settingsStore.settings.showIntro}
-			<Card class="cmp-hero border-0">
+		<!-- Not before the real settings arrive: the fallback has the intro on, and a user who
+		     switched it off should not watch it flash past on every start. -->
+		{#if !settingsStore.loading && settingsStore.settings.showIntro}
+			<Card class="border-0 bg-muted">
 				<CardHeader>
 					<CardTitle class="text-base">{t('overview.how.title')}</CardTitle>
 					<CardDescription class="text-current/75">{t('overview.how.lead')}</CardDescription>

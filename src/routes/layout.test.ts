@@ -66,10 +66,16 @@ function hideYouTube() {
 			showX: true,
 			showYouTube: false,
 			confirmDeletion: true,
-			themePreset: 'Default',
+			notifications: true,
+			telemetry: true,
+			debugLogging: false,
+			autoConsent: true,
+			persistSession: true,
+			themePreset: 'default',
 			showAssistant: true,
 			assistantSource: 'claude-code',
 			assistantCliPath: '',
+			engineScript: '',
 			timeouts: {
 				waitAfterDelete: 500,
 				waitBetweenRetryDeleteAttempts: 500,
@@ -119,14 +125,12 @@ describe('app layout', () => {
 		expect(goto).toHaveBeenCalledWith('/settings');
 	});
 
-	it('opens the actions beside the sidebar, and only on demand', async () => {
+	it('keeps the actions beside the sidebar for as long as a platform is up', async () => {
 		url.pathname = '/x';
 		await renderLayout();
 
-		// Being on a platform is not enough — the actions cost their width only while open.
-		expect(screen.queryByRole('complementary', { name: 'X actions' })).not.toBeInTheDocument();
-
-		await fireEvent.click(screen.getByRole('button', { name: /^X/ }));
+		// Being on a platform is enough: the actions are what the platform is for, and the panel
+		// carries the running deletion, its stop button and its result.
 		expect(await screen.findByRole('complementary', { name: 'X actions' })).toBeInTheDocument();
 
 		// What "beside" buys: opening X leaves YouTube exactly where it was.
@@ -134,17 +138,15 @@ describe('app layout', () => {
 		const youtube = screen.getByRole('button', { name: /^YouTube/ });
 		expect(x.nextElementSibling).toBe(youtube);
 
+		// A second click on the same nav item does not take them away again.
 		await fireEvent.click(x);
-		await waitFor(() =>
-			expect(screen.queryByRole('complementary', { name: 'X actions' })).not.toBeInTheDocument()
-		);
+		expect(screen.getByRole('complementary', { name: 'X actions' })).toBeInTheDocument();
 	});
 
-	it('closes the actions from the panel itself as well as from the nav item', async () => {
+	it('closes the actions from the panel itself, and only from there', async () => {
 		url.pathname = '/x';
 		await renderLayout();
 
-		await fireEvent.click(screen.getByRole('button', { name: /^X/ }));
 		await screen.findByRole('complementary', { name: 'X actions' });
 
 		await fireEvent.click(screen.getByRole('button', { name: 'Close X actions' }));
@@ -166,13 +168,27 @@ describe('app layout', () => {
 		expect(host.calls.filter((call) => call.method === 'site.navigate')).toHaveLength(0);
 	});
 
-	it('pulls in every route once the overview is up', async () => {
+	it('pulls in every route without waiting for the stores', async () => {
 		await renderLayout();
 
 		await waitFor(() => expect(preloadCode).toHaveBeenCalledWith('/settings'));
-		for (const path of ['/', '/x', '/youtube', '/log']) {
+		for (const path of ['/', '/x', '/youtube', '/log', '/info']) {
 			expect(preloadCode).toHaveBeenCalledWith(path);
 		}
+	});
+
+	// The page module can still be in flight when the click lands; the sidebar says where the
+	// user is going anyway, instead of looking like it missed the click.
+	it('marks a clicked item active before the route has caught up', async () => {
+		await renderLayout();
+
+		await fireEvent.click(screen.getByRole('button', { name: 'Settings' }));
+
+		expect(screen.getByRole('button', { name: 'Settings' })).toHaveAttribute(
+			'aria-current',
+			'page'
+		);
+		expect(screen.getByRole('button', { name: 'Overview' })).not.toHaveAttribute('aria-current');
 	});
 
 	it('drops a platform from the sidebar when it is switched off', async () => {
@@ -197,6 +213,23 @@ describe('app layout', () => {
 		hideYouTube();
 
 		await waitFor(() => expect(goto).toHaveBeenCalledWith('/'));
+	});
+
+	// The header's own dropdown is taller than the strip the chrome keeps while a platform is
+	// showing, so it would open behind that webview and look like a broken button.
+	it('gets the platform out of the way while a header menu is open', async () => {
+		url.pathname = '/x';
+		await renderLayout();
+		await waitFor(() =>
+			expect(host.calls).toContainEqual({ method: 'site.show', params: { platform: 'x' } })
+		);
+		host.calls.length = 0;
+
+		await fireEvent.click(screen.getByRole('button', { name: /language|sprache/i }));
+
+		await waitFor(() =>
+			expect(host.calls).toContainEqual({ method: 'site.hide', params: { hide: true } })
+		);
 	});
 
 	it('hides the site on the local pages so they are not covered by it', async () => {

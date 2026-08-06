@@ -15,6 +15,15 @@ export class ActionRunner {
 	running = $state(false);
 	deletedSoFar = $state(0);
 	currentLabel = $state<MessageKey | undefined>(undefined);
+	/** Whether the last run was stopped by the user. A sequence of runs has to honour that. */
+	cancelled = $state(false);
+	/**
+	 * What to say when nothing is running, per platform. X and YouTube have their own status
+	 * bar each, and the last thing that happened on one says nothing about the other.
+	 */
+	lastResult = $state<
+		Partial<Record<Platform, { kind: 'success' | 'info' | 'error'; message: string }>>
+	>({});
 
 	private currentRequestId: string | undefined;
 
@@ -26,6 +35,7 @@ export class ActionRunner {
 		this.running = true;
 		this.deletedSoFar = 0;
 		this.currentLabel = input.label;
+		this.cancelled = false;
 
 		const unsubscribe = this.bridge.onPushEvent((event) => {
 			if (event.event === 'progress' && event.payload.requestId === requestId) {
@@ -51,6 +61,7 @@ export class ActionRunner {
 	async cancel(): Promise<void> {
 		const requestId = this.currentRequestId;
 		if (requestId) {
+			this.cancelled = true;
 			await this.bridge.call('site.cancelAction', { requestId });
 		}
 	}

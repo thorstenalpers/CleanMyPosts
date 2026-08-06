@@ -68,7 +68,8 @@ export function defaultMockHandlers(): MockHandlers {
 		'app.getInfo': () => ({
 			version: '0.0.0-dev',
 			homepageUrl: 'https://github.com/thorstenalpers/CleanMyPosts',
-			reportBugUrl: 'https://github.com/thorstenalpers/CleanMyPosts/issues'
+			reportBugUrl: 'https://github.com/thorstenalpers/CleanMyPosts/issues',
+			troubleshootingUrl: 'https://github.com/thorstenalpers/CleanMyPosts#-troubleshooting'
 		}),
 		'settings.get': () => ({
 			theme: 'Default',
@@ -78,10 +79,16 @@ export function defaultMockHandlers(): MockHandlers {
 			showX: true,
 			showYouTube: true,
 			confirmDeletion: true,
-			themePreset: 'Default',
+			notifications: true,
+			telemetry: true,
+			debugLogging: false,
+			autoConsent: true,
+			persistSession: true,
+			themePreset: 'default',
 			showAssistant: true,
 			assistantSource: 'claude-code',
 			assistantCliPath: '',
+			engineScript: '',
 			timeouts: {
 				waitAfterDelete: 500,
 				waitBetweenRetryDeleteAttempts: 500,
@@ -93,8 +100,11 @@ export function defaultMockHandlers(): MockHandlers {
 		'site.runAction': () => ({ deletedCount: 0 }),
 		'site.cancelAction': () => undefined,
 		'site.hide': () => undefined,
+		'site.toast': () => undefined,
+		'site.reload': () => undefined,
+		'assistant.openInCli': () => undefined,
 		'site.show': () => undefined,
-		'layout.setChromeWidth': () => undefined,
+		'layout.setSiteInset': () => undefined,
 		'layout.setBackground': () => undefined,
 		'updater.checkForUpdates': () => ({ updateAvailable: false }),
 		'system.openUrl': () => undefined,

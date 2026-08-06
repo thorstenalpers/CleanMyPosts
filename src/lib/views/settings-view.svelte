@@ -1,11 +1,10 @@
 <script lang="ts">
-	import { toast } from 'svelte-sonner';
+	import { notify } from '$lib/notify';
 	import type { BridgeClient } from '$lib/bridge/client';
 	import type { SettingsStore } from '$lib/stores/settings.svelte';
 	import {
 		AppSettingsSchema,
 		LOCAL_ASSISTANT_SOURCE,
-		type AppInfo,
 		type AppTheme,
 		type AssistantSources,
 		type Language
@@ -22,23 +21,23 @@
 		CardDescription,
 		CardContent
 	} from '$lib/components/ui/card';
+	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import SettingRow from '$lib/components/setting-row.svelte';
 	import ApiKeysDialog from '$lib/components/api-keys-dialog.svelte';
+	import EngineScriptDialog from '$lib/components/engine-script-dialog.svelte';
 	import { cn } from '$lib/utils';
 	import PaletteIcon from '@lucide/svelte/icons/palette';
-	import ShieldIcon from '@lucide/svelte/icons/shield';
-	import PanelLeftIcon from '@lucide/svelte/icons/panel-left';
-	import TimerIcon from '@lucide/svelte/icons/timer';
-	import InfoIcon from '@lucide/svelte/icons/info';
+	import SlidersIcon from '@lucide/svelte/icons/sliders-horizontal';
+	import LayoutGridIcon from '@lucide/svelte/icons/layout-grid';
+	import CodeIcon from '@lucide/svelte/icons/code';
+	import RotateCcwIcon from '@lucide/svelte/icons/rotate-ccw';
 	import SunIcon from '@lucide/svelte/icons/sun';
 	import MoonIcon from '@lucide/svelte/icons/moon';
 	import LaptopIcon from '@lucide/svelte/icons/laptop';
-	import RefreshCwIcon from '@lucide/svelte/icons/refresh-cw';
-	import ExternalLinkIcon from '@lucide/svelte/icons/external-link';
-	import BugIcon from '@lucide/svelte/icons/bug';
-	import FileTextIcon from '@lucide/svelte/icons/file-text';
 	import SparklesIcon from '@lucide/svelte/icons/sparkles';
 	import KeyRoundIcon from '@lucide/svelte/icons/key-round';
+	import ChevronDownIcon from '@lucide/svelte/icons/chevron-down';
+	import CheckIcon from '@lucide/svelte/icons/check';
 
 	interface Props {
 		bridge: BridgeClient;
@@ -47,14 +46,16 @@
 
 	let { bridge, settingsStore }: Props = $props();
 
-	let appInfo = $state<AppInfo | undefined>(undefined);
-	let checkingUpdates = $state(false);
+	/** Off is a source like the others: where the answers come from, or that none do. */
+	const SOURCE_CHOICES = [
+		{ value: 'off' as const, label: 'settings.assistant.off' as const },
+		{ value: LOCAL_ASSISTANT_SOURCE, label: 'settings.assistant.local' as const },
+		{ value: 'hosted' as const, label: 'settings.assistant.hosted' as const }
+	];
+
 	let sources = $state<AssistantSources | undefined>(undefined);
 	let keysOpen = $state(false);
-
-	$effect(() => {
-		void bridge.call('app.getInfo', undefined).then((info) => (appInfo = info));
-	});
+	let engineOpen = $state(false);
 
 	async function loadSources(): Promise<void> {
 		sources = await bridge.call('assistant.getSources', undefined);
@@ -86,6 +87,11 @@
 		return id === 'System' ? t('settings.language.system') : label;
 	}
 
+	const activeLanguageLabel = $derived.by(() => {
+		const active = LANGUAGES.find((entry) => entry.id === settingsStore.settings.language);
+		return active ? languageLabel(active.id, active.label) : t('settings.language.system');
+	});
+
 	const timeoutFields = [
 		{
 			key: 'waitAfterDocumentLoad',
@@ -111,22 +117,10 @@
 		const merged = { ...settingsStore.settings, ...next };
 		const parsed = AppSettingsSchema.safeParse(merged);
 		if (!parsed.success) {
-			toast.error(t('settings.invalid'));
+			notify(settingsStore, 'error', t('settings.invalid'));
 			return;
 		}
 		await settingsStore.update(parsed.data);
-	}
-
-	async function checkForUpdates(): Promise<void> {
-		checkingUpdates = true;
-		try {
-			const result = await bridge.call('updater.checkForUpdates', undefined);
-			if (!result.updateAvailable) {
-				toast.info(result.message ?? t('settings.noUpdates'));
-			}
-		} finally {
-			checkingUpdates = false;
-		}
 	}
 </script>
 
@@ -139,12 +133,8 @@
 {/snippet}
 
 <div class="h-full overflow-y-auto">
-	<div class="mx-auto flex max-w-2xl flex-col gap-4 p-5">
-		<header>
-			<h1 class="text-xl font-semibold tracking-tight">{t('settings.title')}</h1>
-			<p class="mt-0.5 text-xs text-muted-foreground">{t('settings.subtitle')}</p>
-		</header>
-
+	<div class="flex flex-col gap-4 p-5">
+		<p class="text-xs text-muted-foreground">{t('settings.subtitle')}</p>
 		<Card>
 			<CardHeader>
 				{@render cardTitle(t('settings.appearance'), PaletteIcon)}
@@ -204,28 +194,32 @@
 
 				<SettingRow label={t('settings.language')} description={t('settings.language.description')}>
 					{#snippet control()}
-						<div
-							class="flex flex-wrap justify-end gap-1"
-							role="group"
-							aria-label={t('settings.language')}
-						>
-							{#each LANGUAGES as language (language.id)}
-								{@const active = settingsStore.settings.language === language.id}
-								<button
-									type="button"
-									aria-pressed={active}
-									onclick={() => commit({ language: language.id })}
-									class={cn(
-										'flex h-8 cursor-pointer items-center rounded-md border px-2.5 text-xs font-medium transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
-										active
-											? 'border-primary/40 bg-primary/10 text-foreground'
-											: 'border-border text-muted-foreground hover:bg-muted'
-									)}
-								>
-									{languageLabel(language.id, language.label)}
-								</button>
-							{/each}
-						</div>
+						<DropdownMenu.Root>
+							<DropdownMenu.Trigger>
+								{#snippet child({ props })}
+									<button
+										{...props}
+										type="button"
+										aria-label={t('settings.language')}
+										class="flex h-8 cursor-pointer items-center gap-2 rounded-md border border-border px-2.5 text-xs font-medium transition-colors duration-150 hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+									>
+										{activeLanguageLabel}
+										<ChevronDownIcon class="size-3.5 text-muted-foreground" />
+									</button>
+								{/snippet}
+							</DropdownMenu.Trigger>
+
+							<DropdownMenu.Content align="end" class="w-44">
+								{#each LANGUAGES as language (language.id)}
+									<DropdownMenu.Item onSelect={() => commit({ language: language.id })}>
+										<span class="flex-1">{languageLabel(language.id, language.label)}</span>
+										{#if settingsStore.settings.language === language.id}
+											<CheckIcon class="size-4" />
+										{/if}
+									</DropdownMenu.Item>
+								{/each}
+							</DropdownMenu.Content>
+						</DropdownMenu.Root>
 					{/snippet}
 				</SettingRow>
 			</CardContent>
@@ -233,8 +227,8 @@
 
 		<Card>
 			<CardHeader>
-				{@render cardTitle(t('settings.navigation'), PanelLeftIcon)}
-				<CardDescription>{t('settings.navigation.description')}</CardDescription>
+				{@render cardTitle(t('settings.general'), LayoutGridIcon)}
+				<CardDescription>{t('settings.general.description')}</CardDescription>
 			</CardHeader>
 			<CardContent class="divide-y divide-border/60">
 				<SettingRow
@@ -266,20 +260,6 @@
 				</SettingRow>
 
 				<SettingRow
-					label={t('settings.showIntro')}
-					description={t('settings.showIntro.description')}
-					for="show-intro"
-				>
-					{#snippet control()}
-						<Switch
-							id="show-intro"
-							checked={settingsStore.settings.showIntro}
-							onCheckedChange={(checked: boolean) => commit({ showIntro: checked })}
-						/>
-					{/snippet}
-				</SettingRow>
-
-				<SettingRow
 					label={t('settings.showLog')}
 					description={t('settings.showLog.description')}
 					for="show-logs"
@@ -294,15 +274,72 @@
 				</SettingRow>
 
 				<SettingRow
-					label={t('settings.showAssistant')}
-					description={t('settings.showAssistant.description')}
-					for="show-assistant"
+					label={t('settings.showIntro')}
+					description={t('settings.showIntro.description')}
+					for="show-intro"
 				>
 					{#snippet control()}
 						<Switch
-							id="show-assistant"
-							checked={settingsStore.settings.showAssistant}
-							onCheckedChange={(checked: boolean) => commit({ showAssistant: checked })}
+							id="show-intro"
+							checked={settingsStore.settings.showIntro}
+							onCheckedChange={(checked: boolean) => commit({ showIntro: checked })}
+						/>
+					{/snippet}
+				</SettingRow>
+
+				<SettingRow
+					label={t('settings.notifications')}
+					description={t('settings.notifications.description')}
+					for="notifications"
+				>
+					{#snippet control()}
+						<Switch
+							id="notifications"
+							checked={settingsStore.settings.notifications}
+							onCheckedChange={(checked: boolean) => commit({ notifications: checked })}
+						/>
+					{/snippet}
+				</SettingRow>
+
+				<SettingRow
+					label={t('settings.telemetry')}
+					description={t('settings.telemetry.description')}
+					for="telemetry"
+				>
+					{#snippet control()}
+						<Switch
+							id="telemetry"
+							checked={settingsStore.settings.telemetry}
+							onCheckedChange={(checked: boolean) => commit({ telemetry: checked })}
+						/>
+					{/snippet}
+				</SettingRow>
+
+				<SettingRow
+					label={t('settings.debugLogging')}
+					description={t('settings.debugLogging.description')}
+					for="debug-logging"
+				>
+					{#snippet control()}
+						<Switch
+							id="debug-logging"
+							checked={settingsStore.settings.debugLogging}
+							disabled={!settingsStore.settings.telemetry}
+							onCheckedChange={(checked: boolean) => commit({ debugLogging: checked })}
+						/>
+					{/snippet}
+				</SettingRow>
+
+				<SettingRow
+					label={t('settings.persistSession')}
+					description={t('settings.persistSession.description')}
+					for="persist-session"
+				>
+					{#snippet control()}
+						<Switch
+							id="persist-session"
+							checked={settingsStore.settings.persistSession}
+							onCheckedChange={(checked: boolean) => commit({ persistSession: checked })}
 						/>
 					{/snippet}
 				</SettingRow>
@@ -317,30 +354,41 @@
 			<CardContent class="divide-y divide-border/60">
 				<SettingRow
 					label={t('settings.assistant.source')}
-					description={usingLocal
-						? sources?.local.found
-							? t('settings.assistant.cliFound', {
-									version: sources.local.version ?? sources.local.path ?? ''
-								})
-							: t('settings.assistant.cliMissing')
-						: t('settings.assistant.provider.description')}
+					description={!settingsStore.settings.showAssistant
+						? t('settings.assistant.off.description')
+						: usingLocal
+							? sources?.local.found
+								? t('settings.assistant.cliFound', {
+										version: sources.local.version ?? sources.local.path ?? ''
+									})
+								: t('settings.assistant.cliMissing')
+							: t('settings.assistant.provider.description')}
 				>
 					{#snippet control()}
 						<div class="flex gap-1" role="group" aria-label={t('settings.assistant.source')}>
-							{#each [{ value: LOCAL_ASSISTANT_SOURCE, label: t('settings.assistant.local') }, { value: 'hosted', label: t('settings.assistant.hosted') }] as choice (choice.value)}
-								{@const active = choice.value === LOCAL_ASSISTANT_SOURCE ? usingLocal : !usingLocal}
+							{#each SOURCE_CHOICES as choice (choice.value)}
+								{@const active =
+									choice.value === 'off'
+										? !settingsStore.settings.showAssistant
+										: settingsStore.settings.showAssistant &&
+											(choice.value === LOCAL_ASSISTANT_SOURCE ? usingLocal : !usingLocal)}
 								<button
 									type="button"
 									aria-pressed={active}
 									onclick={() =>
-										commit({
-											assistantSource:
-												choice.value === LOCAL_ASSISTANT_SOURCE
-													? LOCAL_ASSISTANT_SOURCE
-													: (activeProvider?.id ??
-														sources?.providers[0]?.id ??
-														LOCAL_ASSISTANT_SOURCE)
-										})}
+										commit(
+											choice.value === 'off'
+												? { showAssistant: false }
+												: {
+														showAssistant: true,
+														assistantSource:
+															choice.value === LOCAL_ASSISTANT_SOURCE
+																? LOCAL_ASSISTANT_SOURCE
+																: (activeProvider?.id ??
+																	sources?.providers[0]?.id ??
+																	LOCAL_ASSISTANT_SOURCE)
+													}
+										)}
 									class={cn(
 										'flex h-8 cursor-pointer items-center rounded-md border px-2.5 text-xs font-medium transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
 										active
@@ -348,54 +396,57 @@
 											: 'border-border text-muted-foreground hover:bg-muted'
 									)}
 								>
-									{choice.label}
+									{t(choice.label)}
 								</button>
 							{/each}
 						</div>
 					{/snippet}
 				</SettingRow>
 
-				{#if usingLocal}
-					<SettingRow
-						label={t('settings.assistant.cliPath')}
-						description={t('settings.assistant.cliPath.description')}
-						for="assistant-cli-path"
-					>
-						{#snippet control()}
-							<Input
-								id="assistant-cli-path"
-								class="h-8 w-64 font-mono text-xs"
-								placeholder={t('settings.assistant.cliPath.placeholder')}
-								value={settingsStore.settings.assistantCliPath}
-								onchange={async (e: Event & { currentTarget: HTMLInputElement }) => {
-									await commit({ assistantCliPath: e.currentTarget.value });
-									await loadSources();
-								}}
-							/>
-						{/snippet}
-					</SettingRow>
-				{:else}
-					<SettingRow
-						label={t('settings.assistant.provider')}
-						description={activeProvider
-							? `${activeProvider.label} · ${activeProvider.model}`
-							: t('settings.assistant.provider.description')}
-					>
-						{#snippet control()}
-							<Button variant="outline" size="sm" class="h-8" onclick={() => (keysOpen = true)}>
-								<KeyRoundIcon />
-								{t('settings.assistant.keys')}
-							</Button>
-						{/snippet}
-					</SettingRow>
+				<!-- Off leaves nothing to configure: no source, no key, no path. -->
+				{#if settingsStore.settings.showAssistant}
+					{#if usingLocal}
+						<SettingRow
+							label={t('settings.assistant.cliPath')}
+							description={t('settings.assistant.cliPath.description')}
+							for="assistant-cli-path"
+						>
+							{#snippet control()}
+								<Input
+									id="assistant-cli-path"
+									class="h-8 w-64 font-mono text-xs"
+									placeholder={t('settings.assistant.cliPath.placeholder')}
+									value={settingsStore.settings.assistantCliPath}
+									onchange={async (e: Event & { currentTarget: HTMLInputElement }) => {
+										await commit({ assistantCliPath: e.currentTarget.value });
+										await loadSources();
+									}}
+								/>
+							{/snippet}
+						</SettingRow>
+					{:else}
+						<SettingRow
+							label={t('settings.assistant.provider')}
+							description={activeProvider
+								? `${activeProvider.label} · ${activeProvider.model}`
+								: t('settings.assistant.provider.description')}
+						>
+							{#snippet control()}
+								<Button variant="outline" size="sm" class="h-8" onclick={() => (keysOpen = true)}>
+									<KeyRoundIcon />
+									{t('settings.assistant.keys')}
+								</Button>
+							{/snippet}
+						</SettingRow>
+					{/if}
 				{/if}
 			</CardContent>
 		</Card>
 
 		<Card>
 			<CardHeader>
-				{@render cardTitle(t('settings.safety'), ShieldIcon)}
-				<CardDescription>{t('settings.safety.description')}</CardDescription>
+				{@render cardTitle(t('settings.automation'), SlidersIcon)}
+				<CardDescription>{t('settings.automation.description')}</CardDescription>
 			</CardHeader>
 			<CardContent class="divide-y divide-border/60">
 				<SettingRow
@@ -411,15 +462,21 @@
 						/>
 					{/snippet}
 				</SettingRow>
-			</CardContent>
-		</Card>
 
-		<Card>
-			<CardHeader>
-				{@render cardTitle(t('settings.timing'), TimerIcon)}
-				<CardDescription>{t('settings.timing.description')}</CardDescription>
-			</CardHeader>
-			<CardContent class="divide-y divide-border/60">
+				<SettingRow
+					label={t('settings.autoConsent')}
+					description={t('settings.autoConsent.description')}
+					for="auto-consent"
+				>
+					{#snippet control()}
+						<Switch
+							id="auto-consent"
+							checked={settingsStore.settings.autoConsent}
+							onCheckedChange={(checked: boolean) => commit({ autoConsent: checked })}
+						/>
+					{/snippet}
+				</SettingRow>
+
 				{#each timeoutFields as field (field.key)}
 					<SettingRow label={t(field.label)} description={t(field.description)} for={field.id}>
 						{#snippet control()}
@@ -442,70 +499,44 @@
 						{/snippet}
 					</SettingRow>
 				{/each}
-			</CardContent>
-		</Card>
 
-		<Card>
-			<CardHeader>
-				{@render cardTitle(t('settings.about'), InfoIcon)}
-				<CardDescription>{t('settings.about.description')}</CardDescription>
-			</CardHeader>
-			<CardContent class="divide-y divide-border/60">
 				<SettingRow
-					label="CleanMyPosts"
-					description={appInfo
-						? t('settings.version', { version: appInfo.version })
-						: t('settings.versionLoading')}
+					label={t('settings.engine')}
+					description={settingsStore.settings.engineScript.trim() === ''
+						? t('settings.engine.none')
+						: t('settings.engine.active', {
+								count: settingsStore.settings.engineScript.trim().split('\n').length
+							})}
 				>
 					{#snippet control()}
-						<Button
-							variant="outline"
-							size="sm"
-							class="h-8"
-							disabled={checkingUpdates}
-							onclick={checkForUpdates}
-						>
-							<RefreshCwIcon class={cn(checkingUpdates && 'animate-spin')} />
-							{t('settings.checkUpdates')}
-						</Button>
+						<div class="flex gap-1">
+							<Button variant="outline" size="sm" class="h-8" onclick={() => (engineOpen = true)}>
+								<CodeIcon />
+								{t('settings.engine.edit')}
+							</Button>
+							<Button
+								variant="ghost"
+								size="sm"
+								class="h-8"
+								disabled={settingsStore.settings.engineScript === ''}
+								onclick={() => commit({ engineScript: '' })}
+							>
+								<RotateCcwIcon />
+								{t('settings.engine.reset')}
+							</Button>
+						</div>
 					{/snippet}
 				</SettingRow>
-
-				<div class="flex flex-wrap gap-2 py-2.5">
-					{#if appInfo}
-						<Button
-							variant="ghost"
-							size="sm"
-							class="h-8"
-							onclick={() => bridge.call('system.openUrl', { url: appInfo!.homepageUrl })}
-						>
-							<ExternalLinkIcon />
-							{t('settings.github')}
-						</Button>
-						<Button
-							variant="ghost"
-							size="sm"
-							class="h-8"
-							onclick={() => bridge.call('system.openUrl', { url: appInfo!.reportBugUrl })}
-						>
-							<BugIcon />
-							{t('settings.reportBug')}
-						</Button>
-					{/if}
-					<Button
-						variant="ghost"
-						size="sm"
-						class="h-8"
-						onclick={() => bridge.call('system.openLicense', undefined)}
-					>
-						<FileTextIcon />
-						{t('settings.licenses')}
-					</Button>
-				</div>
 			</CardContent>
 		</Card>
 	</div>
 </div>
+
+<EngineScriptDialog
+	bind:open={engineOpen}
+	script={settingsStore.settings.engineScript}
+	onSave={(next: string) => commit({ engineScript: next })}
+/>
 
 {#if sources}
 	<ApiKeysDialog

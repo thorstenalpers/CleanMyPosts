@@ -39,12 +39,29 @@ pub fn status(configured: Option<&str>) -> serde_json::Value {
     })
 }
 
+/// Windows opens a console window whenever a windowed app starts a console program, and
+/// `claude.exe` is one. The probe below runs whenever the settings page is opened, so without
+/// this a black window blinks over the app on every visit.
+#[cfg(windows)]
+pub(crate) fn hidden(command: &mut Command) -> &mut Command {
+    use std::os::windows::process::CommandExt;
+    const CREATE_NO_WINDOW: u32 = 0x0800_0000;
+    command.creation_flags(CREATE_NO_WINDOW)
+}
+
+#[cfg(not(windows))]
+pub(crate) fn hidden(command: &mut Command) -> &mut Command {
+    command
+}
+
 /// The version string the binary reports, or none when it will not say.
 ///
 /// Asked of the binary the user configured rather than of whatever `claude` happens to be on
 /// PATH — those are not always the same install.
 fn version_of(binary: &Path) -> Option<String> {
-    let output = Command::new(binary).arg("--version").output().ok()?;
+    let output = hidden(Command::new(binary).arg("--version"))
+        .output()
+        .ok()?;
     if !output.status.success() {
         return None;
     }
@@ -66,13 +83,15 @@ pub fn ask(configured: Option<&str>, prompt: &str) -> Result<String> {
     let binary = locate(configured)
         .ok_or_else(|| Error::Message("Claude Code was not found on this machine".to_owned()))?;
 
-    let mut child = Command::new(&binary)
-        .args(["--print", "--output-format", "text"])
-        .stdin(std::process::Stdio::piped())
-        .stdout(std::process::Stdio::piped())
-        .stderr(std::process::Stdio::piped())
-        .spawn()
-        .map_err(|error| Error::Message(format!("Claude Code would not start: {error}")))?;
+    let mut child = hidden(
+        Command::new(&binary)
+            .args(["--print", "--output-format", "text"])
+            .stdin(std::process::Stdio::piped())
+            .stdout(std::process::Stdio::piped())
+            .stderr(std::process::Stdio::piped()),
+    )
+    .spawn()
+    .map_err(|error| Error::Message(format!("Claude Code would not start: {error}")))?;
 
     child
         .stdin

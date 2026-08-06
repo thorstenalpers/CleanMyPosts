@@ -108,17 +108,18 @@ pub fn open_in_cli(app: &AppHandle, params: &Value) -> Result<Value> {
     let path = std::env::temp_dir().join(format!("cleanmyposts-prompt-{}.txt", std::process::id()));
     std::fs::write(&path, prompt).map_err(|error| Error::Message(error.to_string()))?;
 
-    std::process::Command::new("cmd")
-        .args([
-            "/c",
-            "start",
-            "",
-            "cmd",
-            "/k",
-            &format!("type \"{}\" | \"{}\"", path.display(), binary.display()),
-        ])
-        .spawn()
-        .map_err(|error| Error::Message(format!("could not start a terminal: {error}")))?;
+    // The terminal this opens is the point; the `cmd /c` that opens it is not, and it flashed
+    // its own window over the app on the way.
+    crate::assistant::cli::hidden(std::process::Command::new("cmd").args([
+        "/c",
+        "start",
+        "",
+        "cmd",
+        "/k",
+        &format!("type \"{}\" | \"{}\"", path.display(), binary.display()),
+    ]))
+    .spawn()
+    .map_err(|error| Error::Message(format!("could not start a terminal: {error}")))?;
 
     crate::bridge::log(app, "info", "assistant: handed the request to Claude Code");
     Ok(Value::Null)

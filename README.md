@@ -1,4 +1,4 @@
-![CleanMyPosts](./assets/Overview.png)
+![Banner](./assets/banner.png)
 
 [![CI](https://img.shields.io/github/actions/workflow/status/thorstenalpers/CleanMyPosts/ci.yml?branch=main&style=flat-square&logo=githubactions&logoColor=white&label=CI)](https://github.com/thorstenalpers/CleanMyPosts/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/thorstenalpers/CleanMyPosts?style=flat-square&logo=github&label=release)](https://github.com/thorstenalpers/CleanMyPosts/releases/latest)
@@ -93,6 +93,12 @@ Once your system meets the requirements, follow these steps to install **CleanMy
 
 Each platform gets its own header, sub-navigation and status bar. The sub-navigation stays
 open while a run is going, so the controls do not disappear mid-task.
+
+<details>
+  <summary><strong>Overview</strong></summary>
+  <br/>
+  <img src="./assets/Overview.png" alt="The overview, listing what each platform can clean" width="700" />
+</details>
 
 <details>
   <summary><strong>X (Twitter)</strong></summary>

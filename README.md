@@ -26,7 +26,6 @@ from treating you as a bot.
 
 ### X (Twitter)
 
-- 🔍 **View** all posts, reposts, replies, likes, and followings
 - 🗑️ **Bulk delete** all posts
 - 🗑️ **Bulk delete** all reposts
 - 🗑️ **Bulk delete** all replies
@@ -36,9 +35,7 @@ from treating you as a bot.
 
 ### YouTube
 
-- 🔍 **View** all your YouTube comments via Google My Activity
 - 🗑️ **Bulk delete** all YouTube comments
-- 🔍 **View** all liked videos
 - 🖤 **Remove** all liked videos
 - 💣 **Delete everything** — comments and liked videos in one run
 
@@ -100,88 +97,6 @@ open while a run is going, so the controls do not disappear mid-task.
   <br/>
   <img src="./assets/Assistant.png" alt="The assistant, showing what would be sent before it is sent" width="700" />
 </details>
-
----
-
-## 🧟‍♂️ Advanced: Run the Deletion Engine Manually
-
-The same code the app injects can be run by hand in any Chromium browser's DevTools
-console — useful on non-Windows machines, or to debug a selector against the live site.
-
-The deletion logic lives in [`src/lib/engine/`](src/lib/engine) — the actions in
-[`x/`](src/lib/engine/x) and [`youtube/`](src/lib/engine/youtube), every selector in
-[`config.ts`](src/lib/engine/config.ts), and the shared clicking and logging in
-[`dom.ts`](src/lib/engine/dom.ts). [`src/content-entry.ts`](src/content-entry.ts) is the
-bundle's entry point; the result is a single dependency-free IIFE exposing `window.__cmp`.
-
-### 🔧 Build the bundle
-
-Requires [Node.js](https://nodejs.org/) 24+, the version CI builds with:
-
-```bash
-npm ci && npm run build
-```
-
-The result is `dist/content/content.js`. That file is what the Windows app compiles into
-itself, so a change to the engine only reaches the app once this has been rebuilt.
-
-### 🔧 Run it
-
-1. Log in and open the page for the action you want (see the table below), replacing
-   `USERNAME` with your X handle — the part after `x.com/`, without the `@`.
-2. Open **DevTools** (`F12`) and switch to the **Console** tab.
-3. Optional — the engine reports progress through the WebView2 host channel, which
-   does not exist in a normal browser, so nothing is printed unless you shim it first:
-   ```js
-   window.chrome = { ...window.chrome, webview: { postMessage: (m) => console.log(m) } };
-   ```
-4. Paste the entire contents of `content.js` and press Enter. This only defines
-   `window.__cmp`; nothing is deleted yet.
-5. Start the run:
-   ```js
-   __cmp.run(
-   	'x',
-   	'deletePosts',
-   	JSON.stringify({
-   		requestId: 'manual',
-   		userName: 'USERNAME',
-   		waitAfterDelete: 1000,
-   		waitBetweenRetryDeleteAttempts: 1000
-   	})
-   );
-   ```
-
-`__cmp.run` returns immediately and works through the page in the background; it stops
-on its own once nothing deletable is left. `__cmp.isEmpty('x', 'deletePosts')` reports
-whether the current page still has anything to delete.
-
-There is no `deleteAll` here. The app's **Delete everything** button is the app running the
-actions in the table below one after another, navigating to each page in turn — by hand, do
-the same thing in the same order.
-
-| Platform  | Action            | Open this page first                                                                             |
-| --------- | ----------------- | ------------------------------------------------------------------------------------------------ |
-| `x`       | `deletePosts`     | [`x.com/search?q=from:USERNAME`](https://x.com/search?q=from%3AUSERNAME&src=typed_query)         |
-| `x`       | `deleteReplies`   | [`x.com/USERNAME/with_replies`](https://x.com/)                                                  |
-| `x`       | `deleteReposts`   | [`x.com/USERNAME`](https://x.com/)                                                               |
-| `x`       | `deleteLikes`     | [`x.com/USERNAME/likes`](https://x.com/)                                                         |
-| `x`       | `deleteFollowing` | [`x.com/USERNAME/following`](https://x.com/)                                                     |
-| `youtube` | `deleteComments`  | [My Activity → YouTube comments](https://myactivity.google.com/page?hl=en&page=youtube_comments) |
-| `youtube` | `deleteLikes`     | [Liked videos playlist](https://www.youtube.com/playlist?list=LL)                                |
-
-> **Note:** `deletePosts` and `deleteReplies` need your handle in `userName`, and refuse to
-> open any menu without it. On a page that also shows other people's posts — a repost, or the
-> post a reply answers — the engine has to know which article is yours: opening a stranger's
-> menu finds "Report post" and no delete entry at all. The app passes the handle on every run;
-> by hand it has to be in the JSON.
-
-> **Note:** Make sure you are logged in to the relevant account before starting a run.
-
-> **Note:** The app asks both platforms for these pages in English (`lang=en`, `hl=en`),
-> because the engine finds some entries by their wording. Neither platform is obliged to
-> honour it — an account with its own language setting wins — so those lookups match several
-> languages. Opening a page by hand simply skips the request, which is worth knowing when a
-> run behaves differently in the browser than in the app.
 
 ---
 

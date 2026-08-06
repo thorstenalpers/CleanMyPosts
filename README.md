@@ -1,4 +1,4 @@
-![Banner](https://raw.githubusercontent.com/thorstenalpers/CleanMyPosts/main/assets/banner.png)
+![CleanMyPosts](./assets/Overview.png)
 
 [![CI](https://img.shields.io/github/actions/workflow/status/thorstenalpers/CleanMyPosts/ci.yml?branch=main&style=flat-square&logo=githubactions&logoColor=white&label=CI)](https://github.com/thorstenalpers/CleanMyPosts/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/thorstenalpers/CleanMyPosts?style=flat-square&logo=github&label=release)](https://github.com/thorstenalpers/CleanMyPosts/releases/latest)
@@ -49,6 +49,7 @@ flowchart LR
 - 🗑️ **Bulk delete** all replies
 - 🖤 **Remove** all likes
 - 👤 **Unfollow** all followings
+- 💣 **Delete everything** — every list above, one after another, from a single button
 
 ### YouTube
 
@@ -56,6 +57,12 @@ flowchart LR
 - 🗑️ **Bulk delete** all YouTube comments
 - 🔍 **View** all liked videos
 - 🖤 **Remove** all liked videos
+- 💣 **Delete everything** — comments and liked videos in one run
+
+Every delete asks for confirmation first, and the confirmation for **Delete everything**
+names each list it is about to empty. A finished run reports in the status bar — green when
+it worked, amber when it found nothing, red when it failed — and the number of items removed
+goes into the log.
 
 ---
 
@@ -75,7 +82,7 @@ keeps you signed in, under `%AppData%` and `%LocalAppData%`.
 
 Once your system meets the requirements, follow these steps to install **CleanMyPosts**:
 
-1. Download the latest version from [Releases](https://github.com/thorstenalpers/x-tweet-cleaner/releases).
+1. Download the latest version from [Releases](https://github.com/thorstenalpers/CleanMyPosts/releases).
 2. Run the installer. Ignore the warning about the app being from an unverified publisher.
 3. Launch the app and log in with your X (formerly Twitter) or Google account.
 4. Start bulk deleting your posts, replies, reposts, likes, following, and YouTube comments easily.
@@ -84,58 +91,25 @@ Once your system meets the requirements, follow these steps to install **CleanMy
 
 ## 🎬 See It in Action
 
-### X
+Each platform gets its own header, sub-navigation and status bar. The sub-navigation stays
+open while a run is going, so the controls do not disappear mid-task.
 
 <details>
-  <summary><strong>Delete posts</strong></summary>
+  <summary><strong>X (Twitter)</strong></summary>
   <br/>
-  <img src="./assets/delete-posts.gif" alt="Delete posts GIF" width="700" />
+  <img src="./assets/X.webp" alt="Posts, replies, reposts, likes and followings on X" width="700" />
 </details>
 
 <details>
-  <summary><strong>Delete reposts</strong></summary>
+  <summary><strong>YouTube</strong></summary>
   <br/>
-  <img src="./assets/delete-reposts.gif" alt="Delete reposts GIF" width="700" />
+  <img src="./assets/Youtube.webp" alt="Comments and liked videos on YouTube" width="700" />
 </details>
 
 <details>
-  <summary><strong>Delete replies</strong></summary>
+  <summary><strong>Assistant</strong></summary>
   <br/>
-  <img src="./assets/delete-replies.gif" alt="Delete replies GIF" width="700" />
-</details>
-
-<details>
-  <summary><strong>Delete likes</strong></summary>
-  <br/>
-  <img src="./assets/delete-likes.gif" alt="Delete Likes GIF" width="700" />
-</details>
-
-<details>
-  <summary><strong>Delete Followings</strong></summary>
-  <br/>
-  <img src="./assets/delete-following.gif" alt="Unfollow Accounts GIF" width="700" />
-</details>
-
-### Youtube
-
-<details>
-  <summary><strong>Delete Comments</strong></summary>
-  <br/>
-  <img src="./assets/youtube-delete-comments.gif" alt="Unfollow Accounts GIF" width="700" />
-</details>
-
-<details>
-  <summary><strong>Delete Likes</strong></summary>
-  <br/>
-  <img src="./assets/youtube-delete-likes.gif" alt="Unfollow Accounts GIF" width="700" />
-</details>
-
-### App
-
-<details>
-  <summary><strong>Settings</strong></summary>
-  <br/>
-  <img src="./assets/settings.png" alt="Settings" width="700" />
+  <img src="./assets/Assistant.png" alt="The assistant, showing what would be sent before it is sent" width="700" />
 </details>
 
 ---
@@ -145,19 +119,22 @@ Once your system meets the requirements, follow these steps to install **CleanMy
 The same code the app injects can be run by hand in any Chromium browser's DevTools
 console — useful on non-Windows machines, or to debug a selector against the live site.
 
-The deletion logic lives in [`src/lib/engine/`](src/lib/engine)
-([X actions](src/lib/engine/x), [YouTube actions](src/lib/engine/youtube))
-and is bundled into a single dependency-free IIFE that exposes `window.__cmp`.
+The deletion logic lives in [`src/lib/engine/`](src/lib/engine) — the actions in
+[`x/`](src/lib/engine/x) and [`youtube/`](src/lib/engine/youtube), every selector in
+[`config.ts`](src/lib/engine/config.ts), and the shared clicking and logging in
+[`dom.ts`](src/lib/engine/dom.ts). [`src/content-entry.ts`](src/content-entry.ts) is the
+bundle's entry point; the result is a single dependency-free IIFE exposing `window.__cmp`.
 
 ### 🔧 Build the bundle
 
 Requires [Node.js](https://nodejs.org/) 20+:
 
 ```bash
-npm ci && npm run build:content
+npm ci && npm run build
 ```
 
-The result is `dist/content/content.js`.
+The result is `dist/content/content.js`. That file is what the Windows app compiles into
+itself, so a change to the engine only reaches the app once this has been rebuilt.
 
 ### 🔧 Run it
 
@@ -188,6 +165,10 @@ The result is `dist/content/content.js`.
 on its own once nothing deletable is left. `__cmp.isEmpty('x', 'deletePosts')` reports
 whether the current page still has anything to delete.
 
+There is no `deleteAll` here. The app's **Delete everything** button is the app running the
+actions in the table below one after another, navigating to each page in turn — by hand, do
+the same thing in the same order.
+
 | Platform  | Action            | Open this page first                                                                             |
 | --------- | ----------------- | ------------------------------------------------------------------------------------------------ |
 | `x`       | `deletePosts`     | [`x.com/search?q=from:USERNAME`](https://x.com/search?q=from%3AUSERNAME&src=typed_query)         |
@@ -202,6 +183,12 @@ whether the current page still has anything to delete.
 > replies apart from the posts they answer — add `userName: 'USERNAME'` to the JSON.
 
 > **Note:** Make sure you are logged in to the relevant account before starting a run.
+
+> **Note:** The app asks both platforms for these pages in English (`lang=en`, `hl=en`),
+> because the engine finds some entries by their wording. Neither platform is obliged to
+> honour it — an account with its own language setting wins — so those lookups match several
+> languages. Opening a page by hand simply skips the request, which is worth knowing when a
+> run behaves differently in the browser than in the app.
 
 ---
 

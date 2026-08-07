@@ -52,7 +52,7 @@ function setup(overrides: MockHandlers = {}) {
 				}
 			]
 		}),
-		'updater.checkForUpdates': () => ({ updateAvailable: false, message: 'No updates available.' }),
+		'updater.checkForUpdates': () => ({ updateAvailable: false }),
 		'system.openUrl': () => undefined,
 		'system.openLicense': () => undefined,
 		...overrides

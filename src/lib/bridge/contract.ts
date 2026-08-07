@@ -159,7 +159,8 @@ export type LogEntry = z.infer<typeof LogEntrySchema>;
 
 export const UpdateCheckResultSchema = z.object({
 	updateAvailable: z.boolean(),
-	message: z.string().optional()
+	/** The version on offer, so the UI can name it before asking whether to install it. */
+	version: z.string().optional()
 });
 export type UpdateCheckResult = z.infer<typeof UpdateCheckResultSchema>;
 
@@ -226,6 +227,8 @@ export const BridgeMethods = {
 		result: voidSchema
 	},
 	'updater.checkForUpdates': { params: voidSchema, result: UpdateCheckResultSchema },
+	/** Resolves only if it fails: a successful install restarts the app out from under the call. */
+	'updater.installUpdate': { params: voidSchema, result: voidSchema },
 	'system.openUrl': { params: z.object({ url: z.string() }), result: voidSchema },
 	'system.openLicense': { params: voidSchema, result: voidSchema },
 	'log.getBuffer': { params: voidSchema, result: z.array(LogEntrySchema) },
@@ -282,9 +285,17 @@ export const SiteLoginPayloadSchema = z.object({
 });
 export type SiteLoginPayload = z.infer<typeof SiteLoginPayloadSchema>;
 
+export const UpdateProgressPayloadSchema = z.object({
+	downloaded: z.number().int().nonnegative(),
+	/** Absent when the server sends no length; the bar runs indeterminate then. */
+	contentLength: z.number().int().nonnegative().nullish()
+});
+export type UpdateProgressPayload = z.infer<typeof UpdateProgressPayloadSchema>;
+
 export const PushEventSchema = z.discriminatedUnion('event', [
 	z.object({ event: z.literal('log'), payload: LogEntrySchema }),
 	z.object({ event: z.literal('progress'), payload: ProgressPayloadSchema }),
+	z.object({ event: z.literal('updateProgress'), payload: UpdateProgressPayloadSchema }),
 	z.object({ event: z.literal('settingsChanged'), payload: AppSettingsSchema }),
 	z.object({ event: z.literal('siteLogin'), payload: SiteLoginPayloadSchema })
 ]);

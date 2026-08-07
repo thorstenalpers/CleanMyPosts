@@ -212,7 +212,7 @@ export const de: Record<MessageKey, string> = {
 	'settings.about': 'Über',
 	'settings.about.description':
 		'Nicht verbunden mit, unterstützt von oder gesponsert durch X Corp. oder Google LLC. X und YouTube sind Marken ihrer jeweiligen Inhaber.',
-	'settings.version': 'Version {version}',
+	'settings.versionBuilt': 'Version {version}, erstellt am {date}',
 	'settings.versionLoading': 'Version wird geladen…',
 	'settings.checkUpdates': 'Nach Updates suchen',
 	'settings.noUpdates': 'Keine Updates verfügbar.',
@@ -225,6 +225,7 @@ export const de: Record<MessageKey, string> = {
 	'update.downloading': 'Update {version} wird geladen',
 	'update.downloadingPercent': 'Update {version} wird geladen — {percent} %',
 	'update.failed': 'Das Update konnte nicht installiert werden: {message}',
+	'update.checkFailed': 'Es konnte nicht nach Updates gesucht werden: {message}',
 	'settings.github': 'Projekt auf GitHub',
 	'settings.reportBug': 'Fehler melden',
 	'settings.licenses': 'Lizenzen Dritter',
@@ -269,6 +270,9 @@ export const de: Record<MessageKey, string> = {
 	'settings.persistSession': 'Angemeldet bleiben',
 	'settings.persistSession.description':
 		'Cache und Cookies von WebView2 über Neustarts hinweg behalten. Aus verwirft sie bei jedem Start — X und YouTube öffnen dann abgemeldet.',
+	'settings.checkUpdatesOnStart': 'Beim Start nach Updates suchen',
+	'settings.checkUpdatesOnStart.description':
+		'Bei jedem Start die Release-Seite nach einer neueren Version fragen und in der Übersicht Bescheid geben, wenn es eine gibt. Aus heißt: Updates werden nur gefunden, wenn du auf der Info-Seite den Knopf drückst.',
 	'settings.automation': 'Automatisierung',
 	'settings.automation.description': 'Wie ein Durchlauf sich verhält und worauf er klickt.',
 	'settings.engine': 'Lösch-Engine',

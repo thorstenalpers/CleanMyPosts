@@ -4,8 +4,11 @@
 	import type { SiteLoginStore } from '$lib/stores/site-login.svelte';
 	import type { LogStore } from '$lib/stores/log.svelte';
 	import type { ActionRunner } from '$lib/stores/action-runner.svelte';
+	import type { UpdaterStore } from '$lib/stores/updater.svelte';
 	import { X_GROUPS, YOUTUBE_GROUPS, type ActionGroupDef } from '$lib/actions';
 	import { t } from '$lib/i18n/index.svelte';
+	import { renderNotes } from '$lib/markdown';
+	import { notify } from '$lib/notify';
 	import { cn } from '$lib/utils';
 	import {
 		Card,
@@ -16,9 +19,12 @@
 	} from '$lib/components/ui/card';
 	import { Badge } from '$lib/components/ui/badge';
 	import { Button } from '$lib/components/ui/button';
+	import { Progress } from '$lib/components/ui/progress';
 	import XIcon from '$lib/components/icons/x-icon.svelte';
 	import YouTubeIcon from '$lib/components/icons/youtube-icon.svelte';
 	import ArrowRightIcon from '@lucide/svelte/icons/arrow-right';
+	import DownloadIcon from '@lucide/svelte/icons/download';
+	import Trash2Icon from '@lucide/svelte/icons/trash-2';
 	import MousePointerClickIcon from '@lucide/svelte/icons/mouse-pointer-click';
 	import CircleDollarSignIcon from '@lucide/svelte/icons/circle-dollar-sign';
 	import ShieldCheckIcon from '@lucide/svelte/icons/shield-check';
@@ -28,12 +34,31 @@
 		loginStore: SiteLoginStore;
 		logStore: LogStore;
 		runner: ActionRunner;
-		onOpen: (platform: Platform) => void;
+		updater: UpdaterStore;
+		/** `deleteAll` carries the shortcut's intent to the platform's own panel, which owns
+		 *  the confirmation and the run. */
+		onOpen: (platform: Platform, options?: { deleteAll?: boolean }) => void;
 		/** Ticking the box writes it away for good; Settings is the way back. */
 		onDismissIntro: () => void;
 	}
 
-	let { settingsStore, loginStore, logStore, runner, onOpen, onDismissIntro }: Props = $props();
+	let { settingsStore, loginStore, logStore, runner, updater, onOpen, onDismissIntro }: Props =
+		$props();
+
+	const downloadLabel = $derived(
+		updater.percent === undefined
+			? t('update.downloading', { version: updater.version })
+			: t('update.downloadingPercent', { version: updater.version, percent: updater.percent })
+	);
+
+	async function installUpdate(): Promise<void> {
+		try {
+			await updater.install();
+		} catch (error) {
+			const message = error instanceof Error ? error.message : String(error);
+			notify(settingsStore, 'error', t('update.failed', { message }));
+		}
+	}
 
 	const ALL_PLATFORMS: {
 		key: Platform;
@@ -86,6 +111,45 @@
 <div class="h-full overflow-y-auto">
 	<div class="mx-auto flex max-w-3xl flex-col gap-4 p-5">
 		<p class="text-xs text-muted-foreground">{t('overview.subtitle')}</p>
+
+		{#if updater.available}
+			<Card class="border-primary/40">
+				<CardHeader>
+					<CardTitle class="flex items-center gap-2">
+						<DownloadIcon class="size-4 shrink-0 text-primary" />
+						{t('update.available.title')}
+					</CardTitle>
+					<CardDescription>
+						{t('update.available.body', { version: updater.version })}
+					</CardDescription>
+				</CardHeader>
+				<CardContent class="flex flex-col gap-3">
+					{#if updater.notes}
+						<!-- `renderNotes` escapes the whole string before it rebuilds a fixed set of
+						     tags, so nothing the release feed carries can reach the document as markup.
+						     That escaping is the mitigation this rule asks for. -->
+						<div class="cmp-notes max-h-56 overflow-y-auto pr-1 text-xs">
+							<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+							{@html renderNotes(updater.notes)}
+						</div>
+					{/if}
+
+					{#if updater.installing}
+						<div class="flex flex-col gap-1.5">
+							<span class="h-4 text-xs text-muted-foreground tabular-nums">
+								{updater.percent === undefined ? '' : `${updater.percent}%`}
+							</span>
+							<Progress value={updater.percent} label={downloadLabel} />
+						</div>
+					{:else}
+						<Button size="sm" class="h-8 self-start" onclick={installUpdate}>
+							<DownloadIcon />
+							{t('update.install')}
+						</Button>
+					{/if}
+				</CardContent>
+			</Card>
+		{/if}
 
 		<!-- Not before the real settings arrive: the fallback has the intro on, and a user who
 		     switched it off should not watch it flash past on every start. -->
@@ -145,15 +209,27 @@
 								</li>
 							{/each}
 						</ul>
-						<Button
-							variant="outline"
-							size="sm"
-							class="h-8 self-start"
-							onclick={() => onOpen(platform.key)}
-						>
-							{t('overview.open', { platform: platform.label })}
-							<ArrowRightIcon />
-						</Button>
+						<div class="flex flex-wrap items-center gap-2">
+							<Button variant="outline" size="sm" class="h-8" onclick={() => onOpen(platform.key)}>
+								{t('overview.open', { platform: platform.label })}
+								<ArrowRightIcon />
+							</Button>
+
+							<!-- Only with an account behind it: the shortcut opens the platform and hands
+							     the run to its panel, which is where the confirmation lives. -->
+							{#if connected}
+								<Button
+									variant="destructive"
+									size="sm"
+									class="h-8"
+									disabled={runner.running}
+									onclick={() => onOpen(platform.key, { deleteAll: true })}
+								>
+									<Trash2Icon />
+									{t('action.deleteAll')}
+								</Button>
+							{/if}
+						</div>
 					</CardContent>
 				</Card>
 			{/each}
@@ -192,3 +268,41 @@
 		</Card>
 	</div>
 </div>
+
+<!-- The notes arrive as markup from `renderNotes`, so the tags inside cannot carry classes of
+     their own and are styled from here instead. -->
+<style>
+	.cmp-notes :global(h4) {
+		margin-top: 0.75em;
+		font-weight: 600;
+	}
+
+	.cmp-notes :global(h4:first-child) {
+		margin-top: 0;
+	}
+
+	.cmp-notes :global(p) {
+		margin-top: 0.5em;
+		line-height: 1.6;
+		color: var(--muted-foreground);
+	}
+
+	.cmp-notes :global(ul) {
+		margin-top: 0.35em;
+		padding-left: 1.1em;
+		list-style: disc;
+	}
+
+	.cmp-notes :global(li) {
+		margin-top: 0.25em;
+		line-height: 1.6;
+		color: var(--muted-foreground);
+	}
+
+	.cmp-notes :global(code) {
+		border-radius: 0.25rem;
+		background: var(--muted);
+		padding: 0.05em 0.3em;
+		font-size: 0.95em;
+	}
+</style>

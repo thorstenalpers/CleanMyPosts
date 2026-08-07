@@ -9,6 +9,7 @@ function setup(overrides: MockHandlers = {}) {
 	const { client, emit } = createMockHost({
 		'app.getInfo': () => ({
 			version: '1.2.3',
+			buildDate: '2026-02-03',
 			homepageUrl: 'https://example.com/home',
 			reportBugUrl: 'https://example.com/bug',
 			troubleshootingUrl: 'https://example.com/troubleshooting'
@@ -25,6 +26,7 @@ function setup(overrides: MockHandlers = {}) {
 			debugLogging: false,
 			autoConsent: true,
 			persistSession: true,
+			checkUpdatesOnStart: true,
 			themePreset: 'default' as const,
 			showAssistant: true,
 			assistantSource: 'claude-code',
@@ -104,6 +106,7 @@ describe('SettingsView', () => {
 			debugLogging: false,
 			autoConsent: true,
 			persistSession: true,
+			checkUpdatesOnStart: true,
 			themePreset: 'default' as const,
 			showAssistant: true,
 			assistantSource: 'claude-code',

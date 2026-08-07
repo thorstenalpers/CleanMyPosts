@@ -211,7 +211,7 @@ export const it: Record<MessageKey, string> = {
 	'settings.about': 'Informazioni',
 	'settings.about.description':
 		'Non affiliata, approvata o sponsorizzata da X Corp. o Google LLC. X e YouTube sono marchi dei rispettivi proprietari.',
-	'settings.version': 'Versione {version}',
+	'settings.versionBuilt': 'Versione {version}, compilata il {date}',
 	'settings.versionLoading': 'Caricamento della versione…',
 	'settings.checkUpdates': 'Controlla gli aggiornamenti',
 	'settings.noUpdates': 'Nessun aggiornamento disponibile.',
@@ -224,6 +224,7 @@ export const it: Record<MessageKey, string> = {
 	'update.downloading': 'Download dell’aggiornamento {version}',
 	'update.downloadingPercent': 'Download dell’aggiornamento {version} — {percent} %',
 	'update.failed': 'Non è stato possibile installare l’aggiornamento: {message}',
+	'update.checkFailed': 'Non è stato possibile cercare aggiornamenti: {message}',
 	'settings.github': 'Progetto su GitHub',
 	'settings.reportBug': 'Segnala un problema',
 	'settings.licenses': 'Licenze di terze parti',
@@ -267,6 +268,9 @@ export const it: Record<MessageKey, string> = {
 	'settings.persistSession': 'Resta connesso',
 	'settings.persistSession.description':
 		'Conserva la cache e i cookie di WebView2 tra un avvio e l’altro. Disattivato li cancella a ogni avvio, così X e YouTube si aprono disconnessi.',
+	'settings.checkUpdatesOnStart': 'Cerca aggiornamenti all’avvio',
+	'settings.checkUpdatesOnStart.description':
+		'A ogni avvio chiede alla pagina dei rilasci se esiste una versione più recente e lo segnala nella panoramica. Disattivato, gli aggiornamenti si trovano solo premendo il pulsante nella pagina Info.',
 	'settings.automation': 'Automazione',
 	'settings.automation.description': 'Come si comporta un’esecuzione e su cosa clicca.',
 	'settings.engine': 'Motore di eliminazione',

@@ -214,7 +214,7 @@ export const en = {
 	'settings.about': 'About',
 	'settings.about.description':
 		'Not affiliated with, endorsed by, or sponsored by X Corp. or Google LLC. X and YouTube are trademarks of their respective owners.',
-	'settings.version': 'Version {version}',
+	'settings.versionBuilt': 'Version {version}, built {date}',
 	'settings.versionLoading': 'Loading version…',
 	'settings.checkUpdates': 'Check for updates',
 	'settings.noUpdates': 'No updates available.',
@@ -227,6 +227,7 @@ export const en = {
 	'update.downloading': 'Downloading update {version}',
 	'update.downloadingPercent': 'Downloading update {version} — {percent}%',
 	'update.failed': 'The update could not be installed: {message}',
+	'update.checkFailed': 'Could not check for updates: {message}',
 	'settings.github': 'Project on GitHub',
 	'settings.reportBug': 'Report a bug',
 	'settings.licenses': 'Third-party licenses',
@@ -270,6 +271,9 @@ export const en = {
 	'settings.persistSession': 'Keep me signed in',
 	'settings.persistSession.description':
 		'Keep the WebView2 cache and cookies between launches. Off throws them away at every start, so X and YouTube open signed out.',
+	'settings.checkUpdatesOnStart': 'Look for updates at start-up',
+	'settings.checkUpdatesOnStart.description':
+		'Ask the release page for a newer version each time the app starts, and say so on the overview when there is one. Off means updates are only found when you press the button on the Info page.',
 	'settings.automation': 'Automation',
 	'settings.automation.description': 'How a run behaves, and what it clicks.',
 	'settings.engine': 'Delete engine',

@@ -82,6 +82,7 @@ function mockSettings(): AppSettings {
 		debugLogging: false,
 		autoConsent: true,
 		persistSession: true,
+		checkUpdatesOnStart: true,
 		themePreset: 'default',
 		showAssistant: true,
 		assistantSource: 'claude-code',
@@ -100,6 +101,7 @@ export function defaultMockHandlers(): MockHandlers {
 	return {
 		'app.getInfo': () => ({
 			version: '0.0.0-dev',
+			buildDate: '2026-01-01',
 			homepageUrl: 'https://github.com/thorstenalpers/CleanMyPosts',
 			reportBugUrl: 'https://github.com/thorstenalpers/CleanMyPosts/issues',
 			troubleshootingUrl: 'https://github.com/thorstenalpers/CleanMyPosts#-troubleshooting'

@@ -76,6 +76,8 @@ export const AppSettingsSchema = z.object({
 	 * next start, so both platforms open signed out. Takes effect on the next launch.
 	 */
 	persistSession: z.boolean(),
+	/** Whether the app asks the release feed for a newer version when it starts. */
+	checkUpdatesOnStart: z.boolean(),
 	themePreset: ThemePresetSchema,
 	showAssistant: z.boolean(),
 	/** `claude-code` for the local binary, otherwise a provider id from `assistant.getSources`. */
@@ -160,7 +162,9 @@ export type LogEntry = z.infer<typeof LogEntrySchema>;
 export const UpdateCheckResultSchema = z.object({
 	updateAvailable: z.boolean(),
 	/** The version on offer, so the UI can name it before asking whether to install it. */
-	version: z.string().optional()
+	version: z.string().optional(),
+	/** The release notes carried in `latest.json`, as markdown. */
+	notes: z.string().nullish()
 });
 export type UpdateCheckResult = z.infer<typeof UpdateCheckResultSchema>;
 
@@ -168,6 +172,8 @@ const voidSchema = z.void();
 
 export const AppInfoSchema = z.object({
 	version: z.string(),
+	/** `YYYY-MM-DD`, stamped into the binary by `build.rs` — the day this build was made. */
+	buildDate: z.string(),
 	homepageUrl: z.string(),
 	reportBugUrl: z.string(),
 	/** The README's troubleshooting section — the app points at it rather than restating it. */

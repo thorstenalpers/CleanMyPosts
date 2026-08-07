@@ -210,7 +210,7 @@ export const es: Record<MessageKey, string> = {
 	'settings.about': 'Acerca de',
 	'settings.about.description':
 		'Sin afiliación, respaldo ni patrocinio de X Corp. ni de Google LLC. X y YouTube son marcas de sus respectivos propietarios.',
-	'settings.version': 'Versión {version}',
+	'settings.versionBuilt': 'Versión {version}, compilada el {date}',
 	'settings.versionLoading': 'Cargando la versión…',
 	'settings.checkUpdates': 'Buscar actualizaciones',
 	'settings.noUpdates': 'No hay actualizaciones disponibles.',
@@ -223,6 +223,7 @@ export const es: Record<MessageKey, string> = {
 	'update.downloading': 'Descargando la actualización {version}',
 	'update.downloadingPercent': 'Descargando la actualización {version} — {percent} %',
 	'update.failed': 'No se pudo instalar la actualización: {message}',
+	'update.checkFailed': 'No se pudo buscar actualizaciones: {message}',
 	'settings.github': 'Proyecto en GitHub',
 	'settings.reportBug': 'Informar de un error',
 	'settings.licenses': 'Licencias de terceros',
@@ -266,6 +267,9 @@ export const es: Record<MessageKey, string> = {
 	'settings.persistSession': 'Mantener la sesión',
 	'settings.persistSession.description':
 		'Conservar la caché y las cookies de WebView2 entre inicios. Desactivado las descarta en cada arranque, así que X y YouTube se abren sin sesión.',
+	'settings.checkUpdatesOnStart': 'Buscar actualizaciones al iniciar',
+	'settings.checkUpdatesOnStart.description':
+		'Preguntar a la página de versiones por una más reciente cada vez que la aplicación arranca y avisarlo en el resumen cuando la haya. Desactivado, las actualizaciones solo aparecen si pulsas el botón de la página Información.',
 	'settings.automation': 'Automatización',
 	'settings.automation.description': 'Cómo se comporta una ejecución y en qué hace clic.',
 	'settings.engine': 'Motor de borrado',

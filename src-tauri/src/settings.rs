@@ -50,6 +50,9 @@ pub struct AppSettings {
     /// Off wipes the WebView2 profile at start-up, so both platforms open signed out.
     #[serde(default = "yes")]
     pub persist_session: bool,
+    /// Whether the app asks the release feed for a newer version when it starts.
+    #[serde(default = "yes")]
+    pub check_updates_on_start: bool,
     pub theme_preset: String,
     pub show_assistant: bool,
     /// `claude-code` for the local binary, otherwise a provider id from `assistant::providers`.
@@ -77,6 +80,7 @@ impl Default for AppSettings {
             debug_logging: false,
             auto_consent: true,
             persist_session: true,
+            check_updates_on_start: true,
             theme_preset: "default".into(),
             show_assistant: true,
             assistant_source: crate::assistant::LOCAL.into(),
@@ -200,6 +204,7 @@ mod tests {
         assert!(json.contains("\"confirmDeletion\""));
         assert!(json.contains("\"showAssistant\""));
         assert!(json.contains("\"persistSession\""));
+        assert!(json.contains("\"checkUpdatesOnStart\""));
         assert!(json.contains("\"assistantSource\""));
         assert!(json.contains("\"assistantCliPath\""));
         assert!(json.contains("\"waitAfterDelete\""));

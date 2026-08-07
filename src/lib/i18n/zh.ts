@@ -196,7 +196,7 @@ export const zh: Record<MessageKey, string> = {
 	'settings.about': '关于',
 	'settings.about.description':
 		'与 X Corp. 和 Google LLC 无从属关系，也未获其认可或赞助。X 和 YouTube 是各自所有者的商标。',
-	'settings.version': '版本 {version}',
+	'settings.versionBuilt': '版本 {version}，构建于 {date}',
 	'settings.versionLoading': '正在加载版本…',
 	'settings.checkUpdates': '检查更新',
 	'settings.noUpdates': '没有可用更新。',
@@ -209,6 +209,7 @@ export const zh: Record<MessageKey, string> = {
 	'update.downloading': '正在下载更新 {version}',
 	'update.downloadingPercent': '正在下载更新 {version} — {percent}%',
 	'update.failed': '无法安装更新：{message}',
+	'update.checkFailed': '无法检查更新：{message}',
 	'settings.github': 'GitHub 上的项目',
 	'settings.reportBug': '报告问题',
 	'settings.licenses': '第三方许可',
@@ -247,6 +248,9 @@ export const zh: Record<MessageKey, string> = {
 	'settings.persistSession': '保持登录状态',
 	'settings.persistSession.description':
 		'在重启之间保留 WebView2 的缓存和 Cookie。关闭后每次启动都会清除，X 和 YouTube 将以未登录状态打开。',
+	'settings.checkUpdatesOnStart': '启动时检查更新',
+	'settings.checkUpdatesOnStart.description':
+		'每次启动时向发布页询问是否有更新版本，有的话在概览中提示。关闭后，只有在信息页点击按钮时才会发现更新。',
 	'settings.automation': '自动化',
 	'settings.automation.description': '一次运行如何进行，以及它点些什么。',
 	'settings.engine': '删除引擎',

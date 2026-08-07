@@ -9,6 +9,7 @@ function setup(overrides: MockHandlers = {}) {
 	const { client } = createMockHost({
 		'app.getInfo': () => ({
 			version: '1.2.3',
+			buildDate: '2026-01-01',
 			homepageUrl: 'https://example.com/home',
 			reportBugUrl: 'https://example.com/bug',
 			troubleshootingUrl: 'https://example.com/troubleshooting'

@@ -2,6 +2,7 @@
 	import { notify } from '$lib/notify';
 	import type { BridgeClient } from '$lib/bridge/client';
 	import type { SettingsStore } from '$lib/stores/settings.svelte';
+	import type { UpdaterStore } from '$lib/stores/updater.svelte';
 	import type { AppInfo } from '$lib/bridge/contract';
 	import { t } from '$lib/i18n/index.svelte';
 	import { Button } from '$lib/components/ui/button';
@@ -28,68 +29,44 @@
 	interface Props {
 		bridge: BridgeClient;
 		settingsStore: SettingsStore;
+		updater: UpdaterStore;
 	}
 
-	let { bridge, settingsStore }: Props = $props();
+	let { bridge, settingsStore, updater }: Props = $props();
 
 	let appInfo = $state<AppInfo | undefined>(undefined);
-	let checkingUpdates = $state(false);
 	let confirmOpen = $state(false);
-	let installing = $state(false);
-	let newVersion = $state('');
-	let downloaded = $state(0);
-	let contentLength = $state<number | undefined>(undefined);
 
-	const percent = $derived(
-		contentLength ? Math.min(100, Math.round((downloaded / contentLength) * 100)) : undefined
-	);
 	const downloadLabel = $derived(
-		percent === undefined
-			? t('update.downloading', { version: newVersion })
-			: t('update.downloadingPercent', { version: newVersion, percent })
+		updater.percent === undefined
+			? t('update.downloading', { version: updater.version })
+			: t('update.downloadingPercent', { version: updater.version, percent: updater.percent })
 	);
 
 	$effect(() => {
 		void bridge.call('app.getInfo', undefined).then((info) => (appInfo = info));
 	});
 
-	$effect(() =>
-		bridge.onPushEvent((event) => {
-			if (event.event !== 'updateProgress') return;
-			downloaded = event.payload.downloaded;
-			contentLength = event.payload.contentLength ?? undefined;
-		})
-	);
-
 	async function checkForUpdates(): Promise<void> {
-		checkingUpdates = true;
 		try {
-			const result = await bridge.call('updater.checkForUpdates', undefined);
-			if (result.updateAvailable) {
-				newVersion = result.version ?? '';
-				confirmOpen = true;
-			} else {
-				notify(settingsStore, 'info', t('settings.noUpdates'));
-			}
-		} finally {
-			checkingUpdates = false;
+			if (await updater.check()) confirmOpen = true;
+			else notify(settingsStore, 'info', t('settings.noUpdates'));
+		} catch (error) {
+			notify(settingsStore, 'error', t('update.checkFailed', { message: reason(error) }));
 		}
 	}
 
-	// No `finally`: the host restarts the app the moment the installer has run, so the only
-	// way this call comes back is as a failure.
 	async function installUpdate(): Promise<void> {
 		confirmOpen = false;
-		installing = true;
-		downloaded = 0;
-		contentLength = undefined;
 		try {
-			await bridge.call('updater.installUpdate', undefined);
+			await updater.install();
 		} catch (error) {
-			installing = false;
-			const message = error instanceof Error ? error.message : String(error);
-			notify(settingsStore, 'error', t('update.failed', { message }));
+			notify(settingsStore, 'error', t('update.failed', { message: reason(error) }));
 		}
+	}
+
+	function reason(error: unknown): string {
+		return error instanceof Error ? error.message : String(error);
 	}
 </script>
 
@@ -121,27 +98,30 @@
 				<SettingRow
 					label="CleanMyPosts"
 					description={appInfo
-						? t('settings.version', { version: appInfo.version })
+						? t('settings.versionBuilt', {
+								version: appInfo.version,
+								date: appInfo.buildDate
+							})
 						: t('settings.versionLoading')}
 				>
 					{#snippet control()}
-						{#if installing}
+						{#if updater.installing}
 							<div class="flex w-36 flex-col items-end gap-1.5">
 								<span class="h-4 text-xs text-muted-foreground tabular-nums">
-									{percent === undefined ? '' : `${percent}%`}
+									{updater.percent === undefined ? '' : `${updater.percent}%`}
 								</span>
-								<Progress value={percent} label={downloadLabel} />
+								<Progress value={updater.percent} label={downloadLabel} />
 							</div>
 						{:else}
 							<Button
 								variant="outline"
 								size="sm"
 								class="h-8"
-								disabled={checkingUpdates}
+								disabled={updater.checking}
 								onclick={checkForUpdates}
 							>
-								<RefreshCwIcon class={cn(checkingUpdates && 'animate-spin')} />
-								{checkingUpdates ? t('update.checking') : t('settings.checkUpdates')}
+								<RefreshCwIcon class={cn(updater.checking && 'animate-spin')} />
+								{updater.checking ? t('update.checking') : t('settings.checkUpdates')}
 							</Button>
 						{/if}
 					{/snippet}
@@ -239,7 +219,7 @@
 <ConfirmDialog
 	bind:open={confirmOpen}
 	title={t('update.available.title')}
-	description={t('update.available.body', { version: newVersion })}
+	description={t('update.available.body', { version: updater.version })}
 	confirmLabel={t('update.install')}
 	cancelLabel={t('update.later')}
 	confirmVariant="default"

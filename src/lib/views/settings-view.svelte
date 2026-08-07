@@ -350,6 +350,20 @@
 						/>
 					{/snippet}
 				</SettingRow>
+
+				<SettingRow
+					label={t('settings.checkUpdatesOnStart')}
+					description={t('settings.checkUpdatesOnStart.description')}
+					for="check-updates-on-start"
+				>
+					{#snippet control()}
+						<Switch
+							id="check-updates-on-start"
+							checked={settingsStore.settings.checkUpdatesOnStart}
+							onCheckedChange={(checked: boolean) => commit({ checkUpdatesOnStart: checked })}
+						/>
+					{/snippet}
+				</SettingRow>
 			</CardContent>
 		</Card>
 

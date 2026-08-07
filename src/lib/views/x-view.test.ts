@@ -24,6 +24,7 @@ function setup(confirmDeletion: boolean, overrides: MockHandlers = {}) {
 			debugLogging: false,
 			autoConsent: true,
 			persistSession: true,
+			checkUpdatesOnStart: true,
 			themePreset: 'default' as const,
 			showAssistant: true,
 			assistantSource: 'claude-code',
@@ -62,6 +63,8 @@ describe('XView', () => {
 			loginStore,
 			runner,
 			open: true,
+			startDeleteAll: false,
+			onDeleteAllStarted: vi.fn(),
 			onClose: () => {}
 		});
 
@@ -82,6 +85,8 @@ describe('XView', () => {
 			loginStore,
 			runner,
 			open: true,
+			startDeleteAll: false,
+			onDeleteAllStarted: vi.fn(),
 			onClose
 		});
 
@@ -106,6 +111,8 @@ describe('XView', () => {
 			loginStore,
 			runner,
 			open: true,
+			startDeleteAll: false,
+			onDeleteAllStarted: vi.fn(),
 			onClose: () => {}
 		});
 
@@ -126,6 +133,8 @@ describe('XView', () => {
 			loginStore,
 			runner,
 			open: true,
+			startDeleteAll: false,
+			onDeleteAllStarted: vi.fn(),
 			onClose: () => {}
 		});
 
@@ -156,6 +165,8 @@ describe('XView', () => {
 			loginStore,
 			runner,
 			open: true,
+			startDeleteAll: false,
+			onDeleteAllStarted: vi.fn(),
 			onClose
 		});
 
@@ -180,6 +191,8 @@ describe('XView', () => {
 			loginStore,
 			runner,
 			open: true,
+			startDeleteAll: false,
+			onDeleteAllStarted: vi.fn(),
 			onClose: () => {}
 		});
 
@@ -210,6 +223,8 @@ describe('XView', () => {
 			loginStore,
 			runner,
 			open: true,
+			startDeleteAll: false,
+			onDeleteAllStarted: vi.fn(),
 			onClose: () => {}
 		});
 
@@ -230,6 +245,8 @@ describe('XView', () => {
 			loginStore,
 			runner,
 			open: true,
+			startDeleteAll: false,
+			onDeleteAllStarted: vi.fn(),
 			onClose: () => {}
 		});
 

@@ -3,37 +3,47 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/svelte';
 import InfoView from './info-view.svelte';
 import { createMockHost, defaultMockHandlers, type MockHandlers } from '$lib/bridge/mock';
 import { SettingsStore } from '$lib/stores/settings.svelte';
+import { UpdaterStore } from '$lib/stores/updater.svelte';
 
 function setup(overrides: MockHandlers = {}) {
 	const { client, emit } = createMockHost({
 		'app.getInfo': () => ({
 			version: '1.2.3',
+			buildDate: '2026-02-03',
 			homepageUrl: 'https://example.com/home',
 			reportBugUrl: 'https://example.com/bug',
 			troubleshootingUrl: 'https://example.com/troubleshooting'
 		}),
 		'updater.checkForUpdates': () => ({ updateAvailable: false }),
+		'updater.installUpdate': () => undefined,
 		'system.openUrl': () => undefined,
 		'system.openLicense': () => undefined,
 		'settings.get': defaultMockHandlers()['settings.get']!,
 		...overrides
 	});
 
-	return { client, emit, settingsStore: new SettingsStore(client) };
+	return {
+		client,
+		emit,
+		settingsStore: new SettingsStore(client),
+		updater: new UpdaterStore(client)
+	};
 }
 
 describe('InfoView', () => {
 	it('shows the app version once app.getInfo resolves', async () => {
-		const { client, settingsStore } = setup();
-		render(InfoView, { bridge: client, settingsStore });
+		const { client, settingsStore, updater } = setup();
+		render(InfoView, { bridge: client, settingsStore, updater });
 
 		await waitFor(() => expect(screen.getByText(/1\.2\.3/)).toBeInTheDocument());
 	});
 
 	it('calls updater.checkForUpdates when the button is clicked', async () => {
 		const checkForUpdates = vi.fn(() => ({ updateAvailable: false }));
-		const { client, settingsStore } = setup({ 'updater.checkForUpdates': checkForUpdates });
-		render(InfoView, { bridge: client, settingsStore });
+		const { client, settingsStore, updater } = setup({
+			'updater.checkForUpdates': checkForUpdates
+		});
+		render(InfoView, { bridge: client, settingsStore, updater });
 
 		await fireEvent.click(screen.getByRole('button', { name: /check for updates/i }));
 
@@ -42,11 +52,11 @@ describe('InfoView', () => {
 
 	it('installs nothing until the offered version has been confirmed', async () => {
 		const installUpdate = vi.fn(() => undefined);
-		const { client, settingsStore } = setup({
+		const { client, settingsStore, updater } = setup({
 			'updater.checkForUpdates': () => ({ updateAvailable: true, version: '9.9.9' }),
 			'updater.installUpdate': installUpdate
 		});
-		render(InfoView, { bridge: client, settingsStore });
+		render(InfoView, { bridge: client, settingsStore, updater });
 
 		await fireEvent.click(screen.getByRole('button', { name: /check for updates/i }));
 
@@ -59,11 +69,11 @@ describe('InfoView', () => {
 	});
 
 	it('follows the download with the progress the host pushes', async () => {
-		const { client, emit, settingsStore } = setup({
+		const { client, emit, settingsStore, updater } = setup({
 			'updater.checkForUpdates': () => ({ updateAvailable: true, version: '9.9.9' }),
 			'updater.installUpdate': () => undefined
 		});
-		render(InfoView, { bridge: client, settingsStore });
+		render(InfoView, { bridge: client, settingsStore, updater });
 
 		await fireEvent.click(screen.getByRole('button', { name: /check for updates/i }));
 		await fireEvent.click(await screen.findByRole('button', { name: /install and restart/i }));
@@ -79,13 +89,13 @@ describe('InfoView', () => {
 
 	it('opens the project page in the host, not in the webview', async () => {
 		const openUrl = vi.fn();
-		const { client, settingsStore } = setup({
+		const { client, settingsStore, updater } = setup({
 			'system.openUrl': (params) => {
 				openUrl(params);
 				return undefined;
 			}
 		});
-		render(InfoView, { bridge: client, settingsStore });
+		render(InfoView, { bridge: client, settingsStore, updater });
 
 		const github = await screen.findByRole('button', { name: 'GitHub' });
 		await fireEvent.click(github);

@@ -19,6 +19,10 @@
 		groups: ActionGroupDef[];
 		loggedIn: boolean;
 		open: boolean;
+		/** Set by the overview's shortcut: start the delete-all flow as if the button here
+		 *  had been pressed, confirmation included. */
+		startDeleteAll: boolean;
+		onDeleteAllStarted: () => void;
 		onClose: () => void;
 	}
 
@@ -31,6 +35,8 @@
 		groups,
 		loggedIn,
 		open,
+		startDeleteAll,
+		onDeleteAllStarted,
 		onClose
 	}: Props = $props();
 
@@ -154,6 +160,14 @@
 			void runAll();
 		}
 	}
+
+	// Cleared before the flow starts, so a re-render cannot start a second one. A shortcut
+	// that arrives while something is already running is dropped rather than queued.
+	$effect(() => {
+		if (!startDeleteAll) return;
+		onDeleteAllStarted();
+		if (enabled) onDeleteAllClick();
+	});
 
 	async function onConfirm(): Promise<void> {
 		confirmOpen = false;

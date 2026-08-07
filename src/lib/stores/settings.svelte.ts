@@ -13,6 +13,7 @@ const FALLBACK_SETTINGS: AppSettings = {
 	debugLogging: false,
 	autoConsent: true,
 	persistSession: true,
+	checkUpdatesOnStart: true,
 	themePreset: 'default',
 	showAssistant: true,
 	assistantSource: 'claude-code',

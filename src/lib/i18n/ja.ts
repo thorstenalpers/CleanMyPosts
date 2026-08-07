@@ -202,7 +202,7 @@ export const ja: Record<MessageKey, string> = {
 	'settings.about': 'このアプリについて',
 	'settings.about.description':
 		'X Corp. および Google LLC とは提携しておらず、承認や後援も受けていません。X と YouTube はそれぞれの所有者の商標です。',
-	'settings.version': 'バージョン {version}',
+	'settings.versionBuilt': 'バージョン {version}（{date} ビルド）',
 	'settings.versionLoading': 'バージョンを読み込み中…',
 	'settings.checkUpdates': '更新を確認',
 	'settings.noUpdates': '利用できる更新はありません。',
@@ -215,6 +215,7 @@ export const ja: Record<MessageKey, string> = {
 	'update.downloading': '更新 {version} をダウンロード中',
 	'update.downloadingPercent': '更新 {version} をダウンロード中 — {percent}%',
 	'update.failed': '更新をインストールできませんでした: {message}',
+	'update.checkFailed': '更新を確認できませんでした: {message}',
 	'settings.github': 'GitHub のプロジェクト',
 	'settings.reportBug': '不具合を報告',
 	'settings.licenses': 'サードパーティーライセンス',
@@ -256,6 +257,9 @@ export const ja: Record<MessageKey, string> = {
 	'settings.persistSession': 'ログイン状態を保つ',
 	'settings.persistSession.description':
 		'WebView2 のキャッシュと Cookie を再起動後も残します。オフにすると起動ごとに破棄されるため、X と YouTube はログアウト状態で開きます。',
+	'settings.checkUpdatesOnStart': '起動時に更新を確認する',
+	'settings.checkUpdatesOnStart.description':
+		'起動のたびにリリースページへ新しいバージョンを問い合わせ、あれば概要に表示します。オフの場合、更新は情報ページのボタンを押したときにだけ見つかります。',
 	'settings.automation': '自動化',
 	'settings.automation.description': '実行のふるまいと、何をクリックするか。',
 	'settings.engine': '削除エンジン',

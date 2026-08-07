@@ -4,6 +4,11 @@
 ###############################################################################
 * text=auto eol=lf
 
+# Third-party skill bundles: kept byte-for-byte as installed, and vendored, or
+# their scripts outweigh the app and GitHub calls this a JavaScript project.
+.claude/skills/** -text linguist-vendored
+.agents/skills/** -text linguist-vendored
+
 # Windows-only scripts must keep CRLF or batch labels/goto can misbehave.
 *.cmd text eol=crlf
 *.bat text eol=crlf

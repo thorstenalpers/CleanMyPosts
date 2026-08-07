@@ -1,0 +1,41 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>YouTube comments fixture</title>
+  </head>
+  <body>
+    <div id="contents">
+      <div role="listitem">
+        <span>Comment 1</span>
+        <button aria-label="Delete activity item">Delete</button>
+      </div>
+      <div role="listitem">
+        <span>Comment 2</span>
+        <button aria-label="Delete activity item">Delete</button>
+      </div>
+    </div>
+
+    <div role="dialog">
+      <div role="button" data-id="EBS5u">Delete</div>
+    </div>
+
+    <script>
+      // Stand in for YouTube's shared confirmation dialog: clicking a comment's
+      // delete button arms it, confirming removes that comment's listitem.
+      let pending = null;
+      document.addEventListener('click', (e) => {
+        const del = e.target.closest?.('button[aria-label^="Delete activity item"]');
+        if (del) {
+          pending = del.closest('div[role="listitem"]');
+          return;
+        }
+        const confirm = e.target.closest?.('div[role="button"][data-id="EBS5u"]');
+        if (confirm && pending) {
+          pending.remove();
+          pending = null;
+        }
+      });
+    </script>
+  </body>
+</html>

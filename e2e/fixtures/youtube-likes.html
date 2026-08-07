@@ -1,0 +1,47 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>YouTube liked-videos fixture</title>
+  </head>
+  <body>
+    <ytd-playlist-video-renderer>
+      <span>Video 1</span>
+      <ytd-menu-renderer>
+        <button aria-label="Action menu">More</button>
+      </ytd-menu-renderer>
+    </ytd-playlist-video-renderer>
+    <ytd-playlist-video-renderer>
+      <span>Video 2</span>
+      <ytd-menu-renderer>
+        <button aria-label="Action menu">More</button>
+      </ytd-menu-renderer>
+    </ytd-playlist-video-renderer>
+
+    <ytd-menu-popup-renderer>
+      <ytd-menu-service-item-renderer>
+        <tp-yt-paper-item>
+          <yt-formatted-string>Remove from Liked videos</yt-formatted-string>
+        </tp-yt-paper-item>
+      </ytd-menu-service-item-renderer>
+    </ytd-menu-popup-renderer>
+
+    <script>
+      // Stand in for YouTube's shared overflow menu: opening a video's menu arms
+      // it, clicking "Remove from Liked videos" marks that video is-dismissed.
+      let pending = null;
+      document.addEventListener('click', (e) => {
+        const menuBtn = e.target.closest?.('ytd-menu-renderer button');
+        if (menuBtn) {
+          pending = menuBtn.closest('ytd-playlist-video-renderer');
+          return;
+        }
+        const remove = e.target.closest?.('ytd-menu-service-item-renderer');
+        if (remove && pending) {
+          pending.setAttribute('is-dismissed', '');
+          pending = null;
+        }
+      });
+    </script>
+  </body>
+</html>

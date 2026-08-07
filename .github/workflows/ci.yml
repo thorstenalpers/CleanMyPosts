@@ -1,65 +1,91 @@
-name: "CI"
+name: CI
 
 on:
   push:
-    branches: [ develop, main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+  workflow_dispatch:
 
+# Read-only by default: both jobs check out, build and test. Nothing here writes to the
+# repository, and an unset block grants whatever the repository default happens to be.
 permissions:
   contents: read
-  pull-requests: write
-  checks: write
-  id-token: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  build:
+  frontend:
+    # Windows, because that is the only platform this app targets; a Linux
+    # runner would pass on code that cannot build for release.
     runs-on: windows-latest
-
-    env:
-      Solution: "CleanMyPosts.slnx"
-      Test_Project: "src/Tests/Tests.csproj"
-      FORCE_COLOR: "true"
-      DOTNET_LOGGING__CONSOLE__COLORBEHAVIOR: Enabled
-      FA_LICENSE_MESSAGE_SUPPRESS: 1
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
         with:
-          fetch-depth: 0
+          node-version: 24
+          cache: npm
 
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: 10.x
+      - run: npm ci
 
-      - name: Install .NET Tools (local)
+      - name: Lint and format check
+        run: npm run lint
+
+      - name: Type check
+        run: npm run check
+
+      - name: Test
+        run: npm run test:coverage
+
+      - name: E2E (Playwright)
         run: |
-          dotnet new tool-manifest
-          dotnet tool install dotnet-reportgenerator-globaltool
+          npx playwright install chromium
+          npm run test:e2e
 
-      - name: Restore
-        run: dotnet restore "${{ env.Solution }}"
-
-      - name: Build and Test
-        run: |
-          dotnet build "${{ env.Solution }}" --configuration Release --no-restore
-          
-          dotnet test "${{ env.Test_Project }}" `
-            --collect:"XPlat Code Coverage" `
-            --results-directory TestResults/Tests `
-            --configuration Release `
-            --logger "console;verbosity=detailed" `
-            --filter "TestCategory!=Long-Running"
-          
-          dotnet tool run reportgenerator `
-            -reports:TestResults/**/coverage.cobertura.xml `
-            -targetdir:TestResults/Reports `
-            -reporttypes:"Html;lcov;Cobertura" `
+      - name: Build
+        run: npm run build
 
       - name: Upload Test Coverage Report
         uses: actions/upload-artifact@v4
         with:
           name: test-coverage-report
-          path: TestResults/Reports
+          path: coverage
+
+  rust:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      # The Rust host embeds dist/content/content.js with include_str!, so the frontend
+      # has to be built before cargo can even parse the crate.
+      - name: Build frontend
+        run: |
+          npm ci
+          npm run build
+
+      - name: Format check
+        working-directory: src-tauri
+        run: cargo fmt --check
+
+      - name: Clippy
+        working-directory: src-tauri
+        run: cargo clippy --all-targets -- -D warnings
+
+      - name: Test
+        working-directory: src-tauri
+        run: cargo test

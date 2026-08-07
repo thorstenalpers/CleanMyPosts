@@ -1,0 +1,167 @@
+{
+	"version": 1,
+	"skills": {
+		"api-and-interface-design": {
+			"source": "addyosmani/agent-skills",
+			"sourceType": "github",
+			"skillPath": "skills/api-and-interface-design/SKILL.md",
+			"computedHash": "3cf54553433e55875c664baf78f9c769820bdfac155f09bf2989d70e20e6e147"
+		},
+		"browser-testing-with-devtools": {
+			"source": "addyosmani/agent-skills",
+			"sourceType": "github",
+			"skillPath": "skills/browser-testing-with-devtools/SKILL.md",
+			"computedHash": "639950ea71851d9c4919608cba8b6276cd1ba30cd82acdc4949c701537eed661"
+		},
+		"ci-cd-and-automation": {
+			"source": "addyosmani/agent-skills",
+			"sourceType": "github",
+			"skillPath": "skills/ci-cd-and-automation/SKILL.md",
+			"computedHash": "578b098a7d2352ccdac8b8abdc40eb6803538e81cf8382f138da6188a655087c"
+		},
+		"code-review-and-quality": {
+			"source": "addyosmani/agent-skills",
+			"sourceType": "github",
+			"skillPath": "skills/code-review-and-quality/SKILL.md",
+			"computedHash": "ae7a873053c84dd5a76f70c05a21efc4095017e95b8f5db778eb826809859cac"
+		},
+		"debugging-and-error-recovery": {
+			"source": "addyosmani/agent-skills",
+			"sourceType": "github",
+			"skillPath": "skills/debugging-and-error-recovery/SKILL.md",
+			"computedHash": "4d6dd59d6961005d9d341ca2fc0f9b63342bc644fa54feb25b06ed0f031a2c49"
+		},
+		"documentation-and-adrs": {
+			"source": "addyosmani/agent-skills",
+			"sourceType": "github",
+			"skillPath": "skills/documentation-and-adrs/SKILL.md",
+			"computedHash": "7464fd2950b99fb00bbf65cab27653e0a049eef00c98927713ffdfe232a9daa9"
+		},
+		"doubt-driven-development": {
+			"source": "addyosmani/agent-skills",
+			"sourceType": "github",
+			"skillPath": "skills/doubt-driven-development/SKILL.md",
+			"computedHash": "f6094460ebc9512285c85790e49f612081b9dd6a2b77d874fe2d960ef50a9ef1"
+		},
+		"drawio": {
+			"source": "bahayonghang/drawio-skills",
+			"sourceType": "github",
+			"skillPath": "skills/drawio/SKILL.md",
+			"computedHash": "1f09db7deb473e9a6455a3020f84631b1757be45d4f905756366fb694ff6a544"
+		},
+		"frontend-ui-engineering": {
+			"source": "addyosmani/agent-skills",
+			"sourceType": "github",
+			"skillPath": "skills/frontend-ui-engineering/SKILL.md",
+			"computedHash": "3a5d4a84e52710f2d724ff68813fba0d61db4f2a232a9d0b0050a8fec08b3e82"
+		},
+		"git-workflow-and-versioning": {
+			"source": "addyosmani/agent-skills",
+			"sourceType": "github",
+			"skillPath": "skills/git-workflow-and-versioning/SKILL.md",
+			"computedHash": "8b53153892a21c3a486831bf608970b040ad0e9da698505af58c659242cf835c"
+		},
+		"idea-refine": {
+			"source": "addyosmani/agent-skills",
+			"sourceType": "github",
+			"skillPath": "skills/idea-refine/SKILL.md",
+			"computedHash": "9fc0ae5d8a074872a636d22f9c6fe71e041b86cddc9fe5af90ef654f5032ec5d"
+		},
+		"incremental-implementation": {
+			"source": "addyosmani/agent-skills",
+			"sourceType": "github",
+			"skillPath": "skills/incremental-implementation/SKILL.md",
+			"computedHash": "7dbcae84e7a212fc32f7f2de2292967388b6cfa0583d202d5dc081cdd6325caa"
+		},
+		"interview-me": {
+			"source": "addyosmani/agent-skills",
+			"sourceType": "github",
+			"skillPath": "skills/interview-me/SKILL.md",
+			"computedHash": "efded91ac7f7626239b338ce8622afeb557151b86532b632f3c9eb5b2ff9048f"
+		},
+		"observability-and-instrumentation": {
+			"source": "addyosmani/agent-skills",
+			"sourceType": "github",
+			"skillPath": "skills/observability-and-instrumentation/SKILL.md",
+			"computedHash": "9bfc314353e4a55d691faca5b1a894e38a9897d88aabff34ea2c6a039d86bf8d"
+		},
+		"performance-optimization": {
+			"source": "addyosmani/agent-skills",
+			"sourceType": "github",
+			"skillPath": "skills/performance-optimization/SKILL.md",
+			"computedHash": "a59703bda55d80ef8189704ee3dc8c35bf8134582cf0cf0dbf6618b97c961826"
+		},
+		"planning-and-task-breakdown": {
+			"source": "addyosmani/agent-skills",
+			"sourceType": "github",
+			"skillPath": "skills/planning-and-task-breakdown/SKILL.md",
+			"computedHash": "2b47f19bb035cd8bf6816cb3d21c6d9830cb1da52a089e2e2892d1c63521f5d8"
+		},
+		"ponytail": {
+			"source": "dietrichgebert/ponytail",
+			"sourceType": "github",
+			"skillPath": "skills/ponytail/SKILL.md",
+			"computedHash": "9e8d05cbbaf6dc38f0cffc924c09b3cbe76d94ba4ba0d09bde803da2f8c6b5a0"
+		},
+		"security-and-hardening": {
+			"source": "addyosmani/agent-skills",
+			"sourceType": "github",
+			"skillPath": "skills/security-and-hardening/SKILL.md",
+			"computedHash": "a0246e67cf8f8a18687a7736442738318b1997715fbdf53dfcf767082c51cca5"
+		},
+		"shadcn": {
+			"source": "shadcn-ui/ui",
+			"sourceType": "github",
+			"skillPath": "skills/shadcn/SKILL.md",
+			"computedHash": "f99ef49d9909d380ca683ceb8dc8c25775c20ee38140112c394e037d8c11ee18"
+		},
+		"shadcn-svelte": {
+			"source": "huntabyte/shadcn-svelte",
+			"sourceType": "github",
+			"skillPath": "skills/shadcn-svelte/SKILL.md",
+			"computedHash": "f54ebcafcd4b80e64935671f6b096abcdb03d841a7736b32cea766a0824169ed"
+		},
+		"shadcn-ui": {
+			"source": "google-labs-code/stitch-skills",
+			"sourceType": "github",
+			"skillPath": "plugins/stitch-build/skills/shadcn-ui/SKILL.md",
+			"computedHash": "57e2cc881eb395418d28f1529e2d453b85f1d77a8de000c8af59512fab7b318d"
+		},
+		"skill-creator": {
+			"source": "anthropics/skills",
+			"sourceType": "github",
+			"skillPath": "skills/skill-creator/SKILL.md",
+			"computedHash": "7e3c9cd74e9e2b4828527a857170e86310f2dab5ea8030a9043df2c7e6c88857"
+		},
+		"source-driven-development": {
+			"source": "addyosmani/agent-skills",
+			"sourceType": "github",
+			"skillPath": "skills/source-driven-development/SKILL.md",
+			"computedHash": "235fb43569e9b21ec5d209818ff1ad3da9682be33c4e464ffa89ed348e7094a0"
+		},
+		"spec-driven-development": {
+			"source": "addyosmani/agent-skills",
+			"sourceType": "github",
+			"skillPath": "skills/spec-driven-development/SKILL.md",
+			"computedHash": "2dee9aa940633b7b5e0f45be34839ab31c0de98d482e16772c5cd350f4b91b4b"
+		},
+		"test-driven-development": {
+			"source": "addyosmani/agent-skills",
+			"sourceType": "github",
+			"skillPath": "skills/test-driven-development/SKILL.md",
+			"computedHash": "133428ac28fa75cf6f8cf5dafea8d603022852ce59a0520620784c7e3dc7e519"
+		},
+		"ui-ux-pro-max": {
+			"source": "nextlevelbuilder/ui-ux-pro-max-skill",
+			"sourceType": "github",
+			"skillPath": ".claude/skills/ui-ux-pro-max/SKILL.md",
+			"computedHash": "ce0af583006d2fd4731663adc50c0a5df1121f0d49a5bb9c308eca4ee295c60a"
+		},
+		"using-agent-skills": {
+			"source": "addyosmani/agent-skills",
+			"sourceType": "github",
+			"skillPath": "skills/using-agent-skills/SKILL.md",
+			"computedHash": "531902008625dafa3710a5a4730766455273ad6ea9beca0b4129be9f358de61f"
+		}
+	}
+}

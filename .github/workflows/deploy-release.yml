@@ -1,4 +1,4 @@
-name: "Deploy Release"
+name: 'Deploy Release'
 
 on:
   workflow_dispatch: # manual trigger
@@ -8,138 +8,122 @@ permissions:
   pull-requests: write
   checks: write
   id-token: write
-  
+
 jobs:
   build:
     runs-on: windows-latest
 
     env:
-      Solution: "CleanMyPosts.slnx"
-      UI_Project: "src/CleanMyPosts/CleanMyPosts.csproj"
-      Test_Project: "src/Tests/Tests.csproj"
-      Installer_Script: "installer/Installer.iss"
-      FORCE_COLOR: "true"
-      DOTNET_LOGGING__CONSOLE__COLORBEHAVIOR: Enabled
-      FA_LICENSE_MESSAGE_SUPPRESS: 1
+      Tauri_Config: 'src-tauri/tauri.conf.json'
+      FORCE_COLOR: 'true'
 
     steps:
-    - name: Checkout main
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-        ref: main
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: main
 
-    - name: Install .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: 10.x
+      - name: Install Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: package-lock.json
 
-    - name: Install Inno Setup
-      run: choco install innosetup --yes
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc
 
-    - name: Restore
-      run: dotnet restore "${{ env.Solution }}"
+      - name: Cache cargo
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
 
-    - name: Build
-      run: dotnet build "${{ env.Solution }}" --configuration Release --no-restore
+      - name: Install dependencies
+        run: npm ci
 
-    - name: Run Tests
-      run: dotnet test "${{ env.Test_Project }}" --configuration Release --logger "console;verbosity=detailed"
+      - name: Run tests
+        run: npm run test
 
-    - name: Extract Version
-      id: get_version
-      shell: pwsh
-      run: |
-        $content = Get-Content "${{ env.UI_Project }}" -Raw
-        if ($content -match '<Version>\s*(.+?)\s*</Version>') {
-          $fullVersion = $matches[1].Trim()
-          $semverOnly = $fullVersion -replace '\+.*$', ''
-          echo "VERSION=$semverOnly" | Out-File -FilePath $env:GITHUB_ENV -Append
-          "version=$semverOnly" >> $env:GITHUB_OUTPUT
-        } else {
-          Write-Error "Version not found in csproj"
-          exit 1
-        }
+      - name: Typecheck
+        run: npm run check
 
-    - name: Publish x64
-      run: |
-        dotnet publish "${{ env.UI_Project }}" -c Release -r win-x64 --self-contained true `
-            /p:AssemblyVersion=${{ env.VERSION }} `
-            /p:FileVersion=${{ env.VERSION }}.0 `
-            /p:InformationalVersion=${{ env.VERSION }} `
-            /p:ContinuousIntegrationBuild=false `
-            -o artifacts/publish-x64
+      - name: Extract Version
+        id: get_version
+        shell: pwsh
+        run: |
+          $version = (Get-Content "${{ env.Tauri_Config }}" -Raw | ConvertFrom-Json).version
+          if (-not $version) {
+            Write-Error "No version in ${{ env.Tauri_Config }}"
+            exit 1
+          }
+          echo "VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "version=$version" >> $env:GITHUB_OUTPUT
 
-    - name: Build Installer x64
-      run: |
-        iscc "/DMyAppVersion=${{ env.VERSION }}" "/DMyAppExePath=..\\artifacts\\publish-x64\\*" "${{ env.Installer_Script }}"
+      # Signs the NSIS installer. With a pubkey configured but no private key, tauri build
+      # produces the installer and *then* exits with an error, so a release missing this
+      # secret fails the job rather than shipping an installer nobody can update from.
+      - name: Build installer and updater artifacts
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        run: npx tauri build
 
-    - name: Copy Installer Exe to Artifacts
-      run: |
-        mkdir artifacts\installer
-        copy installer\Output\CleanMyPosts-Installer-${{ env.VERSION }}-win-x64.exe artifacts\installer\
+      - name: Collect artifacts
+        shell: pwsh
+        run: |
+          $bundle = "src-tauri/target/release/bundle/nsis"
+          New-Item -ItemType Directory -Force artifacts | Out-Null
+          Copy-Item "$bundle/*-setup.exe" artifacts/
+          Copy-Item "$bundle/*-setup.exe.sig" artifacts/
+          Get-ChildItem artifacts | Format-Table Name, Length
 
-    - name: Clone update-feed branch
-      run: |
-        git clone --branch update-feed --single-branch https://github.com/${{ github.repository }} update-feed || mkdir update-feed
+      # `tauri build` does not emit latest.json itself; the endpoint in tauri.conf.json
+      # expects this exact shape, and the signature is the one produced next to the installer.
+      - name: Generate latest.json
+        shell: pwsh
+        run: |
+          $version = "${{ env.VERSION }}"
+          $setup = Get-ChildItem artifacts/*-setup.exe | Select-Object -First 1
+          $signature = Get-Content "$($setup.FullName).sig" -Raw
+          $url = "https://github.com/${{ github.repository }}/releases/download/v$version/$($setup.Name)"
 
-    - name: Generate AutoUpdater.NET files using template
-      shell: pwsh
-      run: |
-        $version = "${{ env.VERSION }}"
-        $repo = "${{ github.repository }}"
-        $baseUrl = "https://github.com/$repo/releases/download/v$version"
-        $changelogUrl = "https://raw.githubusercontent.com/thorstenalpers/CleanMyPosts/refs/heads/main/release-notes/v$version.md"
+          $notes = "See release-notes/v$version.md"
+          $notesPath = "release-notes/v$version.md"
+          if (Test-Path $notesPath) { $notes = Get-Content $notesPath -Raw }
 
-        $template = Get-Content "update-feed/update-template.xml" -Raw
+          @{
+            version = "v$version"
+            notes = $notes
+            pub_date = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
+            platforms = @{
+              "windows-x86_64" = @{
+                signature = $signature.Trim()
+                url = $url
+              }
+            }
+          } | ConvertTo-Json -Depth 5 | Set-Content artifacts/latest.json -Encoding UTF8
 
-        $installerUrl = "$baseUrl/CleanMyPosts-Installer-$version-win-x64.exe"
-        $installerXml = $template `
-          -replace "{{VERSION}}", $version `
-          -replace "{{INSTALLER_URL}}", $installerUrl `
-          -replace "{{CHANGELOG_URL}}", $changelogUrl 
-        $installerXml | Set-Content -Path "artifacts/update-installer.xml" -Encoding UTF8
+          Get-Content artifacts/latest.json
 
-    - name: Create GitHub App Token
-      id: app-token
-      uses: actions/create-github-app-token@v2.0.5
-      with:
-        app-id: ${{ secrets.GH_APP_ID }}
-        private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
-        repositories: CleanMyPosts
+      - name: Create Git Tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "v${{ env.VERSION }}" -m "Release v${{ env.VERSION }}"
+          git push origin "v${{ env.VERSION }}"
 
-    - name: Commit and push update-feed branch
-      shell: bash
-      run: |
-        cd update-feed
-        cp ../artifacts/update-installer.xml update-installer.xml
-
-        git config user.name "github-actions[bot]"
-        git config user.email "github-actions[bot]@users.noreply.github.com"
-
-        git add update-installer.xml
-
-        if git diff --cached --quiet; then
-          echo "No changes to commit"
-        else
-          git commit -m "Update for ${{ env.VERSION }}"
-          git push https://x-access-token:${{ steps.app-token.outputs.token }}@github.com/${{ github.repository }} update-feed
-        fi
-
-    - name: Create Git Tag
-      run: |
-        git config user.name "github-actions[bot]"
-        git config user.email "github-actions[bot]@users.noreply.github.com"
-        git tag -a "v${{ env.VERSION }}" -m "Release v${{ env.VERSION }}"
-        git push origin "v${{ env.VERSION }}"
-
-    - name: Create GitHub Release
-      uses: softprops/action-gh-release@v1
-      with:
-        tag_name: "v${{ env.VERSION }}"
-        name: "CleanMyPosts ${{ env.VERSION }}"
-        body_path: ./release-notes/v${{ env.VERSION }}.md
-        files: |
-          artifacts/installer/CleanMyPosts-Installer-${{ env.VERSION }}-win-x64.exe
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: 'v${{ env.VERSION }}'
+          name: 'CleanMyPosts ${{ env.VERSION }}'
+          body_path: ./release-notes/v${{ env.VERSION }}.md
+          files: |
+            artifacts/*-setup.exe
+            artifacts/*-setup.exe.sig
+            artifacts/latest.json
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

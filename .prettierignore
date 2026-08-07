@@ -1,0 +1,22 @@
+# Package managers
+package-lock.json
+
+# Build output
+build/
+dist/
+src-tauri/target/
+src-tauri/gen/
+
+# Vendored agent skills — owned upstream, not ours to reformat
+/.claude/skills/
+/.agents/skills/
+
+# Regenerated verbatim by `shadcn-svelte add`
+/src/lib/components/ui/
+
+# Saved page markup — reformatting it would defeat the point of a fixture
+/e2e/fixtures/
+/src/lib/engine/__fixtures__/
+
+# Notes for releases already published — a record, not something to restyle
+/release-notes/

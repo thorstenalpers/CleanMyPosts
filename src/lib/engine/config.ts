@@ -1,0 +1,164 @@
+/**
+ * Everything the engine looks for, in one editable place.
+ *
+ * The selectors that carry a `data-testid` are the same in every language; the ones that
+ * carry a label or a menu word are not, and neither are the regional variants of a platform
+ * that ship a different DOM altogether. Those are the reason this object exists: the host
+ * evaluates the user's own script against `window.__cmp.config` before a run, so a wording
+ * this app has never seen can be added without a new release.
+ *
+ * It is a plain mutable object on purpose. A patch is one assignment or one `push`, which is
+ * something a user — or the assistant writing it for them — can get right in one line.
+ */
+
+export interface SiteConfig {
+	/** Whether cookie banners are clicked away. The host writes the user's setting here. */
+	autoConsent: boolean;
+	x: {
+		/** The profile link in the nav rail. Its href carries the handle every X url needs. */
+		profileLink: string;
+		/** Second source for the handle: the account button, whose text holds `@handle`. */
+		accountSwitcher: string;
+		/** What only a signed-out x.com renders. Separates "signed out" from "not sure yet". */
+		signedOut: string;
+		/** The ⌄ on the user's own post, on the profile timeline. */
+		caret: string;
+		/** The ⌄ on a single article, used while deleting replies. */
+		articleCaret: string;
+		/** One post in the timeline. Also what "the list is empty" is decided on. */
+		article: string;
+		/** The menu that ⌄ opens, and one entry in it. */
+		menu: string;
+		menuItem: string;
+		/** The red "Delete" in the post menu, matched by text where the colour is not enough. */
+		deleteMenuText: string[];
+		confirm: string;
+		unretweet: string;
+		unretweetConfirm: string;
+		unlike: string;
+		unfollow: string;
+	};
+	youtube: {
+		/** One entry in the liked-videos list, old renderers and new view models alike. */
+		videoItem: string;
+		/** The ⋮ on such an entry. Matched by class, which survives a language change. */
+		itemMenu: string;
+		/** Anything only a signed-in page renders, across YouTube and My Activity. */
+		signedIn: string;
+		/** A real sign-in call to action — not merely a link pointing at the account pages. */
+		signedOut: string;
+		/** My Activity's per-item delete button. */
+		deleteActivity: string;
+		/** The popup the ⋮ opens on a liked video, in either of its shapes. */
+		likesPopup: string;
+		/** One entry inside that popup. */
+		likesPopupItem: string;
+		/** The survey/feedback dialog that steals the next click. */
+		closeDialog: string;
+		/** My Activity's confirmation sheet: the button, and the label inside it to read. */
+		confirmButton: string;
+		confirmLabel: string;
+		/** "Delete" in that sheet. */
+		confirmDeleteText: string[];
+		/** "Show more" under a My Activity day group. */
+		loadMore: string;
+		/** Fragments of the "Remove from Liked videos" menu item, lower-cased. */
+		removeFromLikedText: string[];
+	};
+}
+
+export const siteConfig: SiteConfig = {
+	autoConsent: true,
+	x: {
+		profileLink: 'a[data-testid="AppTabBar_Profile_Link"]',
+		accountSwitcher: '[data-testid="SideNav_AccountSwitcher_Button"]',
+		signedOut:
+			'[data-testid="loginButton"], [data-testid="signupButton"], [data-testid="LoginForm_Login_Button"]',
+		caret: "div[data-testid='primaryColumn'] section button[data-testid='caret']",
+		// By test id, with the English label only as a last resort: `aria-label` is translated,
+		// so matching it alone meant this never worked on a non-English account.
+		articleCaret: 'button[data-testid="caret"], button[aria-label="More"]',
+		article: 'article',
+		menu: '[role="menu"]',
+		menuItem: '[role="menuitem"]',
+		deleteMenuText: ['delete'],
+		confirm: "button[data-testid='confirmationSheetConfirm']",
+		unretweet: 'button[data-testid="unretweet"]',
+		unretweetConfirm: 'div[role="menuitem"][data-testid="unretweetConfirm"]',
+		unlike: 'button[data-testid="unlike"]',
+		unfollow: 'button[data-testid$="-unfollow"]'
+	},
+	youtube: {
+		// YouTube is midway through replacing `ytd-*` renderers with `*-view-model` components;
+		// the liked list is already on the new ones. Both are listed, newest first, because a
+		// user on either build has to be served.
+		videoItem: [
+			'yt-lockup-view-model',
+			'ytd-playlist-video-renderer:not([is-dismissed])',
+			'ytd-rich-item-renderer:not([is-dismissed])',
+			'ytd-compact-video-renderer:not([is-dismissed])'
+		].join(', '),
+		// A class, not the `aria-label`: the label is translated ("Mehr Aktionen"), the class
+		// is not.
+		itemMenu: [
+			'.ytLockupMetadataViewModelMenuButton button',
+			'ytd-menu-renderer yt-icon-button#button button',
+			'ytd-menu-renderer button#button',
+			'ytd-menu-renderer button'
+		].join(', '),
+		signedIn: [
+			'button#avatar-btn img[src]',
+			'yt-img-shadow#avatar img[src]',
+			'div[role="listitem"]',
+			'button[aria-label^="Delete activity item"]',
+			'[data-activity-collection-name]',
+			'ytd-playlist-video-renderer',
+			'yt-lockup-view-model'
+		].join(', '),
+		// Anchored to YouTube's own sign-in button. A bare `accounts.google.com` link is on
+		// every Google page, signed in or not — matching it read My Activity as signed out and
+		// disabled the whole panel the moment a user opened their comments.
+		signedOut: 'ytd-button-renderer a[href*="accounts.google.com"], a[href*="ServiceLogin"]',
+		// Google's own component ids, identical in every language; the English label is only the
+		// last resort. `Fs3gzb` wraps the ✕ on an activity row and `114566` is its logging id —
+		// each appears exactly once per row.
+		deleteActivity:
+			'div[jscontroller="Fs3gzb"] button, button[jslog^="114566"], button[aria-label^="Delete activity item"]',
+		likesPopup:
+			'.ytContextualSheetLayoutContentContainer, yt-list-view-model, ytd-menu-popup-renderer',
+		likesPopupItem: 'yt-list-item-view-model, ytd-menu-service-item-renderer, [role="menuitem"]',
+		closeDialog: 'button[aria-label="Close this dialog"]',
+		confirmButton: 'div[role="button"]',
+		// An obfuscated Google class, which is what this sheet gives us — it changes with a
+		// deployment, so it is here where it can be patched rather than buried in a module.
+		confirmLabel: 'span.Crf1o',
+		confirmDeleteText: ['delete'],
+		loadMore: 'button[jsname="T8gEfd"]',
+		removeFromLikedText: [
+			'remove from liked',
+			'remove from "liked',
+			'aus "videos, die ich mag" entfernen',
+			'videos, die ich mag',
+			'entfernen',
+			'supprimer de',
+			"j'aime",
+			'retirer de',
+			'eliminar de',
+			'me gusta',
+			'quitar de',
+			'rimuovi da',
+			'mi piace',
+			'remover de',
+			'gostei',
+			'verwijderen uit',
+			'usuń z',
+			'удалить из'
+		]
+	}
+};
+
+/** True if `text` contains any of `patterns`, comparing lower-cased. */
+export function matchesAny(text: string, patterns: string[]): boolean {
+	const lower = text.toLowerCase();
+	return patterns.some((pattern) => lower.includes(pattern.toLowerCase()));
+}

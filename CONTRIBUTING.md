@@ -2,10 +2,10 @@
 
 Thanks for your interest in contributing! We aim to make the process as smooth and transparent as possible, whether you're:
 
-- Reporting a bug  
-- Starting a discussion  
-- Submitting a fix  
-- Suggesting a new feature  
+- Reporting a bug
+- Starting a discussion
+- Submitting a fix
+- Suggesting a new feature
 
 ## How to Contribute
 

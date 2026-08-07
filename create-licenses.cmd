@@ -1,1 +1,3 @@
-dotnet-project-licenses -i src/CleanMyPosts -o --outfile THIRD_PARTY_LICENSES.txt
+@echo off
+REM Needs cargo-license: cargo install cargo-license
+node "%~dp0scripts\create-licenses.mjs"

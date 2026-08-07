@@ -1,0 +1,4 @@
+[[permission]]
+identifier = "allow-bridge-call"
+description = "Lets the local sidebar UI reach the host bridge (settings, log, site actions, layout)."
+commands.allow = ["bridge_call"]

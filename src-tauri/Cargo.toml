@@ -1,0 +1,35 @@
+[package]
+name = "cleanmyposts"
+version = "3.0.0"
+description = "Bulk-delete your posts, reposts, replies, likes and comments on X and YouTube"
+authors = ["thorstenalpers"]
+repository = "https://github.com/thorstenalpers/CleanMyPosts"
+license = "MIT"
+edition = "2021"
+
+[lib]
+name = "cleanmyposts_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+# `unstable` gates the multi-webview API (`Window::add_child`), which this app needs:
+# the sidebar and the platform site are two webviews inside one window, not two windows.
+tauri = { version = "2", features = ["unstable"] }
+tauri-plugin-opener = "2"
+tauri-plugin-updater = "2"
+tauri-plugin-window-state = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tokio = { version = "1", features = ["sync"] }
+dirs = "6"
+# `windows-native` puts the key in the Windows Credential Manager rather than in a file this
+# app would then own the protection of.
+keyring = { version = "3", features = ["windows-native"] }
+reqwest = { version = "0.13", default-features = false, features = [
+	"blocking",
+	"json",
+	"rustls",
+] }

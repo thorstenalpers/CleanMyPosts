@@ -1,0 +1,283 @@
+import yaml from '../vendor/js-yaml/js-yaml.mjs'
+import { basename, extname, resolve } from 'node:path'
+import { escapeXml } from '../shared/xml-utils.js'
+
+const EXPORT_EXTENSIONS = ['.png', '.svg', '.pdf', '.jpg', '.jpeg']
+
+function stripExtension(path, extension) {
+  return path.slice(0, -extension.length)
+}
+
+function getDrawioPath(outputFile) {
+  const resolved = resolve(outputFile)
+  const lower = resolved.toLowerCase()
+
+  for (const extension of EXPORT_EXTENSIONS) {
+    if (lower.endsWith(`.drawio${extension}`)) {
+      return stripExtension(resolved, extension)
+    }
+  }
+
+  const extension = extname(lower)
+  if (extension === '.drawio') {
+    return resolved
+  }
+  if (EXPORT_EXTENSIONS.includes(extension)) {
+    return `${stripExtension(resolved, extension)}.drawio`
+  }
+  return `${resolved}.drawio`
+}
+
+function stripDrawioSuffix(drawioPath) {
+  return drawioPath.toLowerCase().endsWith('.drawio') ? drawioPath.slice(0, -'.drawio'.length) : drawioPath
+}
+
+function compactObject(value) {
+  return Object.fromEntries(
+    Object.entries(value).filter(
+      ([, fieldValue]) => fieldValue !== undefined && fieldValue !== null && fieldValue !== ''
+    )
+  )
+}
+
+function buildIdentityMetadata(identity) {
+  if (
+    !identity ||
+    typeof identity !== 'object' ||
+    Array.isArray(identity) ||
+    typeof identity.scheme !== 'string' ||
+    typeof identity.key !== 'string'
+  ) {
+    return undefined
+  }
+  return { scheme: identity.scheme, key: identity.key }
+}
+
+function buildAdapterMetadata(adapter) {
+  if (!adapter || typeof adapter !== 'object' || Array.isArray(adapter)) return undefined
+  const metadata = compactObject({
+    projectionVersion: adapter.projectionVersion,
+    name: adapter.name,
+    domain: adapter.domain,
+    mode: adapter.mode,
+    locator: adapter.locator
+  })
+  return Object.keys(metadata).length > 0 ? metadata : undefined
+}
+
+function buildReplicationMetadata(replication) {
+  if (!replication || typeof replication !== 'object' || Array.isArray(replication)) {
+    return undefined
+  }
+
+  const palette = Array.isArray(replication.palette)
+    ? replication.palette
+        .map((entry) =>
+          compactObject({
+            hex: entry?.hex,
+            role: entry?.role,
+            appliesTo: entry?.appliesTo,
+            confidence: entry?.confidence,
+            notes: entry?.notes
+          })
+        )
+        .filter((entry) => Object.keys(entry).length > 0)
+    : []
+
+  const confidenceNotes = Array.isArray(replication.confidenceNotes)
+    ? replication.confidenceNotes.filter((note) => typeof note === 'string' && note.trim() !== '')
+    : []
+
+  const summary = compactObject({
+    colorMode: replication.colorMode,
+    background: replication.background,
+    palette: palette.length > 0 ? palette : undefined,
+    confidenceNotes: confidenceNotes.length > 0 ? confidenceNotes : undefined
+  })
+
+  return Object.keys(summary).length > 0 ? summary : undefined
+}
+
+function inferDiagramType(spec) {
+  if (spec.meta?.profile === 'academic-paper') return 'academic-diagram'
+  if (spec.meta?.profile === 'engineering-review') return 'engineering-diagram'
+  if ((spec.modules?.length || 0) > 0) return 'module-diagram'
+  if ((spec.edges?.length || 0) > 0) return 'flow-diagram'
+  return 'diagram'
+}
+
+export function deriveArtifactPaths(outputFile) {
+  const drawioPath = getDrawioPath(outputFile)
+  const stem = stripDrawioSuffix(drawioPath)
+
+  return {
+    drawioPath,
+    specPath: `${stem}.spec.yaml`,
+    archPath: `${stem}.arch.json`,
+    stem
+  }
+}
+
+export function serializeSpecYaml(spec) {
+  return yaml.dump(spec, {
+    noRefs: true,
+    lineWidth: 120,
+    sortKeys: false
+  })
+}
+
+export function serializeDocumentSpecYaml(document) {
+  if (!document || document.kind !== 'multi-page-v1') {
+    throw new TypeError('serializeDocumentSpecYaml requires a multi-page v1 document')
+  }
+  return serializeSpecYaml({
+    schemaVersion: 1,
+    meta: document.meta || {},
+    pages: document.pages.map((page) => ({
+      id: page.id,
+      name: page.name,
+      meta: page.meta || {},
+      nodes: page.nodes || [],
+      edges: page.edges || [],
+      modules: page.modules || []
+    })),
+    links: document.links || []
+  })
+}
+
+export function buildArchMetadata(spec, { outputFile } = {}) {
+  const artifactPaths = outputFile ? deriveArtifactPaths(outputFile) : null
+  const fallbackTitle = artifactPaths ? basename(artifactPaths.stem) : 'diagram'
+  const replication = buildReplicationMetadata(spec.meta?.replication)
+  const adapter = buildAdapterMetadata(spec.meta?.adapter)
+
+  const arch = {
+    version: 1,
+    title: spec.meta?.title || fallbackTitle,
+    type: inferDiagramType(spec),
+    source: spec.meta?.source || 'generated',
+    profile: spec.meta?.profile || 'default',
+    theme: spec.meta?.theme || 'tech-blue',
+    layout: spec.meta?.layout || 'horizontal',
+    counts: {
+      nodes: spec.nodes?.length || 0,
+      edges: spec.edges?.length || 0,
+      modules: spec.modules?.length || 0
+    },
+    nodes: (spec.nodes || []).map((node) =>
+      compactObject({
+        id: node.id,
+        identity: buildIdentityMetadata(node.identity),
+        label: node.label,
+        type: node.type || 'service',
+        module: node.module,
+        icon: node.icon,
+        size: node.size
+      })
+    ),
+    edges: (spec.edges || []).map((edge, index) =>
+      compactObject({
+        id: edge.id || `edge-${index + 1}`,
+        identity: buildIdentityMetadata(edge.identity),
+        from: edge.from,
+        to: edge.to,
+        type: edge.type || 'primary',
+        label: edge.label,
+        bidirectional: edge.bidirectional ? true : undefined
+      })
+    ),
+    modules: (spec.modules || []).map((module) =>
+      compactObject({
+        id: module.id,
+        identity: buildIdentityMetadata(module.identity),
+        label: module.label,
+        color: module.color
+      })
+    )
+  }
+
+  if (replication) {
+    arch.replication = replication
+  }
+  if (adapter) {
+    arch.adapter = adapter
+  }
+
+  return arch
+}
+
+export function buildMultiPageArchMetadata(document, { outputFile } = {}) {
+  if (!document || document.kind !== 'multi-page-v1') {
+    throw new TypeError('buildMultiPageArchMetadata requires a multi-page v1 document')
+  }
+  const artifactPaths = outputFile ? deriveArtifactPaths(outputFile) : null
+  const fallbackTitle = artifactPaths ? basename(artifactPaths.stem) : 'diagram'
+  const pageMetadata = document.pages.map((page, index) => {
+    const pageSpec = { meta: page.meta || {}, nodes: page.nodes || [], edges: page.edges || [], modules: page.modules || [] }
+    const legacy = buildArchMetadata(pageSpec, { outputFile })
+    return {
+      index,
+      id: page.id,
+      name: page.name,
+      meta: page.meta || {},
+      counts: legacy.counts,
+      nodes: legacy.nodes,
+      edges: legacy.edges,
+      modules: legacy.modules
+    }
+  })
+  const counts = pageMetadata.reduce(
+    (total, page) => ({
+      nodes: total.nodes + page.counts.nodes,
+      edges: total.edges + page.counts.edges,
+      modules: total.modules + page.counts.modules
+    }),
+    { nodes: 0, edges: 0, modules: 0 }
+  )
+  return {
+    version: 2,
+    title: document.meta?.title || fallbackTitle,
+    source: document.meta?.source || 'generated',
+    counts,
+    pages: pageMetadata,
+    links: (document.links || []).map((link) => ({
+      from: { pageId: link.from.pageId, objectId: link.from.objectId },
+      to: { pageId: link.to.pageId, objectId: link.to.objectId }
+    }))
+  }
+}
+
+export function createDrawioFileContent(xml, { version = '21.0.0' } = {}) {
+  return (
+    '<?xml version="1.0" encoding="UTF-8"?>\n' +
+    `<mxfile host="cli" modified="" agent="drawio-skill-cli" version="${version}">\n` +
+    '  <diagram name="Page-1">\n' +
+    `    ${xml}\n` +
+    '  </diagram>\n' +
+    '</mxfile>\n'
+  )
+}
+
+export function createMultiPageDrawioFileContent(renderedPages, { version = '21.0.0', documentMeta = {} } = {}) {
+  if (!Array.isArray(renderedPages) || renderedPages.length === 0) {
+    throw new Error('renderedPages must contain at least one page')
+  }
+  const diagrams = renderedPages
+    .map((page) => {
+      if (!page || typeof page.id !== 'string' || typeof page.name !== 'string' || typeof page.xml !== 'string') {
+        throw new TypeError('each rendered page requires id, name, and xml strings')
+      }
+      return (
+        `  <diagram id="${escapeXml(page.id)}" name="${escapeXml(page.name)}" dataPageMeta="${escapeXml(encodeURIComponent(JSON.stringify(page.meta || {})))}">\n` +
+        `    ${page.xml}\n` +
+        '  </diagram>'
+      )
+    })
+    .join('\n')
+  return (
+    '<?xml version="1.0" encoding="UTF-8"?>\n' +
+    `<mxfile host="cli" modified="" agent="drawio-skill-cli" version="${escapeXml(version)}" dataDocumentMeta="${escapeXml(encodeURIComponent(JSON.stringify(documentMeta || {})))}">\n` +
+    diagrams +
+    '\n</mxfile>\n'
+  )
+}

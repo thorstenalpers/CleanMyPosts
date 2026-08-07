@@ -10,10 +10,21 @@ pub const REPORT_BUG_URL: &str = "https://github.com/thorstenalpers/CleanMyPosts
 pub const TROUBLESHOOTING_URL: &str =
     "https://github.com/thorstenalpers/CleanMyPosts#-troubleshooting";
 
+/// Stamped in by `build.rs`.
+///
+/// `option_env!` rather than `env!`: a toolchain that compiles this file without having run
+/// the build script — rust-analyzer with build scripts disabled, an editor's own check — must
+/// not turn a missing stamp into an error in application code. A real build always has it,
+/// and the test below is what makes sure of that.
+const BUILD_DATE: &str = match option_env!("CMP_BUILD_DATE") {
+    Some(date) => date,
+    None => "unknown",
+};
+
 pub fn get_info() -> Result<Value> {
     Ok(json!({
         "version": env!("CARGO_PKG_VERSION"),
-        "buildDate": env!("CMP_BUILD_DATE"),
+        "buildDate": BUILD_DATE,
         "homepageUrl": HOMEPAGE_URL,
         "reportBugUrl": REPORT_BUG_URL,
         "troubleshootingUrl": TROUBLESHOOTING_URL,
@@ -40,24 +51,6 @@ pub fn open_license(app: &AppHandle) -> Result<Value> {
 pub fn get_log_buffer(app: &AppHandle) -> Result<Value> {
     let entries = app.state::<AppState>().logs.snapshot();
     Ok(serde_json::to_value(entries)?)
-}
-
-#[cfg(test)]
-mod tests {
-    /// `build.rs` is the only thing that sets this. Without it the crate would not compile,
-    /// but a build script that quietly emitted the wrong shape would ship a version row
-    /// reading "built 1970-01-01" with nothing to catch it.
-    #[test]
-    fn the_build_date_is_stamped_in_as_a_civil_date() {
-        let date = env!("CMP_BUILD_DATE");
-
-        assert_eq!(date.len(), 10, "unexpected shape: {date}");
-        assert!(date.starts_with("20"), "implausible year: {date}");
-        let parts: Vec<&str> = date.split('-').collect();
-        assert_eq!(parts.len(), 3, "not YYYY-MM-DD: {date}");
-        assert!((1..=12).contains(&parts[1].parse::<u32>().expect("month")));
-        assert!((1..=31).contains(&parts[2].parse::<u32>().expect("day")));
-    }
 }
 
 /// Only reports what is on offer. Nothing is downloaded until the UI has shown the version
@@ -137,4 +130,26 @@ pub async fn install_update(app: &AppHandle) -> Result<Value> {
         .map_err(|e| Error::Message(e.to_string()))?;
 
     app.restart();
+}
+
+#[cfg(test)]
+mod tests {
+    use super::BUILD_DATE;
+
+    /// The gate on `build.rs`. `get_info` falls back to "unknown" so a check without a build
+    /// script cannot break the build, which leaves this test as the only thing standing
+    /// between a broken stamp and a version row reading "built unknown" — or "built
+    /// 1970-01-01".
+    #[test]
+    fn the_build_date_is_stamped_in_as_a_civil_date() {
+        let date = BUILD_DATE;
+
+        assert_ne!(date, "unknown", "build.rs did not stamp CMP_BUILD_DATE in");
+        assert_eq!(date.len(), 10, "unexpected shape: {date}");
+        assert!(date.starts_with("20"), "implausible year: {date}");
+        let parts: Vec<&str> = date.split('-').collect();
+        assert_eq!(parts.len(), 3, "not YYYY-MM-DD: {date}");
+        assert!((1..=12).contains(&parts[1].parse::<u32>().expect("month")));
+        assert!((1..=31).contains(&parts[2].parse::<u32>().expect("day")));
+    }
 }

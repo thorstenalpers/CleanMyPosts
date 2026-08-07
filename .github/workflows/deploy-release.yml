@@ -116,7 +116,7 @@ jobs:
           git push origin "v${{ env.VERSION }}"
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: 'v${{ env.VERSION }}'
           name: 'CleanMyPosts ${{ env.VERSION }}'

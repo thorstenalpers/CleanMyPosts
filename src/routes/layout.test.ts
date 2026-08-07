@@ -27,7 +27,9 @@ vi.mock('$app/state', () => ({
 // is the handler table it passes in.
 const host = vi.hoisted(() => ({
 	calls: [] as { method: string; params: unknown }[],
-	emit: undefined as undefined | ((event: unknown) => void)
+	emit: undefined as undefined | ((event: unknown) => void),
+	/** Merged into whatever `settings.get` answers, so a test can start from a switch that is off. */
+	settingsPatch: {}
 }));
 
 vi.mock('$lib/bridge/mock', async (importOriginal) => {
@@ -45,7 +47,10 @@ vi.mock('$lib/bridge/mock', async (importOriginal) => {
 					method,
 					(params: unknown) => {
 						host.calls.push({ method, params });
-						return (handler as (p: unknown) => unknown)(params);
+						const result = (handler as (p: unknown) => unknown)(params);
+						return method === 'settings.get'
+							? { ...(result as object), ...host.settingsPatch }
+							: result;
 					}
 				])
 			)
@@ -70,6 +75,7 @@ function hideYouTube() {
 			debugLogging: false,
 			autoConsent: true,
 			persistSession: true,
+			checkUpdatesOnStart: true,
 			themePreset: 'default',
 			showAssistant: true,
 			assistantSource: 'claude-code',
@@ -94,7 +100,25 @@ describe('app layout', () => {
 		goto.mockClear();
 		preloadCode.mockClear();
 		host.calls.length = 0;
+		host.settingsPatch = {};
 		url.pathname = '/';
+	});
+
+	it('asks the release feed for a newer version at start-up', async () => {
+		await renderLayout();
+
+		await waitFor(() =>
+			expect(host.calls.map((call) => call.method)).toContain('updater.checkForUpdates')
+		);
+	});
+
+	it('asks nothing when the start-up check is switched off', async () => {
+		host.settingsPatch = { checkUpdatesOnStart: false };
+		await renderLayout();
+
+		// Waiting on a request that must not happen: settle everything the start does, then look.
+		await waitFor(() => expect(host.calls.map((call) => call.method)).toContain('log.getBuffer'));
+		expect(host.calls.map((call) => call.method)).not.toContain('updater.checkForUpdates');
 	});
 
 	it('routes to the page a sidebar item stands for', async () => {

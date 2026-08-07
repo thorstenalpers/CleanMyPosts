@@ -206,7 +206,7 @@ export const hi: Record<MessageKey, string> = {
 	'settings.about': 'परिचय',
 	'settings.about.description':
 		'X Corp. या Google LLC से संबद्ध, अनुमोदित या प्रायोजित नहीं। X और YouTube अपने-अपने स्वामियों के ट्रेडमार्क हैं।',
-	'settings.version': 'संस्करण {version}',
+	'settings.versionBuilt': 'संस्करण {version}, {date} को बनाया गया',
 	'settings.versionLoading': 'संस्करण लोड हो रहा है…',
 	'settings.checkUpdates': 'अपडेट देखें',
 	'settings.noUpdates': 'कोई अपडेट उपलब्ध नहीं।',
@@ -219,6 +219,7 @@ export const hi: Record<MessageKey, string> = {
 	'update.downloading': 'अपडेट {version} डाउनलोड हो रहा है',
 	'update.downloadingPercent': 'अपडेट {version} डाउनलोड हो रहा है — {percent}%',
 	'update.failed': 'अपडेट इंस्टॉल नहीं हो सका: {message}',
+	'update.checkFailed': 'अपडेट की जाँच नहीं हो सकी: {message}',
 	'settings.github': 'GitHub पर परियोजना',
 	'settings.reportBug': 'समस्या बताएँ',
 	'settings.licenses': 'तृतीय-पक्ष लाइसेंस',
@@ -260,6 +261,9 @@ export const hi: Record<MessageKey, string> = {
 	'settings.persistSession': 'साइन इन बनाए रखें',
 	'settings.persistSession.description':
 		'WebView2 का कैश और कुकीज़ हर बार शुरू होने पर बनी रहती हैं। बंद होने पर हर शुरुआत में मिटा दी जाती हैं, इसलिए X और YouTube साइन आउट खुलते हैं।',
+	'settings.checkUpdatesOnStart': 'शुरू होने पर अपडेट देखें',
+	'settings.checkUpdatesOnStart.description':
+		'हर बार ऐप शुरू होने पर रिलीज़ पेज से नया संस्करण पूछता है और मिलने पर अवलोकन में बताता है। बंद होने पर अपडेट तभी मिलेंगे जब आप जानकारी पेज का बटन दबाएँगे।',
 	'settings.automation': 'ऑटोमेशन',
 	'settings.automation.description': 'एक दौर कैसे चलता है, और वह किस पर क्लिक करता है।',
 	'settings.engine': 'डिलीट इंजन',

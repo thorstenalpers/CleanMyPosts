@@ -24,6 +24,7 @@ function setup(confirmDeletion: boolean) {
 			debugLogging: false,
 			autoConsent: true,
 			persistSession: true,
+			checkUpdatesOnStart: true,
 			themePreset: 'default' as const,
 			showAssistant: true,
 			assistantSource: 'claude-code',
@@ -56,6 +57,9 @@ describe('YouTubeView', () => {
 			loginStore,
 			runner,
 			open: true,
+			startDeleteAll: false,
+			onDeleteAllStarted: vi.fn(),
+			onDialogOpenChange: vi.fn(),
 			onClose: () => {}
 		});
 
@@ -76,6 +80,9 @@ describe('YouTubeView', () => {
 			loginStore,
 			runner,
 			open: true,
+			startDeleteAll: false,
+			onDeleteAllStarted: vi.fn(),
+			onDialogOpenChange: vi.fn(),
 			onClose: () => {}
 		});
 

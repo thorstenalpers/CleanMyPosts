@@ -18,6 +18,7 @@ describe('BridgeClient', () => {
 				debugLogging: false,
 				autoConsent: true,
 				persistSession: true,
+				checkUpdatesOnStart: true,
 				themePreset: 'default' as const,
 				showAssistant: true,
 				assistantSource: 'claude-code',

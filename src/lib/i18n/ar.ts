@@ -201,7 +201,7 @@ export const ar: Record<MessageKey, string> = {
 	'settings.about': 'حول',
 	'settings.about.description':
 		'غير تابع لـ X Corp. أو Google LLC ولا معتمد أو مموّل منهما. X وYouTube علامتان تجاريتان لمالكيهما.',
-	'settings.version': 'الإصدار {version}',
+	'settings.versionBuilt': 'الإصدار {version}، بُني في {date}',
 	'settings.versionLoading': 'جارٍ تحميل الإصدار…',
 	'settings.checkUpdates': 'التحقق من التحديثات',
 	'settings.noUpdates': 'لا تتوفر تحديثات.',
@@ -214,6 +214,7 @@ export const ar: Record<MessageKey, string> = {
 	'update.downloading': 'جارٍ تنزيل التحديث {version}',
 	'update.downloadingPercent': 'جارٍ تنزيل التحديث {version} — {percent} ٪',
 	'update.failed': 'تعذّر تثبيت التحديث: {message}',
+	'update.checkFailed': 'تعذّر التحقق من التحديثات: {message}',
 	'settings.github': 'المشروع على GitHub',
 	'settings.reportBug': 'الإبلاغ عن خطأ',
 	'settings.licenses': 'تراخيص الأطراف الثالثة',
@@ -254,6 +255,9 @@ export const ar: Record<MessageKey, string> = {
 	'settings.persistSession': 'إبقائي مسجَّلاً للدخول',
 	'settings.persistSession.description':
 		'الاحتفاظ بذاكرة WebView2 المؤقتة وملفات تعريف الارتباط بين التشغيلات. عند الإيقاف يُحذف كل ذلك في كل بدء، فيفتح X ويوتيوب بدون تسجيل دخول.',
+	'settings.checkUpdatesOnStart': 'البحث عن تحديثات عند البدء',
+	'settings.checkUpdatesOnStart.description':
+		'سؤال صفحة الإصدارات عن نسخة أحدث في كل مرة يبدأ فيها التطبيق، والإشارة إلى ذلك في النظرة العامة عند وجودها. عند الإيقاف لا تظهر التحديثات إلا عند الضغط على الزر في صفحة المعلومات.',
 	'settings.automation': 'الأتمتة',
 	'settings.automation.description': 'كيف يجري التشغيل، وعلى ماذا ينقر.',
 	'settings.engine': 'محرك الحذف',

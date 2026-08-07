@@ -31,7 +31,9 @@ describe('i18n', () => {
 
 	it('fills placeholders', () => {
 		i18n.setting = 'de';
-		expect(t('settings.version', { version: '1.2.3' })).toBe('Version 1.2.3');
+		expect(t('settings.versionBuilt', { version: '1.2.3', date: '2026-02-03' })).toBe(
+			'Version 1.2.3, erstellt am 2026-02-03'
+		);
 	});
 
 	it('mirrors the document for Arabic and only for Arabic', () => {

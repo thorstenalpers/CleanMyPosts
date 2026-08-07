@@ -19,6 +19,13 @@
 		groups: ActionGroupDef[];
 		loggedIn: boolean;
 		open: boolean;
+		/** Set by the overview's shortcut: start the delete-all flow as if the button here
+		 *  had been pressed, confirmation included. */
+		startDeleteAll: boolean;
+		onDeleteAllStarted: () => void;
+		/** The layout decides when the site webview is on screen; this is what tells it a
+		 *  modal is up and it must stay off. */
+		onDialogOpenChange: (open: boolean) => void;
 		onClose: () => void;
 	}
 
@@ -31,6 +38,9 @@
 		groups,
 		loggedIn,
 		open,
+		startDeleteAll,
+		onDeleteAllStarted,
+		onDialogOpenChange,
 		onClose
 	}: Props = $props();
 
@@ -40,12 +50,18 @@
 	const enabled = $derived(loggedIn && !runner.running);
 
 	// The panel lives in the narrow chrome WebView; a confirm dialog there can only center
-	// within it. Expand the chrome over the whole window while the dialog is open (site
-	// hidden), then restore the site so the user can watch the deletion run.
-	// An effect, not an explicit call: ConfirmDialog also closes itself on Esc, and the
-	// site view has to come back in that case too.
+	// within it, so the chrome has to take the whole window while one is open.
+	//
+	// Reported upwards rather than hidden from here. The layout also shows the site on a
+	// timer after a route change, and a `site.hide` from this component was simply overwritten
+	// by that timer when a dialog opened in the same tick as the navigation — the overview's
+	// delete-all shortcut does exactly that, and the platform came up over its own
+	// confirmation with no way to answer it.
+	//
+	// An effect, not an explicit call: ConfirmDialog also closes itself on Esc, and the site
+	// has to come back in that case too.
 	$effect(() => {
-		void bridge.call('site.hide', { hide: confirmOpen });
+		onDialogOpenChange(confirmOpen);
 	});
 
 	/** Which page the site webview is on, so the list can say where the user is. */
@@ -154,6 +170,14 @@
 			void runAll();
 		}
 	}
+
+	// Cleared before the flow starts, so a re-render cannot start a second one. A shortcut
+	// that arrives while something is already running is dropped rather than queued.
+	$effect(() => {
+		if (!startDeleteAll) return;
+		onDeleteAllStarted();
+		if (enabled) onDeleteAllClick();
+	});
 
 	async function onConfirm(): Promise<void> {
 		confirmOpen = false;

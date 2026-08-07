@@ -12,10 +12,23 @@
 		loginStore: SiteLoginStore;
 		runner: ActionRunner;
 		open: boolean;
+		startDeleteAll: boolean;
+		onDeleteAllStarted: () => void;
+		onDialogOpenChange: (open: boolean) => void;
 		onClose: () => void;
 	}
 
-	let { bridge, settingsStore, loginStore, runner, open, onClose }: Props = $props();
+	let {
+		bridge,
+		settingsStore,
+		loginStore,
+		runner,
+		open,
+		startDeleteAll,
+		onDeleteAllStarted,
+		onDialogOpenChange,
+		onClose
+	}: Props = $props();
 </script>
 
 <PlatformPanel
@@ -23,6 +36,9 @@
 	{settingsStore}
 	{runner}
 	{open}
+	{startDeleteAll}
+	{onDeleteAllStarted}
+	{onDialogOpenChange}
 	{onClose}
 	platform="youtube"
 	platformLabel="YouTube"

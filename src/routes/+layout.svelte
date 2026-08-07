@@ -12,6 +12,7 @@
 	import { LogStore } from '$lib/stores/log.svelte';
 	import { SiteLoginStore } from '$lib/stores/site-login.svelte';
 	import { ActionRunner } from '$lib/stores/action-runner.svelte';
+	import { UpdaterStore } from '$lib/stores/updater.svelte';
 	import { setAppContext } from '$lib/app-context';
 	import { Toaster } from '$lib/components/ui/sonner';
 	import SidebarShell, { type NavItem } from '$lib/components/sidebar-shell.svelte';
@@ -64,6 +65,7 @@
 	// One runner for the whole app: a deletion keeps reporting progress in the sidebar
 	// even after the user navigates away from the rail that started it.
 	const runner = new ActionRunner(bridge);
+	const updater = new UpdaterStore(bridge);
 
 	type NavKey = 'overview' | 'x' | 'youtube' | 'log' | 'assistant' | 'settings' | 'info';
 
@@ -101,6 +103,16 @@
 	// only owns the strip above it. Same move the confirm dialog makes.
 	let headerMenuOpen = $state(false);
 
+	// Same reason as the header menu: a modal in the chrome can only centre within the chrome,
+	// so the platform has to stay off screen for as long as one is up. It belongs here rather
+	// than in the panel because this component also shows the site on a timer after a route
+	// change, and two callers deciding the same thing meant the later one won.
+	let dialogOpen = $state(false);
+
+	// The overview's shortcut only states an intent; the platform's own panel owns the
+	// confirmation and the run, and clears this the moment it has taken it.
+	let deleteAllFor = $state<Platform | undefined>(undefined);
+
 	let panelClosedByUser = $state(false);
 	let shell = $state<HTMLElement | undefined>(undefined);
 
@@ -120,11 +132,13 @@
 		logStore,
 		loginStore,
 		runner,
-		openPlatform: (platform: Platform) => {
+		updater,
+		openPlatform: (platform: Platform, options?: { deleteAll?: boolean }) => {
 			// Same as clicking the platform in the sidebar: arriving without its actions leaves
 			// the user on a page with nothing to do.
 			panelClosedByUser = false;
 			pendingKey = platform;
+			if (options?.deleteAll) deleteAllFor = platform;
 			void goto(resolve(ROUTES[platform]));
 		}
 	});
@@ -137,6 +151,16 @@
 		void settingsStore.load();
 		void logStore.load();
 		for (const path of Object.values(ROUTES)) void preloadCode(resolve(path));
+	});
+
+	// Waits for the real settings: the fallback has the check on, and asking GitHub for a
+	// version on behalf of someone who switched that off would be exactly the request they
+	// declined. Failures stay silent — starting without a network is ordinary.
+	let startupCheckDone = false;
+	$effect(() => {
+		if (settingsStore.loading || startupCheckDone) return;
+		startupCheckDone = true;
+		if (settingsStore.settings.checkUpdatesOnStart) void updater.check().catch(() => {});
 	});
 
 	// Only on an actual change: `applyThemeChange` suppresses transitions for a moment, and
@@ -301,7 +325,7 @@
 		// A dropdown in the header is taller than the strip the chrome owns while a platform is
 		// up, so the platform steps aside for as long as one is open — otherwise the entries
 		// render behind a webview and the menu looks broken.
-		if (!platform || headerMenuOpen) {
+		if (!platform || headerMenuOpen || dialogOpen) {
 			void bridge.call('site.hide', { hide: true });
 			return;
 		}
@@ -338,6 +362,9 @@
 					{loginStore}
 					{runner}
 					open={panelVisible}
+					startDeleteAll={deleteAllFor === 'x'}
+					onDeleteAllStarted={() => (deleteAllFor = undefined)}
+					onDialogOpenChange={(open: boolean) => (dialogOpen = open)}
 					onClose={() => (panelClosedByUser = true)}
 				/>
 			{:else if railPlatform === 'youtube'}
@@ -347,6 +374,9 @@
 					{loginStore}
 					{runner}
 					open={panelVisible}
+					startDeleteAll={deleteAllFor === 'youtube'}
+					onDeleteAllStarted={() => (deleteAllFor = undefined)}
+					onDialogOpenChange={(open: boolean) => (dialogOpen = open)}
 					onClose={() => (panelClosedByUser = true)}
 				/>
 			{/if}

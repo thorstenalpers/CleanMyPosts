@@ -211,7 +211,7 @@ export const fr: Record<MessageKey, string> = {
 	'settings.about': 'À propos',
 	'settings.about.description':
 		'Sans affiliation, approbation ni parrainage de X Corp. ou de Google LLC. X et YouTube sont des marques de leurs propriétaires respectifs.',
-	'settings.version': 'Version {version}',
+	'settings.versionBuilt': 'Version {version}, compilée le {date}',
 	'settings.versionLoading': 'Chargement de la version…',
 	'settings.checkUpdates': 'Rechercher des mises à jour',
 	'settings.noUpdates': 'Aucune mise à jour disponible.',
@@ -224,6 +224,7 @@ export const fr: Record<MessageKey, string> = {
 	'update.downloading': 'Téléchargement de la mise à jour {version}',
 	'update.downloadingPercent': 'Téléchargement de la mise à jour {version} — {percent} %',
 	'update.failed': "La mise à jour n'a pas pu être installée : {message}",
+	'update.checkFailed': 'Impossible de rechercher des mises à jour : {message}',
 	'settings.github': 'Projet sur GitHub',
 	'settings.reportBug': 'Signaler un bug',
 	'settings.licenses': 'Licences tierces',
@@ -268,6 +269,9 @@ export const fr: Record<MessageKey, string> = {
 	'settings.persistSession': 'Rester connecté',
 	'settings.persistSession.description':
 		'Conserver le cache et les cookies de WebView2 entre les lancements. Désactivé, tout est supprimé à chaque démarrage : X et YouTube s’ouvrent déconnectés.',
+	'settings.checkUpdatesOnStart': 'Rechercher des mises à jour au démarrage',
+	'settings.checkUpdatesOnStart.description':
+		'Interroger la page des versions à chaque démarrage et le signaler dans l’aperçu lorsqu’une nouvelle existe. Désactivé, les mises à jour n’apparaissent que si vous appuyez sur le bouton de la page Infos.',
 	'settings.automation': 'Automatisation',
 	'settings.automation.description': 'Comment une exécution se comporte, et sur quoi elle clique.',
 	'settings.engine': 'Moteur de suppression',

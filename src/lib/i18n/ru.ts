@@ -205,7 +205,7 @@ export const ru: Record<MessageKey, string> = {
 	'settings.about': 'О приложении',
 	'settings.about.description':
 		'Не связано с X Corp. и Google LLC, не одобрено и не спонсируется ими. X и YouTube — товарные знаки соответствующих владельцев.',
-	'settings.version': 'Версия {version}',
+	'settings.versionBuilt': 'Версия {version}, собрана {date}',
 	'settings.versionLoading': 'Загрузка версии…',
 	'settings.checkUpdates': 'Проверить обновления',
 	'settings.noUpdates': 'Обновлений нет.',
@@ -218,6 +218,7 @@ export const ru: Record<MessageKey, string> = {
 	'update.downloading': 'Загрузка обновления {version}',
 	'update.downloadingPercent': 'Загрузка обновления {version} — {percent} %',
 	'update.failed': 'Не удалось установить обновление: {message}',
+	'update.checkFailed': 'Не удалось проверить обновления: {message}',
 	'settings.github': 'Проект на GitHub',
 	'settings.reportBug': 'Сообщить об ошибке',
 	'settings.licenses': 'Лицензии третьих сторон',
@@ -260,6 +261,9 @@ export const ru: Record<MessageKey, string> = {
 	'settings.persistSession': 'Оставаться в системе',
 	'settings.persistSession.description':
 		'Сохранять кэш и cookie WebView2 между запусками. Если выключено, они удаляются при каждом старте, и X с YouTube открываются без входа.',
+	'settings.checkUpdatesOnStart': 'Искать обновления при запуске',
+	'settings.checkUpdatesOnStart.description':
+		'При каждом запуске спрашивать страницу релизов о новой версии и сообщать об этом в обзоре. Если выключено, обновление найдётся только по кнопке на странице «Информация».',
 	'settings.automation': 'Автоматизация',
 	'settings.automation.description': 'Как ведёт себя запуск и по чему он кликает.',
 	'settings.engine': 'Движок удаления',

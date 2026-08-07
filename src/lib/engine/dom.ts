@@ -265,6 +265,36 @@ export function showToast(message: string, kind: 'success' | 'info' | 'error' = 
 	}, 5000);
 }
 
+let shieldEl: HTMLElement | null = null;
+
+/**
+ * Takes the page away from the mouse for the length of a run.
+ *
+ * The engine works by clicking the platform's own controls, and a second hand on the page
+ * fights it: a click on YouTube's navigation mid-run navigates away from the list being
+ * emptied, and the run then deletes nothing and says the account is clean. A user cannot be
+ * expected to know that, so the page stops taking input instead of asking them not to.
+ *
+ * An overlay rather than `pointer-events:none` on the document: this element belongs to us
+ * and is removed again, where a style on someone else's `<html>` outlives a page that
+ * re-renders around it. Synthetic clicks are dispatched straight at their target, so the
+ * engine reaches through this without noticing it.
+ */
+export function showShield(): void {
+	if (shieldEl && document.body.contains(shieldEl)) return;
+	const el = document.createElement('div');
+	el.style.cssText =
+		'position:fixed;inset:0;z-index:2147483646;cursor:not-allowed;background:transparent;';
+	document.body.appendChild(el);
+	shieldEl = el;
+}
+
+/** Gives the page back. Called when a run ends, whatever the outcome. */
+export function hideShield(): void {
+	shieldEl?.remove();
+	shieldEl = null;
+}
+
 function post(message: ContentMessage): void {
 	window.chrome?.webview?.postMessage(message);
 }

@@ -2,7 +2,7 @@ import { xActions, getUserName, getLoginStatus as getXLoginStatus } from './x';
 import { youTubeActions, getLoginStatus as getYouTubeLoginStatus } from './youtube';
 import { startConsentWatcher } from './consent';
 import { siteConfig } from './config';
-import { hideCursor, postDone, postError, postLog, showToast } from './dom';
+import { hideCursor, hideShield, postDone, postError, postLog, showShield, showToast } from './dom';
 import type { CmpApi, Platform, RunParams, XAction, YouTubeAction } from './protocol';
 import type { DeleteActionDefinition } from './types';
 
@@ -27,6 +27,7 @@ const api: CmpApi = {
 			return;
 		}
 
+		showShield();
 		definition
 			.run(params)
 			.then((deletedCount) => postDone(params.requestId, deletedCount))
@@ -35,8 +36,12 @@ const api: CmpApi = {
 				postLog('error', `${platform}:${action} failed: ${message}`);
 				postError(params.requestId, message);
 			})
-			// Whatever the outcome: the run is over, so the pointer stops standing on the page.
-			.finally(hideCursor);
+			// Whatever the outcome: the run is over, so the pointer stops standing on the page
+			// and the page takes clicks again.
+			.finally(() => {
+				hideCursor();
+				hideShield();
+			});
 	},
 
 	isEmpty(platform, action) {

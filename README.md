@@ -10,9 +10,8 @@
 **CleanMyPosts** is a lightweight Windows desktop app that securely deletes all posts, reposts, replies, likes, and followings from your X (formerly Twitter) account, as well as YouTube comments, in bulk using browser automation.
 
 🌍 **Speaks your language.** The whole interface is available in **eleven languages** —
-English, Arabic, German, Spanish, French, Hindi, Italian, Japanese, Portuguese, Russian and
-Chinese — and follows the one Windows runs in unless you pick another. Arabic mirrors the
-entire window. The delete engine is built for it too: it reads the pages structurally
+English, German, Spanish, French, Hindi, Italian, Japanese, Portuguese, Arabic, Russian and
+Chinese — and follows the one Windows runs in unless you pick another. The delete engine is built for it too: it reads the pages structurally
 wherever it can and asks every platform for English, so a translated interface on X or
 YouTube does not stop a run.
 
@@ -99,28 +98,23 @@ Once your system meets the requirements, follow these steps to install **CleanMy
 
 ## 🎬 See It in Action
 
-Each platform gets its own header, sub-navigation and status bar. The sub-navigation stays
-open while a run is going, so the controls do not disappear mid-task.
-
-The overview is where you land. It says which accounts are signed in and what each platform
-has to clean, and for a platform you are signed in to it offers **Delete everything** right
-there — the same run as the button inside the platform, with the same confirmation naming
-every list it is about to empty. A waiting update is announced here too, with its release
-notes, so nothing has to be gone looking for.
-
-**Overview**
+**Overview** — where you land. Which accounts are signed in, what each platform has to clean,
+and **Delete everything** for every platform you are signed in to. A waiting update is
+announced here too, with its release notes.
 
 <img src="./assets/Overview.png" alt="The overview, listing what each platform can clean" width="700" />
 
-**X (Twitter)**
+**X (Twitter)** — **Delete everything** running: posts, replies, reposts, likes and
+followings, one list after the next. The sub-navigation stays open the whole time, so the
+controls do not disappear mid-task.
 
-<img src="./assets/X.webp" alt="Posts, replies, reposts, likes and followings on X" width="700" />
+▶️ [Watch the run (MP4)](./assets/X.mp4)
 
-**YouTube**
+**YouTube** — comments and liked videos in a single run, each with its own status.
 
-<img src="./assets/Youtube.webp" alt="Comments and liked videos on YouTube" width="700" />
+▶️ [Watch the run (MP4)](./assets/Youtube.mp4)
 
-**Assistant**
+**Assistant** — the exact text that would be sent, shown before anything is sent.
 
 <img src="./assets/Assistant.png" alt="The assistant, showing what would be sent before it is sent" width="700" />
 

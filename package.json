@@ -4,9 +4,9 @@
 	"private": true,
 	"type": "module",
 	"scripts": {
-		"prepare": "svelte-kit sync",
 		"start": "tauri dev",
 		"dev": "vite dev",
+		"prepare": "svelte-kit sync",
 		"build": "vite build && vite build --config vite.content.config.ts",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"lint": "prettier --check . && eslint .",

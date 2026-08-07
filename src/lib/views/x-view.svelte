@@ -14,6 +14,7 @@
 		open: boolean;
 		startDeleteAll: boolean;
 		onDeleteAllStarted: () => void;
+		onDialogOpenChange: (open: boolean) => void;
 		onClose: () => void;
 	}
 
@@ -25,6 +26,7 @@
 		open,
 		startDeleteAll,
 		onDeleteAllStarted,
+		onDialogOpenChange,
 		onClose
 	}: Props = $props();
 </script>
@@ -36,6 +38,7 @@
 	{open}
 	{startDeleteAll}
 	{onDeleteAllStarted}
+	{onDialogOpenChange}
 	{onClose}
 	platform="x"
 	platformLabel="X"

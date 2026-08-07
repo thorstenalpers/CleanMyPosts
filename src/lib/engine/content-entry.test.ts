@@ -55,6 +55,29 @@ describe('window.__cmp', () => {
 		);
 	}, 10000);
 
+	/**
+	 * A click on the platform's own navigation mid-run leaves the list being emptied, and the
+	 * run then reports an account that is already clean. The page has to stop taking input.
+	 */
+	it('covers the page while a run is going and uncovers it when it ends', async () => {
+		const shielded = () => !!document.body.querySelector('div[style*="not-allowed"]');
+
+		expect(shielded()).toBe(false);
+
+		window.__cmp!.run(
+			'x',
+			'deletePosts',
+			JSON.stringify({ requestId: 'r3', waitAfterDelete: 1, waitBetweenRetryDeleteAttempts: 1 })
+		);
+		expect(shielded()).toBe(true);
+
+		await vi.waitFor(
+			() => expect(postMessage).toHaveBeenCalledWith(expect.objectContaining({ requestId: 'r3' })),
+			{ timeout: 8000 }
+		);
+		await vi.waitFor(() => expect(shielded()).toBe(false));
+	}, 10000);
+
 	it('getUserName and getLoginStatus are exposed', () => {
 		expect(typeof window.__cmp!.getUserName()).toBe('string');
 		expect(typeof window.__cmp!.getLoginStatus()).toBe('string');

@@ -103,6 +103,12 @@
 	// only owns the strip above it. Same move the confirm dialog makes.
 	let headerMenuOpen = $state(false);
 
+	// Same reason as the header menu: a modal in the chrome can only centre within the chrome,
+	// so the platform has to stay off screen for as long as one is up. It belongs here rather
+	// than in the panel because this component also shows the site on a timer after a route
+	// change, and two callers deciding the same thing meant the later one won.
+	let dialogOpen = $state(false);
+
 	// The overview's shortcut only states an intent; the platform's own panel owns the
 	// confirmation and the run, and clears this the moment it has taken it.
 	let deleteAllFor = $state<Platform | undefined>(undefined);
@@ -319,7 +325,7 @@
 		// A dropdown in the header is taller than the strip the chrome owns while a platform is
 		// up, so the platform steps aside for as long as one is open — otherwise the entries
 		// render behind a webview and the menu looks broken.
-		if (!platform || headerMenuOpen) {
+		if (!platform || headerMenuOpen || dialogOpen) {
 			void bridge.call('site.hide', { hide: true });
 			return;
 		}
@@ -358,6 +364,7 @@
 					open={panelVisible}
 					startDeleteAll={deleteAllFor === 'x'}
 					onDeleteAllStarted={() => (deleteAllFor = undefined)}
+					onDialogOpenChange={(open: boolean) => (dialogOpen = open)}
 					onClose={() => (panelClosedByUser = true)}
 				/>
 			{:else if railPlatform === 'youtube'}
@@ -369,6 +376,7 @@
 					open={panelVisible}
 					startDeleteAll={deleteAllFor === 'youtube'}
 					onDeleteAllStarted={() => (deleteAllFor = undefined)}
+					onDialogOpenChange={(open: boolean) => (dialogOpen = open)}
 					onClose={() => (panelClosedByUser = true)}
 				/>
 			{/if}

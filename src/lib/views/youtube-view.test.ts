@@ -59,6 +59,7 @@ describe('YouTubeView', () => {
 			open: true,
 			startDeleteAll: false,
 			onDeleteAllStarted: vi.fn(),
+			onDialogOpenChange: vi.fn(),
 			onClose: () => {}
 		});
 
@@ -81,6 +82,7 @@ describe('YouTubeView', () => {
 			open: true,
 			startDeleteAll: false,
 			onDeleteAllStarted: vi.fn(),
+			onDialogOpenChange: vi.fn(),
 			onClose: () => {}
 		});
 

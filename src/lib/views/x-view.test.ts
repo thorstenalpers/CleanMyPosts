@@ -65,6 +65,7 @@ describe('XView', () => {
 			open: true,
 			startDeleteAll: false,
 			onDeleteAllStarted: vi.fn(),
+			onDialogOpenChange: vi.fn(),
 			onClose: () => {}
 		});
 
@@ -87,6 +88,7 @@ describe('XView', () => {
 			open: true,
 			startDeleteAll: false,
 			onDeleteAllStarted: vi.fn(),
+			onDialogOpenChange: vi.fn(),
 			onClose
 		});
 
@@ -113,6 +115,7 @@ describe('XView', () => {
 			open: true,
 			startDeleteAll: false,
 			onDeleteAllStarted: vi.fn(),
+			onDialogOpenChange: vi.fn(),
 			onClose: () => {}
 		});
 
@@ -135,6 +138,7 @@ describe('XView', () => {
 			open: true,
 			startDeleteAll: false,
 			onDeleteAllStarted: vi.fn(),
+			onDialogOpenChange: vi.fn(),
 			onClose: () => {}
 		});
 
@@ -167,6 +171,7 @@ describe('XView', () => {
 			open: true,
 			startDeleteAll: false,
 			onDeleteAllStarted: vi.fn(),
+			onDialogOpenChange: vi.fn(),
 			onClose
 		});
 
@@ -193,6 +198,7 @@ describe('XView', () => {
 			open: true,
 			startDeleteAll: false,
 			onDeleteAllStarted: vi.fn(),
+			onDialogOpenChange: vi.fn(),
 			onClose: () => {}
 		});
 
@@ -225,6 +231,7 @@ describe('XView', () => {
 			open: true,
 			startDeleteAll: false,
 			onDeleteAllStarted: vi.fn(),
+			onDialogOpenChange: vi.fn(),
 			onClose: () => {}
 		});
 
@@ -247,6 +254,7 @@ describe('XView', () => {
 			open: true,
 			startDeleteAll: false,
 			onDeleteAllStarted: vi.fn(),
+			onDialogOpenChange: vi.fn(),
 			onClose: () => {}
 		});
 

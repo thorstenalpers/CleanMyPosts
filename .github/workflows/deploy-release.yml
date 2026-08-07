@@ -14,7 +14,9 @@ jobs:
     runs-on: windows-latest
 
     env:
-      Tauri_Config: 'src-tauri/tauri.conf.json'
+      # Not TAURI_CONFIG: Windows env vars are case-insensitive, and tauri-build parses
+      # that name as a JSON patch, not as a path.
+      CONFIG_PATH: 'src-tauri/tauri.conf.json'
       FORCE_COLOR: 'true'
 
     steps:
@@ -54,9 +56,9 @@ jobs:
         id: get_version
         shell: pwsh
         run: |
-          $version = (Get-Content "${{ env.Tauri_Config }}" -Raw | ConvertFrom-Json).version
+          $version = (Get-Content "${{ env.CONFIG_PATH }}" -Raw | ConvertFrom-Json).version
           if (-not $version) {
-            Write-Error "No version in ${{ env.Tauri_Config }}"
+            Write-Error "No version in ${{ env.CONFIG_PATH }}"
             exit 1
           }
           echo "VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Append

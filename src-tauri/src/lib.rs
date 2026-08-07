@@ -349,6 +349,7 @@ pub fn run() {
                 logs: log::LogBuffer::new(),
                 runs: state::Runs::default(),
                 site: std::sync::Mutex::new(state::SiteInfo::default()),
+                pending_update: std::sync::Mutex::new(None),
             });
 
             if !app.state::<AppState>().settings.get().persist_session {

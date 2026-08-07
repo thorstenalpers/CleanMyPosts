@@ -29,4 +29,7 @@ pub struct AppState {
     pub logs: LogBuffer,
     pub runs: Runs,
     pub site: Mutex<SiteInfo>,
+    /// Held between the check and the install so the version the user agreed to is the one
+    /// that gets written over the running app.
+    pub pending_update: Mutex<Option<tauri_plugin_updater::Update>>,
 }

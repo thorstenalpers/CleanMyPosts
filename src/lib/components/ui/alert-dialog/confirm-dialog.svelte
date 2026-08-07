@@ -9,11 +9,13 @@
     description: string;
     confirmLabel?: string;
     cancelLabel?: string;
+    /** Red is for the ones that destroy something; an install is not one of those. */
+    confirmVariant?: 'destructive' | 'default';
     onConfirm: () => void;
     onCancel?: () => void;
   }
 
-  let { open = $bindable(), title, description, confirmLabel = 'Delete', cancelLabel = 'Cancel', onConfirm, onCancel }: Props = $props();
+  let { open = $bindable(), title, description, confirmLabel = 'Delete', cancelLabel = 'Cancel', confirmVariant = 'destructive', onConfirm, onCancel }: Props = $props();
 </script>
 
 <AlertDialogPrimitive.Root bind:open>
@@ -24,7 +26,7 @@
       <AlertDialogPrimitive.Cancel class={buttonVariants({ variant: 'outline' })} onclick={onCancel}>
         {cancelLabel}
       </AlertDialogPrimitive.Cancel>
-      <AlertDialogPrimitive.Action class={buttonVariants({ variant: 'destructive' })} onclick={onConfirm}>
+      <AlertDialogPrimitive.Action class={buttonVariants({ variant: confirmVariant })} onclick={onConfirm}>
         {confirmLabel}
       </AlertDialogPrimitive.Action>
     </div>

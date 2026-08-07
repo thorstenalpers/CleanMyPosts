@@ -30,6 +30,7 @@ pub async fn dispatch(app: AppHandle, method: String, params: Value) -> Result<V
         "layout.setBackground" => site::set_background(&app, &params),
 
         "updater.checkForUpdates" => system::check_for_updates(&app).await,
+        "updater.installUpdate" => system::install_update(&app).await,
         "system.openUrl" => system::open_url(&params),
         "system.openLicense" => system::open_license(&app),
 

@@ -13,6 +13,8 @@
 		CardContent
 	} from '$lib/components/ui/card';
 	import SettingRow from '$lib/components/setting-row.svelte';
+	import { ConfirmDialog } from '$lib/components/ui/alert-dialog';
+	import { Progress } from '$lib/components/ui/progress';
 	import { cn } from '$lib/utils';
 	import InfoIcon from '@lucide/svelte/icons/info';
 	import LinkIcon from '@lucide/svelte/icons/link';
@@ -32,20 +34,61 @@
 
 	let appInfo = $state<AppInfo | undefined>(undefined);
 	let checkingUpdates = $state(false);
+	let confirmOpen = $state(false);
+	let installing = $state(false);
+	let newVersion = $state('');
+	let downloaded = $state(0);
+	let contentLength = $state<number | undefined>(undefined);
+
+	const percent = $derived(
+		contentLength ? Math.min(100, Math.round((downloaded / contentLength) * 100)) : undefined
+	);
+	const downloadLabel = $derived(
+		percent === undefined
+			? t('update.downloading', { version: newVersion })
+			: t('update.downloadingPercent', { version: newVersion, percent })
+	);
 
 	$effect(() => {
 		void bridge.call('app.getInfo', undefined).then((info) => (appInfo = info));
 	});
 
+	$effect(() =>
+		bridge.onPushEvent((event) => {
+			if (event.event !== 'updateProgress') return;
+			downloaded = event.payload.downloaded;
+			contentLength = event.payload.contentLength ?? undefined;
+		})
+	);
+
 	async function checkForUpdates(): Promise<void> {
 		checkingUpdates = true;
 		try {
 			const result = await bridge.call('updater.checkForUpdates', undefined);
-			if (!result.updateAvailable) {
-				notify(settingsStore, 'info', result.message ?? t('settings.noUpdates'));
+			if (result.updateAvailable) {
+				newVersion = result.version ?? '';
+				confirmOpen = true;
+			} else {
+				notify(settingsStore, 'info', t('settings.noUpdates'));
 			}
 		} finally {
 			checkingUpdates = false;
+		}
+	}
+
+	// No `finally`: the host restarts the app the moment the installer has run, so the only
+	// way this call comes back is as a failure.
+	async function installUpdate(): Promise<void> {
+		confirmOpen = false;
+		installing = true;
+		downloaded = 0;
+		contentLength = undefined;
+		try {
+			await bridge.call('updater.installUpdate', undefined);
+		} catch (error) {
+			installing = false;
+			const message = error instanceof Error ? error.message : String(error);
+			notify(settingsStore, 'error', t('update.failed', { message }));
 		}
 	}
 </script>
@@ -82,16 +125,25 @@
 						: t('settings.versionLoading')}
 				>
 					{#snippet control()}
-						<Button
-							variant="outline"
-							size="sm"
-							class="h-8"
-							disabled={checkingUpdates}
-							onclick={checkForUpdates}
-						>
-							<RefreshCwIcon class={cn(checkingUpdates && 'animate-spin')} />
-							{t('settings.checkUpdates')}
-						</Button>
+						{#if installing}
+							<div class="flex w-36 flex-col items-end gap-1.5">
+								<span class="h-4 text-xs text-muted-foreground tabular-nums">
+									{percent === undefined ? '' : `${percent}%`}
+								</span>
+								<Progress value={percent} label={downloadLabel} />
+							</div>
+						{:else}
+							<Button
+								variant="outline"
+								size="sm"
+								class="h-8"
+								disabled={checkingUpdates}
+								onclick={checkForUpdates}
+							>
+								<RefreshCwIcon class={cn(checkingUpdates && 'animate-spin')} />
+								{checkingUpdates ? t('update.checking') : t('settings.checkUpdates')}
+							</Button>
+						{/if}
 					{/snippet}
 				</SettingRow>
 
@@ -183,3 +235,13 @@
 		</Card>
 	</div>
 </div>
+
+<ConfirmDialog
+	bind:open={confirmOpen}
+	title={t('update.available.title')}
+	description={t('update.available.body', { version: newVersion })}
+	confirmLabel={t('update.install')}
+	cancelLabel={t('update.later')}
+	confirmVariant="default"
+	onConfirm={installUpdate}
+/>

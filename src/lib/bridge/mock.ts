@@ -118,6 +118,7 @@ export function defaultMockHandlers(): MockHandlers {
 		'layout.setSiteInset': () => undefined,
 		'layout.setBackground': () => undefined,
 		'updater.checkForUpdates': () => ({ updateAvailable: false }),
+		'updater.installUpdate': () => undefined,
 		'system.openUrl': () => undefined,
 		'system.openLicense': () => undefined,
 		'log.getBuffer': () => [],

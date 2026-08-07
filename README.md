@@ -108,11 +108,11 @@ announced here too, with its release notes.
 followings, one list after the next. The sub-navigation stays open the whole time, so the
 controls do not disappear mid-task.
 
-▶️ [Watch the run (MP4)](./assets/X.mp4)
+<img src="./assets/X.webp" alt="Delete everything running across posts, replies, reposts, likes and followings on X" width="700" />
 
 **YouTube** — comments and liked videos in a single run, each with its own status.
 
-▶️ [Watch the run (MP4)](./assets/Youtube.mp4)
+<img src="./assets/Youtube.webp" alt="Comments and liked videos being deleted on YouTube" width="700" />
 
 **Assistant** — the exact text that would be sent, shown before anything is sent.
 

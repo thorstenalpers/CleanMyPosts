@@ -9,6 +9,11 @@ updates:
         patterns: ['svelte*', '@sveltejs/*']
       dev-dependencies:
         dependency-type: development
+    ignore:
+      # svelte-check 4.x declares a peer range of typescript ^5 || ^6, so a major
+      # bump makes npm ci fail to resolve before anything is even built.
+      - dependency-name: typescript
+        versions: ['>=7']
 
   - package-ecosystem: cargo
     directory: /src-tauri

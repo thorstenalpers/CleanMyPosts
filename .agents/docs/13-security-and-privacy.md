@@ -63,6 +63,7 @@ in a store this project would then be responsible for.
 
    Still deliberately behind: the user's name, the settings, and the site DOM as it actually
    is. What a hosted provider receives is a shape, not a page.
+
 6. **The API key never reaches the frontend.** The HTTP call to a provider is made in the host,
    not in the chrome webview: the key is read from the credential store at the moment of the
    request, is scrubbed out of any error message on the way back, and the webview's CSP stays

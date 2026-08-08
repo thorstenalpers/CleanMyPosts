@@ -266,21 +266,82 @@ export function showToast(message: string, kind: 'success' | 'info' | 'error' = 
 }
 
 let shieldEl: HTMLElement | null = null;
+let shieldAbort: AbortController | null = null;
 
 /**
- * Takes the page away from the mouse for the length of a run.
+ * Everything a person can do to a page, caught before the page hears about it.
+ *
+ * The pointer events are in here even though the overlay already covers them, and that is the
+ * point: an overlay only works for as long as it is in the DOM, and it is one `<div>` sitting
+ * in a body that a platform re-renders on its own schedule. Nothing in this list depends on it
+ * — the overlay is now only what makes the block visible, and `cursor:not-allowed` is the
+ * whole of its job.
+ */
+const SHIELDED_EVENTS = [
+	'pointerdown',
+	'pointerup',
+	'mousedown',
+	'mouseup',
+	'click',
+	'auxclick',
+	'dblclick',
+	'keydown',
+	'keypress',
+	'keyup',
+	'wheel',
+	'touchstart',
+	'touchmove',
+	'contextmenu',
+	'submit'
+] as const;
+
+/**
+ * The user's hand, told apart from the engine's.
+ *
+ * `isTrusted` is the whole distinction and it cannot be forged: the browser sets it on what a
+ * person did, and everything the engine sends — the mouse sequence in `clickWithCursor`, the
+ * Escape that closes a YouTube menu — is constructed, so it reads false and passes through.
+ * A blanket block here would stop the run it is meant to protect.
+ */
+function swallow(event: Event): void {
+	if (!event.isTrusted) return;
+	event.preventDefault();
+	event.stopImmediatePropagation();
+}
+
+/**
+ * Takes the page away from the user for the length of a run.
  *
  * The engine works by clicking the platform's own controls, and a second hand on the page
- * fights it: a click on YouTube's navigation mid-run navigates away from the list being
- * emptied, and the run then deletes nothing and says the account is clean. A user cannot be
- * expected to know that, so the page stops taking input instead of asking them not to.
+ * fights it: a click on the platform's navigation mid-run leaves the list being emptied, and
+ * the run then deletes nothing and says the account is clean. A user cannot be expected to
+ * know that, so the page stops taking input instead of asking them not to.
  *
- * An overlay rather than `pointer-events:none` on the document: this element belongs to us
- * and is removed again, where a style on someone else's `<html>` outlives a page that
- * re-renders around it. Synthetic clicks are dispatched straight at their target, so the
- * engine reaches through this without noticing it.
+ * This used to be the overlay alone, and that was the bug: a `<div>` in someone else's body
+ * is theirs to remove, and X re-renders around it whenever it likes. The listeners are the
+ * block now — they are on `window`, in the capture phase, and there is nothing in the page
+ * for a platform to take away. The overlay stays for the one thing it is actually good at,
+ * which is saying so: `cursor:not-allowed` under the pointer.
+ *
+ * Not covered: what the browser owns above the page. F5 and the back gesture are its keys,
+ * not the document's.
  */
 export function showShield(): void {
+	if (!shieldAbort) {
+		shieldAbort = new AbortController();
+		for (const type of SHIELDED_EVENTS) {
+			// `passive: false` or the wheel is not ours to cancel — Chromium assumes otherwise
+			// for scroll events bound this high up.
+			window.addEventListener(type, swallow, {
+				capture: true,
+				passive: false,
+				signal: shieldAbort.signal
+			});
+		}
+	}
+
+	// Rebuilt whenever the page has since dropped it. Second, and never in the way of the
+	// listeners above: a body that is not there yet must not cost a run its block.
 	if (shieldEl && document.body.contains(shieldEl)) return;
 	const el = document.createElement('div');
 	el.style.cssText =
@@ -293,6 +354,8 @@ export function showShield(): void {
 export function hideShield(): void {
 	shieldEl?.remove();
 	shieldEl = null;
+	shieldAbort?.abort();
+	shieldAbort = null;
 }
 
 function post(message: ContentMessage): void {

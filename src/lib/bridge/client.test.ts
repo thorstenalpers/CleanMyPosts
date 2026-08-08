@@ -24,6 +24,9 @@ describe('BridgeClient', () => {
 				assistantSource: 'claude-code',
 				assistantCliPath: '',
 				engineScript: '',
+				assistantModel: '',
+				assistantEffort: 'medium' as const,
+				customActions: [],
 				timeouts: {
 					waitAfterDelete: 100,
 					waitBetweenRetryDeleteAttempts: 200,

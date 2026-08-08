@@ -88,6 +88,9 @@ function mockSettings(): AppSettings {
 		assistantSource: 'claude-code',
 		assistantCliPath: '',
 		engineScript: '',
+		assistantModel: '',
+		assistantEffort: 'medium',
+		customActions: [],
 		timeouts: {
 			waitAfterDelete: 500,
 			waitBetweenRetryDeleteAttempts: 500,

@@ -53,6 +53,97 @@ export const ThemePresetSchema = z.enum([
 ]);
 export type ThemePreset = z.infer<typeof ThemePresetSchema>;
 
+// Above the settings rather than beside the actions below: a saved action names the platform
+// it belongs to, and the settings carry those.
+export const PlatformSchema = z.enum(['x', 'youtube']);
+export type Platform = z.infer<typeof PlatformSchema>;
+
+/**
+ * How hard the assistant is asked to think. Providers word this differently — a token budget
+ * on one, a reasoning parameter on another — so the app names the intent and the host maps it.
+ */
+export const AssistantEffortSchema = z.enum(['low', 'medium', 'high']);
+export type AssistantEffort = z.infer<typeof AssistantEffortSchema>;
+
+/**
+ * How one element is named.
+ *
+ * A selector, optionally narrowed to the one carrying a given word — which is how both
+ * platforms are actually navigated, since a menu entry has no mark of its own beyond what it
+ * says. Never an index into the page: that is what makes a recorded plan worthless the moment
+ * the page renders again.
+ */
+export const TargetSchema = z.object({
+	selector: z.string().min(1).max(300),
+	/** Matched case-insensitively against the element's text. Absent means: the first match. */
+	text: z.string().max(120).optional()
+});
+export type Target = z.infer<typeof TargetSchema>;
+
+/** The longest any single step may block, so a bad plan cannot hang a run for ever. */
+const MAX_STEP_WAIT = 30_000;
+
+/**
+ * One step of a plan.
+ *
+ * Deliberately small, and every entry maps onto a primitive `$lib/engine/dom.ts` already has.
+ * The vocabulary is the guarantee: a plan can only do what the engine could already do, so
+ * nothing arrives that has to be trusted the way a script would.
+ */
+export const PlanStepSchema = z.discriminatedUnion('step', [
+	z.object({
+		step: z.literal('click'),
+		target: TargetSchema,
+		pointerSequence: z.boolean().optional()
+	}),
+	z.object({
+		step: z.literal('waitFor'),
+		target: TargetSchema,
+		maxWaitMs: z.number().int().min(0).max(MAX_STEP_WAIT).optional()
+	}),
+	z.object({
+		step: z.literal('waitGone'),
+		target: TargetSchema,
+		maxWaitMs: z.number().int().min(0).max(MAX_STEP_WAIT).optional()
+	}),
+	z.object({
+		step: z.literal('scrollUntil'),
+		target: TargetSchema,
+		maxWaitMs: z.number().int().min(0).max(MAX_STEP_WAIT).optional()
+	}),
+	z.object({ step: z.literal('wait'), ms: z.number().int().min(0).max(MAX_STEP_WAIT) })
+]);
+export type PlanStep = z.infer<typeof PlanStepSchema>;
+
+/**
+ * What removes one item, and how to tell there is one left to remove.
+ *
+ * The loop is not in here on purpose. The app owns repeating, counting, the waits between
+ * deletions, the stop button and the shield — everything that makes a run safe — and the plan
+ * only says what one round of it does.
+ */
+export const ActionPlanSchema = z.object({
+	target: TargetSchema,
+	steps: z.array(PlanStepSchema).min(1).max(10)
+});
+export type ActionPlan = z.infer<typeof ActionPlanSchema>;
+
+/**
+ * A plan the assistant wrote and the user kept.
+ *
+ * It becomes a row in that platform's action panel, beside the built-in lists. `createdAt` is
+ * carried so the settings can say how old one is: these accumulate, and a platform that has
+ * since changed its markup makes yesterday's plan worse than nothing.
+ */
+export const CustomActionSchema = z.object({
+	id: z.string().min(1),
+	label: z.string().min(1).max(60),
+	platform: PlatformSchema,
+	plan: ActionPlanSchema,
+	createdAt: z.iso.datetime({ offset: true })
+});
+export type CustomAction = z.infer<typeof CustomActionSchema>;
+
 export const AppSettingsSchema = z.object({
 	theme: AppThemeSchema,
 	language: LanguageSchema,
@@ -89,6 +180,11 @@ export const AppSettingsSchema = z.object({
 	 * Empty means the built-in behaviour — see `$lib/engine/config.ts`.
 	 */
 	engineScript: z.string(),
+	/** Empty means whatever `assistant.getSources` reports for the chosen provider. */
+	assistantModel: z.string(),
+	assistantEffort: AssistantEffortSchema,
+	/** Scripts the assistant wrote that the user kept. Shown in each platform's action panel. */
+	customActions: z.array(CustomActionSchema),
 	timeouts: TimeoutSettingsSchema
 });
 export type AppSettings = z.infer<typeof AppSettingsSchema>;
@@ -115,9 +211,6 @@ export const AssistantSourcesSchema = z.object({
 	providers: z.array(AssistantProviderSchema)
 });
 export type AssistantSources = z.infer<typeof AssistantSourcesSchema>;
-
-export const PlatformSchema = z.enum(['x', 'youtube']);
-export type Platform = z.infer<typeof PlatformSchema>;
 
 export const XActionSchema = z.enum([
 	'showPosts',

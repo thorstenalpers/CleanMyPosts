@@ -51,6 +51,8 @@ pub async fn ask(app: AppHandle, params: &Value) -> Result<Value> {
     let current = settings(&app);
     let source = current.assistant_source;
     let cli_path = current.assistant_cli_path;
+    let model = current.assistant_model;
+    let effort = current.assistant_effort;
 
     // What left the machine, in the log that stays on it. The prompt itself only under
     // verbose logging: it carries the whole log again, and one copy of that is enough for
@@ -73,7 +75,7 @@ pub async fn ask(app: AppHandle, params: &Value) -> Result<Value> {
     );
 
     let text = tauri::async_runtime::spawn_blocking(move || {
-        assistant::ask(&source, Some(&cli_path), &prompt)
+        assistant::ask(&source, Some(&cli_path), &prompt, &model, &effort)
     })
     .await
     .map_err(|error| Error::Message(error.to_string()))??;

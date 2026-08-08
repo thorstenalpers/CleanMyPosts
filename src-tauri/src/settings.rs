@@ -26,6 +26,29 @@ fn yes() -> bool {
     true
 }
 
+/// An empty string would fail `AssistantEffortSchema` on the UI side and take the whole
+/// settings call with it, so a file written before this existed reads as the middle setting.
+fn medium() -> String {
+    "medium".into()
+}
+
+/// A plan the assistant wrote and the user kept, shown as a row in that platform's action
+/// panel. Kept in step with `CustomActionSchema` in `src/lib/bridge/contract.ts`.
+///
+/// The plan itself stays an opaque value here. The host only stores and hands it back; what
+/// a step means is decided by `ActionPlanSchema` on the way in and by the engine on the way
+/// out, and a second copy of that vocabulary in Rust would be one more thing to keep in step
+/// for no one's benefit.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CustomAction {
+    pub id: String,
+    pub label: String,
+    pub platform: String,
+    pub plan: serde_json::Value,
+    pub created_at: String,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AppSettings {
@@ -63,6 +86,13 @@ pub struct AppSettings {
     /// action. Empty means the engine's built-in configuration.
     #[serde(default)]
     pub engine_script: String,
+    /// Empty means the model `assistant::providers` names for the chosen source.
+    #[serde(default)]
+    pub assistant_model: String,
+    #[serde(default = "medium")]
+    pub assistant_effort: String,
+    #[serde(default)]
+    pub custom_actions: Vec<CustomAction>,
     pub timeouts: TimeoutSettings,
 }
 
@@ -86,6 +116,9 @@ impl Default for AppSettings {
             assistant_source: crate::assistant::LOCAL.into(),
             assistant_cli_path: String::new(),
             engine_script: String::new(),
+            assistant_model: String::new(),
+            assistant_effort: medium(),
+            custom_actions: Vec::new(),
             timeouts: TimeoutSettings::default(),
         }
     }

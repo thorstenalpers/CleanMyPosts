@@ -342,13 +342,20 @@ export const BridgeMethods = {
 	'site.reload': { params: z.object({ platform: PlatformSchema }), result: voidSchema },
 	/** Brings a platform's webview forward without navigating it — each platform keeps its own page for the whole session. */
 	'site.show': { params: z.object({ platform: PlatformSchema }), result: voidSchema },
-	/** Where the site webview sits: right of the app's own columns, below its header bar. */
+	/** Where the site webview sits: beside the app's own columns, below its header bar. */
 	'layout.setSiteInset': {
 		params: z.object({
+			/**
+			 * How wide the app's own columns are — not which edge they are against. `rtl` decides
+			 * that, and the host has no other way to know: it places the webview in physical
+			 * pixels and cannot see the `dir` on `<html>`.
+			 */
 			left: z.number().positive(),
 			top: z.number().nonnegative(),
 			/** Room kept below the platform for the status bar. The site is shortened, not covered. */
-			bottom: z.number().nonnegative()
+			bottom: z.number().nonnegative(),
+			/** True while the shell is mirrored, which puts those columns on the right. */
+			rtl: z.boolean()
 		}),
 		result: voidSchema
 	},

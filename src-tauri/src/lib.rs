@@ -43,6 +43,12 @@ static SITE_TOP: AtomicU32 = AtomicU32::new(DEFAULT_HEADER_HEIGHT);
 /// What the app keeps for itself below the platform: the status bar. The site is shortened
 /// rather than covered — one webview cannot paint over another, so the room has to be real.
 static SITE_BOTTOM: AtomicU32 = AtomicU32::new(0);
+/// Which side of the window the app's own columns are on.
+///
+/// The chrome mirrors itself for Arabic — one `dir="rtl"` on `<html>` and the whole shell
+/// swaps sides. The host cannot see that: it lays the site webview out in physical pixels,
+/// and without being told it kept putting it where the sidebar now was, covering it whole.
+static SITE_RTL: AtomicBool = AtomicBool::new(false);
 /// Hidden until the UI says otherwise: the app opens on Overview, and a site webview
 /// flashing over it before the first layout call would be the first thing the user sees.
 static SITE_HIDDEN: AtomicBool = AtomicBool::new(true);
@@ -262,11 +268,16 @@ async fn bridge_call(app: tauri::AppHandle, method: String, params: Value) -> er
     commands::dispatch(app, method, params).await
 }
 
-/// Where the site webview starts: right of the app's own columns, below its header bar.
-pub fn set_site_inset(app: &tauri::AppHandle, left: u32, top: u32, bottom: u32) {
-    CHROME_WIDTH.store(left.max(1), Ordering::Relaxed);
+/// Where the site webview starts: beside the app's own columns, below its header bar.
+///
+/// `chrome` is how wide those columns are, not which edge they sit against — `rtl` decides
+/// that, because the shell mirrors for a right-to-left language and the host has no other way
+/// to know.
+pub fn set_site_inset(app: &tauri::AppHandle, chrome: u32, top: u32, bottom: u32, rtl: bool) {
+    CHROME_WIDTH.store(chrome.max(1), Ordering::Relaxed);
     SITE_TOP.store(top, Ordering::Relaxed);
     SITE_BOTTOM.store(bottom, Ordering::Relaxed);
+    SITE_RTL.store(rtl, Ordering::Relaxed);
     layout_webviews(app);
 }
 
@@ -320,8 +331,16 @@ fn layout_webviews(app: &tauri::AppHandle) {
         // Parked off-screen rather than resized to zero: a zero-sized webview stops
         // laying out, which would reset the platform page's scroll position every time
         // the user glances at Settings — or at the other platform.
+        // Mirrored, the app's columns are against the right edge and the site belongs at
+        // zero. Getting this wrong does not look like a layout slip: the site covers the
+        // sidebar completely and the app appears to have lost its menu.
         let showing = !site_hidden && label == active;
-        let x = if showing { site_x } else { size.width };
+        let resting = if SITE_RTL.load(Ordering::Relaxed) {
+            0.0
+        } else {
+            site_x
+        };
+        let x = if showing { resting } else { size.width };
         let _ = site.set_size(LogicalSize::new(site_width, site_height));
         let _ = site.set_position(LogicalPosition::new(x, site_y));
     }

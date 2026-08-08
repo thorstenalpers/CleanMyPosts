@@ -632,6 +632,7 @@ pub fn set_site_inset(app: &AppHandle, params: &Value) -> Result<Value> {
         read("left", crate::DEFAULT_CHROME_WIDTH),
         read("top", crate::DEFAULT_HEADER_HEIGHT),
         read("bottom", 0),
+        params.get("rtl").and_then(Value::as_bool).unwrap_or(false),
     );
     Ok(Value::Null)
 }

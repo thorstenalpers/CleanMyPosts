@@ -360,7 +360,11 @@
 				(panelVisible ? ACTION_RAIL_WIDTH : 0) +
 				(assistantVisible ? ASSISTANT_PANEL_WIDTH : 0),
 			top: HEADER_HEIGHT,
-			bottom: railPlatform ? STATUS_BAR_HEIGHT : 0
+			bottom: railPlatform ? STATUS_BAR_HEIGHT : 0,
+			// Arabic mirrors the shell, which moves every column above to the other edge. The
+			// host lays the site out in physical pixels and cannot see that, so it has to be
+			// told — otherwise it covers the sidebar with the platform and the menu is gone.
+			rtl: i18n.isRtl
 		});
 	});
 

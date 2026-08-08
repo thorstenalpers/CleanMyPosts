@@ -332,6 +332,15 @@ describe('app layout', () => {
  * the same reason every dialog in this app pushes the platform off screen first.
  */
 describe('the assistant panel', () => {
+	// Its own reset: this block sits outside the one above, and the width a previous test left
+	// behind would fold the sidebar and change the number under test.
+	beforeEach(() => {
+		host.calls.length = 0;
+		host.settingsPatch = {};
+		url.pathname = '/';
+		window.innerWidth = 1200;
+	});
+
 	it('opens beside the platform from the header, and closes on its own button', async () => {
 		url.pathname = '/x';
 		await renderLayout();
@@ -384,5 +393,87 @@ describe('the assistant panel', () => {
 		await waitFor(() =>
 			expect(screen.queryByRole('complementary', { name: /assistant/i })).not.toBeInTheDocument()
 		);
+	});
+});
+
+/**
+ * Arabic mirrors the whole shell with one `dir` on `<html>`, which puts every column the app
+ * owns against the other edge. The host places the platform webview in physical pixels and
+ * cannot see that, so it has to be told. Getting it wrong does not look like a layout slip:
+ * the platform covers the sidebar and the app appears to have lost its menu — which is only
+ * visible on X and YouTube, because everywhere else the platform is hidden.
+ */
+describe('a mirrored shell', () => {
+	// Its own reset: this block sits outside the one above, and the width a previous test left
+	// behind would fold the sidebar and change the number under test.
+	beforeEach(() => {
+		host.calls.length = 0;
+		host.settingsPatch = {};
+		url.pathname = '/';
+		window.innerWidth = 1200;
+	});
+
+	function speak(language: string) {
+		host.emit?.({
+			event: 'settingsChanged',
+			payload: {
+				theme: 'Default',
+				language,
+				showIntro: true,
+				showLogs: true,
+				showX: true,
+				showYouTube: true,
+				confirmDeletion: true,
+				notifications: true,
+				debugLogging: false,
+				autoConsent: true,
+				persistSession: true,
+				checkUpdatesOnStart: true,
+				themePreset: 'default',
+				showAssistant: true,
+				assistantSource: 'claude-code',
+				assistantCliPath: '',
+				engineScript: '',
+				assistantModel: '',
+				assistantEffort: 'medium',
+				customActions: [],
+				timeouts: {
+					waitAfterDelete: 500,
+					waitBetweenRetryDeleteAttempts: 500,
+					waitAfterDocumentLoad: 3000
+				}
+			}
+		});
+	}
+
+	function lastInset() {
+		return host.calls
+			.filter((call) => call.method === 'layout.setSiteInset')
+			.map((call) => call.params as { left: number; rtl: boolean })
+			.pop();
+	}
+
+	it('tells the host which side its columns are on', async () => {
+		url.pathname = '/x';
+		await renderLayout();
+		await waitFor(() => expect(lastInset()).toBeDefined());
+		expect(lastInset()?.rtl).toBe(false);
+
+		speak('ar');
+
+		await waitFor(() => expect(lastInset()?.rtl).toBe(true));
+		// The width is the same either way — it is the edge that moved, not the columns.
+		expect(lastInset()?.left).toBe(240 + 224);
+	});
+
+	it('says so again when the language goes back', async () => {
+		url.pathname = '/x';
+		await renderLayout();
+		speak('ar');
+		await waitFor(() => expect(lastInset()?.rtl).toBe(true));
+
+		speak('de');
+
+		await waitFor(() => expect(lastInset()?.rtl).toBe(false));
 	});
 });

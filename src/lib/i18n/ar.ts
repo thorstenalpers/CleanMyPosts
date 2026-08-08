@@ -30,6 +30,7 @@ export const ar: Record<MessageKey, string> = {
 	'run.allDone': 'تم حذف {count} عنصرًا إجمالًا.',
 	'run.allPartly': 'تم حذف {count} عنصرًا، وفشلت {failed} قوائم.',
 	'action.close': 'إغلاق إجراءات {platform}',
+	'action.open': 'فتح إجراءات {platform}',
 
 	'group.posts': 'المنشورات',
 	'group.replies': 'الردود',

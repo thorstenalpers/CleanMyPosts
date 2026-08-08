@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount, type Snippet } from 'svelte';
+	import { onMount, untrack, type Snippet } from 'svelte';
 	import { page } from '$app/state';
 	import { goto, preloadCode } from '$app/navigation';
 	import { resolve } from '$app/paths';
@@ -26,7 +26,9 @@
 		HEADER_HEIGHT,
 		STATUS_BAR_HEIGHT,
 		SIDEBAR_COLLAPSED_WIDTH,
-		SIDEBAR_EXPANDED_WIDTH
+		SIDEBAR_EXPANDED_WIDTH,
+		SIDEBAR_FOLD_WIDTH,
+		PANEL_FOLD_WIDTH
 	} from '$lib/layout';
 	import { applyPreset, applyThemeChange } from '$lib/theme/preset';
 	import { i18n, t } from '$lib/i18n/index.svelte';
@@ -84,6 +86,12 @@
 	const routeKey = $derived((page.url.pathname.split('/')[1] || 'overview') as NavKey);
 	let sidebarExpanded = $state(true);
 
+	// Zero until the browser reports one: the shell is prerendered, and a width that does not
+	// exist yet is not a small window — folding on it would open the app half-collapsed.
+	let windowWidth = $state(0);
+	const sidebarTooNarrow = $derived(windowWidth > 0 && windowWidth < SIDEBAR_FOLD_WIDTH);
+	const panelTooNarrow = $derived(windowWidth > 0 && windowWidth < PANEL_FOLD_WIDTH);
+
 	// Set on the click, cleared when the router arrives. `goto` only resolves once the target
 	// page's module is in, and on a cold start that module is still being fetched — waiting
 	// for it before moving the highlight is what made the first click on each page feel like
@@ -114,7 +122,35 @@
 	let deleteAllFor = $state<Platform | undefined>(undefined);
 
 	let panelClosedByUser = $state(false);
+	let panelFoldedByWidth = $state(false);
 	let shell = $state<HTMLElement | undefined>(undefined);
+
+	// Folded by the window rather than by the user, and remembered as such: a deliberate toggle
+	// while the window is small has to stand, and the state the user left the sidebar in has to
+	// come back once there is room for it again. Read outside the effect's dependencies so it
+	// only ever fires on the crossing — tracking `sidebarExpanded` here would undo every manual
+	// click on the toggle for as long as the window stayed small.
+	let sidebarFoldedByWidth = false;
+	$effect(() => {
+		const narrow = sidebarTooNarrow;
+		untrack(() => {
+			if (narrow) {
+				sidebarFoldedByWidth = sidebarExpanded;
+				sidebarExpanded = false;
+			} else if (sidebarFoldedByWidth) {
+				sidebarFoldedByWidth = false;
+				sidebarExpanded = true;
+			}
+		});
+	});
+
+	// Its own flag rather than the user's: the ✕ still means "I do not want these", and a window
+	// that grows back has no business overruling that. Untracked for the same reason as above —
+	// the header's way back in must survive until the width crosses again.
+	$effect(() => {
+		const narrow = panelTooNarrow;
+		untrack(() => (panelFoldedByWidth = narrow));
+	});
 
 	function onNavigate(key: NavKey): void {
 		const platform = key === 'x' || key === 'youtube' ? key : undefined;
@@ -138,7 +174,12 @@
 			// the user on a page with nothing to do.
 			panelClosedByUser = false;
 			pendingKey = platform;
-			if (options?.deleteAll) deleteAllFor = platform;
+			// The panel is what answers the shortcut, so a window that folded it away has to give
+			// it back — otherwise the click from the overview lands on nothing at all.
+			if (options?.deleteAll) {
+				panelFoldedByWidth = false;
+				deleteAllFor = platform;
+			}
 			void goto(resolve(ROUTES[platform]));
 		}
 	});
@@ -284,7 +325,7 @@
 	);
 	// Open whenever a platform is up, unless the user closed it themselves. Derived rather
 	// than stored, so nothing else in the app can flip it in passing.
-	const panelVisible = $derived(!!railPlatform && !panelClosedByUser);
+	const panelVisible = $derived(!!railPlatform && !panelClosedByUser && !panelFoldedByWidth);
 
 	/** For the app's own pages that is the route; for a platform it is the page's real address. */
 	const location = $derived(
@@ -338,6 +379,8 @@
      it removes on the next animation frame. This app parks its webview off-screen, where
      frames stop coming, so that rule can survive and kill every transition in the app.
      `applyThemeChange` does the same job with a timer that always fires. -->
+<svelte:window bind:innerWidth={windowWidth} />
+
 <ModeWatcher disableTransitions={false} />
 <!-- Bottom left, and not by preference: while X or YouTube is showing, this page only owns
      the sidebar column and a 44px strip above the site webview. A toast on the right lands
@@ -394,6 +437,12 @@
 					{location}
 					{settingsStore}
 					onMenuOpenChange={(open: boolean) => (headerMenuOpen = open)}
+					onOpenActions={railPlatform && !panelVisible
+						? () => {
+								panelClosedByUser = false;
+								panelFoldedByWidth = false;
+							}
+						: undefined}
 				/>
 
 				<!-- Fades out before the host swaps in the site webview, and back on the way home. -->

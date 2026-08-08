@@ -114,6 +114,38 @@ pub fn navigate(app: &AppHandle, params: &Value) -> Result<Value> {
     Ok(json!({ "ok": true }))
 }
 
+/// Keeps the page shielded across the wait that follows a navigation.
+///
+/// The run has already started as far as the user is concerned — the stop button is up and
+/// the status bar is counting — but the engine has not been handed the page yet, and until it
+/// is, the platform's own list is on screen and takes every click. `eval` cannot be aimed at
+/// a document that is still on its way, so the call is repeated rather than timed: the first
+/// one to land after the navigation arms the new page, and `run` keeps it armed from there.
+///
+/// Scoped so the `Webview` is dropped before the next await — one is not `Send`, and holding
+/// it across a suspension point makes this whole command un-spawnable.
+async fn shield_while_loading(app: &AppHandle, platform: &str, total_ms: u64) {
+    const SLICE_MS: u64 = 150;
+    let mut elapsed = 0;
+    while elapsed < total_ms {
+        let slice = SLICE_MS.min(total_ms - elapsed);
+        tokio::time::sleep(std::time::Duration::from_millis(slice)).await;
+        elapsed += slice;
+        {
+            if let Some(site) = app.get_webview(crate::site_webview_label(platform)) {
+                let _ = site.eval("window.__cmp?.shield(true);");
+            }
+        }
+    }
+}
+
+/// Gives the page back when the run never reached the engine that would have done it itself.
+fn unshield(app: &AppHandle, platform: &str) {
+    if let Some(site) = app.get_webview(crate::site_webview_label(platform)) {
+        let _ = site.eval("window.__cmp?.shield(false);");
+    }
+}
+
 pub async fn run_action(app: AppHandle, params: &Value) -> Result<Value> {
     let request_id = params
         .get("requestId")
@@ -156,8 +188,11 @@ pub async fn run_action(app: AppHandle, params: &Value) -> Result<Value> {
             let site = app
                 .get_webview(crate::site_webview_label(platform))
                 .ok_or_else(|| Error::Site("site webview is gone".into()))?;
+            // Shielded before it leaves, for the case where it does not: an action repeated on
+            // the page it already needs navigates nowhere and would otherwise sit there live.
             site.eval(format!(
-                "if (window.location.href !== {u}) window.location.assign({u});",
+                "window.__cmp?.shield(true); \
+                 if (window.location.href !== {u}) window.location.assign({u});",
                 u = json!(url)
             ))?;
         }
@@ -169,7 +204,7 @@ pub async fn run_action(app: AppHandle, params: &Value) -> Result<Value> {
         // `eval` has no return channel, so the wait is unconditional. It is the same one the
         // settings already expose for a page load, and nothing is lost when the page was
         // already open: it is repainted long before this elapses.
-        tokio::time::sleep(std::time::Duration::from_millis(wait_after_load)).await;
+        shield_while_loading(&app, platform, wait_after_load).await;
     }
 
     let (tx, rx) = oneshot::channel();
@@ -226,6 +261,8 @@ pub async fn run_action(app: AppHandle, params: &Value) -> Result<Value> {
             .lock()
             .expect("runs mutex")
             .remove(&request_id);
+        // Nothing is running, so nothing will lift this on its own.
+        unshield(&app, platform);
         return Err(error);
     }
 
@@ -251,6 +288,7 @@ pub async fn run_action(app: AppHandle, params: &Value) -> Result<Value> {
         }
         Err(_) => {
             crate::bridge::log(&app, "warning", format!("{platform}: the {what} run ended"));
+            unshield(&app, platform);
             Err(Error::Abandoned)
         }
     }

@@ -36,6 +36,7 @@ export const en = {
 	'run.allDone': '{count} items deleted in total.',
 	'run.allPartly': '{count} items deleted, {failed} lists failed.',
 	'action.close': 'Close {platform} actions',
+	'action.open': 'Open {platform} actions',
 
 	'group.posts': 'Posts',
 	'group.replies': 'Replies',

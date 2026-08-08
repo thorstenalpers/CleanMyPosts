@@ -28,6 +28,7 @@ export const zh: Record<MessageKey, string> = {
 	'run.allDone': '共删除 {count} 项。',
 	'run.allPartly': '已删除 {count} 项，{failed} 个列表失败。',
 	'action.close': '关闭 {platform} 操作',
+	'action.open': '打开 {platform} 操作',
 
 	'group.posts': '帖子',
 	'group.replies': '回复',

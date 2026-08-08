@@ -78,6 +78,18 @@ describe('window.__cmp', () => {
 		await vi.waitFor(() => expect(shielded()).toBe(false));
 	}, 10000);
 
+	// The host arms it while it waits for a list page to settle: the stop button is already up
+	// and the counter already running, but the engine has not been handed the page yet.
+	it('lets the host cover the page before a run of its own has started', () => {
+		const shielded = () => !!document.body.querySelector('div[style*="not-allowed"]');
+
+		window.__cmp!.shield(true);
+		expect(shielded()).toBe(true);
+
+		window.__cmp!.shield(false);
+		expect(shielded()).toBe(false);
+	});
+
 	it('getUserName and getLoginStatus are exposed', () => {
 		expect(typeof window.__cmp!.getUserName()).toBe('string');
 		expect(typeof window.__cmp!.getLoginStatus()).toBe('string');

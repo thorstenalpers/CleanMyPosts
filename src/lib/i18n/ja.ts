@@ -29,6 +29,7 @@ export const ja: Record<MessageKey, string> = {
 	'run.allDone': '合計 {count} 件を削除しました。',
 	'run.allPartly': '{count} 件を削除、{failed} 件のリストが失敗しました。',
 	'action.close': '{platform} の操作を閉じる',
+	'action.open': '{platform} の操作を開く',
 
 	'group.posts': 'ポスト',
 	'group.replies': '返信',

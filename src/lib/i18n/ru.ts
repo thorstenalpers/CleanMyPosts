@@ -29,6 +29,7 @@ export const ru: Record<MessageKey, string> = {
 	'run.allDone': 'Всего удалено: {count}.',
 	'run.allPartly': 'Удалено {count}, списков с ошибкой: {failed}.',
 	'action.close': 'Закрыть действия {platform}',
+	'action.open': 'Открыть действия {platform}',
 
 	'group.posts': 'Посты',
 	'group.replies': 'Ответы',

@@ -50,6 +50,7 @@ const api: CmpApi = {
 
 	getUserName,
 	toast: showToast,
+	shield: (on) => (on ? showShield() : hideShield()),
 
 	// The two platforms are told apart by their own host: this file is one script, injected
 	// into both, and answering an X page with YouTube's avatar heuristic reports nothing.

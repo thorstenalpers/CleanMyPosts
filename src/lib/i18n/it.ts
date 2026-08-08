@@ -30,6 +30,7 @@ export const it: Record<MessageKey, string> = {
 	'run.allDone': '{count} elementi eliminati in totale.',
 	'run.allPartly': '{count} elementi eliminati, {failed} elenchi non riusciti.',
 	'action.close': 'Chiudi le azioni di {platform}',
+	'action.open': 'Apri le azioni di {platform}',
 
 	'group.posts': 'Post',
 	'group.replies': 'Risposte',

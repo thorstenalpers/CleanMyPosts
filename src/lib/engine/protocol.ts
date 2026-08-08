@@ -62,6 +62,11 @@ export interface CmpApi {
 	/** Shows a result on the platform page — the only surface the app can reach while it shows. */
 	toast(message: string, kind: 'success' | 'info' | 'error'): void;
 	/**
+	 * Takes the page away from the user, or gives it back. `run` does this by itself; the host
+	 * calls it as well, for the seconds between opening a list and starting on it.
+	 */
+	shield(on: boolean): void;
+	/**
 	 * What the engine looks for, live and writable. The host evaluates the user's own patch
 	 * against this before every run — see `$lib/engine/config.ts`.
 	 */

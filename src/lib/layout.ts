@@ -12,3 +12,12 @@ export const ACTION_RAIL_WIDTH = 224;
 export const HEADER_HEIGHT = 44;
 /** In step with the status bar's `h-9`. The host shortens the site webview by this much. */
 export const STATUS_BAR_HEIGHT = 36;
+
+/**
+ * Where the shell starts handing its columns back to the page. Both are the width of the
+ * whole window, not of the content area: the chrome costs the same 240 + 224 whatever the
+ * window does, and on a small one that is most of it.
+ */
+export const SIDEBAR_FOLD_WIDTH = 1000;
+/** Below this even the rail and the actions together leave the site too little to be read. */
+export const PANEL_FOLD_WIDTH = 780;

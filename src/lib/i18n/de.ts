@@ -30,6 +30,7 @@ export const de: Record<MessageKey, string> = {
 	'run.allDone': 'Insgesamt {count} Einträge gelöscht.',
 	'run.allPartly': '{count} Einträge gelöscht, {failed} Listen fehlgeschlagen.',
 	'action.close': 'Aktionen für {platform} schließen',
+	'action.open': 'Aktionen für {platform} öffnen',
 
 	'group.posts': 'Beiträge',
 	'group.replies': 'Antworten',

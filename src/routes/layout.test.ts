@@ -90,6 +90,12 @@ function hideYouTube() {
 	});
 }
 
+/** The shell reads the window, so that is what a test has to move. */
+function resizeTo(width: number) {
+	window.innerWidth = width;
+	return fireEvent(window, new Event('resize'));
+}
+
 async function renderLayout() {
 	render(Layout, { children: createRawSnippet(() => ({ render: () => '<div></div>' })) });
 	await waitFor(() => expect(screen.getByRole('button', { name: 'Settings' })).toBeInTheDocument());
@@ -102,6 +108,7 @@ describe('app layout', () => {
 		host.calls.length = 0;
 		host.settingsPatch = {};
 		url.pathname = '/';
+		window.innerWidth = 1200;
 	});
 
 	it('asks the release feed for a newer version at start-up', async () => {
@@ -253,6 +260,58 @@ describe('app layout', () => {
 		await waitFor(() =>
 			expect(host.calls).toContainEqual({ method: 'site.hide', params: { hide: true } })
 		);
+	});
+
+	it('folds the sidebar to its rail on a window with no room for it', async () => {
+		await renderLayout();
+		expect(screen.getByRole('button', { name: 'Collapse menu' })).toBeInTheDocument();
+
+		await resizeTo(900);
+
+		await waitFor(() =>
+			expect(screen.getByRole('button', { name: 'Expand menu' })).toBeInTheDocument()
+		);
+	});
+
+	it('gives the sidebar back the moment there is room for it again', async () => {
+		await renderLayout();
+		await resizeTo(900);
+		await waitFor(() => expect(screen.getByRole('button', { name: 'Expand menu' })).toBeTruthy());
+
+		await resizeTo(1200);
+
+		await waitFor(() =>
+			expect(screen.getByRole('button', { name: 'Collapse menu' })).toBeInTheDocument()
+		);
+	});
+
+	// The window folds it, it does not hold it shut: someone who wants the labels on a small
+	// window is asking for them, and the toggle has to answer.
+	it('leaves the toggle working while the window stays narrow', async () => {
+		await renderLayout();
+		await resizeTo(900);
+		await waitFor(() => expect(screen.getByRole('button', { name: 'Expand menu' })).toBeTruthy());
+
+		await fireEvent.click(screen.getByRole('button', { name: 'Expand menu' }));
+
+		expect(screen.getByRole('button', { name: 'Collapse menu' })).toBeInTheDocument();
+	});
+
+	it('takes the actions away on a window too narrow for the column, and keeps a way back', async () => {
+		url.pathname = '/x';
+		await renderLayout();
+		await screen.findByRole('complementary', { name: 'X actions' });
+
+		await resizeTo(700);
+
+		await waitFor(() =>
+			expect(screen.queryByRole('complementary', { name: 'X actions' })).not.toBeInTheDocument()
+		);
+
+		// The panel's own ✕ went with it, so the header carries the way in.
+		await fireEvent.click(screen.getByRole('button', { name: 'Open X actions' }));
+
+		expect(await screen.findByRole('complementary', { name: 'X actions' })).toBeInTheDocument();
 	});
 
 	it('hides the site on the local pages so they are not covered by it', async () => {

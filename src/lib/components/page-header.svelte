@@ -3,6 +3,7 @@
 	import { t } from '$lib/i18n/index.svelte';
 	import LanguageMenu from '$lib/components/language-menu.svelte';
 	import ModeToggle from '$lib/components/mode-toggle.svelte';
+	import PanelLeftIcon from '@lucide/svelte/icons/panel-left';
 	import type { SettingsStore } from '$lib/stores/settings.svelte';
 
 	interface Props {
@@ -19,6 +20,12 @@
 		settingsStore: SettingsStore;
 		/** Passed along: a menu in this bar opens over the platform webview, not under it. */
 		onMenuOpenChange?: (open: boolean) => void;
+		/**
+		 * Given only while a platform is up without its actions. Opening only — the panel's own
+		 * ✕ is what closes it, and a narrow window that folded the panel away took that ✕ with
+		 * it, so this is the way back.
+		 */
+		onOpenActions?: () => void;
 	}
 
 	let {
@@ -27,11 +34,23 @@
 		location,
 		iconOnly = false,
 		settingsStore,
-		onMenuOpenChange
+		onMenuOpenChange,
+		onOpenActions
 	}: Props = $props();
 </script>
 
 <header class="flex h-11 shrink-0 items-center gap-2 border-b bg-background px-3">
+	{#if onOpenActions}
+		<button
+			type="button"
+			aria-label={t('action.open', { platform: title })}
+			onclick={onOpenActions}
+			class="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-md text-muted-foreground transition-colors duration-150 hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+		>
+			<PanelLeftIcon class="size-4" />
+		</button>
+	{/if}
+
 	{#if icon}
 		{@const Icon = icon}
 		<Icon class="size-4 shrink-0 {iconOnly ? 'text-foreground' : 'text-muted-foreground'}" />

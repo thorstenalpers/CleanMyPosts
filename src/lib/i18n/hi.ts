@@ -30,6 +30,7 @@ export const hi: Record<MessageKey, string> = {
 	'run.allDone': 'कुल {count} आइटम हटाए गए।',
 	'run.allPartly': '{count} आइटम हटाए गए, {failed} सूचियाँ विफल रहीं।',
 	'action.close': '{platform} की क्रियाएँ बंद करें',
+	'action.open': '{platform} की क्रियाएँ खोलें',
 
 	'group.posts': 'पोस्ट',
 	'group.replies': 'जवाब',

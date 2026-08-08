@@ -32,6 +32,13 @@ export const ar: Record<MessageKey, string> = {
 	'action.close': 'إغلاق إجراءات {platform}',
 	'action.open': 'فتح إجراءات {platform}',
 
+	'assistant.plan.save': 'احتفظ كإجراء',
+	'assistant.plan.name': 'اسم هذا الإجراء',
+	'assistant.plan.keep': 'احتفظ',
+	'assistant.plan.saved': 'تم الحفظ — {label} أصبح ضمن الإجراءات',
+	'panel.saved': 'الإجراءات المحفوظة',
+	'confirm.saved.description':
+		'ينفذ {label}، وهي خطة كتبها المساعد لـ {platform} كما بدت حينها. لا يمكن التراجع عن ذلك.',
 	'assistant.plan.count': 'تحقق أولاً',
 	'assistant.plan.run': 'شغّل مرة واحدة',
 	'assistant.plan.matches': '{count} مطابقة في هذه الصفحة',

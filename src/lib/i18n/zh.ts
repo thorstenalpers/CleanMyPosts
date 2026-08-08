@@ -30,6 +30,13 @@ export const zh: Record<MessageKey, string> = {
 	'action.close': '关闭 {platform} 操作',
 	'action.open': '打开 {platform} 操作',
 
+	'assistant.plan.save': '保存为操作',
+	'assistant.plan.name': '为此操作命名',
+	'assistant.plan.keep': '保存',
+	'assistant.plan.saved': '已保存 — {label} 现在在操作列表中',
+	'panel.saved': '已保存的操作',
+	'confirm.saved.description':
+		'执行 {label}，这是助手当时针对 {platform} 写的计划。此操作无法撤销。',
 	'assistant.plan.count': '先检查',
 	'assistant.plan.run': '运行一次',
 	'assistant.plan.matches': '本页有 {count} 处匹配',

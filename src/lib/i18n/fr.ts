@@ -32,6 +32,13 @@ export const fr: Record<MessageKey, string> = {
 	'action.close': 'Fermer les actions {platform}',
 	'action.open': 'Ouvrir les actions {platform}',
 
+	'assistant.plan.save': 'Garder comme action',
+	'assistant.plan.name': 'Nom de cette action',
+	'assistant.plan.keep': 'Garder',
+	'assistant.plan.saved': 'Enregistré — {label} figure maintenant dans les actions',
+	'panel.saved': 'Actions enregistrées',
+	'confirm.saved.description':
+		'Exécute {label}, un plan écrit par l’assistant pour {platform} telle qu’elle était alors. C’est irréversible.',
 	'assistant.plan.count': 'Vérifier d’abord',
 	'assistant.plan.run': 'Exécuter une fois',
 	'assistant.plan.matches': '{count} correspondances sur cette page',

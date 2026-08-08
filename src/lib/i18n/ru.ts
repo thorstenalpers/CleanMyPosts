@@ -31,6 +31,13 @@ export const ru: Record<MessageKey, string> = {
 	'action.close': 'Закрыть действия {platform}',
 	'action.open': 'Открыть действия {platform}',
 
+	'assistant.plan.save': 'Сохранить как действие',
+	'assistant.plan.name': 'Название действия',
+	'assistant.plan.keep': 'Сохранить',
+	'assistant.plan.saved': 'Сохранено — {label} теперь среди действий',
+	'panel.saved': 'Сохранённые действия',
+	'confirm.saved.description':
+		'Выполняет {label} — план, написанный ассистентом для {platform} в том виде, в каком она была тогда. Отменить нельзя.',
 	'assistant.plan.count': 'Сначала проверить',
 	'assistant.plan.run': 'Выполнить один раз',
 	'assistant.plan.matches': 'Совпадений на этой странице: {count}',

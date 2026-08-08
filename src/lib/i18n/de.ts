@@ -32,6 +32,13 @@ export const de: Record<MessageKey, string> = {
 	'action.close': 'Aktionen für {platform} schließen',
 	'action.open': 'Aktionen für {platform} öffnen',
 
+	'assistant.plan.save': 'Als Aktion behalten',
+	'assistant.plan.name': 'Name für diese Aktion',
+	'assistant.plan.keep': 'Behalten',
+	'assistant.plan.saved': 'Gespeichert — {label} steht jetzt bei den Aktionen',
+	'panel.saved': 'Gespeicherte Aktionen',
+	'confirm.saved.description':
+		'Führt {label} aus — ein Plan, den der Assistent gegen {platform} geschrieben hat, so wie die Seite damals aussah. Das lässt sich nicht rückgängig machen.',
 	'assistant.plan.count': 'Erst prüfen',
 	'assistant.plan.run': 'Einmal ausführen',
 	'assistant.plan.matches': '{count} Treffer auf dieser Seite',

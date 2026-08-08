@@ -2,6 +2,7 @@
 	import type { BridgeClient } from '$lib/bridge/client';
 	import type { Platform } from '$lib/bridge/contract';
 	import type { ActionGroupDef } from '$lib/actions';
+	import type { CustomAction } from '$lib/bridge/contract';
 	import type { SettingsStore } from '$lib/stores/settings.svelte';
 	import type { ActionRunner } from '$lib/stores/action-runner.svelte';
 	import { t } from '$lib/i18n/index.svelte';
@@ -9,6 +10,8 @@
 	import { ConfirmDialog } from '$lib/components/ui/alert-dialog';
 	import XIcon from '@lucide/svelte/icons/x';
 	import Trash2Icon from '@lucide/svelte/icons/trash-2';
+	import SparklesIcon from '@lucide/svelte/icons/sparkles';
+	import PlayIcon from '@lucide/svelte/icons/play';
 
 	interface Props {
 		bridge: BridgeClient;
@@ -44,10 +47,52 @@
 		onClose
 	}: Props = $props();
 
-	let confirmTarget = $state<ActionGroupDef | 'all' | undefined>(undefined);
+	let confirmTarget = $state<ActionGroupDef | 'all' | CustomAction | undefined>(undefined);
 	let confirmOpen = $state(false);
 
 	const enabled = $derived(loggedIn && !runner.running);
+
+	/** What the assistant wrote and the user kept, for this platform. */
+	const saved = $derived(
+		settingsStore.settings.customActions.filter((action) => action.platform === platform)
+	);
+
+	/** Told apart by the one field only a saved action has. */
+	function isCustom(target: ActionGroupDef | 'all' | CustomAction): target is CustomAction {
+		return target !== 'all' && 'plan' in target;
+	}
+
+	/**
+	 * Runs a saved plan on the page that is up.
+	 *
+	 * No navigation, unlike the built-in rows: a plan carries a selector and not an address,
+	 * and the page it was written against is the one the user was looking at when they saved it.
+	 */
+	async function runCustom(action: CustomAction): Promise<void> {
+		try {
+			const result = await runner.runPlan({
+				platform,
+				plan: action.plan,
+				timeouts: settingsStore.settings.timeouts
+			});
+			if (result.deletedCount === 0) {
+				report('info', t('run.none', { plural: action.label }));
+			} else {
+				report('success', t('run.done', { count: result.deletedCount, plural: action.label }));
+			}
+		} catch (error) {
+			report('error', error instanceof Error ? error.message : t('run.failed'));
+		}
+	}
+
+	function onCustomClick(action: CustomAction): void {
+		if (settingsStore.settings.confirmDeletion) {
+			confirmTarget = action;
+			confirmOpen = true;
+		} else {
+			void runCustom(action);
+		}
+	}
 
 	// The panel lives in the narrow chrome WebView; a confirm dialog there can only center
 	// within it, so the chrome has to take the whole window while one is open.
@@ -182,6 +227,7 @@
 	async function onConfirm(): Promise<void> {
 		confirmOpen = false;
 		if (confirmTarget === 'all') await runAll();
+		else if (confirmTarget && isCustom(confirmTarget)) await runCustom(confirmTarget);
 		else if (confirmTarget) await runDelete(confirmTarget);
 	}
 </script>
@@ -216,6 +262,32 @@
 				onDelete={() => onDeleteClick(group)}
 			/>
 		{/each}
+
+		<!-- Below the built-in lists and separated from them: these are the user's own, they can
+		     go stale on their own schedule, and "everything" below deliberately does not include
+		     them — a saved plan is not something to sweep up in a run that empties the account. -->
+		{#if saved.length > 0}
+			<p class="px-2 pt-3 pb-1 text-[11px] font-medium tracking-tight text-muted-foreground">
+				{t('panel.saved')}
+			</p>
+			{#each saved as action (action.id)}
+				<button
+					type="button"
+					disabled={!enabled}
+					onclick={() => onCustomClick(action)}
+					class="group/saved flex h-8 cursor-pointer items-center gap-2 rounded-md ps-2 pe-2 text-start
+					       transition-colors duration-150 hover:bg-muted focus-visible:ring-2
+					       focus-visible:ring-ring focus-visible:outline-none disabled:pointer-events-none
+					       disabled:opacity-40"
+				>
+					<SparklesIcon class="size-3.5 shrink-0 text-muted-foreground" />
+					<span class="flex-1 truncate text-[13px]">{action.label}</span>
+					<PlayIcon
+						class="size-3.5 shrink-0 text-muted-foreground/60 group-hover/saved:text-foreground"
+					/>
+				</button>
+			{/each}
+		{/if}
 
 		<!-- No show button: "everything" is not a page anyone can be sent to. -->
 		<button
@@ -260,16 +332,25 @@
 		bind:open={confirmOpen}
 		title={confirmTarget === 'all'
 			? t('confirm.all.title', { platform: platformLabel })
-			: t('confirm.title', { plural: t(confirmTarget.plural) })}
+			: isCustom(confirmTarget)
+				? t('confirm.title', { plural: confirmTarget.label })
+				: t('confirm.title', { plural: t(confirmTarget.plural) })}
 		description={confirmTarget === 'all'
 			? t('confirm.all.description', {
 					platform: platformLabel,
 					lists: groups.map((group) => t(group.plural)).join(', ')
 				})
-			: t('confirm.description', {
-					plural: t(confirmTarget.plural),
-					platform: platformLabel
-				})}
+			: isCustom(confirmTarget)
+				? // Named apart from the built-in wording on purpose: this one was written by a
+					// model against a page as it looked then, and it is worth saying so every time.
+					t('confirm.saved.description', {
+						label: confirmTarget.label,
+						platform: platformLabel
+					})
+				: t('confirm.description', {
+						plural: t(confirmTarget.plural),
+						platform: platformLabel
+					})}
 		confirmLabel={t('confirm.confirm')}
 		cancelLabel={t('confirm.cancel')}
 		{onConfirm}

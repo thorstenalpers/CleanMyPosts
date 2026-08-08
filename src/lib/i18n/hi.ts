@@ -32,6 +32,13 @@ export const hi: Record<MessageKey, string> = {
 	'action.close': '{platform} की क्रियाएँ बंद करें',
 	'action.open': '{platform} की क्रियाएँ खोलें',
 
+	'assistant.plan.save': 'क्रिया के रूप में रखें',
+	'assistant.plan.name': 'इस क्रिया का नाम',
+	'assistant.plan.keep': 'रखें',
+	'assistant.plan.saved': 'सहेजा गया — {label} अब क्रियाओं में है',
+	'panel.saved': 'सहेजी गई क्रियाएँ',
+	'confirm.saved.description':
+		'{label} चलाता है — एक योजना जो सहायक ने {platform} के लिए तब लिखी थी। इसे पूर्ववत नहीं किया जा सकता।',
 	'assistant.plan.count': 'पहले जाँचें',
 	'assistant.plan.run': 'एक बार चलाएँ',
 	'assistant.plan.matches': 'इस पृष्ठ पर {count} मेल',

@@ -31,6 +31,13 @@ export const ja: Record<MessageKey, string> = {
 	'action.close': '{platform} の操作を閉じる',
 	'action.open': '{platform} の操作を開く',
 
+	'assistant.plan.save': '操作として保存',
+	'assistant.plan.name': 'この操作の名前',
+	'assistant.plan.keep': '保存',
+	'assistant.plan.saved': '保存しました — {label} が操作に加わりました',
+	'panel.saved': '保存した操作',
+	'confirm.saved.description':
+		'{label} を実行します。当時の {platform} に対してアシスタントが書いたプランです。元に戻せません。',
 	'assistant.plan.count': '先に確認',
 	'assistant.plan.run': '一度実行',
 	'assistant.plan.matches': 'このページで {count} 件一致',

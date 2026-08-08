@@ -3,7 +3,7 @@
 	import type { LogStore } from '$lib/stores/log.svelte';
 	import type { SiteLoginStore } from '$lib/stores/site-login.svelte';
 	import type { ActionRunner } from '$lib/stores/action-runner.svelte';
-	import type { AppInfo, AssistantSources, Platform } from '$lib/bridge/contract';
+	import type { AppInfo, AssistantSources, CustomAction, Platform } from '$lib/bridge/contract';
 	import {
 		buildPrompt,
 		describeLog,
@@ -218,6 +218,35 @@
 		}
 	}
 
+	// Asked for rather than invented: a saved action becomes a row somebody will click months
+	// from now, and "Plan 3" is not something anyone can tell apart from "Plan 4".
+	let naming = $state(false);
+	let actionName = $state('');
+
+	/**
+	 * Keeps the plan as a row in that platform's action panel.
+	 *
+	 * Deliberately a second, named step rather than something that happens because a plan
+	 * parsed: what is being kept is a thing that will delete without being read again.
+	 */
+	function saveAsAction(): void {
+		if (!plan || !openPlatform || actionName.trim() === '') return;
+		const action: CustomAction = {
+			id: crypto.randomUUID(),
+			label: actionName.trim().slice(0, 60),
+			platform: openPlatform,
+			plan,
+			createdAt: new Date().toISOString()
+		};
+		void settingsStore.update({
+			...settingsStore.settings,
+			customActions: [...settingsStore.settings.customActions, action]
+		});
+		notify(settingsStore, 'success', t('assistant.plan.saved', { label: action.label }));
+		naming = false;
+		actionName = '';
+	}
+
 	/** Runs it for real, on the page that is open, once. Everything a run has applies. */
 	async function runOnce(): Promise<void> {
 		if (!plan || !openPlatform || trying) return;
@@ -419,6 +448,26 @@
 					{:else if tried}
 						<p class="mt-2 text-xs text-muted-foreground">{tried}</p>
 					{/if}
+
+					{#if naming && plan}
+						<form
+							class="mt-3 flex gap-2"
+							onsubmit={(event: SubmitEvent) => {
+								event.preventDefault();
+								saveAsAction();
+							}}
+						>
+							<Input
+								class="h-8 flex-1"
+								placeholder={t('assistant.plan.name')}
+								aria-label={t('assistant.plan.name')}
+								bind:value={actionName}
+							/>
+							<Button type="submit" size="sm" class="h-8" disabled={actionName.trim() === ''}>
+								{t('assistant.plan.keep')}
+							</Button>
+						</form>
+					{/if}
 					<div class="mt-3 flex flex-wrap gap-2">
 						{#if sources?.local.found}
 							<Button variant="outline" size="sm" class="h-8" onclick={openInCli}>
@@ -443,6 +492,16 @@
 							<Button size="sm" class="h-8" disabled={trying || !openPlatform} onclick={runOnce}>
 								<PlayIcon />
 								{t('assistant.plan.run')}
+							</Button>
+							<Button
+								variant="outline"
+								size="sm"
+								class="h-8"
+								disabled={!openPlatform}
+								onclick={() => (naming = true)}
+							>
+								<SaveIcon />
+								{t('assistant.plan.save')}
 							</Button>
 						{/if}
 						{#if mode === 'patch'}

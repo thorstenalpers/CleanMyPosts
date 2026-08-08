@@ -38,6 +38,13 @@ export const en = {
 	'action.close': 'Close {platform} actions',
 	'action.open': 'Open {platform} actions',
 
+	'assistant.plan.save': 'Keep as action',
+	'assistant.plan.name': 'Name this action',
+	'assistant.plan.keep': 'Keep',
+	'assistant.plan.saved': 'Saved — {label} is now in the actions',
+	'panel.saved': 'Saved actions',
+	'confirm.saved.description':
+		'Runs {label}, a plan the assistant wrote against {platform} as it looked when you kept it. This cannot be undone.',
 	'assistant.plan.count': 'Check first',
 	'assistant.plan.run': 'Run once',
 	'assistant.plan.matches': '{count} on this page match it',

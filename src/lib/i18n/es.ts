@@ -32,6 +32,13 @@ export const es: Record<MessageKey, string> = {
 	'action.close': 'Cerrar las acciones de {platform}',
 	'action.open': 'Abrir las acciones de {platform}',
 
+	'assistant.plan.save': 'Guardar como acción',
+	'assistant.plan.name': 'Nombre de esta acción',
+	'assistant.plan.keep': 'Guardar',
+	'assistant.plan.saved': 'Guardado — {label} ya está en las acciones',
+	'panel.saved': 'Acciones guardadas',
+	'confirm.saved.description':
+		'Ejecuta {label}, un plan que el asistente escribió para {platform} tal como estaba entonces. No se puede deshacer.',
 	'assistant.plan.count': 'Comprobar primero',
 	'assistant.plan.run': 'Ejecutar una vez',
 	'assistant.plan.matches': '{count} coincidencias en esta página',

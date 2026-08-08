@@ -252,6 +252,15 @@ export const zh: Record<MessageKey, string> = {
 	'settings.notifications.description': '一次运行结束时的简短提示，一秒后自动消失。',
 	'settings.autoConsent': '关闭 Cookie 横幅',
 	'settings.autoConsent.description': '自动关闭同意横幅；横幅提供拒绝按钮时优先按拒绝。',
+	'settings.actions': '已保存的操作',
+	'settings.actions.description': '助手写下、你留存的计划。每一个都是选择器，平台一变就不再有效。',
+	'settings.actions.empty': '还没有保存任何内容。向助手要一个计划，然后从那里保存。',
+	'settings.actions.made': '{platform} · {date} 保存',
+	'settings.actions.forget': '丢弃',
+	'settings.actions.forgetAll': '全部丢弃',
+	'settings.actions.forgetAll.confirmBody':
+		'这会丢弃 {count} 个已保存的操作。无法找回 —— 它们来自的回答已经不在，页面也变了。',
+
 	'settings.reset.title': '重置',
 	'settings.reset.description': '将所有设置恢复为全新安装时的状态。',
 	'settings.reset.action': '恢复默认设置',

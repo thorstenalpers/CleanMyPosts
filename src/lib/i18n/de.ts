@@ -273,6 +273,17 @@ export const de: Record<MessageKey, string> = {
 	'settings.autoConsent': 'Cookie-Banner wegklicken',
 	'settings.autoConsent.description':
 		'Zustimmungsbanner automatisch schließen, und zwar über den ablehnenden Knopf, wo das Banner einen anbietet.',
+	'settings.actions': 'Gespeicherte Aktionen',
+	'settings.actions.description':
+		'Pläne, die der Assistent geschrieben hat und die du behalten hast. Jeder ist ein Selektor und hört auf zu funktionieren, wenn die Plattform sich bewegt.',
+	'settings.actions.empty':
+		'Noch nichts behalten. Frag den Assistenten nach einem Plan und behalte ihn dort.',
+	'settings.actions.made': '{platform} · behalten am {date}',
+	'settings.actions.forget': 'Verwerfen',
+	'settings.actions.forgetAll': 'Alle verwerfen',
+	'settings.actions.forgetAll.confirmBody':
+		'Das wirft {count} gespeicherte Aktionen weg. Zurückholen geht nicht — die Antwort, aus der sie kamen, ist fort und die Seite hat sich weiterbewegt.',
+
 	'settings.reset.title': 'Zurücksetzen',
 	'settings.reset.description':
 		'Setzt alle Einstellungen auf den Stand einer Neuinstallation zurück.',

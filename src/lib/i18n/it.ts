@@ -271,6 +271,16 @@ export const it: Record<MessageKey, string> = {
 	'settings.autoConsent': 'Chiudi i banner dei cookie',
 	'settings.autoConsent.description':
 		'Chiude da sé i banner di consenso, usando il pulsante che rifiuta dove il banner ne offre uno.',
+	'settings.actions': 'Azioni salvate',
+	'settings.actions.description':
+		'Piani scritti dall’assistente che hai tenuto. Ognuno è un selettore, quindi smette di funzionare quando la piattaforma cambia.',
+	'settings.actions.empty': 'Ancora niente tenuto. Chiedi un piano all’assistente e tienilo da lì.',
+	'settings.actions.made': '{platform} · tenuto il {date}',
+	'settings.actions.forget': 'Dimentica',
+	'settings.actions.forgetAll': 'Dimentica tutto',
+	'settings.actions.forgetAll.confirmBody':
+		'Questo butta via {count} azioni salvate. Non si recuperano: la risposta da cui venivano non c’è più e la pagina è cambiata.',
+
 	'settings.reset.title': 'Ripristina',
 	'settings.reset.description':
 		'Riporta tutte le impostazioni allo stato di una nuova installazione.',

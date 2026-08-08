@@ -265,6 +265,17 @@ export const ru: Record<MessageKey, string> = {
 	'settings.autoConsent': 'Закрывать баннеры о cookie',
 	'settings.autoConsent.description':
 		'Закрывать баннеры согласия автоматически, выбирая кнопку отказа там, где она есть.',
+	'settings.actions': 'Сохранённые действия',
+	'settings.actions.description':
+		'Планы, написанные ассистентом, которые вы оставили. Каждый — это селектор, поэтому он перестаёт работать, когда платформа меняется.',
+	'settings.actions.empty':
+		'Пока ничего не сохранено. Попросите у ассистента план и сохраните его оттуда.',
+	'settings.actions.made': '{platform} · сохранено {date}',
+	'settings.actions.forget': 'Забыть',
+	'settings.actions.forgetAll': 'Забыть всё',
+	'settings.actions.forgetAll.confirmBody':
+		'Это выбросит сохранённых действий: {count}. Вернуть их нельзя — ответа, из которого они появились, уже нет, а страница изменилась.',
+
 	'settings.reset.title': 'Сброс',
 	'settings.reset.description': 'Возвращает все настройки к состоянию новой установки.',
 	'settings.reset.action': 'Сбросить настройки',

@@ -261,6 +261,17 @@ export const ja: Record<MessageKey, string> = {
 	'settings.autoConsent': 'Cookie バナーを閉じる',
 	'settings.autoConsent.description':
 		'同意バナーを自動で閉じます。拒否のボタンがあるバナーでは、そちらを押します。',
+	'settings.actions': '保存した操作',
+	'settings.actions.description':
+		'アシスタントが書き、あなたが残したプランです。どれもセレクタなので、プラットフォームが変わると動かなくなります。',
+	'settings.actions.empty':
+		'まだ何も残していません。アシスタントにプランを頼み、そこから残してください。',
+	'settings.actions.made': '{platform} · {date} に保存',
+	'settings.actions.forget': '破棄',
+	'settings.actions.forgetAll': 'すべて破棄',
+	'settings.actions.forgetAll.confirmBody':
+		'保存した操作 {count} 件を捨てます。取り戻せません — 元になった回答は残っておらず、ページも変わっています。',
+
 	'settings.reset.title': 'リセット',
 	'settings.reset.description': 'すべての設定を新規インストール直後の状態に戻します。',
 	'settings.reset.action': '初期設定に戻す',

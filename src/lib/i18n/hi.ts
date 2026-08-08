@@ -265,6 +265,16 @@ export const hi: Record<MessageKey, string> = {
 	'settings.autoConsent': 'कुकी बैनर हटाएँ',
 	'settings.autoConsent.description':
 		'सहमति बैनर अपने आप बंद करें, और जहाँ बैनर मना करने वाला बटन देता है, वही दबाएँ।',
+	'settings.actions': 'सहेजी गई क्रियाएँ',
+	'settings.actions.description':
+		'सहायक की लिखी योजनाएँ जो आपने रखीं। हर एक एक सेलेक्टर है, इसलिए प्लेटफ़ॉर्म बदलते ही काम करना बंद कर देती है।',
+	'settings.actions.empty': 'अभी कुछ नहीं रखा गया। सहायक से योजना माँगें और वहीं से रखें।',
+	'settings.actions.made': '{platform} · {date} को रखा',
+	'settings.actions.forget': 'भूलें',
+	'settings.actions.forgetAll': 'सब भूलें',
+	'settings.actions.forgetAll.confirmBody':
+		'इससे {count} सहेजी गई क्रियाएँ हट जाएँगी। इन्हें वापस नहीं लाया जा सकता — जिस उत्तर से वे आई थीं वह जा चुका है और पृष्ठ बदल चुका है।',
+
 	'settings.reset.title': 'रीसेट',
 	'settings.reset.description': 'सभी सेटिंग्स को नई स्थापना जैसी स्थिति में लौटाता है।',
 	'settings.reset.action': 'डिफ़ॉल्ट पर रीसेट करें',

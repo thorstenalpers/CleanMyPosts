@@ -10,7 +10,7 @@
 		type Language
 	} from '$lib/bridge/contract';
 	import { THEME_PRESETS } from '$lib/theme/preset';
-	import { LANGUAGES, t } from '$lib/i18n/index.svelte';
+	import { LANGUAGES, i18n, t } from '$lib/i18n/index.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { Switch } from '$lib/components/ui/switch';
@@ -36,6 +36,7 @@
 	import MoonIcon from '@lucide/svelte/icons/moon';
 	import LaptopIcon from '@lucide/svelte/icons/laptop';
 	import SparklesIcon from '@lucide/svelte/icons/sparkles';
+	import Trash2Icon from '@lucide/svelte/icons/trash-2';
 	import KeyRoundIcon from '@lucide/svelte/icons/key-round';
 	import ChevronDownIcon from '@lucide/svelte/icons/chevron-down';
 	import CheckIcon from '@lucide/svelte/icons/check';
@@ -131,6 +132,31 @@
 	}
 
 	let resetOpen = $state(false);
+	let forgetAllOpen = $state(false);
+
+	/** Newest first: the one somebody just kept is the one they came here to look at. */
+	const savedActions = $derived(
+		[...settingsStore.settings.customActions].sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+	);
+
+	/** The day only. A plan is stale or it is not; the minute it was kept decides nothing. */
+	function madeOn(iso: string): string {
+		const date = new Date(iso);
+		return Number.isNaN(date.getTime())
+			? iso
+			: date.toLocaleDateString(i18n.locale, { year: 'numeric', month: 'short', day: 'numeric' });
+	}
+
+	function forget(id: string): void {
+		void commit({
+			customActions: settingsStore.settings.customActions.filter((action) => action.id !== id)
+		});
+	}
+
+	function forgetAll(): void {
+		void commit({ customActions: [] });
+		forgetAllOpen = false;
+	}
 
 	/**
 	 * Hands the whole file back to its defaults.
@@ -561,6 +587,52 @@
 			</CardContent>
 		</Card>
 
+		<!-- Its own card rather than a row under Automation: these accumulate, and the thing a
+		     person comes here to do is get rid of one, which needs room for a list. -->
+		<Card>
+			<CardHeader>
+				{@render cardTitle(t('settings.actions'), SparklesIcon)}
+				<CardDescription>{t('settings.actions.description')}</CardDescription>
+			</CardHeader>
+			<CardContent class="flex flex-col gap-2">
+				{#if savedActions.length === 0}
+					<p class="text-xs text-muted-foreground">{t('settings.actions.empty')}</p>
+				{:else}
+					{#each savedActions as action (action.id)}
+						<div class="flex items-center gap-2 rounded-md border border-border/60 px-2.5 py-1.5">
+							<div class="min-w-0 flex-1">
+								<p class="truncate text-[13px]">{action.label}</p>
+								<!-- The day it was made, because that is what decides whether it still works:
+								     a plan is a selector, and the platform has moved since. -->
+								<p class="text-xs text-muted-foreground">
+									{t('settings.actions.made', {
+										platform: action.platform === 'x' ? 'X' : 'YouTube',
+										date: madeOn(action.createdAt)
+									})}
+								</p>
+							</div>
+							<Button
+								variant="ghost"
+								size="sm"
+								class="h-7 shrink-0 text-xs"
+								onclick={() => forget(action.id)}
+							>
+								<Trash2Icon />
+								{t('settings.actions.forget')}
+							</Button>
+						</div>
+					{/each}
+
+					<div>
+						<Button variant="outline" size="sm" class="h-8" onclick={() => (forgetAllOpen = true)}>
+							<Trash2Icon />
+							{t('settings.actions.forgetAll')}
+						</Button>
+					</div>
+				{/if}
+			</CardContent>
+		</Card>
+
 		<Card>
 			<CardHeader>
 				{@render cardTitle(t('settings.reset.title'), RotateCcwIcon)}
@@ -583,6 +655,18 @@
 	confirmLabel={t('settings.reset.action')}
 	cancelLabel={t('confirm.cancel')}
 	onConfirm={resetAll}
+/>
+
+<!-- Asked for, because there is no getting a plan back: the answer it came from is long gone
+     and the page it was written against has moved on. Forgetting one is not worth a dialog;
+     forgetting the lot is. -->
+<ConfirmDialog
+	bind:open={forgetAllOpen}
+	title={t('settings.actions.forgetAll')}
+	description={t('settings.actions.forgetAll.confirmBody', { count: savedActions.length })}
+	confirmLabel={t('settings.actions.forgetAll')}
+	cancelLabel={t('confirm.cancel')}
+	onConfirm={forgetAll}
 />
 
 <EngineScriptDialog

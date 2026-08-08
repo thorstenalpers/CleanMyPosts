@@ -273,6 +273,17 @@ export const fr: Record<MessageKey, string> = {
 	'settings.autoConsent': 'Fermer les bandeaux de cookies',
 	'settings.autoConsent.description':
 		'Ferme les bandeaux de consentement automatiquement, en prenant le bouton de refus quand il y en a un.',
+	'settings.actions': 'Actions enregistrées',
+	'settings.actions.description':
+		'Des plans écrits par l’assistant que tu as gardés. Chacun est un sélecteur, donc il cesse de fonctionner quand la plateforme bouge.',
+	'settings.actions.empty':
+		'Rien de gardé pour l’instant. Demande un plan à l’assistant et garde-le depuis là.',
+	'settings.actions.made': '{platform} · gardé le {date}',
+	'settings.actions.forget': 'Oublier',
+	'settings.actions.forgetAll': 'Tout oublier',
+	'settings.actions.forgetAll.confirmBody':
+		'Cela jette {count} actions enregistrées. Impossible de les récupérer : la réponse dont elles venaient a disparu et la page a changé.',
+
 	'settings.reset.title': 'Réinitialiser',
 	'settings.reset.description': 'Remet tous les réglages dans l’état d’une nouvelle installation.',
 	'settings.reset.action': 'Rétablir les valeurs par défaut',

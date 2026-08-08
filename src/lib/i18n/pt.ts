@@ -270,6 +270,17 @@ export const pt: Record<MessageKey, string> = {
 	'settings.autoConsent': 'Fechar avisos de cookies',
 	'settings.autoConsent.description':
 		'Fecha os avisos de consentimento sozinha, usando o botão que recusa sempre que o aviso tem um.',
+	'settings.actions': 'Ações guardadas',
+	'settings.actions.description':
+		'Planos que o assistente escreveu e que guardaste. Cada um é um seletor, por isso deixa de funcionar quando a plataforma muda.',
+	'settings.actions.empty':
+		'Ainda nada guardado. Pede um plano ao assistente e guarda-o a partir daí.',
+	'settings.actions.made': '{platform} · guardado em {date}',
+	'settings.actions.forget': 'Esquecer',
+	'settings.actions.forgetAll': 'Esquecer tudo',
+	'settings.actions.forgetAll.confirmBody':
+		'Isto deita fora {count} ações guardadas. Não há como recuperar: a resposta de onde vieram desapareceu e a página mudou.',
+
 	'settings.reset.title': 'Repor',
 	'settings.reset.description': 'Coloca todas as definições no estado de uma instalação nova.',
 	'settings.reset.action': 'Repor predefinições',

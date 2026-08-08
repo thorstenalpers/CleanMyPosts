@@ -259,6 +259,16 @@ export const ar: Record<MessageKey, string> = {
 	'settings.autoConsent': 'إغلاق لافتات الكوكيز',
 	'settings.autoConsent.description':
 		'إغلاق لافتات الموافقة تلقائيًا، مع اختيار زر الرفض حيثما توفّره اللافتة.',
+	'settings.actions': 'الإجراءات المحفوظة',
+	'settings.actions.description':
+		'خطط كتبها المساعد واحتفظت بها. كل واحدة محدِّد، فتتوقف عن العمل عندما تتغير المنصة.',
+	'settings.actions.empty': 'لم تحتفظ بشيء بعد. اطلب خطة من المساعد ثم احتفظ بها من هناك.',
+	'settings.actions.made': '{platform} · حُفظت في {date}',
+	'settings.actions.forget': 'تجاهل',
+	'settings.actions.forgetAll': 'تجاهل الكل',
+	'settings.actions.forgetAll.confirmBody':
+		'سيؤدي هذا إلى إزالة {count} من الإجراءات المحفوظة. لا يمكن استرجاعها — فالإجابة التي جاءت منها اختفت والصفحة تغيّرت.',
+
 	'settings.reset.title': 'إعادة تعيين',
 	'settings.reset.description': 'يعيد كل الإعدادات إلى حالة التثبيت الجديد.',
 	'settings.reset.action': 'إعادة التعيين إلى الافتراضي',

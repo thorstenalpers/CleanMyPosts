@@ -275,6 +275,17 @@ export const en = {
 	'settings.autoConsent': 'Dismiss cookie banners',
 	'settings.autoConsent.description':
 		'Click consent banners away automatically, taking the rejecting button wherever the banner offers one.',
+	'settings.actions': 'Saved actions',
+	'settings.actions.description':
+		'Plans the assistant wrote that you kept. Each one is a selector, so it stops working when the platform moves.',
+	'settings.actions.empty':
+		'Nothing kept yet. Ask the assistant for a plan and keep it from there.',
+	'settings.actions.made': '{platform} · kept {date}',
+	'settings.actions.forget': 'Forget',
+	'settings.actions.forgetAll': 'Forget all',
+	'settings.actions.forgetAll.confirmBody':
+		'This throws away {count} saved actions. There is no getting one back — the answer it came from is gone and the page has moved on.',
+
 	'settings.reset.title': 'Reset',
 	'settings.reset.description': 'Puts every setting back to the way a fresh installation starts.',
 	'settings.reset.action': 'Reset to defaults',

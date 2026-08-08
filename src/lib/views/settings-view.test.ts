@@ -192,3 +192,62 @@ describe('SettingsView', () => {
 		);
 	});
 });
+
+/**
+ * A saved plan is a selector against a page that has since moved, so these go stale on their
+ * own and the list is where somebody comes to clear them out.
+ */
+describe('saved actions in the settings', () => {
+	const action = {
+		id: 'a1',
+		label: 'Bookmarks',
+		platform: 'x' as const,
+		plan: {
+			target: { selector: '[data-testid="bookmark"]' },
+			steps: [{ step: 'click' as const, target: { selector: '[data-testid="bookmark"]' } }]
+		},
+		createdAt: '2026-08-08T10:00:00+02:00'
+	};
+
+	it('says so plainly when nothing has been kept', async () => {
+		const { client, settingsStore } = setup();
+		await settingsStore.load();
+		render(SettingsView, { bridge: client, settingsStore });
+
+		expect(screen.getByText(/nothing kept yet/i)).toBeInTheDocument();
+	});
+
+	it('lists what was kept, and forgets one on its own button', async () => {
+		const { client, settingsStore, settingsSet } = setup();
+		await settingsStore.load();
+		settingsStore.settings = { ...settingsStore.settings, customActions: [action] };
+		render(SettingsView, { bridge: client, settingsStore });
+
+		expect(screen.getByText('Bookmarks')).toBeInTheDocument();
+
+		await fireEvent.click(screen.getByRole('button', { name: /^forget$/i }));
+
+		await waitFor(() =>
+			expect(settingsSet).toHaveBeenCalledWith(expect.objectContaining({ customActions: [] }))
+		);
+	});
+
+	// Forgetting one is not worth a dialog; forgetting the lot is, because there is no getting
+	// a plan back once the answer it came from is gone.
+	it('asks before it forgets all of them', async () => {
+		const { client, settingsStore, settingsSet } = setup();
+		await settingsStore.load();
+		settingsStore.settings = { ...settingsStore.settings, customActions: [action] };
+		render(SettingsView, { bridge: client, settingsStore });
+
+		await fireEvent.click(screen.getByRole('button', { name: /forget all/i }));
+		expect(settingsSet).not.toHaveBeenCalled();
+
+		const confirms = await screen.findAllByRole('button', { name: /forget all/i });
+		await fireEvent.click(confirms[confirms.length - 1]!);
+
+		await waitFor(() =>
+			expect(settingsSet).toHaveBeenCalledWith(expect.objectContaining({ customActions: [] }))
+		);
+	});
+});

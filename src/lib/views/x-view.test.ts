@@ -293,7 +293,11 @@ describe('XView', () => {
  */
 describe('a saved action in the panel', () => {
 	it('is offered beside the built-in lists and runs the plan it holds', async () => {
-		const runPlan = vi.fn(() => ({ deletedCount: 4 }));
+		const runPlan = vi.fn((params: unknown) => {
+			planned.push(params);
+			return { deletedCount: 4 };
+		});
+		const planned: unknown[] = [];
 		const { settingsStore, loginStore, runner, emit, client } = setup(
 			false,
 			{ 'site.runPlan': runPlan },
@@ -316,10 +320,7 @@ describe('a saved action in the panel', () => {
 		await fireEvent.click(row);
 
 		await waitFor(() => expect(runPlan).toHaveBeenCalled());
-		expect(runPlan.mock.calls[0]?.[0]).toMatchObject({
-			platform: 'x',
-			plan: SAVED_ACTION.plan
-		});
+		expect(planned[0]).toMatchObject({ platform: 'x', plan: SAVED_ACTION.plan });
 	});
 
 	// Deliberately outside "Delete everything": a saved plan is the user's own, it can go stale

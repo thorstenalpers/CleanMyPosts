@@ -149,6 +149,14 @@ fn unshield(app: &AppHandle, platform: &str) {
 /// A key for a round trip the caller did not name one for.
 static PROBE_SEQUENCE: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
 
+/// How long a question to the page may go unanswered before it is given up on.
+///
+/// Only for the questions that answer at once — counting and reading the structure. A run has
+/// no business timing out, because a run legitimately takes hours; it has the stop button
+/// instead. An `eval` aimed at a document that is navigating lands nowhere and is answered by
+/// nobody, and without this the call waits for the rest of the session.
+const PROBE_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(15);
+
 /// Hands the page a script and waits for it to answer.
 ///
 /// The same registry and the same oneshot `run_action` uses, deliberately: it is what the
@@ -292,8 +300,17 @@ pub async fn read_structure(app: AppHandle, params: &Value) -> Result<Value> {
         return Err(error);
     }
 
-    match rx.await {
-        Ok(Ok(structure)) => {
+    match tokio::time::timeout(PROBE_TIMEOUT, rx).await {
+        Err(_) => {
+            app.state::<AppState>()
+                .probes
+                .0
+                .lock()
+                .expect("probes mutex")
+                .remove(&request_id);
+            Err(Error::Message("the page did not answer".to_owned()))
+        }
+        Ok(Ok(Ok(structure))) => {
             crate::bridge::log(
                 &app,
                 "info",
@@ -304,8 +321,8 @@ pub async fn read_structure(app: AppHandle, params: &Value) -> Result<Value> {
             );
             Ok(json!({ "structure": structure }))
         }
-        Ok(Err(message)) => Err(Error::Message(message)),
-        Err(_) => Err(Error::Abandoned),
+        Ok(Ok(Err(message))) => Err(Error::Message(message)),
+        Ok(Err(_)) => Err(Error::Abandoned),
     }
 }
 
@@ -332,7 +349,23 @@ pub async fn count_matches(app: AppHandle, params: &Value) -> Result<Value> {
         json!(request_id)
     );
 
-    let count = await_page(&app, platform, &request_id, script).await?;
+    let count = match tokio::time::timeout(
+        PROBE_TIMEOUT,
+        await_page(&app, platform, &request_id, script),
+    )
+    .await
+    {
+        Ok(result) => result?,
+        Err(_) => {
+            app.state::<AppState>()
+                .runs
+                .0
+                .lock()
+                .expect("runs mutex")
+                .remove(&request_id);
+            return Err(Error::Message("the page did not answer".to_owned()));
+        }
+    };
     Ok(json!({ "count": count }))
 }
 
@@ -416,24 +449,38 @@ pub async fn run_action(app: AppHandle, params: &Value) -> Result<Value> {
         "waitAfterDelete": wait_after_delete,
         "waitBetweenRetryDeleteAttempts": wait_between,
     });
-    // The user's own patch runs first, in a try/catch of its own: it is written by hand or by
-    // the assistant, and a syntax error in it must cost nothing more than the patch. Applied
-    // per run rather than at page load, so saving a fix takes effect on the next action
-    // instead of the next navigation.
+    // The user's own patch goes over in an eval of its own, and that separation is the whole
+    // point of it.
+    //
+    // It used to be spliced into the script below, inside a try/catch, on the theory that a
+    // bad patch would cost nothing more than the patch. That theory was wrong: a `try` catches
+    // what happens at run time, and a patch that is not valid JavaScript fails at *parse*
+    // time, which takes the entire script with it — including the `run` call underneath. The
+    // page then never starts and never reports, so the run finds nothing and waits for ever.
+    //
+    // Two evals cannot do that to each other. What is left is a patch that silently does
+    // nothing, which is the failure this was always supposed to have.
     let patch = app.state::<AppState>().settings.get().engine_script;
-    let patch_script = if patch.trim().is_empty() {
-        String::new()
-    } else {
-        format!(
+    if !patch.trim().is_empty() {
+        let patch_script = format!(
             "try {{ (function () {{ {patch} }})(); }} \
              catch (e) {{ window.chrome.webview.postMessage({{ type: 'log', level: 'warning', \
                message: 'The engine script from the settings failed: ' + e }}); }}"
-        )
-    };
+        );
+        if let Some(site) = app.get_webview(crate::site_webview_label(platform)) {
+            if site.eval(&patch_script).is_err() {
+                crate::bridge::log(
+                    &app,
+                    "warning",
+                    "the engine script from the settings could not be applied",
+                );
+            }
+        }
+    }
 
     let script = format!(
         "(function () {{ var p = {run_params}; \
-           if (window.__cmp) {{ {patch_script} p.userName = window.__cmp.getUserName(); \
+           if (window.__cmp) {{ p.userName = window.__cmp.getUserName(); \
              window.__cmp.run('{platform}', '{engine}', JSON.stringify(p)); }} \
            else {{ window.chrome.webview.postMessage({{ type: 'error', requestId: '{request_id}', \
              message: 'The delete engine is not loaded on this page.' }}); }} }})();"

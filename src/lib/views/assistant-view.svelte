@@ -7,6 +7,7 @@
 	import {
 		buildPrompt,
 		describeLog,
+		parseActionPlan,
 		promptSections,
 		toIssueUrl,
 		type PromptContext,
@@ -153,6 +154,19 @@
 				error = cause instanceof Error ? cause.message : String(cause);
 			});
 	}
+
+	/**
+	 * Keeps the answer as the raw engine script, for what the plan vocabulary does not cover.
+	 *
+	 * Offered only when the answer is *not* a plan, and that is not tidiness. The engine script
+	 * is evaluated in the platform page before every run; a plan saved into it is not
+	 * JavaScript, fails at parse time, and used to take the whole run down with it — no
+	 * deletions, no report, nothing to stop. The host no longer lets a bad script do that, and
+	 * this makes sure the obvious way to create one is gone too.
+	 */
+	const answerIsPlan = $derived(
+		mode === 'patch' && answer.trim() !== '' && 'plan' in parseActionPlan(answer)
+	);
 
 	function saveAsScript(): void {
 		void settingsStore.update({ ...settingsStore.settings, engineScript: answer.trim() });
@@ -365,7 +379,7 @@
 								{t('assistant.openInCli')}
 							</Button>
 						{/if}
-						{#if mode === 'patch'}
+						{#if mode === 'patch' && !answerIsPlan}
 							<Button variant="outline" size="sm" class="h-8" onclick={saveAsScript}>
 								<SaveIcon />
 								{t('assistant.patch.apply')}

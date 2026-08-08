@@ -215,4 +215,38 @@ describe('AssistantView', () => {
 		expect(await screen.findByText(/not a plan/i)).toBeInTheDocument();
 		expect(screen.queryByRole('button', { name: /check first/i })).not.toBeInTheDocument();
 	});
+
+	/**
+	 * The regression this stands for, and it took the app down: the repair mode answers with a
+	 * plan now, but "save this fix" still wrote whatever came back into the engine script. That
+	 * script is evaluated in the platform page before every run, JSON is not JavaScript, and a
+	 * parse error is not something the surrounding try/catch can reach — so the run never
+	 * started, never reported, and there was nothing to stop.
+	 */
+	it('does not offer to save a plan as the engine script', async () => {
+		const plan = {
+			target: { selector: '[data-testid="unlike"]' },
+			steps: [{ step: 'click', target: { selector: '[data-testid="unlike"]' } }]
+		};
+		const { client, logStore, settingsStore, loginStore, runner } = setup({
+			'assistant.ask': () => ({ text: JSON.stringify(plan) })
+		});
+		loginStore.loggedIn.x = true;
+		render(AssistantView, {
+			bridge: client,
+			logStore,
+			settingsStore,
+			loginStore,
+			runner,
+			onOpenSettings: () => {}
+		});
+
+		await fireEvent.click(screen.getByRole('radio', { name: /ai repair/i }));
+		await fireEvent.input(screen.getByRole('textbox'), { target: { value: 'empty my likes' } });
+		await fireEvent.click(screen.getByRole('button', { name: /^ask$/i }));
+
+		// The plan's own buttons are there; the one that would have poisoned the engine is not.
+		expect(await screen.findByRole('button', { name: /check first/i })).toBeInTheDocument();
+		expect(screen.queryByRole('button', { name: /save this fix/i })).not.toBeInTheDocument();
+	});
 });

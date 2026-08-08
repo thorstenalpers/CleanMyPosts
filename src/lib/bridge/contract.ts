@@ -315,6 +315,17 @@ export const BridgeMethods = {
 		params: z.object({ platform: PlatformSchema, target: TargetSchema }),
 		result: z.object({ count: z.number().int().nonnegative() })
 	},
+	/**
+	 * A text-free skeleton of the platform page, for the assistant to write a selector against.
+	 *
+	 * Redacted in the page itself, before it crosses this wire — see `$lib/engine/structure.ts`.
+	 * The one thing the app sends that comes off the page, and the user reads it in the preview
+	 * before it goes anywhere.
+	 */
+	'site.readStructure': {
+		params: z.object({ platform: PlatformSchema }),
+		result: z.object({ structure: z.string() })
+	},
 	/** Stops an in-flight `site.runAction`; that call then resolves with the count deleted so far. */
 	'site.cancelAction': { params: z.object({ requestId: z.string() }), result: voidSchema },
 	'site.hide': { params: z.object({ hide: z.boolean() }), result: voidSchema },

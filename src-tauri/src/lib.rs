@@ -348,6 +348,7 @@ pub fn run() {
                 settings: settings::SettingsStore::load(settings_path),
                 logs: log::LogBuffer::new(),
                 runs: state::Runs::default(),
+                probes: state::Probes::default(),
                 site: std::sync::Mutex::new(state::SiteInfo::default()),
                 pending_update: std::sync::Mutex::new(None),
             });

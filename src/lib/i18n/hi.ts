@@ -308,5 +308,7 @@ export const hi: Record<MessageKey, string> = {
 	'log.sortBy': '{column} से क्रम लगाएँ',
 
 	'assistant.preview.source': 'कोड कहाँ है',
+	'assistant.preview.structure': 'अभी का पृष्ठ',
+	'assistant.preview.engine': 'इंजन यह कैसे करता है',
 	'assistant.preview.patch': 'पैच का काम'
 };

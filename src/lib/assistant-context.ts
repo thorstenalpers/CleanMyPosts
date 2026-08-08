@@ -10,9 +10,18 @@
  * The user can read the whole thing before sending it: the assistant's preview renders these
  * same sections, so nothing about the request is only visible from here.
  */
-import { ActionPlanSchema, type ActionPlan, type LogEntry } from '$lib/bridge/contract';
+import {
+	ActionPlanSchema,
+	type ActionPlan,
+	type LogEntry,
+	type Platform
+} from '$lib/bridge/contract';
 import { X_GROUPS, YOUTUBE_GROUPS } from '$lib/actions';
 import { siteConfig } from '$lib/engine/config';
+// The modules themselves rather than a description of them, so what the model is shown cannot
+// drift from what the engine actually runs.
+import xLikesSource from '$lib/engine/x/likes.ts?raw';
+import youtubeLikesSource from '$lib/engine/youtube/likes.ts?raw';
 
 /** The last stretch of the log; older lines rarely explain the run being asked about. */
 const LOG_LINES = 200;
@@ -258,6 +267,53 @@ function describeReportTask(appVersion: string): string {
 	].join('\n');
 }
 
+/**
+ * The page the plan is for, as the page itself described it.
+ *
+ * Redacted in the site webview before it ever crosses the bridge — see
+ * `$lib/engine/structure.ts` for what survives and what does not. This is the only part of a
+ * request that comes off a platform page, and it is why the preview matters more than it did.
+ */
+function describeStructure(structure: string): string {
+	return [
+		'## The page, as it is right now',
+		'',
+		'A skeleton of what is on screen. Every text node that is not the label of a control has',
+		'been removed, along with every address and anything naming a person — so an element you',
+		'can see here with no words in it may well carry a post, and you are not being shown it.',
+		'',
+		'Write your selectors against what is here.',
+		'',
+		'```html',
+		structure,
+		'```'
+	].join('\n');
+}
+
+/**
+ * How the engine already empties a list, in its own source.
+ *
+ * The plan vocabulary is small enough to explain in a paragraph, but the shape of a *good*
+ * plan — open the menu, wait for it, click the entry by its wording, wait for it to go — is
+ * easier to copy than to describe. `?raw` keeps these in step with the modules themselves
+ * rather than with a paraphrase of them that would rot.
+ */
+function describeEngineSource(platform: Platform | undefined): string {
+	if (!platform) return '';
+	const source = platform === 'x' ? xLikesSource : youtubeLikesSource;
+	return [
+		'## How the built-in actions do it',
+		'',
+		`The engine module that empties likes on ${platform === 'x' ? 'X' : 'YouTube'}. You are`,
+		'not writing this — your plan is data, not code — but the order of the steps and what it',
+		'waits for between them is exactly what a good plan copies.',
+		'',
+		'```ts',
+		source.trim(),
+		'```'
+	].join('\n');
+}
+
 export type PromptMode = 'question' | 'patch' | 'report';
 
 export interface PromptSection {
@@ -268,16 +324,27 @@ export interface PromptSection {
 		| 'assistant.preview.fixes'
 		| 'assistant.preview.source'
 		| 'assistant.preview.patch'
+		| 'assistant.preview.engine'
+		| 'assistant.preview.structure'
 		| 'assistant.preview.report';
 	body: string;
 }
 
+/** Everything a request is built from besides the log and the question. */
+export interface PromptContext {
+	language: string;
+	mode?: PromptMode;
+	appVersion?: string;
+	/** The platform whose page a plan would act on, when one is open. */
+	platform?: Platform;
+	/** The redacted page skeleton, when it could be read. Absent is normal, not an error. */
+	structure?: string;
+}
+
 /** The fixed parts, in the order they are sent. The log and the question follow them. */
-export function promptSections(
-	language: string,
-	mode: PromptMode = 'question',
-	appVersion = ''
-): PromptSection[] {
+export function promptSections(context: PromptContext): PromptSection[] {
+	const { language, mode = 'question', appVersion = '', platform, structure } = context;
+	const engine = mode === 'patch' ? describeEngineSource(platform) : '';
 	return [
 		{ titleKey: 'assistant.preview.role', body: describeRole(language) },
 		{ titleKey: 'assistant.preview.app', body: describeApp() },
@@ -286,21 +353,21 @@ export function promptSections(
 		...(mode === 'patch'
 			? [{ titleKey: 'assistant.preview.patch' as const, body: describePatchTask() }]
 			: []),
+		...(engine ? [{ titleKey: 'assistant.preview.engine' as const, body: engine }] : []),
+		// Last of the fixed parts and closest to the question: it is what the answer is about,
+		// and it is the one part the user is being asked to vouch for before sending.
+		...(mode === 'patch' && structure
+			? [{ titleKey: 'assistant.preview.structure' as const, body: describeStructure(structure) }]
+			: []),
 		...(mode === 'report'
 			? [{ titleKey: 'assistant.preview.report' as const, body: describeReportTask(appVersion) }]
 			: [])
 	];
 }
 
-export function buildPrompt(
-	question: string,
-	entries: LogEntry[],
-	language: string,
-	mode: PromptMode = 'question',
-	appVersion = ''
-): string {
+export function buildPrompt(question: string, entries: LogEntry[], context: PromptContext): string {
 	return [
-		...promptSections(language, mode, appVersion).map((section) => section.body),
+		...promptSections(context).map((section) => section.body),
 		describeLog(entries),
 		`## The question\n\n${question.trim()}`
 	].join('\n\n');

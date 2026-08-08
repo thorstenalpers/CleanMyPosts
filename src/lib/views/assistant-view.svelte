@@ -10,6 +10,7 @@
 		parseActionPlan,
 		promptSections,
 		toIssueUrl,
+		type PromptContext,
 		type PromptMode
 	} from '$lib/assistant-context';
 	import type { SettingsStore } from '$lib/stores/settings.svelte';
@@ -87,6 +88,20 @@
 			: undefined
 	);
 
+	/**
+	 * What every request is built from. One function so the preview and the request cannot
+	 * drift: a preview that only resembles what is sent is worse than none.
+	 */
+	function promptContext(): PromptContext {
+		return {
+			language: languageName(),
+			mode,
+			appVersion: appInfo?.version ?? '',
+			platform: openPlatform,
+			structure
+		};
+	}
+
 	/** Named in English because the prompt is. */
 	function languageName(): string {
 		return new Intl.DisplayNames(['en'], { type: 'language' }).of(i18n.locale) ?? 'English';
@@ -95,7 +110,7 @@
 	// The preview is assembled from the same functions `buildPrompt` calls, so it cannot drift
 	// from what is actually sent — a preview that only resembles the request is worse than none.
 	const preview = $derived([
-		...promptSections(languageName(), mode, appInfo?.version ?? '').map((section) => ({
+		...promptSections(promptContext()).map((section) => ({
 			title: t(section.titleKey),
 			body: section.body
 		})),
@@ -134,13 +149,7 @@
 	function openInCli(): void {
 		void bridge
 			.call('assistant.openInCli', {
-				prompt: buildPrompt(
-					question,
-					logStore.entries,
-					languageName(),
-					mode,
-					appInfo?.version ?? ''
-				)
+				prompt: buildPrompt(question, logStore.entries, promptContext())
 			})
 			.catch((cause: unknown) => {
 				error = cause instanceof Error ? cause.message : String(cause);
@@ -164,6 +173,25 @@
 
 	let trying = $state(false);
 	let tried = $state('');
+
+	/**
+	 * The page's own account of itself, as it will be sent.
+	 *
+	 * Undefined until a request needs it. Failing to read it is not an error worth stopping
+	 * for — a question about the log does not need the page, and a platform that is not up
+	 * cannot answer — so the request simply goes without it.
+	 */
+	let structure = $state<string | undefined>(undefined);
+
+	async function readStructure(): Promise<void> {
+		if (!openPlatform) return;
+		try {
+			const result = await bridge.call('site.readStructure', { platform: openPlatform });
+			structure = result.structure;
+		} catch {
+			structure = undefined;
+		}
+	}
 
 	/**
 	 * The dry run.
@@ -216,14 +244,11 @@
 		error = '';
 		answer = '';
 		try {
+			// Read at the moment of asking, not kept live: the page moves while someone types,
+			// and what the answer is about has to be what was actually sent.
+			if (mode === 'patch' && openPlatform) await readStructure();
 			const result = await bridge.call('assistant.ask', {
-				prompt: buildPrompt(
-					question,
-					logStore.entries,
-					languageName(),
-					mode,
-					appInfo?.version ?? ''
-				)
+				prompt: buildPrompt(question, logStore.entries, promptContext())
 			});
 			answer = result.text;
 		} catch (cause) {

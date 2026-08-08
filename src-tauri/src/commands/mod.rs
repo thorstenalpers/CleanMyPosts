@@ -22,6 +22,7 @@ pub async fn dispatch(app: AppHandle, method: String, params: Value) -> Result<V
         "site.runAction" => site::run_action(app, &params).await,
         "site.runPlan" => site::run_plan(app, &params).await,
         "site.countMatches" => site::count_matches(app, &params).await,
+        "site.readStructure" => site::read_structure(app, &params).await,
         "site.cancelAction" => site::cancel_action(&app, &params),
         "site.hide" => site::hide(&app, &params),
         "site.toast" => site::toast(&app, &params),

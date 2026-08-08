@@ -295,5 +295,7 @@ export const zh: Record<MessageKey, string> = {
 	'log.sortBy': '按{column}排序',
 
 	'assistant.preview.source': '代码在哪里',
+	'assistant.preview.structure': '当前页面',
+	'assistant.preview.engine': '引擎的做法',
 	'assistant.preview.patch': '补丁任务'
 };

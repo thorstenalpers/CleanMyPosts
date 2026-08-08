@@ -302,5 +302,7 @@ export const ar: Record<MessageKey, string> = {
 	'log.sortBy': 'الترتيب حسب {column}',
 
 	'assistant.preview.source': 'أين تقع الشيفرة',
+	'assistant.preview.structure': 'الصفحة الآن',
+	'assistant.preview.engine': 'كيف يفعلها المحرك',
 	'assistant.preview.patch': 'مهمة التصحيح'
 };

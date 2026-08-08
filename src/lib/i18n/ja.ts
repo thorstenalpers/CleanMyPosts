@@ -304,5 +304,7 @@ export const ja: Record<MessageKey, string> = {
 	'log.sortBy': '{column}で並べ替え',
 
 	'assistant.preview.source': 'コードの在りか',
+	'assistant.preview.structure': '現在のページ',
+	'assistant.preview.engine': 'エンジンのやり方',
 	'assistant.preview.patch': 'パッチの指示'
 };

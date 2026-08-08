@@ -242,6 +242,73 @@ pub async fn run_plan(app: AppHandle, params: &Value) -> Result<Value> {
     Ok(json!({ "deletedCount": deleted }))
 }
 
+/// The page's own account of itself, redacted in the page before it is handed over.
+///
+/// What comes back is a skeleton — tags, testids, roles, classes, and the short label of a
+/// control — with every text node that is not such a label already dropped by the time the
+/// host sees it. The redaction is deliberately on the page's side of the wire: nothing that
+/// was refused there ever reaches this process, let alone a model.
+pub async fn read_structure(app: AppHandle, params: &Value) -> Result<Value> {
+    let platform = params
+        .get("platform")
+        .and_then(Value::as_str)
+        .ok_or(Error::MissingParam("platform"))?;
+
+    let request_id = format!(
+        "probe-{}",
+        PROBE_SEQUENCE.fetch_add(1, std::sync::atomic::Ordering::Relaxed)
+    );
+
+    let (tx, rx) = oneshot::channel();
+    {
+        let state = app.state::<AppState>();
+        state
+            .probes
+            .0
+            .lock()
+            .expect("probes mutex")
+            .insert(request_id.clone(), tx);
+    }
+
+    let script = format!(
+        "if (window.__cmp) window.__cmp.readStructure({id}); \
+         else window.chrome.webview.postMessage({{ type: 'probe', requestId: {id}, \
+           error: 'The delete engine is not loaded on this page.' }});",
+        id = json!(request_id)
+    );
+
+    let evaluated = app
+        .get_webview(crate::site_webview_label(platform))
+        .ok_or_else(|| Error::Site("site webview is gone".into()))
+        .and_then(|site| site.eval(&script).map_err(Error::from));
+
+    if let Err(error) = evaluated {
+        app.state::<AppState>()
+            .probes
+            .0
+            .lock()
+            .expect("probes mutex")
+            .remove(&request_id);
+        return Err(error);
+    }
+
+    match rx.await {
+        Ok(Ok(structure)) => {
+            crate::bridge::log(
+                &app,
+                "info",
+                format!(
+                    "{platform}: read {} characters of page structure for the assistant",
+                    structure.chars().count()
+                ),
+            );
+            Ok(json!({ "structure": structure }))
+        }
+        Ok(Err(message)) => Err(Error::Message(message)),
+        Err(_) => Err(Error::Abandoned),
+    }
+}
+
 /// How many the plan's target finds, having touched none of them.
 pub async fn count_matches(app: AppHandle, params: &Value) -> Result<Value> {
     let platform = params

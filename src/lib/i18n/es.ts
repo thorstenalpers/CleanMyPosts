@@ -314,5 +314,7 @@ export const es: Record<MessageKey, string> = {
 	'log.sortBy': 'Ordenar por {column}',
 
 	'assistant.preview.source': 'Dónde está el código',
+	'assistant.preview.structure': 'La página ahora mismo',
+	'assistant.preview.engine': 'Cómo lo hace el motor',
 	'assistant.preview.patch': 'El encargo del parche'
 };

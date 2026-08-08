@@ -313,5 +313,7 @@ export const pt: Record<MessageKey, string> = {
 	'log.sortBy': 'Ordenar por {column}',
 
 	'assistant.preview.source': 'Onde está o código',
+	'assistant.preview.structure': 'A página agora',
+	'assistant.preview.engine': 'Como o motor faz',
 	'assistant.preview.patch': 'A tarefa do patch'
 };

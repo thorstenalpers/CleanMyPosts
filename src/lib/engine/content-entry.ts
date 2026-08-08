@@ -2,8 +2,19 @@ import { xActions, getUserName, getLoginStatus as getXLoginStatus } from './x';
 import { youTubeActions, getLoginStatus as getYouTubeLoginStatus } from './youtube';
 import { startConsentWatcher } from './consent';
 import { siteConfig } from './config';
-import { hideCursor, hideShield, postDone, postError, postLog, showShield, showToast } from './dom';
+import {
+	hideCursor,
+	hideShield,
+	postDone,
+	postError,
+	postLog,
+	postProbe,
+	postProbeError,
+	showShield,
+	showToast
+} from './dom';
 import { countTargets, planAction, type ActionPlan, type Target } from './plan';
+import { pageStructure } from './structure';
 import type { CmpApi, Platform, RunParams, XAction, YouTubeAction } from './protocol';
 import type { DeleteActionDefinition } from './types';
 
@@ -69,6 +80,14 @@ const api: CmpApi = {
 			postDone(requestId, countTargets(target));
 		} catch (error: unknown) {
 			postError(requestId, error instanceof Error ? error.message : String(error));
+		}
+	},
+
+	readStructure(requestId) {
+		try {
+			postProbe(requestId, pageStructure());
+		} catch (error: unknown) {
+			postProbeError(requestId, error instanceof Error ? error.message : String(error));
 		}
 	},
 

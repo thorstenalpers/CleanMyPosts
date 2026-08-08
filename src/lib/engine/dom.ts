@@ -366,6 +366,15 @@ export function postLog(level: 'debug' | 'info' | 'warning' | 'error', message: 
 	post({ type: 'log', level, message });
 }
 
+/** Answers a question that came back with text rather than a count. */
+export function postProbe(requestId: string, payload: string): void {
+	post({ type: 'probe', requestId, payload });
+}
+
+export function postProbeError(requestId: string, error: string): void {
+	post({ type: 'probe', requestId, error });
+}
+
 /**
  * Detail for when something goes wrong in a way the normal lines cannot explain — which
  * entries a menu offered, what a page answered with. Sent regardless; the host drops it

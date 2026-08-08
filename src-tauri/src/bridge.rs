@@ -131,6 +131,32 @@ pub fn handle_content_message(app: &AppHandle, message: &Value) {
                 json!({ "requestId": request_id, "deletedCount": count }),
             );
         }
+        // Text back from the page, not a count: the redacted page structure the assistant is
+        // shown. Its own registry, so a probe can never be mistaken for a run.
+        "probe" => {
+            let Some(state) = app.try_state::<AppState>() else {
+                return;
+            };
+            // Taken out first so the guard is dropped before the send below, rather than held
+            // across it inside an `if let` scrutinee.
+            let responder = state
+                .probes
+                .0
+                .lock()
+                .expect("probes mutex")
+                .remove(&request_id);
+            if let Some(responder) = responder {
+                let outcome = match message.get("error").and_then(Value::as_str) {
+                    Some(error) => Err(error.to_owned()),
+                    None => Ok(message
+                        .get("payload")
+                        .and_then(Value::as_str)
+                        .unwrap_or_default()
+                        .to_owned()),
+                };
+                let _ = responder.send(outcome);
+            }
+        }
         "done" | "error" => {
             let Some(state) = app.try_state::<AppState>() else {
                 return;

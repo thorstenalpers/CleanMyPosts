@@ -308,5 +308,7 @@ export const ru: Record<MessageKey, string> = {
 	'log.sortBy': 'Сортировать по столбцу «{column}»',
 
 	'assistant.preview.source': 'Где лежит код',
+	'assistant.preview.structure': 'Страница сейчас',
+	'assistant.preview.engine': 'Как это делает движок',
 	'assistant.preview.patch': 'Задание на патч'
 };

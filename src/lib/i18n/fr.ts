@@ -316,5 +316,7 @@ export const fr: Record<MessageKey, string> = {
 	'log.sortBy': 'Trier par {column}',
 
 	'assistant.preview.source': 'Où est le code',
+	'assistant.preview.structure': 'La page en ce moment',
+	'assistant.preview.engine': 'Comment le moteur s’y prend',
 	'assistant.preview.patch': 'La mission du correctif'
 };

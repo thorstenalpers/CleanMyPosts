@@ -318,6 +318,8 @@ export const en = {
 	'log.sortBy': 'Sort by {column}',
 
 	'assistant.preview.source': 'Where the code is',
+	'assistant.preview.structure': 'The page right now',
+	'assistant.preview.engine': 'How the engine does it',
 	'assistant.preview.patch': 'The patching task'
 } as const;
 

@@ -57,10 +57,17 @@ The troubleshooting guide is named above the page's own heading, with a button i
 README section on GitHub: most people arrive here after something failed, and the written
 answer is faster than asking for it.
 
-The log is the only runtime data that goes out, and it is the one thing the project already
-guarantees carries no post content, handles, cookies or tokens — see
-[12-testing-and-quality.md](12-testing-and-quality.md#logging). Nothing else is sent: not the
-site DOM, not the signed-in name, not the settings.
+For a question or a report, the log is the only runtime data that goes out, and it is the one
+thing the project already guarantees carries no post content, handles, cookies or tokens — see
+[12-testing-and-quality.md](12-testing-and-quality.md#logging).
+
+Asking for an action plan adds a text-free skeleton of the open page, because a selector
+cannot be written against a page nobody has seen. It is redacted in the site webview by
+`src/lib/engine/structure.ts` before it crosses the bridge, and the preview shows it verbatim
+before anything is sent. [13-security-and-privacy.md](13-security-and-privacy.md) rule 5 has
+the full account of what survives that and what does not.
+
+Still not sent, in any mode: the signed-in name, the settings, and the site DOM as it is.
 
 ## The key
 

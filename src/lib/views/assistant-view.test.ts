@@ -86,17 +86,19 @@ describe('AssistantView', () => {
 		expect(screen.getByText('why did nothing get deleted?')).toBeInTheDocument();
 	});
 
-	it('asks for a patch against the live engine config, and saves the answer as the script', async () => {
+	/**
+	 * The prompt still carries the live config, because that is how these pages are built and it
+	 * is the best guide to writing a selector for one. What it no longer carries back is a way
+	 * to save an answer as the engine script: that script is JavaScript evaluated in the
+	 * platform page, the assistant answers with plans, and offering to put one in the other's
+	 * place is what broke every run. The script stays editable in the settings.
+	 */
+	it('asks against the live engine config, and offers no way to save the answer as a script', async () => {
 		const asked: { prompt: string }[] = [];
-		const settingsSet = vi.fn();
 		const { client, logStore, settingsStore, loginStore, runner } = setup({
 			'assistant.ask': (params: { prompt: string }) => {
 				asked.push(params);
-				return { text: "window.__cmp.config.youtube.removeFromLikedText.push('x');" };
-			},
-			'settings.set': (params) => {
-				settingsSet(params);
-				return undefined;
+				return { text: 'I could not tell what you meant — which list did you mean?' };
 			}
 		});
 		await settingsStore.load();
@@ -117,15 +119,39 @@ describe('AssistantView', () => {
 		expect(asked[0]?.prompt).toContain('removeFromLikedText');
 		expect(asked[0]?.prompt).toContain('AGENTS.md');
 
-		await fireEvent.click(await screen.findByRole('button', { name: /save this fix/i }));
+		// Prose came back, so there is nothing to run and nothing to keep — and above all no
+		// button that reports success while doing something invisible somewhere else.
+		expect(await screen.findByText(/not a plan/i)).toBeInTheDocument();
+		expect(screen.queryByRole('button', { name: /save this fix/i })).not.toBeInTheDocument();
+	});
 
-		await waitFor(() =>
-			expect(settingsSet).toHaveBeenCalledWith(
-				expect.objectContaining({
-					engineScript: "window.__cmp.config.youtube.removeFromLikedText.push('x');"
-				})
-			)
-		);
+	// The role used to tell the model, first and above the task, to answer questions in the
+	// user's language in a few sentences. Asked for a plan, that is exactly what came back.
+	it('tells the model it is writing data, not answering in German', async () => {
+		const asked: { prompt: string }[] = [];
+		const { client, logStore, settingsStore, loginStore, runner } = setup({
+			'assistant.ask': (params: { prompt: string }) => {
+				asked.push(params);
+				return { text: 'ok' };
+			}
+		});
+		render(AssistantView, {
+			bridge: client,
+			logStore,
+			settingsStore,
+			loginStore,
+			runner,
+			onOpenSettings: () => {}
+		});
+
+		await fireEvent.click(screen.getByRole('radio', { name: /ai repair/i }));
+		await fireEvent.input(screen.getByRole('textbox'), { target: { value: 'empty my likes' } });
+		await fireEvent.click(screen.getByRole('button', { name: /^ask$/i }));
+
+		await waitFor(() => expect(asked).toHaveLength(1));
+		const prompt = asked[0]?.prompt ?? '';
+		expect(prompt).toContain('Your entire answer is a JSON object');
+		expect(prompt).not.toContain('You answer questions about');
 	});
 
 	it('sends the previewed request when asked', async () => {

@@ -26,7 +26,29 @@ import youtubeLikesSource from '$lib/engine/youtube/likes.ts?raw';
 /** The last stretch of the log; older lines rarely explain the run being asked about. */
 const LOG_LINES = 200;
 
-function describeRole(language: string): string {
+/**
+ * Who the model is being asked to be, which is not the same thing in every mode.
+ *
+ * This used to say "you answer questions… and nothing else", in the user's language, a few
+ * sentences — and it said it first, above the task. Asked for a plan, models did what it
+ * said: back came a polite clarifying question in German where a JSON object was needed. The
+ * task section further down asked for the opposite and lost, because this one is the role.
+ */
+function describeRole(language: string, mode: PromptMode): string {
+	if (mode === 'patch') {
+		return [
+			'You are the delete engine of CleanMyPosts, writing one action plan.',
+			'',
+			'Your entire answer is a JSON object over the vocabulary given below. Not prose, not',
+			'an explanation, not a question back — data. Where the request leaves something open,',
+			'take the reading that matches the page you are shown and write the plan for it.',
+			'',
+			'The answer is in no human language, so translate nothing into',
+			`${language} here. The words in a selector are matched against the page and are copied`,
+			'from it exactly as they stand there.'
+		].join('\n');
+	}
+
 	return [
 		'You are the support assistant built into CleanMyPosts. You answer questions about',
 		'this app and about the log the user is looking at, and nothing else.',
@@ -346,7 +368,7 @@ export function promptSections(context: PromptContext): PromptSection[] {
 	const { language, mode = 'question', appVersion = '', platform, structure } = context;
 	const engine = mode === 'patch' ? describeEngineSource(platform) : '';
 	return [
-		{ titleKey: 'assistant.preview.role', body: describeRole(language) },
+		{ titleKey: 'assistant.preview.role', body: describeRole(language, mode) },
 		{ titleKey: 'assistant.preview.app', body: describeApp() },
 		{ titleKey: 'assistant.preview.fixes', body: describeTroubleshooting() },
 		{ titleKey: 'assistant.preview.source', body: describeSource() },

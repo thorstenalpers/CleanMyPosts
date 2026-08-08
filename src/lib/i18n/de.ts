@@ -32,6 +32,18 @@ export const de: Record<MessageKey, string> = {
 	'action.close': 'Aktionen für {platform} schließen',
 	'action.open': 'Aktionen für {platform} öffnen',
 
+	'assistant.controls': 'Einstellungen des Assistenten',
+	'assistant.close': 'Assistent schließen',
+	'assistant.effort': 'Aufwand',
+	'assistant.effort.low': 'Knapp',
+	'assistant.effort.medium': 'Normal',
+	'assistant.effort.high': 'Gründlich',
+	'assistant.model': 'Modell',
+	'assistant.model.default': 'Vorgabe des Anbieters',
+	'assistant.panel.empty':
+		'Frag nach einem Plan für die Seite daneben — was weg soll und wie eines davon verschwindet.',
+	'assistant.noSource.short': 'Keine Quelle',
+
 	'assistant.plan.save': 'Als Aktion behalten',
 	'assistant.plan.name': 'Name für diese Aktion',
 	'assistant.plan.keep': 'Behalten',

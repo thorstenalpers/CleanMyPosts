@@ -3,11 +3,10 @@
 	import type { LogStore } from '$lib/stores/log.svelte';
 	import type { SiteLoginStore } from '$lib/stores/site-login.svelte';
 	import type { ActionRunner } from '$lib/stores/action-runner.svelte';
-	import type { AppInfo, AssistantSources, CustomAction, Platform } from '$lib/bridge/contract';
+	import type { AppInfo, AssistantSources, Platform } from '$lib/bridge/contract';
 	import {
 		buildPrompt,
 		describeLog,
-		parseActionPlan,
 		promptSections,
 		toIssueUrl,
 		type PromptContext,
@@ -18,6 +17,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { Card, CardContent } from '$lib/components/ui/card';
+	import PlanActions from '$lib/components/plan-actions.svelte';
 	import { i18n, t } from '$lib/i18n/index.svelte';
 	import { cn } from '$lib/utils';
 	import WrenchIcon from '@lucide/svelte/icons/wrench';
@@ -33,8 +33,6 @@
 	import BugIcon from '@lucide/svelte/icons/bug';
 	import TriangleAlertIcon from '@lucide/svelte/icons/triangle-alert';
 	import TerminalIcon from '@lucide/svelte/icons/terminal';
-	import ScanEyeIcon from '@lucide/svelte/icons/scan-eye';
-	import PlayIcon from '@lucide/svelte/icons/play';
 
 	interface Props {
 		bridge: BridgeClient;
@@ -161,18 +159,10 @@
 		notify(settingsStore, 'success', t('assistant.patch.applied'));
 	}
 
-	// Read straight off the answer rather than kept beside it: there is one answer on screen at
-	// a time, and a second copy of what it means is a second thing that can be stale.
-	const parsed = $derived(mode === 'patch' && answer ? parseActionPlan(answer) : undefined);
-	const plan = $derived(parsed && 'plan' in parsed ? parsed.plan : undefined);
-
 	/** Which platform a plan would be tried on: the one whose page is up behind this panel. */
 	const openPlatform = $derived<Platform | undefined>(
 		loginStore.loggedIn.x ? 'x' : loginStore.loggedIn.youtube ? 'youtube' : undefined
 	);
-
-	let trying = $state(false);
-	let tried = $state('');
 
 	/**
 	 * The page's own account of itself, as it will be sent.
@@ -190,80 +180,6 @@
 			structure = result.structure;
 		} catch {
 			structure = undefined;
-		}
-	}
-
-	/**
-	 * The dry run.
-	 *
-	 * Between a plan arriving and a plan being allowed to delete something there has to be a
-	 * step that costs nothing, or the first time anyone finds out a selector was wrong is after
-	 * it has clicked a hundred times.
-	 */
-	async function countMatches(): Promise<void> {
-		if (!plan || !openPlatform || trying) return;
-		trying = true;
-		tried = '';
-		error = '';
-		try {
-			const result = await bridge.call('site.countMatches', {
-				platform: openPlatform,
-				target: plan.target
-			});
-			tried = t('assistant.plan.matches', { count: result.count });
-		} catch (cause) {
-			error = cause instanceof Error ? cause.message : String(cause);
-		} finally {
-			trying = false;
-		}
-	}
-
-	// Asked for rather than invented: a saved action becomes a row somebody will click months
-	// from now, and "Plan 3" is not something anyone can tell apart from "Plan 4".
-	let naming = $state(false);
-	let actionName = $state('');
-
-	/**
-	 * Keeps the plan as a row in that platform's action panel.
-	 *
-	 * Deliberately a second, named step rather than something that happens because a plan
-	 * parsed: what is being kept is a thing that will delete without being read again.
-	 */
-	function saveAsAction(): void {
-		if (!plan || !openPlatform || actionName.trim() === '') return;
-		const action: CustomAction = {
-			id: crypto.randomUUID(),
-			label: actionName.trim().slice(0, 60),
-			platform: openPlatform,
-			plan,
-			createdAt: new Date().toISOString()
-		};
-		void settingsStore.update({
-			...settingsStore.settings,
-			customActions: [...settingsStore.settings.customActions, action]
-		});
-		notify(settingsStore, 'success', t('assistant.plan.saved', { label: action.label }));
-		naming = false;
-		actionName = '';
-	}
-
-	/** Runs it for real, on the page that is open, once. Everything a run has applies. */
-	async function runOnce(): Promise<void> {
-		if (!plan || !openPlatform || trying) return;
-		trying = true;
-		tried = '';
-		error = '';
-		try {
-			const result = await runner.runPlan({
-				platform: openPlatform,
-				plan,
-				timeouts: settingsStore.settings.timeouts
-			});
-			tried = t('assistant.plan.removed', { count: result.deletedCount });
-		} catch (cause) {
-			error = cause instanceof Error ? cause.message : String(cause);
-		} finally {
-			trying = false;
 		}
 	}
 
@@ -436,72 +352,17 @@
 				<CardContent class="py-4">
 					<p class="text-sm whitespace-pre-wrap">{answer}</p>
 
-					<!-- Said plainly rather than left to the buttons being absent: an answer that is
-					     not a plan looks exactly like one that is, and the reason it was refused is
-					     the only thing that gets the next question right. -->
-					{#if mode === 'patch' && parsed && 'error' in parsed}
-						<p class="mt-2 text-xs text-destructive">
-							{t('assistant.plan.rejected', { reason: parsed.error })}
-						</p>
-					{:else if mode === 'patch' && !openPlatform}
-						<p class="mt-2 text-xs text-muted-foreground">{t('assistant.plan.noPlatform')}</p>
-					{:else if tried}
-						<p class="mt-2 text-xs text-muted-foreground">{tried}</p>
+					{#if mode === 'patch'}
+						<div class="mt-3 flex flex-col gap-2">
+							<PlanActions {bridge} {settingsStore} {runner} {answer} platform={openPlatform} />
+						</div>
 					{/if}
 
-					{#if naming && plan}
-						<form
-							class="mt-3 flex gap-2"
-							onsubmit={(event: SubmitEvent) => {
-								event.preventDefault();
-								saveAsAction();
-							}}
-						>
-							<Input
-								class="h-8 flex-1"
-								placeholder={t('assistant.plan.name')}
-								aria-label={t('assistant.plan.name')}
-								bind:value={actionName}
-							/>
-							<Button type="submit" size="sm" class="h-8" disabled={actionName.trim() === ''}>
-								{t('assistant.plan.keep')}
-							</Button>
-						</form>
-					{/if}
 					<div class="mt-3 flex flex-wrap gap-2">
 						{#if sources?.local.found}
 							<Button variant="outline" size="sm" class="h-8" onclick={openInCli}>
 								<TerminalIcon />
 								{t('assistant.openInCli')}
-							</Button>
-						{/if}
-						{#if mode === 'patch' && plan}
-							<!-- Counting first, and it is the only one of the two that changes nothing:
-							     a selector that names the wrong thing should be found out before it
-							     has clicked a hundred times, not after. -->
-							<Button
-								variant="outline"
-								size="sm"
-								class="h-8"
-								disabled={trying || !openPlatform}
-								onclick={countMatches}
-							>
-								<ScanEyeIcon />
-								{t('assistant.plan.count')}
-							</Button>
-							<Button size="sm" class="h-8" disabled={trying || !openPlatform} onclick={runOnce}>
-								<PlayIcon />
-								{t('assistant.plan.run')}
-							</Button>
-							<Button
-								variant="outline"
-								size="sm"
-								class="h-8"
-								disabled={!openPlatform}
-								onclick={() => (naming = true)}
-							>
-								<SaveIcon />
-								{t('assistant.plan.save')}
 							</Button>
 						{/if}
 						{#if mode === 'patch'}

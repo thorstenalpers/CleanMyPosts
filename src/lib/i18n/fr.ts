@@ -32,6 +32,18 @@ export const fr: Record<MessageKey, string> = {
 	'action.close': 'Fermer les actions {platform}',
 	'action.open': 'Ouvrir les actions {platform}',
 
+	'assistant.controls': 'Réglages de l’assistant',
+	'assistant.close': 'Fermer l’assistant',
+	'assistant.effort': 'Effort',
+	'assistant.effort.low': 'Bref',
+	'assistant.effort.medium': 'Normal',
+	'assistant.effort.high': 'Approfondi',
+	'assistant.model': 'Modèle',
+	'assistant.model.default': 'Valeur par défaut du fournisseur',
+	'assistant.panel.empty':
+		'Demande un plan pour la page d’à côté : ce qu’il faut retirer, et comment l’un d’eux disparaît.',
+	'assistant.noSource.short': 'Aucune source',
+
 	'assistant.plan.save': 'Garder comme action',
 	'assistant.plan.name': 'Nom de cette action',
 	'assistant.plan.keep': 'Garder',

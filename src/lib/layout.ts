@@ -8,6 +8,8 @@ export const SIDEBAR_EXPANDED_WIDTH = 240;
 export const SIDEBAR_COLLAPSED_WIDTH = 56;
 /** In step with the action rail's `w-56`. */
 export const ACTION_RAIL_WIDTH = 224;
+/** In step with the assistant panel's `w-80`. */
+export const ASSISTANT_PANEL_WIDTH = 320;
 /** In step with the header bar's `h-11`. */
 export const HEADER_HEIGHT = 44;
 /** In step with the status bar's `h-9`. The host shortens the site webview by this much. */

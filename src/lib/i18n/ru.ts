@@ -31,6 +31,18 @@ export const ru: Record<MessageKey, string> = {
 	'action.close': 'Закрыть действия {platform}',
 	'action.open': 'Открыть действия {platform}',
 
+	'assistant.controls': 'Настройки ассистента',
+	'assistant.close': 'Закрыть ассистента',
+	'assistant.effort': 'Усилие',
+	'assistant.effort.low': 'Кратко',
+	'assistant.effort.medium': 'Обычно',
+	'assistant.effort.high': 'Тщательно',
+	'assistant.model': 'Модель',
+	'assistant.model.default': 'По умолчанию у провайдера',
+	'assistant.panel.empty':
+		'Попросите план для страницы рядом — что убрать и как исчезает один из них.',
+	'assistant.noSource.short': 'Нет источника',
+
 	'assistant.plan.save': 'Сохранить как действие',
 	'assistant.plan.name': 'Название действия',
 	'assistant.plan.keep': 'Сохранить',

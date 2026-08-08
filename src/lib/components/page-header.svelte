@@ -4,6 +4,8 @@
 	import LanguageMenu from '$lib/components/language-menu.svelte';
 	import ModeToggle from '$lib/components/mode-toggle.svelte';
 	import PanelLeftIcon from '@lucide/svelte/icons/panel-left';
+	import SparklesIcon from '@lucide/svelte/icons/sparkles';
+	import { cn } from '$lib/utils';
 	import type { SettingsStore } from '$lib/stores/settings.svelte';
 
 	interface Props {
@@ -26,6 +28,9 @@
 		 * it, so this is the way back.
 		 */
 		onOpenActions?: () => void;
+		/** The assistant lives in the app's own column, so its way in belongs in this bar. */
+		onToggleAssistant?: () => void;
+		assistantOpen?: boolean;
 	}
 
 	let {
@@ -35,7 +40,9 @@
 		iconOnly = false,
 		settingsStore,
 		onMenuOpenChange,
-		onOpenActions
+		onOpenActions,
+		onToggleAssistant,
+		assistantOpen = false
 	}: Props = $props();
 </script>
 
@@ -69,6 +76,20 @@
 	</span>
 
 	<div class="flex shrink-0 items-center gap-0.5">
+		{#if onToggleAssistant}
+			<button
+				type="button"
+				aria-label={t('assistant.title')}
+				aria-pressed={assistantOpen}
+				onclick={onToggleAssistant}
+				class={cn(
+					'flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-md transition-colors duration-150 hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
+					assistantOpen ? 'bg-muted text-foreground' : 'text-muted-foreground'
+				)}
+			>
+				<SparklesIcon class="size-4" />
+			</button>
+		{/if}
 		<LanguageMenu {settingsStore} onOpenChange={onMenuOpenChange} />
 		<ModeToggle {settingsStore} />
 	</div>

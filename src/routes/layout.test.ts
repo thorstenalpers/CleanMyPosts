@@ -325,3 +325,64 @@ describe('app layout', () => {
 		);
 	});
 });
+
+/**
+ * The panel lives in the column the app owns rather than floating over the platform page.
+ * Anything floating there would be painted behind a webview that is laid on top of this one —
+ * the same reason every dialog in this app pushes the platform off screen first.
+ */
+describe('the assistant panel', () => {
+	it('opens beside the platform from the header, and closes on its own button', async () => {
+		url.pathname = '/x';
+		await renderLayout();
+
+		expect(screen.queryByRole('complementary', { name: /assistant/i })).not.toBeInTheDocument();
+
+		await fireEvent.click(screen.getByRole('button', { name: 'Assistant', pressed: false }));
+
+		const panel = await screen.findByRole('complementary', { name: /assistant/i });
+		expect(panel).toBeInTheDocument();
+		// Beside, not instead of: the platform's own actions are still there next to it.
+		expect(screen.getByRole('complementary', { name: 'X actions' })).toBeInTheDocument();
+
+		await fireEvent.click(screen.getByRole('button', { name: /close the assistant/i }));
+
+		await waitFor(() =>
+			expect(screen.queryByRole('complementary', { name: /assistant/i })).not.toBeInTheDocument()
+		);
+	});
+
+	// The host has to shorten the site webview by exactly what the app is covering, or the page
+	// renders under a column it cannot see.
+	it('tells the host that the site starts further in while it is open', async () => {
+		url.pathname = '/x';
+		await renderLayout();
+		await waitFor(() => expect(host.calls.some((call) => call.method === 'layout.setSiteInset')));
+		host.calls.length = 0;
+
+		await fireEvent.click(screen.getByRole('button', { name: 'Assistant', pressed: false }));
+
+		await waitFor(() => {
+			const inset = host.calls
+				.filter((call) => call.method === 'layout.setSiteInset')
+				.map((call) => call.params as { left: number })
+				.pop();
+			expect(inset?.left).toBe(240 + 224 + 320);
+		});
+	});
+
+	// Below the width where the action column already steps aside there is no room for a second
+	// one either, so it folds with it rather than squeezing the page to nothing.
+	it('folds away on a window too narrow to hold it', async () => {
+		url.pathname = '/x';
+		await renderLayout();
+		await fireEvent.click(screen.getByRole('button', { name: 'Assistant', pressed: false }));
+		await screen.findByRole('complementary', { name: /assistant/i });
+
+		await resizeTo(700);
+
+		await waitFor(() =>
+			expect(screen.queryByRole('complementary', { name: /assistant/i })).not.toBeInTheDocument()
+		);
+	});
+});

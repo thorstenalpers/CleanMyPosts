@@ -32,6 +32,18 @@ export const it: Record<MessageKey, string> = {
 	'action.close': 'Chiudi le azioni di {platform}',
 	'action.open': 'Apri le azioni di {platform}',
 
+	'assistant.controls': 'Impostazioni dell’assistente',
+	'assistant.close': 'Chiudi l’assistente',
+	'assistant.effort': 'Impegno',
+	'assistant.effort.low': 'Breve',
+	'assistant.effort.medium': 'Normale',
+	'assistant.effort.high': 'Approfondito',
+	'assistant.model': 'Modello',
+	'assistant.model.default': 'Predefinito del fornitore',
+	'assistant.panel.empty':
+		'Chiedi un piano per la pagina accanto: cosa togliere e come ne sparisce uno.',
+	'assistant.noSource.short': 'Nessuna fonte',
+
 	'assistant.plan.save': 'Salva come azione',
 	'assistant.plan.name': 'Nome di questa azione',
 	'assistant.plan.keep': 'Salva',

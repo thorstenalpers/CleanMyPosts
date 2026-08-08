@@ -32,6 +32,17 @@ export const ar: Record<MessageKey, string> = {
 	'action.close': 'إغلاق إجراءات {platform}',
 	'action.open': 'فتح إجراءات {platform}',
 
+	'assistant.controls': 'إعدادات المساعد',
+	'assistant.close': 'إغلاق المساعد',
+	'assistant.effort': 'الجهد',
+	'assistant.effort.low': 'موجز',
+	'assistant.effort.medium': 'عادي',
+	'assistant.effort.high': 'شامل',
+	'assistant.model': 'النموذج',
+	'assistant.model.default': 'افتراضي المزوّد',
+	'assistant.panel.empty': 'اطلب خطة للصفحة المجاورة — ما الذي يُحذف، وكيف يختفي واحد منه.',
+	'assistant.noSource.short': 'لا مصدر',
+
 	'assistant.plan.save': 'احتفظ كإجراء',
 	'assistant.plan.name': 'اسم هذا الإجراء',
 	'assistant.plan.keep': 'احتفظ',

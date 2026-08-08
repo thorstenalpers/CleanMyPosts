@@ -31,6 +31,18 @@ export const ja: Record<MessageKey, string> = {
 	'action.close': '{platform} の操作を閉じる',
 	'action.open': '{platform} の操作を開く',
 
+	'assistant.controls': 'アシスタントの設定',
+	'assistant.close': 'アシスタントを閉じる',
+	'assistant.effort': '労力',
+	'assistant.effort.low': '簡潔',
+	'assistant.effort.medium': '標準',
+	'assistant.effort.high': '入念',
+	'assistant.model': 'モデル',
+	'assistant.model.default': 'プロバイダーの既定',
+	'assistant.panel.empty':
+		'隣のページのプランを頼んでください — 何を消すか、その一つがどう消えるか。',
+	'assistant.noSource.short': 'ソースなし',
+
 	'assistant.plan.save': '操作として保存',
 	'assistant.plan.name': 'この操作の名前',
 	'assistant.plan.keep': '保存',

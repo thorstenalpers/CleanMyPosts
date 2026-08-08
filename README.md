@@ -53,16 +53,29 @@ in which case updates are only found when you ask for them on the Info page.
 X and YouTube change their pages without warning, and when they do, a selector that worked
 last week finds nothing. The assistant is the answer to that, and it does three things:
 
-- 🩹 **Repair the engine** — hand it the log of a failed run and it writes a patch for the
-  delete logic. You read the patch, and only you decide whether to save it; the app never
-  applies one by itself, because that code runs inside your signed-in session.
+- 🩹 **Write an action plan** — hand it the log of a failed run, or ask for a list the app
+  does not handle yet, and it answers with a short plan: what to remove, and how one of them
+  goes away. Not code. It is a fixed vocabulary of clicks, waits and scrolls, checked against
+  a schema before anything runs, so a wrong answer can only ask for things the delete engine
+  could already do. Nothing a model wrote is ever evaluated inside your signed-in session.
+
+  Then, in this order: **Check first** counts what the plan would find and touches none of
+  it. **Run once** tries it on the page in front of you. **Keep as action** gives it a name
+  and puts it in that platform's list, where it runs like any built-in one. The settings show
+  every plan you kept with the day you kept it — a plan is a selector, and the platform moves.
+
 - 🐞 **File a bug report** — it turns the same log into a report a maintainer can act on,
   and opens GitHub's issue form with the title and body already filled in. Pressing submit
   stays with you.
 - 💬 **Ask a question** — about a run, a setting, or what the app just did.
 
-Every mode shows the exact text that would be sent **before** anything is sent, assembled
-from the same functions that build the request, so the preview cannot drift from it. Nothing
+Reachable two ways: the **Assistant** page, or the sparkles icon in the header, which opens it
+as a column beside the platform so you can see the page you are asking about.
+
+Every mode shows the exact text that would be sent **before** anything is sent, assembled from
+the same functions that build the request, so the preview cannot drift from it. Asking for a
+plan also sends a skeleton of the open page — tags, test ids and the words on buttons, with
+every post, handle and address stripped out in the browser before it goes anywhere. Nothing
 leaves the machine until you press the button.
 
 It runs against [Claude Code](https://claude.com/claude-code) if it is installed on this

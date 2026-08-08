@@ -32,6 +32,18 @@ export const hi: Record<MessageKey, string> = {
 	'action.close': '{platform} की क्रियाएँ बंद करें',
 	'action.open': '{platform} की क्रियाएँ खोलें',
 
+	'assistant.controls': 'सहायक की सेटिंग',
+	'assistant.close': 'सहायक बंद करें',
+	'assistant.effort': 'प्रयास',
+	'assistant.effort.low': 'संक्षिप्त',
+	'assistant.effort.medium': 'सामान्य',
+	'assistant.effort.high': 'विस्तृत',
+	'assistant.model': 'मॉडल',
+	'assistant.model.default': 'प्रदाता का डिफ़ॉल्ट',
+	'assistant.panel.empty':
+		'साथ वाले पृष्ठ के लिए योजना माँगें — क्या हटाना है और उनमें से एक कैसे जाता है।',
+	'assistant.noSource.short': 'कोई स्रोत नहीं',
+
 	'assistant.plan.save': 'क्रिया के रूप में रखें',
 	'assistant.plan.name': 'इस क्रिया का नाम',
 	'assistant.plan.keep': 'रखें',

@@ -30,6 +30,17 @@ export const zh: Record<MessageKey, string> = {
 	'action.close': '关闭 {platform} 操作',
 	'action.open': '打开 {platform} 操作',
 
+	'assistant.controls': '助手设置',
+	'assistant.close': '关闭助手',
+	'assistant.effort': '投入',
+	'assistant.effort.low': '简短',
+	'assistant.effort.medium': '常规',
+	'assistant.effort.high': '详尽',
+	'assistant.model': '模型',
+	'assistant.model.default': '服务商默认',
+	'assistant.panel.empty': '为旁边这个页面要一个计划 —— 要删什么，以及其中一个怎么消失。',
+	'assistant.noSource.short': '没有来源',
+
 	'assistant.plan.save': '保存为操作',
 	'assistant.plan.name': '为此操作命名',
 	'assistant.plan.keep': '保存',

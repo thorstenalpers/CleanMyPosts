@@ -38,6 +38,18 @@ export const en = {
 	'action.close': 'Close {platform} actions',
 	'action.open': 'Open {platform} actions',
 
+	'assistant.controls': 'Assistant settings',
+	'assistant.close': 'Close the assistant',
+	'assistant.effort': 'Effort',
+	'assistant.effort.low': 'Brief',
+	'assistant.effort.medium': 'Normal',
+	'assistant.effort.high': 'Thorough',
+	'assistant.model': 'Model',
+	'assistant.model.default': 'Provider default',
+	'assistant.panel.empty':
+		'Ask for a plan for the page beside this — what to remove, and how one of them goes away.',
+	'assistant.noSource.short': 'No source',
+
 	'assistant.plan.save': 'Keep as action',
 	'assistant.plan.name': 'Name this action',
 	'assistant.plan.keep': 'Keep',

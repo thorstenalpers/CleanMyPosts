@@ -1,8 +1,20 @@
 # Assistant
 
-A page that answers two kinds of question: what this app does, and what just happened in the
-log. It is optional in every direction — hideable in the Navigation settings, and useless
-until the user picks a source.
+Answers two kinds of question — what this app does, and what just happened in the log — and
+writes **action plans** for lists the engine does not already handle. It is optional in every
+direction: hideable in the Navigation settings, and useless until the user picks a source.
+
+Two surfaces, one implementation. The **page** at `/assistant` is the long form: modes, the
+request preview, the bug-report hand-off, the Claude Code hand-off. The **panel** opens from
+the sparkles icon in the header and lives in the column the app owns, beside the action rail.
+That is not a layout preference — the platform page is a webview laid on top of the chrome, so
+anything floating over it is either painted behind it or has to push it off screen. Beside it
+is the only arrangement where somebody can look at the page they are asking about.
+
+The panel keeps a conversation and folds it into each request as one more section; `assistant.ask`
+is a single round trip with no memory of its own. Both surfaces share `plan-actions.svelte`,
+because the order of those four buttons is a judgement about safety and it must not be right in
+one place and wrong in the other.
 
 ## Where an answer comes from
 
@@ -42,11 +54,34 @@ the files under `src/lib/engine/`. The local source runs on the machine that has
 checkout, so a path is worth more to it than a pasted excerpt — it is told to read the file
 rather than guess at it.
 
-**Patch mode** adds one more section. The user says what their page shows instead, and the
-prompt carries the live `window.__cmp.config` plus the rules for a usable answer: JavaScript
-only, change the least that solves it, never delete an entry another language depends on.
-Saving the answer as the engine script is a separate click — it is code that will run inside
-the user's signed-in session, so nothing about it happens because a model produced text.
+**Plan mode** adds three sections: the step vocabulary with a worked example, the engine's own
+likes module for the platform in question (imported with `?raw`, so it cannot drift from what
+runs), and a redacted skeleton of the open page.
+
+## Plans
+
+The answer is not code. It is a JSON object over a fixed vocabulary — `click`, `waitFor`,
+`waitGone`, `scrollUntil`, `wait` — checked against `ActionPlanSchema` before anything runs.
+That check is the whole guarantee: a wrong plan can only ask for things the engine could
+already do, and nothing a model produced is ever evaluated inside the signed-in session.
+
+Elements are named by selector and by the word they carry, **never by index**. An index refers
+to the snapshot the model was shown and means something else on the next render, which is
+exactly why recorded browser-agent runs stop working; a test holds the schema to refusing one.
+
+The plan says how _one_ item goes away. Repeating, counting, the waits between deletions, the
+stop button and the shield stay with the app — they are what makes a run slow enough not to be
+flagged and stoppable while it goes, and none of that is a model's decision.
+
+Three things can be done with a plan, in this order. **Check first** counts what the target
+finds and touches none of it. **Run once** runs it on the page that is already open, through
+the same runner and the same stop button as a built-in action. **Keep as action** asks for a
+name and puts it in that platform's panel, where it runs like any other row — and stays out of
+"Delete everything", because it goes stale on its own schedule. The settings list every kept
+plan with the day it was kept, which is the fact that decides whether it still works.
+
+Saving an answer as the raw engine script is still there, unchanged, for what the vocabulary
+does not cover.
 
 **The request can be read before it is sent.** The page's preview renders exactly these
 sections, built by calling the same functions `buildPrompt` calls — a preview assembled
@@ -95,13 +130,17 @@ person running it.
 
 ## Files
 
-| Where                                       | What                                            |
-| ------------------------------------------- | ----------------------------------------------- |
-| `src-tauri/src/assistant/mod.rs`            | routes a question to the chosen source          |
-| `src-tauri/src/assistant/cli.rs`            | locating and running the local binary           |
-| `src-tauri/src/assistant/providers.rs`      | the provider table, the dialects, the HTTP call |
-| `src-tauri/src/assistant/secrets.rs`        | the credential store                            |
-| `src-tauri/src/commands/assistant.rs`       | the four bridge methods                         |
-| `src/lib/assistant-context.ts`              | the prompt                                      |
-| `src/lib/views/assistant-view.svelte`       | the page                                        |
-| `src/lib/components/api-keys-dialog.svelte` | provider picker, key field, free-key links      |
+| Where                                       | What                                             |
+| ------------------------------------------- | ------------------------------------------------ |
+| `src-tauri/src/assistant/mod.rs`            | routes a question to the chosen source           |
+| `src-tauri/src/assistant/cli.rs`            | locating and running the local binary            |
+| `src-tauri/src/assistant/providers.rs`      | the provider table, the dialects, the HTTP call  |
+| `src-tauri/src/assistant/secrets.rs`        | the credential store                             |
+| `src-tauri/src/commands/assistant.rs`       | the four bridge methods                          |
+| `src/lib/assistant-context.ts`              | the prompt, and reading an answer back as a plan |
+| `src/lib/engine/plan.ts`                    | running a plan in the site page                  |
+| `src/lib/engine/structure.ts`               | the redacted page skeleton                       |
+| `src/lib/views/assistant-view.svelte`       | the page                                         |
+| `src/lib/views/assistant-panel.svelte`      | the column beside the platform                   |
+| `src/lib/components/plan-actions.svelte`    | check, run, keep — shared by both surfaces       |
+| `src/lib/components/api-keys-dialog.svelte` | provider picker, key field, free-key links       |

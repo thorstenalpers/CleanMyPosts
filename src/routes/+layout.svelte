@@ -21,6 +21,7 @@
 	import BootSplash from '$lib/components/boot-splash.svelte';
 	import XView from '$lib/views/x-view.svelte';
 	import YouTubeView from '$lib/views/youtube-view.svelte';
+	import AssistantPanel from '$lib/views/assistant-panel.svelte';
 	import {
 		ACTION_RAIL_WIDTH,
 		HEADER_HEIGHT,
@@ -28,7 +29,8 @@
 		SIDEBAR_COLLAPSED_WIDTH,
 		SIDEBAR_EXPANDED_WIDTH,
 		SIDEBAR_FOLD_WIDTH,
-		PANEL_FOLD_WIDTH
+		PANEL_FOLD_WIDTH,
+		ASSISTANT_PANEL_WIDTH
 	} from '$lib/layout';
 	import { applyPreset, applyThemeChange } from '$lib/theme/preset';
 	import { i18n, t } from '$lib/i18n/index.svelte';
@@ -120,6 +122,13 @@
 	// The overview's shortcut only states an intent; the platform's own panel owns the
 	// confirmation and the run, and clears this the moment it has taken it.
 	let deleteAllFor = $state<Platform | undefined>(undefined);
+
+	// Off until asked for. It is a column, and a column that opens by itself takes the platform
+	// page's room without anybody having decided that.
+	let assistantOpen = $state(false);
+	// Folded away with the action panel, and for the same reason: below that width there is not
+	// room for the site and a column beside it.
+	const assistantVisible = $derived(assistantOpen && !panelTooNarrow);
 
 	let panelClosedByUser = $state(false);
 	let panelFoldedByWidth = $state(false);
@@ -346,7 +355,10 @@
 	$effect(() => {
 		const sidebar = sidebarExpanded ? SIDEBAR_EXPANDED_WIDTH : SIDEBAR_COLLAPSED_WIDTH;
 		void bridge.call('layout.setSiteInset', {
-			left: sidebar + (panelVisible ? ACTION_RAIL_WIDTH : 0),
+			left:
+				sidebar +
+				(panelVisible ? ACTION_RAIL_WIDTH : 0) +
+				(assistantVisible ? ASSISTANT_PANEL_WIDTH : 0),
 			top: HEADER_HEIGHT,
 			bottom: railPlatform ? STATUS_BAR_HEIGHT : 0
 		});
@@ -398,6 +410,19 @@
 	     reports was started there. -->
 	<div class="flex min-w-0 flex-1 flex-col">
 		<div class="flex min-h-0 flex-1">
+			<!-- First of the app's own columns, so the platform page keeps the far side of the
+			     window: what is being asked about stays where it was while the asking happens. -->
+			{#if assistantVisible}
+				<AssistantPanel
+					{bridge}
+					{logStore}
+					{settingsStore}
+					{loginStore}
+					{runner}
+					onClose={() => (assistantOpen = false)}
+				/>
+			{/if}
+
 			{#if railPlatform === 'x'}
 				<XView
 					{bridge}
@@ -437,6 +462,8 @@
 					{location}
 					{settingsStore}
 					onMenuOpenChange={(open: boolean) => (headerMenuOpen = open)}
+					onToggleAssistant={() => (assistantOpen = !assistantOpen)}
+					assistantOpen={assistantVisible}
 					onOpenActions={railPlatform && !panelVisible
 						? () => {
 								panelClosedByUser = false;

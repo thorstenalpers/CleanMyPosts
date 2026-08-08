@@ -42,6 +42,7 @@
 	import SparklesIcon from '@lucide/svelte/icons/sparkles';
 	import SettingsIcon from '@lucide/svelte/icons/settings';
 	import InfoIcon from '@lucide/svelte/icons/info';
+	import WandIcon from '@lucide/svelte/icons/wand-sparkles';
 	import '../app.css';
 
 	/**
@@ -161,7 +162,39 @@
 		untrack(() => (panelFoldedByWidth = narrow));
 	});
 
+	/** Kept plans that asked for a place in the navigation rather than beside a platform's lists. */
+	const savedNavItems = $derived(
+		settingsStore.settings.customActions.filter((action) => action.place === 'sidebar')
+	);
+
+	/**
+	 * Runs a kept plan straight from the sidebar.
+	 *
+	 * Only the one-shot shape gets here — opening a page, dismissing a banner. A deletion is
+	 * kept beside its platform's own lists instead, where the confirmation and the stop button
+	 * are, because a sidebar item that empties an account on one click is not a menu entry.
+	 */
+	async function runSaved(id: string): Promise<void> {
+		const action = savedNavItems.find((entry) => entry.id === id);
+		if (!action || runner.running) return;
+		pendingKey = action.platform;
+		await goto(resolve(ROUTES[action.platform]));
+		try {
+			await runner.runPlan({
+				platform: action.platform,
+				plan: action.plan,
+				timeouts: settingsStore.settings.timeouts
+			});
+		} catch {
+			// Reported in the log by the host; a nav item is not the place for an error card.
+		}
+	}
+
 	function onNavigate(key: NavKey): void {
+		if (key.startsWith('saved:')) {
+			void runSaved(key.slice('saved:'.length));
+			return;
+		}
 		const platform = key === 'x' || key === 'youtube' ? key : undefined;
 		// Opening only, never toggling: the actions are what a platform is for, and the panel
 		// carries the running deletion and its result. Closing it is a deliberate click on its
@@ -315,6 +348,13 @@
 					}
 				]
 			: []),
+		// What the assistant wrote and the user kept, between the platforms and the app's own
+		// pages: they act on a platform, so they belong nearer to one than to Settings.
+		...savedNavItems.map((action) => ({
+			key: `saved:${action.id}` as NavKey,
+			label: action.label,
+			icon: WandIcon
+		})),
 		// Info above Settings: the way out of the app sits at the very bottom.
 		{ key: 'info' as const, label: t('nav.info'), icon: InfoIcon, footer: true },
 		{ key: 'settings' as const, label: t('nav.settings'), icon: SettingsIcon, footer: true }
@@ -343,7 +383,9 @@
 
 	// Hiding a page in the settings has to close the one you are standing on, and the same
 	// guard catches a URL that names a route the sidebar does not offer.
-	const reachable = $derived(new Set<string>(navItems.map((item) => item.key)));
+	const reachable = $derived(
+		new Set<string>(navItems.map((item) => item.key).filter((key) => !key.startsWith('saved:')))
+	);
 
 	// Against the route, not the optimistic key: a click that has not arrived yet is on its
 	// way to a page the sidebar does offer, and bouncing it here would cancel it mid-flight.

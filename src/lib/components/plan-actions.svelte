@@ -49,12 +49,13 @@
 	 * selector is found out only after it has clicked a hundred times.
 	 */
 	async function countMatches(): Promise<void> {
-		if (!plan || !platform || busy) return;
+		const target = plan?.target;
+		if (!target || !platform || busy) return;
 		busy = true;
 		outcome = '';
 		failure = '';
 		try {
-			const result = await bridge.call('site.countMatches', { platform, target: plan.target });
+			const result = await bridge.call('site.countMatches', { platform, target });
 			outcome = t('assistant.plan.matches', { count: result.count });
 		} catch (cause) {
 			failure = cause instanceof Error ? cause.message : String(cause);
@@ -100,6 +101,10 @@
 			id: crypto.randomUUID(),
 			label: actionName.trim().slice(0, 60),
 			platform,
+			// Decided by what the plan is, not asked for: a deletion belongs beside that
+			// platform's other lists, and something that opens a page or dismisses a banner
+			// belongs in the navigation, because it has no list to sit next to.
+			place: plan.kind === 'once' ? 'sidebar' : 'panel',
 			plan,
 			createdAt: new Date().toISOString()
 		};
@@ -128,16 +133,20 @@
 
 {#if plan}
 	<div class="flex flex-wrap gap-2">
-		<Button
-			variant="outline"
-			size="sm"
-			class="h-8"
-			disabled={busy || !platform}
-			onclick={countMatches}
-		>
-			<ScanEyeIcon />
-			{t('assistant.plan.count')}
-		</Button>
+		<!-- Only where there is something to count: a plan that opens a page or dismisses a
+		     banner has no list to be checked against. -->
+		{#if plan.target}
+			<Button
+				variant="outline"
+				size="sm"
+				class="h-8"
+				disabled={busy || !platform}
+				onclick={countMatches}
+			>
+				<ScanEyeIcon />
+				{t('assistant.plan.count')}
+			</Button>
+		{/if}
 		<Button size="sm" class="h-8" disabled={busy || !platform} onclick={runOnce}>
 			<PlayIcon />
 			{t('assistant.plan.run')}

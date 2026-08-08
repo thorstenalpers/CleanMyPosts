@@ -10,7 +10,9 @@ const SAVED_ACTION = {
 	id: 'saved-1',
 	label: 'Bookmarks',
 	platform: 'x' as const,
+	place: 'panel' as const,
 	plan: {
+		kind: 'loop' as const,
 		target: { selector: '[data-testid="bookmark"]' },
 		steps: [{ step: 'click' as const, target: { selector: '[data-testid="bookmark"]' } }]
 	},

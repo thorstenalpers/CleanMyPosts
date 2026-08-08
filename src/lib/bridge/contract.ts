@@ -111,7 +111,15 @@ export const PlanStepSchema = z.discriminatedUnion('step', [
 		target: TargetSchema,
 		maxWaitMs: z.number().int().min(0).max(MAX_STEP_WAIT).optional()
 	}),
-	z.object({ step: z.literal('wait'), ms: z.number().int().min(0).max(MAX_STEP_WAIT) })
+	z.object({ step: z.literal('wait'), ms: z.number().int().min(0).max(MAX_STEP_WAIT) }),
+	/**
+	 * Opens a page in the platform's own webview.
+	 *
+	 * Which addresses are allowed is decided in the engine, against the same origins the
+	 * injected script guards — a step that could send a signed-in session anywhere is not a
+	 * step, it is a way out of the app.
+	 */
+	z.object({ step: z.literal('navigate'), url: z.string().url().max(500) })
 ]);
 export type PlanStep = z.infer<typeof PlanStepSchema>;
 
@@ -122,10 +130,24 @@ export type PlanStep = z.infer<typeof PlanStepSchema>;
  * deletions, the stop button and the shield — everything that makes a run safe — and the plan
  * only says what one round of it does.
  */
-export const ActionPlanSchema = z.object({
-	target: TargetSchema,
-	steps: z.array(PlanStepSchema).min(1).max(10)
-});
+export const ActionPlanSchema = z
+	.object({
+		/**
+		 * `loop` repeats the steps until the target finds nothing — a deletion, and what every
+		 * plan used to be. `once` runs them a single time, which is what opening a page or
+		 * dismissing a banner is: those have nothing to count and nothing to empty.
+		 *
+		 * Defaulted, so a plan saved before this existed still reads as what it was.
+		 */
+		kind: z.enum(['loop', 'once']).default('loop'),
+		/** What one still-present item looks like. Required for `loop`, meaningless for `once`. */
+		target: TargetSchema.optional(),
+		steps: z.array(PlanStepSchema).min(1).max(10)
+	})
+	.refine((plan) => plan.kind === 'once' || plan.target !== undefined, {
+		message: 'a looping plan needs a target, or it would never know when to stop',
+		path: ['target']
+	});
 export type ActionPlan = z.infer<typeof ActionPlanSchema>;
 
 /**
@@ -139,6 +161,11 @@ export const CustomActionSchema = z.object({
 	id: z.string().min(1),
 	label: z.string().min(1).max(60),
 	platform: PlatformSchema,
+	/**
+	 * Where it is offered. `panel` is beside that platform's own lists; `sidebar` puts it in
+	 * the app's navigation, for something that is not a deletion and has no list to belong to.
+	 */
+	place: z.enum(['panel', 'sidebar']).default('panel'),
 	plan: ActionPlanSchema,
 	createdAt: z.iso.datetime({ offset: true })
 });

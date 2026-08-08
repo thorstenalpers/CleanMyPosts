@@ -36,7 +36,9 @@ describe('AppSettingsSchema', () => {
 					id: 'a1',
 					label: 'Drafts',
 					platform: 'x',
+					place: 'panel',
 					plan: {
+						kind: 'loop',
 						target: { selector: '[data-testid="draft"]' },
 						steps: [
 							{ step: 'click', target: { selector: '[data-testid="draft-delete"]' } },

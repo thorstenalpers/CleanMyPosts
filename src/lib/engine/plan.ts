@@ -34,11 +34,36 @@ export type PlanStep =
 	| { step: 'waitFor'; target: Target; maxWaitMs?: number }
 	| { step: 'waitGone'; target: Target; maxWaitMs?: number }
 	| { step: 'scrollUntil'; target: Target; maxWaitMs?: number }
-	| { step: 'wait'; ms: number };
+	| { step: 'wait'; ms: number }
+	| { step: 'navigate'; url: string };
 
 export interface ActionPlan {
-	target: Target;
+	/** `loop` empties a list; `once` does the steps a single time. */
+	kind?: 'loop' | 'once';
+	target?: Target;
 	steps: PlanStep[];
+}
+
+/**
+ * Where a plan is allowed to send the page.
+ *
+ * The same hosts the injected script guards, and for the same reason. A step that could point
+ * a signed-in session at any address is not a step in a plan — it is a way out of the app, and
+ * whatever wrote the plan does not get to decide that.
+ */
+const ALLOWED_HOSTS = ['x.com', 'youtube.com', 'myactivity.google.com'];
+
+export function isAllowedUrl(url: string): boolean {
+	let host: string;
+	try {
+		const parsed = new URL(url);
+		if (parsed.protocol !== 'https:') return false;
+		host = parsed.host.toLowerCase();
+	} catch {
+		return false;
+	}
+	// Whole host, never a substring: "x.com.example.net" ends in neither.
+	return ALLOWED_HOSTS.some((allowed) => host === allowed || host.endsWith(`.${allowed}`));
 }
 
 /** A round that removes nothing is the signal to stop, so the loop needs a ceiling too. */
@@ -102,6 +127,16 @@ async function runStep(step: PlanStep): Promise<boolean> {
 			await delay(step.ms);
 			return true;
 
+		case 'navigate':
+			if (!isAllowedUrl(step.url)) {
+				postLog('warning', `The plan tried to open an address it is not allowed to: ${step.url}`);
+				return false;
+			}
+			window.location.assign(step.url);
+			// Nothing after a navigation runs: this document is on its way out. Reported as
+			// done so the round counts, rather than as a step that found nothing.
+			return true;
+
 		case 'click': {
 			const el = findTarget(step.target);
 			if (!el) return false;
@@ -147,14 +182,29 @@ async function runStep(step: PlanStep): Promise<boolean> {
 export function planAction(plan: ActionPlan): DeleteActionDefinition {
 	return {
 		isEmpty(): boolean {
-			return findTarget(plan.target) === null;
+			// A one-shot plan is never "empty": there is nothing it is meant to exhaust.
+			return plan.target === undefined ? false : findTarget(plan.target) === null;
 		},
 
 		async run(params: RunParams): Promise<number> {
+			// One pass and no counting. Opening a page or dismissing a banner has nothing to
+			// empty, so the loop below would have no way to know it was finished.
+			if (plan.kind === 'once') {
+				for (const step of plan.steps) {
+					if (await runStep(step)) continue;
+					postLog('info', `The plan's "${step.step}" step found nothing; stopping.`);
+					return 0;
+				}
+				return 1;
+			}
+
 			let deletedCount = 0;
 
+			const target = plan.target;
+			if (!target) return 0;
+
 			for (let round = 0; round < MAX_ROUNDS; round++) {
-				const found = await waitForByScrolling(() => findTarget(plan.target) !== null, 500, {
+				const found = await waitForByScrolling(() => findTarget(target) !== null, 500, {
 					maxWaitMs: DEFAULT_WAIT
 				});
 				if (!found) {

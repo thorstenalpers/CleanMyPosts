@@ -1,5 +1,5 @@
 import { describe, expect, it, beforeEach, vi } from 'vitest';
-import { findTarget, planAction, type ActionPlan } from './plan';
+import { findTarget, isAllowedUrl, planAction, type ActionPlan } from './plan';
 
 const params = { requestId: 'r1', waitAfterDelete: 0, waitBetweenRetryDeleteAttempts: 0 };
 
@@ -55,6 +55,7 @@ describe('running a plan', () => {
 	});
 
 	const removeOne: ActionPlan = {
+		kind: 'loop',
 		target: { selector: '.item' },
 		steps: [{ step: 'click', target: { selector: '.item' } }]
 	};
@@ -116,5 +117,73 @@ describe('running a plan', () => {
 
 		await expect(run).resolves.toBe(0);
 		vi.useRealTimers();
+	});
+});
+
+/**
+ * The shape for everything that is not a deletion: opening a page, dismissing a banner,
+ * expanding a section. There is nothing to exhaust, so the loop that empties a list would
+ * have no way of knowing it had finished.
+ */
+describe('a plan that runs once', () => {
+	beforeEach(() => {
+		document.body.innerHTML = '';
+	});
+
+	it('does its steps a single time and needs no target', async () => {
+		document.body.innerHTML = '<button class="accept"></button>';
+		visible(document.querySelector('.accept')!);
+		let clicks = 0;
+		document.body.addEventListener('click', () => clicks++);
+
+		const plan: ActionPlan = {
+			kind: 'once',
+			steps: [{ step: 'click', target: { selector: '.accept' } }]
+		};
+		const done = await planAction(plan).run(params);
+
+		expect(clicks).toBe(1);
+		expect(done).toBe(1);
+	});
+
+	// It empties nothing, so "is there anything left" has no answer for it.
+	it('is never reported as empty', () => {
+		expect(planAction({ kind: 'once', steps: [{ step: 'wait', ms: 0 }] }).isEmpty()).toBe(false);
+	});
+
+	it('stops at the first step that finds nothing', async () => {
+		const plan: ActionPlan = {
+			kind: 'once',
+			steps: [{ step: 'click', target: { selector: '.not-there' } }]
+		};
+
+		expect(await planAction(plan).run(params)).toBe(0);
+	});
+});
+
+/**
+ * A step that could point a signed-in session at any address is not a step in a plan — it is
+ * a way out of the app, and whatever wrote the plan does not get to decide that.
+ */
+describe('where a plan may navigate', () => {
+	it('takes the platforms the engine is injected into', () => {
+		expect(isAllowedUrl('https://www.youtube.com/feed/channels')).toBe(true);
+		expect(isAllowedUrl('https://x.com/home')).toBe(true);
+		expect(isAllowedUrl('https://myactivity.google.com/page')).toBe(true);
+	});
+
+	it('refuses anywhere else, and anything that is not https', () => {
+		expect(isAllowedUrl('https://evil.test/steal')).toBe(false);
+		expect(isAllowedUrl('http://x.com/home')).toBe(false);
+		expect(isAllowedUrl('javascript:alert(1)')).toBe(false);
+		expect(isAllowedUrl('not a url')).toBe(false);
+	});
+
+	// The rule the origin guard in the injected script already lives by: a whole host, never a
+	// substring, or "x.com.example.net" would pass for X.
+	it('matches whole hosts, not substrings', () => {
+		expect(isAllowedUrl('https://x.com.example.net/')).toBe(false);
+		expect(isAllowedUrl('https://notyoutube.com/')).toBe(false);
+		expect(isAllowedUrl('https://mobile.x.com/home')).toBe(true);
 	});
 });

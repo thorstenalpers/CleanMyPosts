@@ -173,8 +173,9 @@ function describePatchTask(): string {
 	return [
 		'## Write an action plan',
 		'',
-		'The user wants a list emptied that the engine does not already handle, or handles with',
-		'a selector the platform has since moved.',
+		'The user wants something done on the platform page: a list emptied that the engine does',
+		'not already handle, a selector fixed that the platform has since moved, or a page or a',
+		'button reached that the app does not offer yet.',
 		'',
 		'You are not writing code. The app does not evaluate anything you send. Answer with a',
 		'JSON object over exactly this vocabulary, and nothing else — no prose, no fence:',
@@ -182,13 +183,15 @@ function describePatchTask(): string {
 		'```json',
 		JSON.stringify(
 			{
+				kind: 'loop or once',
 				target: { selector: 'string', text: 'optional, matched case-insensitively' },
 				steps: [
 					{ step: 'click', target: { selector: 'string' }, pointerSequence: 'optional boolean' },
 					{ step: 'waitFor', target: { selector: 'string' }, maxWaitMs: 5000 },
 					{ step: 'waitGone', target: { selector: 'string' }, maxWaitMs: 5000 },
 					{ step: 'scrollUntil', target: { selector: 'string' }, maxWaitMs: 5000 },
-					{ step: 'wait', ms: 500 }
+					{ step: 'wait', ms: 500 },
+					{ step: 'navigate', url: 'https://www.youtube.com/feed/channels' }
 				]
 			},
 			null,
@@ -196,9 +199,19 @@ function describePatchTask(): string {
 		),
 		'```',
 		'',
-		'`target` says what one still-undeleted item looks like. `steps` say what makes that one',
-		'item go away. Do not write the loop: the app repeats the steps, counts what went, waits',
-		'between rounds and stops when the target finds nothing. Ten steps at most.',
+		'A plan is one of two shapes, and `kind` says which.',
+		'',
+		'`kind: "loop"` empties a list. `target` says what one still-present item looks like and',
+		'`steps` say what makes that one item go away. Do not write the loop itself: the app',
+		'repeats the steps, counts what went, waits between rounds and stops when the target',
+		'finds nothing.',
+		'',
+		'`kind: "once"` does the steps a single time and needs no `target`. That is the shape for',
+		'anything that is not a deletion — opening a page, dismissing a cookie banner, expanding',
+		'a section. Use `navigate` to open a page; only addresses on the platform itself are',
+		'allowed, and anything else is refused.',
+		'',
+		'Ten steps at most, either way.',
 		'',
 		'Name elements by selector, and where a selector is not enough by the word the element',
 		'carries. Never by position, index or nth-child: the plan is saved and run again later,',
@@ -211,14 +224,25 @@ function describePatchTask(): string {
 		JSON.stringify(siteConfig, null, 2),
 		'```',
 		'',
-		'Example of a whole good answer:',
+		'A whole good answer for emptying a list:',
 		JSON.stringify(
 			{
+				kind: 'loop',
 				target: { selector: '[data-testid="unlike"]' },
 				steps: [
 					{ step: 'click', target: { selector: '[data-testid="unlike"]' } },
 					{ step: 'waitGone', target: { selector: '[data-testid="unlike"]' }, maxWaitMs: 5000 }
 				]
+			},
+			null,
+			2
+		),
+		'',
+		'And one for opening a page, which is kept as an entry in the app’s own navigation:',
+		JSON.stringify(
+			{
+				kind: 'once',
+				steps: [{ step: 'navigate', url: 'https://www.youtube.com/feed/channels' }]
 			},
 			null,
 			2

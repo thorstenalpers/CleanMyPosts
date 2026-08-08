@@ -54,7 +54,9 @@
 
 	/** What the assistant wrote and the user kept, for this platform. */
 	const saved = $derived(
-		settingsStore.settings.customActions.filter((action) => action.platform === platform)
+		settingsStore.settings.customActions.filter(
+			(action) => action.platform === platform && action.place === 'panel'
+		)
 	);
 
 	/** Told apart by the one field only a saved action has. */

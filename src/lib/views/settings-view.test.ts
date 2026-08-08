@@ -202,7 +202,9 @@ describe('saved actions in the settings', () => {
 		id: 'a1',
 		label: 'Bookmarks',
 		platform: 'x' as const,
+		place: 'panel' as const,
 		plan: {
+			kind: 'loop' as const,
 			target: { selector: '[data-testid="bookmark"]' },
 			steps: [{ step: 'click' as const, target: { selector: '[data-testid="bookmark"]' } }]
 		},

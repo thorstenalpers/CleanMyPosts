@@ -93,6 +93,12 @@
 		return active ? languageLabel(active.id, active.label) : t('settings.language.system');
 	});
 
+	/** Preset names are product names, so they are not translated — see `THEME_PRESETS`. */
+	const activePresetLabel = $derived(
+		THEME_PRESETS.find((entry) => entry.id === settingsStore.settings.themePreset)?.label ??
+			settingsStore.settings.themePreset
+	);
+
 	const timeoutFields = [
 		{
 			key: 'waitAfterDocumentLoad',
@@ -189,28 +195,32 @@
 
 				<SettingRow label={t('settings.colour')} description={t('settings.colour.description')}>
 					{#snippet control()}
-						<div
-							class="flex flex-wrap justify-end gap-1"
-							role="group"
-							aria-label={t('settings.colour')}
-						>
-							{#each THEME_PRESETS as preset (preset.id)}
-								{@const active = settingsStore.settings.themePreset === preset.id}
-								<button
-									type="button"
-									aria-pressed={active}
-									onclick={() => commit({ themePreset: preset.id })}
-									class={cn(
-										'flex h-8 cursor-pointer items-center rounded-md border px-2.5 text-xs font-medium transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
-										active
-											? 'border-primary/40 bg-primary/10 text-foreground'
-											: 'border-border text-muted-foreground hover:bg-muted'
-									)}
-								>
-									{preset.label}
-								</button>
-							{/each}
-						</div>
+						<DropdownMenu.Root>
+							<DropdownMenu.Trigger>
+								{#snippet child({ props })}
+									<button
+										{...props}
+										type="button"
+										aria-label={t('settings.colour')}
+										class="flex h-8 cursor-pointer items-center gap-2 rounded-md border border-border px-2.5 text-xs font-medium transition-colors duration-150 hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+									>
+										{activePresetLabel}
+										<ChevronDownIcon class="size-3.5 text-muted-foreground" />
+									</button>
+								{/snippet}
+							</DropdownMenu.Trigger>
+
+							<DropdownMenu.Content align="end" class="w-44">
+								{#each THEME_PRESETS as preset (preset.id)}
+									<DropdownMenu.Item onSelect={() => commit({ themePreset: preset.id })}>
+										<span class="flex-1">{preset.label}</span>
+										{#if settingsStore.settings.themePreset === preset.id}
+											<CheckIcon class="size-4" />
+										{/if}
+									</DropdownMenu.Item>
+								{/each}
+							</DropdownMenu.Content>
+						</DropdownMenu.Root>
 					{/snippet}
 				</SettingRow>
 

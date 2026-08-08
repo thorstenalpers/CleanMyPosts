@@ -155,6 +155,24 @@ describe('SettingsView', () => {
 		);
 	});
 
+	// Seven presets in a row wrapped across the whole width of the card; they are a list, and a
+	// list of names belongs behind one trigger, the way the language beside it already is.
+	it('picks a colour from a dropdown that says which one is on', async () => {
+		const { client, settingsStore, settingsSet } = setup();
+		await settingsStore.load();
+		render(SettingsView, { bridge: client, settingsStore });
+
+		const trigger = screen.getByRole('button', { name: 'Colour' });
+		expect(trigger).toHaveTextContent('Default');
+
+		await fireEvent.click(trigger);
+		await fireEvent.click(await screen.findByRole('menuitem', { name: 'Vercel' }));
+
+		await waitFor(() =>
+			expect(settingsSet).toHaveBeenCalledWith(expect.objectContaining({ themePreset: 'vercel' }))
+		);
+	});
+
 	it('toggles confirmDeletion via the switch', async () => {
 		const { client, settingsStore, settingsSet } = setup();
 		await settingsStore.load();

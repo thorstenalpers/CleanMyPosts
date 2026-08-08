@@ -92,6 +92,25 @@ pub async fn ask(app: AppHandle, params: &Value) -> Result<Value> {
     Ok(json!({ "text": text }))
 }
 
+/// The batch file the terminal is pointed at.
+///
+/// A file rather than a command line, and that is the whole point of it. The command needs
+/// two quoted paths and a pipe, and passing that through `Command::arg` cannot work: Rust
+/// escapes a quoted argument the way the C runtime expects, as `\"`, and `cmd.exe` has never
+/// understood that convention. It takes the backslash literally and goes looking for a
+/// program called `\"C:\…\claude.exe\"`, which is exactly the error this fixes. Inside a file
+/// there is no argv layer to escape through, so the quoting is cmd's own and means what it
+/// says.
+fn open_script(prompt: &std::path::Path, binary: &std::path::Path) -> String {
+    // CRLF because it is read by cmd, and `@echo off` so the window opens on the answer
+    // rather than on a copy of the command that produced it.
+    format!(
+        "@echo off\r\ntype \"{}\" | \"{}\"\r\n",
+        prompt.display(),
+        binary.display()
+    )
+}
+
 /// Opens the prompt in Claude Code, in a terminal window of its own.
 ///
 /// Through a file rather than an argument: the prompt carries the whole log and runs to
@@ -110,6 +129,10 @@ pub fn open_in_cli(app: &AppHandle, params: &Value) -> Result<Value> {
     let path = std::env::temp_dir().join(format!("cleanmyposts-prompt-{}.txt", std::process::id()));
     std::fs::write(&path, prompt).map_err(|error| Error::Message(error.to_string()))?;
 
+    let script = std::env::temp_dir().join(format!("cleanmyposts-open-{}.cmd", std::process::id()));
+    std::fs::write(&script, open_script(&path, &binary))
+        .map_err(|error| Error::Message(error.to_string()))?;
+
     // The terminal this opens is the point; the `cmd /c` that opens it is not, and it flashed
     // its own window over the app on the way.
     crate::assistant::cli::hidden(std::process::Command::new("cmd").args([
@@ -118,11 +141,65 @@ pub fn open_in_cli(app: &AppHandle, params: &Value) -> Result<Value> {
         "",
         "cmd",
         "/k",
-        &format!("type \"{}\" | \"{}\"", path.display(), binary.display()),
+        &script.display().to_string(),
     ]))
     .spawn()
     .map_err(|error| Error::Message(format!("could not start a terminal: {error}")))?;
 
     crate::bridge::log(app, "info", "assistant: handed the request to Claude Code");
     Ok(Value::Null)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::path::Path;
+
+    /// The bug this stands for, reported from the terminal it opened:
+    ///
+    /// ```text
+    /// '\"C:\Users\thor\.local/bin/claude.exe\"' is not recognized as an internal
+    /// or external command, operable program or batch file.
+    /// ```
+    ///
+    /// The backslashes in that message are the finding. They are Rust's argv escaping arriving
+    /// intact at a shell that does not speak it, so the program name became the escape sequence
+    /// itself. Nothing about the path was wrong — `locate` checks the file exists before this
+    /// is ever reached.
+    #[test]
+    fn the_script_quotes_both_paths_without_escaping_the_quotes() {
+        let script = open_script(
+            Path::new(r"C:\Users\thor\AppData\Local\Temp\prompt.txt"),
+            Path::new(r"C:\Users\thor\.local\bin\claude.exe"),
+        );
+
+        assert!(
+            !script.contains(r#"\""#),
+            "cmd reads a backslash before a quote as two literal characters"
+        );
+        assert!(script.contains(r#""C:\Users\thor\AppData\Local\Temp\prompt.txt""#));
+        assert!(script.contains(r#""C:\Users\thor\.local\bin\claude.exe""#));
+    }
+
+    // A path with a space in it is the ordinary case on Windows, not the exotic one.
+    #[test]
+    fn a_path_with_a_space_stays_inside_its_quotes() {
+        let script = open_script(
+            Path::new(r"C:\Users\Anna Meier\AppData\Local\Temp\prompt.txt"),
+            Path::new(r"C:\Program Files\claude\claude.exe"),
+        );
+
+        assert!(script.contains(r#""C:\Users\Anna Meier\AppData\Local\Temp\prompt.txt""#));
+        assert!(script.contains(r#""C:\Program Files\claude\claude.exe""#));
+    }
+
+    /// Read by cmd, which wants CRLF, and opens on the answer rather than on the command.
+    #[test]
+    fn it_is_a_batch_file_cmd_will_read() {
+        let script = open_script(Path::new("a.txt"), Path::new("b.exe"));
+
+        assert!(script.starts_with("@echo off\r\n"));
+        assert!(script.ends_with("\r\n"));
+        assert!(script.contains(" | "));
+    }
 }

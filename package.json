@@ -6,6 +6,8 @@
 	"scripts": {
 		"start": "tauri dev",
 		"dev": "vite dev",
+		"dev:content": "vite build --config vite.content.config.ts",
+		"dev:app": "npm run dev:content && vite dev",
 		"prepare": "svelte-kit sync",
 		"build": "vite build && vite build --config vite.content.config.ts",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",

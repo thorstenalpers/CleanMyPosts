@@ -4,6 +4,20 @@ The most fragile part of the project. The injected TypeScript drives the platfor
 web UI to delete the user's content — which means every platform redesign can break it.
 Everything here is built on the assumption that this will happen.
 
+## How it reaches the app
+
+`src-tauri/src/lib.rs` embeds it with `include_str!("../../dist/content/content.js")`, so the
+bundle is baked into the binary **at compile time**. That file is produced by its own Vite
+config, not by the one that builds the window:
+
+```bash
+npm run dev:content    # vite build --config vite.content.config.ts
+```
+
+Both `beforeDevCommand` and `beforeBuildCommand` run it, so `npm run start` and a release
+build are covered. Only a hand-rolled `vite dev` is not — and then the binary keeps whatever
+engine was last built, which looks exactly like a change that had no effect.
+
 ## Layout
 
 ```

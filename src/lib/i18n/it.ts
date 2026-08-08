@@ -32,6 +32,14 @@ export const it: Record<MessageKey, string> = {
 	'action.close': 'Chiudi le azioni di {platform}',
 	'action.open': 'Apri le azioni di {platform}',
 
+	'assistant.plan.count': 'Controlla prima',
+	'assistant.plan.run': 'Esegui una volta',
+	'assistant.plan.matches': '{count} corrispondenze in questa pagina',
+	'assistant.plan.removed': '{count} rimossi',
+	'assistant.plan.rejected': 'Non è un piano — {reason}',
+	'assistant.plan.noPlatform': 'Accedi a una piattaforma per provarlo qui',
+	'assistant.plan.label': 'Piano dell’assistente',
+
 	'group.posts': 'Post',
 	'group.replies': 'Risposte',
 	'group.reposts': 'Repost',

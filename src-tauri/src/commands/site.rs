@@ -146,6 +146,129 @@ fn unshield(app: &AppHandle, platform: &str) {
     }
 }
 
+/// A key for a round trip the caller did not name one for.
+static PROBE_SEQUENCE: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+
+/// Hands the page a script and waits for it to answer.
+///
+/// The same registry and the same oneshot `run_action` uses, deliberately: it is what the
+/// stop button reaches into, so anything that answers through a channel of its own would be
+/// a run nobody could stop.
+async fn await_page(
+    app: &AppHandle,
+    platform: &str,
+    request_id: &str,
+    script: String,
+) -> Result<u32> {
+    let (tx, rx) = oneshot::channel();
+    // Scoped so the `State` guard is dropped before the await below: a webview handle is not
+    // `Send`, and neither is a mutex guard held across a suspension point.
+    {
+        let state = app.state::<AppState>();
+        state.runs.0.lock().expect("runs mutex").insert(
+            request_id.to_owned(),
+            Run {
+                deleted: 0,
+                responder: Some(tx),
+            },
+        );
+    }
+
+    let evaluated = app
+        .get_webview(crate::site_webview_label(platform))
+        .ok_or_else(|| Error::Site("site webview is gone".into()))
+        .and_then(|site| site.eval(&script).map_err(Error::from));
+
+    if let Err(error) = evaluated {
+        app.state::<AppState>()
+            .runs
+            .0
+            .lock()
+            .expect("runs mutex")
+            .remove(request_id);
+        unshield(app, platform);
+        return Err(error);
+    }
+
+    match rx.await {
+        Ok(Ok(count)) => Ok(count),
+        Ok(Err(message)) => Err(Error::Message(message)),
+        Err(_) => {
+            unshield(app, platform);
+            Err(Error::Abandoned)
+        }
+    }
+}
+
+/// Runs a plan on the page that is already open.
+///
+/// No navigation, unlike `run_action`: this is "try what you just got, where you are
+/// standing", and a plan is only ever written against a page someone was looking at.
+pub async fn run_plan(app: AppHandle, params: &Value) -> Result<Value> {
+    let request_id = params
+        .get("requestId")
+        .and_then(Value::as_str)
+        .ok_or(Error::MissingParam("requestId"))?
+        .to_owned();
+    let platform = params
+        .get("platform")
+        .and_then(Value::as_str)
+        .ok_or(Error::MissingParam("platform"))?;
+    let plan = params.get("plan").ok_or(Error::MissingParam("plan"))?;
+    let timeouts = params.get("timeouts").cloned().unwrap_or(json!({}));
+
+    let run_params = json!({
+        "requestId": request_id,
+        "waitAfterDelete": timeouts.get("waitAfterDelete").and_then(Value::as_u64).unwrap_or(500),
+        "waitBetweenRetryDeleteAttempts": timeouts
+            .get("waitBetweenRetryDeleteAttempts").and_then(Value::as_u64).unwrap_or(500),
+        "plan": plan,
+    });
+    let script = format!(
+        "if (window.__cmp) window.__cmp.runPlan({}); \
+         else window.chrome.webview.postMessage({{ type: 'error', requestId: {}, \
+           message: 'The delete engine is not loaded on this page.' }});",
+        json!(run_params.to_string()),
+        json!(request_id)
+    );
+
+    crate::bridge::log(&app, "info", format!("{platform}: running a plan"));
+    let deleted = await_page(&app, platform, &request_id, script).await?;
+    crate::bridge::log(
+        &app,
+        "info",
+        format!("{platform}: the plan removed {deleted}"),
+    );
+    Ok(json!({ "deletedCount": deleted }))
+}
+
+/// How many the plan's target finds, having touched none of them.
+pub async fn count_matches(app: AppHandle, params: &Value) -> Result<Value> {
+    let platform = params
+        .get("platform")
+        .and_then(Value::as_str)
+        .ok_or(Error::MissingParam("platform"))?;
+    let target = params.get("target").ok_or(Error::MissingParam("target"))?;
+
+    // Nobody correlates a count, so nobody had to name it — but the registry is keyed, so it
+    // needs a key of its own that cannot collide with a run's.
+    let request_id = format!(
+        "probe-{}",
+        PROBE_SEQUENCE.fetch_add(1, std::sync::atomic::Ordering::Relaxed)
+    );
+    let script = format!(
+        "if (window.__cmp) window.__cmp.countMatches({}, {}); \
+         else window.chrome.webview.postMessage({{ type: 'error', requestId: {}, \
+           message: 'The delete engine is not loaded on this page.' }});",
+        json!(request_id),
+        json!(target.to_string()),
+        json!(request_id)
+    );
+
+    let count = await_page(&app, platform, &request_id, script).await?;
+    Ok(json!({ "count": count }))
+}
+
 pub async fn run_action(app: AppHandle, params: &Value) -> Result<Value> {
     let request_id = params
         .get("requestId")

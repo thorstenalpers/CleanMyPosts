@@ -1,5 +1,11 @@
 import type { BridgeClient } from '$lib/bridge/client';
-import type { ActionResult, Platform, SiteAction, TimeoutSettings } from '$lib/bridge/contract';
+import type {
+	ActionPlan,
+	ActionResult,
+	Platform,
+	SiteAction,
+	TimeoutSettings
+} from '$lib/bridge/contract';
 import type { MessageKey } from '$lib/i18n/index.svelte';
 
 export interface RunActionInput {
@@ -8,6 +14,12 @@ export interface RunActionInput {
 	timeouts: TimeoutSettings;
 	/** A message key: the running action is named in the sidebar and in the overview. */
 	label: MessageKey;
+}
+
+export interface RunPlanInput {
+	platform: Platform;
+	plan: ActionPlan;
+	timeouts: TimeoutSettings;
 }
 
 /** Drives a single `site.runAction` call and tracks its live progress events. */
@@ -48,6 +60,41 @@ export class ActionRunner {
 				requestId,
 				platform: input.platform,
 				action: input.action,
+				timeouts: input.timeouts
+			});
+		} finally {
+			unsubscribe();
+			this.running = false;
+			this.currentRequestId = undefined;
+		}
+	}
+
+	/**
+	 * The same run, driven by an assistant's plan instead of a built-in action.
+	 *
+	 * Deliberately shares every field above — `running`, the counter, the request id the stop
+	 * button reaches for. A plan that ran beside all that would be a run the status bar could
+	 * not report and `cancel` could not stop.
+	 */
+	async runPlan(input: RunPlanInput): Promise<ActionResult> {
+		const requestId = crypto.randomUUID();
+		this.currentRequestId = requestId;
+		this.running = true;
+		this.deletedSoFar = 0;
+		this.currentLabel = 'assistant.plan.label';
+		this.cancelled = false;
+
+		const unsubscribe = this.bridge.onPushEvent((event) => {
+			if (event.event === 'progress' && event.payload.requestId === requestId) {
+				this.deletedSoFar = event.payload.deletedCount;
+			}
+		});
+
+		try {
+			return await this.bridge.call('site.runPlan', {
+				requestId,
+				platform: input.platform,
+				plan: input.plan,
 				timeouts: input.timeouts
 			});
 		} finally {

@@ -10,7 +10,7 @@
  * The user can read the whole thing before sending it: the assistant's preview renders these
  * same sections, so nothing about the request is only visible from here.
  */
-import type { LogEntry } from '$lib/bridge/contract';
+import { ActionPlanSchema, type ActionPlan, type LogEntry } from '$lib/bridge/contract';
 import { X_GROUPS, YOUTUBE_GROUPS } from '$lib/actions';
 import { siteConfig } from '$lib/engine/config';
 
@@ -135,32 +135,96 @@ function describeSource(): string {
 }
 
 /**
- * What the model has to know to write a patch: the live configuration, and the one shape the
- * app can actually run.
+ * What the model has to know to write a plan: the vocabulary, the live configuration, and the
+ * one rule that decides whether the plan is still worth anything tomorrow.
  */
 function describePatchTask(): string {
 	return [
-		'## Write a patch for the delete engine',
+		'## Write an action plan',
 		'',
-		'The user says the platform page does not look the way the engine expects — usually',
-		'because their language or region words a menu item differently.',
+		'The user wants a list emptied that the engine does not already handle, or handles with',
+		'a selector the platform has since moved.',
 		'',
-		'The app evaluates your answer inside the platform page before the next run.',
-		'`window.__cmp.config` is a plain mutable object; this is its current content:',
+		'You are not writing code. The app does not evaluate anything you send. Answer with a',
+		'JSON object over exactly this vocabulary, and nothing else — no prose, no fence:',
+		'',
+		'```json',
+		JSON.stringify(
+			{
+				target: { selector: 'string', text: 'optional, matched case-insensitively' },
+				steps: [
+					{ step: 'click', target: { selector: 'string' }, pointerSequence: 'optional boolean' },
+					{ step: 'waitFor', target: { selector: 'string' }, maxWaitMs: 5000 },
+					{ step: 'waitGone', target: { selector: 'string' }, maxWaitMs: 5000 },
+					{ step: 'scrollUntil', target: { selector: 'string' }, maxWaitMs: 5000 },
+					{ step: 'wait', ms: 500 }
+				]
+			},
+			null,
+			2
+		),
+		'```',
+		'',
+		'`target` says what one still-undeleted item looks like. `steps` say what makes that one',
+		'item go away. Do not write the loop: the app repeats the steps, counts what went, waits',
+		'between rounds and stops when the target finds nothing. Ten steps at most.',
+		'',
+		'Name elements by selector, and where a selector is not enough by the word the element',
+		'carries. Never by position, index or nth-child: the plan is saved and run again later,',
+		'and by then the page has rendered differently. `pointerSequence: true` is for a control',
+		'that only reacts to a full mouse sequence — YouTube’s menu entries are the known case.',
+		'',
+		'This is what the engine already looks for, as a guide to how these pages are built:',
 		'',
 		'```json',
 		JSON.stringify(siteConfig, null, 2),
 		'```',
 		'',
-		'Answer with JavaScript only — no markdown fence, no explanation around it, nothing',
-		'that is not runnable. Change the least that solves it: push the wording the user',
-		'reports onto the matching array, or reassign the one selector that moved. Do not',
-		'redefine `window.__cmp`, do not fetch anything, do not add listeners, and do not',
-		'delete entries that are already there — another language depends on each of them.',
-		'',
 		'Example of a whole good answer:',
-		"window.__cmp.config.youtube.removeFromLikedText.push('beğenilenlerden kaldır');"
+		JSON.stringify(
+			{
+				target: { selector: '[data-testid="unlike"]' },
+				steps: [
+					{ step: 'click', target: { selector: '[data-testid="unlike"]' } },
+					{ step: 'waitGone', target: { selector: '[data-testid="unlike"]' }, maxWaitMs: 5000 }
+				]
+			},
+			null,
+			2
+		)
 	].join('\n');
+}
+
+/**
+ * Reads the model's answer as a plan, or says why it is not one.
+ *
+ * Tolerant about the wrapping and strict about the content: a fence or a sentence of preamble
+ * is the ordinary way a model answers and is not worth refusing over, but what is inside has
+ * to satisfy `ActionPlanSchema` exactly. That check is the whole reason a plan can be run at
+ * all, so nothing here may fall back to "close enough".
+ */
+export function parseActionPlan(answer: string): { plan: ActionPlan } | { error: string } {
+	const fenced = answer.match(/```(?:json)?\s*([\s\S]*?)```/);
+	const body = (fenced?.[1] ?? answer).trim();
+	// A model that explained itself first still put the object in there somewhere.
+	const start = body.indexOf('{');
+	const end = body.lastIndexOf('}');
+	if (start === -1 || end <= start) return { error: 'the answer carries no JSON object' };
+
+	let value: unknown;
+	try {
+		value = JSON.parse(body.slice(start, end + 1));
+	} catch (cause) {
+		return { error: cause instanceof Error ? cause.message : String(cause) };
+	}
+
+	const result = ActionPlanSchema.safeParse(value);
+	if (!result.success) {
+		const first = result.error.issues[0];
+		const where = first?.path.join('.');
+		return { error: where ? `${where}: ${first?.message}` : (first?.message ?? 'not a plan') };
+	}
+	return { plan: result.data };
 }
 
 /**

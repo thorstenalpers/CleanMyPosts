@@ -4,12 +4,14 @@
 	import { getAppContext } from '$lib/app-context';
 	import AssistantView from '$lib/views/assistant-view.svelte';
 
-	const { bridge, logStore, settingsStore } = getAppContext();
+	const { bridge, logStore, settingsStore, loginStore, runner } = getAppContext();
 </script>
 
 <AssistantView
 	{bridge}
 	{logStore}
 	{settingsStore}
+	{loginStore}
+	{runner}
 	onOpenSettings={() => void goto(resolve('/settings'))}
 />

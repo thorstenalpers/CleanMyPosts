@@ -31,6 +31,14 @@ export const ru: Record<MessageKey, string> = {
 	'action.close': 'Закрыть действия {platform}',
 	'action.open': 'Открыть действия {platform}',
 
+	'assistant.plan.count': 'Сначала проверить',
+	'assistant.plan.run': 'Выполнить один раз',
+	'assistant.plan.matches': 'Совпадений на этой странице: {count}',
+	'assistant.plan.removed': 'Удалено: {count}',
+	'assistant.plan.rejected': 'Это не план — {reason}',
+	'assistant.plan.noPlatform': 'Войдите на платформу, чтобы попробовать здесь',
+	'assistant.plan.label': 'План ассистента',
+
 	'group.posts': 'Посты',
 	'group.replies': 'Ответы',
 	'group.reposts': 'Репосты',

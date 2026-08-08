@@ -32,6 +32,14 @@ export const hi: Record<MessageKey, string> = {
 	'action.close': '{platform} की क्रियाएँ बंद करें',
 	'action.open': '{platform} की क्रियाएँ खोलें',
 
+	'assistant.plan.count': 'पहले जाँचें',
+	'assistant.plan.run': 'एक बार चलाएँ',
+	'assistant.plan.matches': 'इस पृष्ठ पर {count} मेल',
+	'assistant.plan.removed': '{count} हटाए गए',
+	'assistant.plan.rejected': 'यह योजना नहीं है — {reason}',
+	'assistant.plan.noPlatform': 'यहाँ आज़माने के लिए किसी प्लेटफ़ॉर्म में साइन इन करें',
+	'assistant.plan.label': 'सहायक की योजना',
+
 	'group.posts': 'पोस्ट',
 	'group.replies': 'जवाब',
 	'group.reposts': 'रीपोस्ट',

@@ -38,6 +38,14 @@ export const en = {
 	'action.close': 'Close {platform} actions',
 	'action.open': 'Open {platform} actions',
 
+	'assistant.plan.count': 'Check first',
+	'assistant.plan.run': 'Run once',
+	'assistant.plan.matches': '{count} on this page match it',
+	'assistant.plan.removed': '{count} removed',
+	'assistant.plan.rejected': 'Not a plan — {reason}',
+	'assistant.plan.noPlatform': 'Sign in to a platform to try this here',
+	'assistant.plan.label': 'Assistant plan',
+
 	'group.posts': 'Posts',
 	'group.replies': 'Replies',
 	'group.reposts': 'Reposts',

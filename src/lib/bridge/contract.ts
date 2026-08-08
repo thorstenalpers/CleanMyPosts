@@ -294,6 +294,27 @@ export const BridgeMethods = {
 		}),
 		result: ActionResultSchema
 	},
+	/**
+	 * Runs an assistant's plan on the page that is already open, once.
+	 *
+	 * Deliberately does not navigate the way `site.runAction` does: this is "try what you just
+	 * got where you are standing", and a plan is judged against the page it was written for.
+	 * Stopped by `site.cancelAction` like any other run.
+	 */
+	'site.runPlan': {
+		params: z.object({
+			requestId: z.string(),
+			platform: PlatformSchema,
+			plan: ActionPlanSchema,
+			timeouts: TimeoutSettingsSchema
+		}),
+		result: ActionResultSchema
+	},
+	/** The dry run: how many elements the plan's target finds, having touched none of them. */
+	'site.countMatches': {
+		params: z.object({ platform: PlatformSchema, target: TargetSchema }),
+		result: z.object({ count: z.number().int().nonnegative() })
+	},
 	/** Stops an in-flight `site.runAction`; that call then resolves with the count deleted so far. */
 	'site.cancelAction': { params: z.object({ requestId: z.string() }), result: voidSchema },
 	'site.hide': { params: z.object({ hide: z.boolean() }), result: voidSchema },

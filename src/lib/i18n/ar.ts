@@ -32,6 +32,14 @@ export const ar: Record<MessageKey, string> = {
 	'action.close': 'إغلاق إجراءات {platform}',
 	'action.open': 'فتح إجراءات {platform}',
 
+	'assistant.plan.count': 'تحقق أولاً',
+	'assistant.plan.run': 'شغّل مرة واحدة',
+	'assistant.plan.matches': '{count} مطابقة في هذه الصفحة',
+	'assistant.plan.removed': 'تمت إزالة {count}',
+	'assistant.plan.rejected': 'ليست خطة — {reason}',
+	'assistant.plan.noPlatform': 'سجّل الدخول إلى منصة لتجربة هذا هنا',
+	'assistant.plan.label': 'خطة المساعد',
+
 	'group.posts': 'المنشورات',
 	'group.replies': 'الردود',
 	'group.reposts': 'إعادات النشر',

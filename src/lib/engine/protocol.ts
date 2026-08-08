@@ -56,6 +56,21 @@ export type ContentMessage =
 
 export interface CmpApi {
 	run(platform: Platform, action: XAction | YouTubeAction, paramsJson: string): void;
+	/**
+	 * Runs an action plan instead of a built-in action.
+	 *
+	 * `paramsJson` is `RunParams` with a `plan` alongside it. The plan has already been checked
+	 * against `ActionPlanSchema` in the chrome — this side takes it as given, the same way it
+	 * takes the timeouts as given.
+	 */
+	runPlan(paramsJson: string): void;
+	/**
+	 * Answers how many elements a target finds, and touches none of them.
+	 *
+	 * The dry run: it is how a plan can be judged before it is allowed to delete anything.
+	 * Reports through the same channel a run does, so the count arrives as `done`.
+	 */
+	countMatches(requestId: string, targetJson: string): void;
 	isEmpty(platform: Platform, action: XAction | YouTubeAction): boolean;
 	getUserName(): string;
 	getLoginStatus(): string;

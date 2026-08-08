@@ -73,6 +73,29 @@ export function findTarget(target: Target): HTMLElement | null {
 	return null;
 }
 
+/**
+ * How many the target finds, without touching one of them.
+ *
+ * The dry run behind the assistant's "check first" — the one way to judge a plan before it is
+ * allowed to delete anything. Counts what is on screen, so on a list that loads by scrolling
+ * it answers for what has loaded so far and not for the account as a whole.
+ */
+export function countTargets(target: Target): number {
+	let matches: Element[];
+	try {
+		matches = Array.from(document.querySelectorAll(target.selector));
+	} catch {
+		return 0;
+	}
+
+	const wanted = target.text?.trim().toLowerCase();
+	return matches.filter(
+		(match) =>
+			isVisible(match) &&
+			(wanted === undefined || (match.textContent ?? '').toLowerCase().includes(wanted))
+	).length;
+}
+
 async function runStep(step: PlanStep): Promise<boolean> {
 	switch (step.step) {
 		case 'wait':

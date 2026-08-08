@@ -32,6 +32,14 @@ export const de: Record<MessageKey, string> = {
 	'action.close': 'Aktionen für {platform} schließen',
 	'action.open': 'Aktionen für {platform} öffnen',
 
+	'assistant.plan.count': 'Erst prüfen',
+	'assistant.plan.run': 'Einmal ausführen',
+	'assistant.plan.matches': '{count} Treffer auf dieser Seite',
+	'assistant.plan.removed': '{count} entfernt',
+	'assistant.plan.rejected': 'Kein Plan — {reason}',
+	'assistant.plan.noPlatform': 'Melde dich bei einer Plattform an, um das hier zu probieren',
+	'assistant.plan.label': 'Plan des Assistenten',
+
 	'group.posts': 'Beiträge',
 	'group.replies': 'Antworten',
 	'group.reposts': 'Reposts',

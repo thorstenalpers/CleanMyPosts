@@ -30,6 +30,14 @@ export const zh: Record<MessageKey, string> = {
 	'action.close': '关闭 {platform} 操作',
 	'action.open': '打开 {platform} 操作',
 
+	'assistant.plan.count': '先检查',
+	'assistant.plan.run': '运行一次',
+	'assistant.plan.matches': '本页有 {count} 处匹配',
+	'assistant.plan.removed': '已移除 {count} 项',
+	'assistant.plan.rejected': '不是计划 — {reason}',
+	'assistant.plan.noPlatform': '请先登录平台再在这里试用',
+	'assistant.plan.label': '助手的计划',
+
 	'group.posts': '帖子',
 	'group.replies': '回复',
 	'group.reposts': '转帖',

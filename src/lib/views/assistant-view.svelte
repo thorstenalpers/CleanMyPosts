@@ -1,10 +1,13 @@
 <script lang="ts">
 	import type { BridgeClient } from '$lib/bridge/client';
 	import type { LogStore } from '$lib/stores/log.svelte';
-	import type { AppInfo, AssistantSources } from '$lib/bridge/contract';
+	import type { SiteLoginStore } from '$lib/stores/site-login.svelte';
+	import type { ActionRunner } from '$lib/stores/action-runner.svelte';
+	import type { AppInfo, AssistantSources, Platform } from '$lib/bridge/contract';
 	import {
 		buildPrompt,
 		describeLog,
+		parseActionPlan,
 		promptSections,
 		toIssueUrl,
 		type PromptMode
@@ -29,15 +32,21 @@
 	import BugIcon from '@lucide/svelte/icons/bug';
 	import TriangleAlertIcon from '@lucide/svelte/icons/triangle-alert';
 	import TerminalIcon from '@lucide/svelte/icons/terminal';
+	import ScanEyeIcon from '@lucide/svelte/icons/scan-eye';
+	import PlayIcon from '@lucide/svelte/icons/play';
 
 	interface Props {
 		bridge: BridgeClient;
 		logStore: LogStore;
 		settingsStore: SettingsStore;
+		/** Which platform is signed in, which is the one a plan can be tried against. */
+		loginStore: SiteLoginStore;
+		/** The same runner the panels use, so a plan run reaches the same stop button. */
+		runner: ActionRunner;
 		onOpenSettings: () => void;
 	}
 
-	let { bridge, logStore, settingsStore, onOpenSettings }: Props = $props();
+	let { bridge, logStore, settingsStore, loginStore, runner, onOpenSettings }: Props = $props();
 
 	/** Where a report ends up. The same repository the updater already points the app at. */
 	const REPO_URL = 'https://github.com/thorstenalpers/CleanMyPosts';
@@ -141,6 +150,64 @@
 	function saveAsScript(): void {
 		void settingsStore.update({ ...settingsStore.settings, engineScript: answer.trim() });
 		notify(settingsStore, 'success', t('assistant.patch.applied'));
+	}
+
+	// Read straight off the answer rather than kept beside it: there is one answer on screen at
+	// a time, and a second copy of what it means is a second thing that can be stale.
+	const parsed = $derived(mode === 'patch' && answer ? parseActionPlan(answer) : undefined);
+	const plan = $derived(parsed && 'plan' in parsed ? parsed.plan : undefined);
+
+	/** Which platform a plan would be tried on: the one whose page is up behind this panel. */
+	const openPlatform = $derived<Platform | undefined>(
+		loginStore.loggedIn.x ? 'x' : loginStore.loggedIn.youtube ? 'youtube' : undefined
+	);
+
+	let trying = $state(false);
+	let tried = $state('');
+
+	/**
+	 * The dry run.
+	 *
+	 * Between a plan arriving and a plan being allowed to delete something there has to be a
+	 * step that costs nothing, or the first time anyone finds out a selector was wrong is after
+	 * it has clicked a hundred times.
+	 */
+	async function countMatches(): Promise<void> {
+		if (!plan || !openPlatform || trying) return;
+		trying = true;
+		tried = '';
+		error = '';
+		try {
+			const result = await bridge.call('site.countMatches', {
+				platform: openPlatform,
+				target: plan.target
+			});
+			tried = t('assistant.plan.matches', { count: result.count });
+		} catch (cause) {
+			error = cause instanceof Error ? cause.message : String(cause);
+		} finally {
+			trying = false;
+		}
+	}
+
+	/** Runs it for real, on the page that is open, once. Everything a run has applies. */
+	async function runOnce(): Promise<void> {
+		if (!plan || !openPlatform || trying) return;
+		trying = true;
+		tried = '';
+		error = '';
+		try {
+			const result = await runner.runPlan({
+				platform: openPlatform,
+				plan,
+				timeouts: settingsStore.settings.timeouts
+			});
+			tried = t('assistant.plan.removed', { count: result.deletedCount });
+		} catch (cause) {
+			error = cause instanceof Error ? cause.message : String(cause);
+		} finally {
+			trying = false;
+		}
 	}
 
 	async function ask(): Promise<void> {
@@ -314,6 +381,19 @@
 			<Card>
 				<CardContent class="py-4">
 					<p class="text-sm whitespace-pre-wrap">{answer}</p>
+
+					<!-- Said plainly rather than left to the buttons being absent: an answer that is
+					     not a plan looks exactly like one that is, and the reason it was refused is
+					     the only thing that gets the next question right. -->
+					{#if mode === 'patch' && parsed && 'error' in parsed}
+						<p class="mt-2 text-xs text-destructive">
+							{t('assistant.plan.rejected', { reason: parsed.error })}
+						</p>
+					{:else if mode === 'patch' && !openPlatform}
+						<p class="mt-2 text-xs text-muted-foreground">{t('assistant.plan.noPlatform')}</p>
+					{:else if tried}
+						<p class="mt-2 text-xs text-muted-foreground">{tried}</p>
+					{/if}
 					<div class="mt-3 flex flex-wrap gap-2">
 						{#if sources?.local.found}
 							<Button variant="outline" size="sm" class="h-8" onclick={openInCli}>
@@ -321,8 +401,27 @@
 								{t('assistant.openInCli')}
 							</Button>
 						{/if}
+						{#if mode === 'patch' && plan}
+							<!-- Counting first, and it is the only one of the two that changes nothing:
+							     a selector that names the wrong thing should be found out before it
+							     has clicked a hundred times, not after. -->
+							<Button
+								variant="outline"
+								size="sm"
+								class="h-8"
+								disabled={trying || !openPlatform}
+								onclick={countMatches}
+							>
+								<ScanEyeIcon />
+								{t('assistant.plan.count')}
+							</Button>
+							<Button size="sm" class="h-8" disabled={trying || !openPlatform} onclick={runOnce}>
+								<PlayIcon />
+								{t('assistant.plan.run')}
+							</Button>
+						{/if}
 						{#if mode === 'patch'}
-							<Button size="sm" class="h-8" onclick={saveAsScript}>
+							<Button variant="outline" size="sm" class="h-8" onclick={saveAsScript}>
 								<SaveIcon />
 								{t('assistant.patch.apply')}
 							</Button>

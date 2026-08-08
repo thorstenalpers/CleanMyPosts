@@ -31,6 +31,14 @@ export const ja: Record<MessageKey, string> = {
 	'action.close': '{platform} の操作を閉じる',
 	'action.open': '{platform} の操作を開く',
 
+	'assistant.plan.count': '先に確認',
+	'assistant.plan.run': '一度実行',
+	'assistant.plan.matches': 'このページで {count} 件一致',
+	'assistant.plan.removed': '{count} 件を削除',
+	'assistant.plan.rejected': 'プランではありません — {reason}',
+	'assistant.plan.noPlatform': 'ここで試すにはプラットフォームにサインインしてください',
+	'assistant.plan.label': 'アシスタントのプラン',
+
 	'group.posts': 'ポスト',
 	'group.replies': '返信',
 	'group.reposts': 'リポスト',

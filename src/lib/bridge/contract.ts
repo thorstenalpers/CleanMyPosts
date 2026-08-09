@@ -119,7 +119,22 @@ export const PlanStepSchema = z.discriminatedUnion('step', [
 	 * injected script guards — a step that could send a signed-in session anywhere is not a
 	 * step, it is a way out of the app.
 	 */
-	z.object({ step: z.literal('navigate'), url: z.string().url().max(500) })
+	z.object({ step: z.literal('navigate'), url: z.string().url().max(500) }),
+	/**
+	 * Fills a field.
+	 *
+	 * The one step that puts something on the page rather than taking it away, and the only
+	 * one that can produce content in the user's name. Everything else here can only trigger
+	 * what the page already offered. Capped short: this is for a search box or a field being
+	 * corrected, not for composing.
+	 */
+	z.object({ step: z.literal('type'), target: TargetSchema, text: z.string().max(200) }),
+	/** A key, for what a click cannot reach — a form that submits on Enter, a menu on Escape. */
+	z.object({
+		step: z.literal('press'),
+		key: z.enum(['Enter', 'Escape', 'Tab', 'Backspace', 'ArrowDown', 'ArrowUp']),
+		target: TargetSchema.optional()
+	})
 ]);
 export type PlanStep = z.infer<typeof PlanStepSchema>;
 

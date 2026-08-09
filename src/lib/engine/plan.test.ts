@@ -187,3 +187,103 @@ describe('where a plan may navigate', () => {
 		expect(isAllowedUrl('https://mobile.x.com/home')).toBe(true);
 	});
 });
+
+/**
+ * The one step that puts something on the page rather than taking it away. Everything else in
+ * the vocabulary can only trigger what the page already offered.
+ */
+describe('typing into a field', () => {
+	beforeEach(() => {
+		document.body.innerHTML = '';
+	});
+
+	async function type(markup: string, text = 'hello') {
+		document.body.innerHTML = markup;
+		document.querySelectorAll('*').forEach(visible);
+		const plan: ActionPlan = {
+			kind: 'once',
+			steps: [{ step: 'type', target: { selector: '#field' }, text }]
+		};
+		return planAction(plan).run(params);
+	}
+
+	/**
+	 * Both platforms render with a framework that keeps its own copy of the field's state and
+	 * only listens for the event. A plain assignment leaves the box looking filled and the app
+	 * behind it thinking it is empty — the search runs on nothing, the button stays disabled.
+	 */
+	it('tells the page about it, not just the element', async () => {
+		document.body.innerHTML = '<input id="field" />';
+		document.querySelectorAll('*').forEach(visible);
+		const heard: string[] = [];
+		document.body.addEventListener('input', () => heard.push('input'));
+		document.body.addEventListener('change', () => heard.push('change'));
+
+		await planAction({
+			kind: 'once',
+			steps: [{ step: 'type', target: { selector: '#field' }, text: 'cats' }]
+		}).run(params);
+
+		expect(document.querySelector<HTMLInputElement>('#field')?.value).toBe('cats');
+		expect(heard).toEqual(['input', 'change']);
+	});
+
+	it('fills a textarea and a contenteditable too', async () => {
+		expect(await type('<textarea id="field"></textarea>')).toBe(1);
+		expect(document.querySelector<HTMLTextAreaElement>('#field')?.value).toBe('hello');
+
+		document.body.innerHTML = '<div id="field" contenteditable="true"></div>';
+		document.querySelectorAll('*').forEach(visible);
+		const el = document.querySelector<HTMLElement>('#field')!;
+		// happy-dom does not derive isContentEditable from the attribute.
+		Object.defineProperty(el, 'isContentEditable', { value: true });
+		await planAction({
+			kind: 'once',
+			steps: [{ step: 'type', target: { selector: '#field' }, text: 'hello' }]
+		}).run(params);
+		expect(el.textContent).toBe('hello');
+	});
+
+	it('stops rather than pretending, when the target takes no text', async () => {
+		expect(await type('<div id="field"></div>')).toBe(0);
+	});
+});
+
+describe('pressing a key', () => {
+	beforeEach(() => {
+		document.body.innerHTML = '';
+	});
+
+	// The whole sequence, so a handler listening for any one of them hears it.
+	it('sends the sequence a key produces', async () => {
+		document.body.innerHTML = '<input id="field" />';
+		document.querySelectorAll('*').forEach(visible);
+		const seen: string[] = [];
+		for (const type of ['keydown', 'keypress', 'keyup']) {
+			document.body.addEventListener(type, (event) =>
+				seen.push(`${type}:${(event as KeyboardEvent).key}`)
+			);
+		}
+
+		await planAction({
+			kind: 'once',
+			steps: [{ step: 'press', key: 'Enter', target: { selector: '#field' } }]
+		}).run(params);
+
+		expect(seen).toEqual(['keydown:Enter', 'keypress:Enter', 'keyup:Enter']);
+	});
+
+	// Without a target it goes wherever the focus is, which is what a key does.
+	it('goes to whatever has the focus when no target is named', async () => {
+		document.body.innerHTML = '<input id="field" />';
+		document.querySelectorAll('*').forEach(visible);
+		const field = document.querySelector<HTMLInputElement>('#field')!;
+		field.focus();
+		let heard = false;
+		field.addEventListener('keydown', () => (heard = true));
+
+		await planAction({ kind: 'once', steps: [{ step: 'press', key: 'Escape' }] }).run(params);
+
+		expect(heard).toBe(true);
+	});
+});

@@ -56,10 +56,10 @@ last week finds nothing. The assistant is the answer to that, and it does three 
 - 🩹 **Write an action plan** — hand it the log of a failed run, or ask for a list the app
   does not handle yet, and it answers with a short plan: what to remove, and how one of them
   goes away — or how to reach a page or a button the app does not offer yet. Not code. It is a
-  fixed vocabulary of clicks, waits, scrolls and navigation, checked against a schema before
-  anything runs, so a wrong answer can only ask for things the delete engine could already do,
-  and only on the platform's own pages. Nothing a model wrote is ever evaluated inside your
-  signed-in session.
+  fixed vocabulary of clicks, waits, scrolls, navigation and typing, checked against a schema
+  before anything runs, so a wrong answer can only ask for things the delete engine could
+  already do, and only on the platform's own pages. Nothing a model wrote is ever evaluated
+  inside your signed-in session, and you can read every step before you run it.
 
   Then, in this order: **Check first** counts what the plan would find and touches none of
   it. **Run once** tries it on the page in front of you. **Keep as action** gives it a name and

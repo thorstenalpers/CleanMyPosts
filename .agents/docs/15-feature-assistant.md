@@ -65,8 +65,8 @@ runs), and a redacted skeleton of the open page.
 ## Plans
 
 The answer is not code. It is a JSON object over a fixed vocabulary — `click`, `waitFor`,
-`waitGone`, `scrollUntil`, `wait`, `navigate` — checked against `ActionPlanSchema` before
-anything runs.
+`waitGone`, `scrollUntil`, `wait`, `navigate`, `type`, `press` — checked against
+`ActionPlanSchema` before anything runs.
 That check is the whole guarantee: a wrong plan can only ask for things the engine could
 already do, and nothing a model produced is ever evaluated inside the signed-in session.
 
@@ -84,6 +84,13 @@ loop would never know it had finished.
 `navigate` is allowed only on the hosts the injected script is allowed into, https only, whole
 hosts and never substrings. A step that could point a signed-in session at any address is not a
 step in a plan; it is a way out of the app.
+
+`type` and `press` are the two that reach past what the page was already offering, and `type`
+is the only step in the whole vocabulary that can produce content in the user's name rather
+than remove it. They exist because a search box or a field being corrected cannot be reached
+with a click, and the text is capped at 200 characters for the same reason. The prompt tells
+the model in as many words not to use them to write a post, a reply or a message: the user
+asked for their own page to be changed, not for something to be said under their handle.
 
 Three things can be done with a plan, in this order. **Check first** counts what the target
 finds and touches none of it. **Run once** runs it on the page that is already open, through

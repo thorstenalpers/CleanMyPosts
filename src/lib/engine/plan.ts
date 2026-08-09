@@ -35,7 +35,13 @@ export type PlanStep =
 	| { step: 'waitGone'; target: Target; maxWaitMs?: number }
 	| { step: 'scrollUntil'; target: Target; maxWaitMs?: number }
 	| { step: 'wait'; ms: number }
-	| { step: 'navigate'; url: string };
+	| { step: 'navigate'; url: string }
+	| { step: 'type'; target: Target; text: string }
+	| {
+			step: 'press';
+			key: 'Enter' | 'Escape' | 'Tab' | 'Backspace' | 'ArrowDown' | 'ArrowUp';
+			target?: Target;
+	  };
 
 export interface ActionPlan {
 	/** `loop` empties a list; `once` does the steps a single time. */
@@ -121,6 +127,44 @@ export function countTargets(target: Target): number {
 	).length;
 }
 
+/**
+ * Puts text into a field so the page believes a person did.
+ *
+ * Assigning `value` is not enough on either platform. Both render with a framework that keeps
+ * its own copy of the field's state and only listens for the event, so a plain assignment
+ * leaves the box looking filled and the app behind it thinking it is still empty — the search
+ * runs on nothing, the button stays disabled. Going through the prototype's own setter is what
+ * makes the framework notice.
+ */
+function fill(el: HTMLElement, text: string): boolean {
+	if (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement) {
+		// `Reflect.set` against the prototype rather than a plain assignment: it runs the
+		// prototype's own setter with the element as the receiver, which is the one the
+		// framework wrapped. Assigning to `el.value` goes through the instance and is exactly
+		// what these pages do not notice.
+		const prototype =
+			el instanceof HTMLInputElement ? HTMLInputElement.prototype : HTMLTextAreaElement.prototype;
+		if (!Reflect.set(prototype, 'value', text, el)) el.value = text;
+	} else if (el.isContentEditable) {
+		// X composes in a contenteditable, which has no value to set.
+		el.textContent = text;
+	} else {
+		return false;
+	}
+
+	el.dispatchEvent(new Event('input', { bubbles: true }));
+	el.dispatchEvent(new Event('change', { bubbles: true }));
+	return true;
+}
+
+/** The whole sequence a key produces, so a handler listening for any one of them hears it. */
+function pressKey(el: EventTarget, key: string): void {
+	const init = { key, code: key, bubbles: true, cancelable: true };
+	el.dispatchEvent(new KeyboardEvent('keydown', init));
+	el.dispatchEvent(new KeyboardEvent('keypress', init));
+	el.dispatchEvent(new KeyboardEvent('keyup', init));
+}
+
 async function runStep(step: PlanStep): Promise<boolean> {
 	switch (step.step) {
 		case 'wait':
@@ -158,6 +202,26 @@ async function runStep(step: PlanStep): Promise<boolean> {
 					maxWaitMs: step.maxWaitMs ?? DEFAULT_WAIT
 				})) !== undefined
 			);
+
+		case 'type': {
+			const el = findTarget(step.target);
+			if (!el) return false;
+			highlightElement(el);
+			el.focus();
+			if (!fill(el, step.text)) {
+				postLog('warning', `The plan tried to type into something that takes no text.`);
+				return false;
+			}
+			return true;
+		}
+
+		case 'press': {
+			// Without a target it goes wherever the focus is, which is what a key does.
+			const el = step.target ? findTarget(step.target) : (document.activeElement ?? document.body);
+			if (!el) return false;
+			pressKey(el, step.key);
+			return true;
+		}
 
 		case 'scrollUntil':
 			return (

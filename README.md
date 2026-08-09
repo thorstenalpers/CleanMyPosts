@@ -14,18 +14,8 @@ and the app clicks the same buttons you would — just without stopping. Deletio
 deliberately paced; the waits between them are configurable and exist to keep the platforms
 from treating you as a bot.
 
-🌍 **Speaks your language.** The whole interface is available in **eleven languages** —
-English, German, Spanish, French, Hindi, Italian, Japanese, Portuguese, Arabic, Russian and
-Chinese — and follows the one Windows runs in unless you pick another. The delete engine is built for it too: it reads the pages structurally
-wherever it can and asks every platform for English, so a translated interface on X or
-YouTube does not stop a run.
-
----
-
-## ❓ Why a Browser and Not an API?
-
-Because neither platform will sell you the thing you actually want, and one of them will
-charge you for the detour.
+A browser rather than an API, because neither platform will sell you the thing you actually
+want — and one of them will charge you for the detour.
 
 **Bulk deletion is not offered.** Not on X, not on YouTube. Their interfaces delete one item
 at a time, each behind its own menu and its own confirmation — which is fine for a mistake
@@ -41,7 +31,11 @@ signed-in session, and presses the same buttons. No developer account, no key, n
 fee, no quota — and nothing about you leaves the machine, because there is no server of ours
 for it to leave to.
 
----
+🌍 **Speaks your language.** The whole interface is available in **eleven languages** —
+English, German, Spanish, French, Hindi, Italian, Japanese, Portuguese, Arabic, Russian and
+Chinese — and follows the one Windows runs in unless you pick another. The delete engine is built for it too: it reads the pages structurally
+wherever it can and asks every platform for English, so a translated interface on X or
+YouTube does not stop a run.
 
 ---
 
@@ -201,9 +195,6 @@ Every link points at the newest release, so it stays current.
 | Following        | [`x.com/USERNAME/following`](https://x.com/USERNAME/following)                           | [cleanmyposts-x-delete-following.js](https://github.com/thorstenalpers/CleanMyPosts/releases/latest/download/cleanmyposts-x-delete-following.js)           |
 | YouTube comments | [`myactivity.google.com`](https://myactivity.google.com/page?page=youtube_comments)      | [cleanmyposts-youtube-delete-comments.js](https://github.com/thorstenalpers/CleanMyPosts/releases/latest/download/cleanmyposts-youtube-delete-comments.js) |
 | Liked videos     | [`youtube.com/playlist?list=LL`](https://www.youtube.com/playlist?list=LL)               | [cleanmyposts-youtube-delete-likes.js](https://github.com/thorstenalpers/CleanMyPosts/releases/latest/download/cleanmyposts-youtube-delete-likes.js)       |
-
-All seven are attached to every
-[release](https://github.com/thorstenalpers/CleanMyPosts/releases/latest) as well.
 
 ---
 

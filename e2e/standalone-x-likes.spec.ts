@@ -16,7 +16,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
  */
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 const fixtureUrl = pathToFileURL(path.resolve(dirname, 'fixtures/x-likes.html')).href;
-const script = path.resolve(dirname, '../dist/scripts/delete-all-x-likes.js');
+const script = path.resolve(dirname, '../dist/scripts/cleanmyposts-x-delete-likes.js');
 
 test('the standalone likes script runs on paste and empties the page', async ({ page }) => {
 	const logged: string[] = [];

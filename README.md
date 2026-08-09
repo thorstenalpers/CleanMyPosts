@@ -41,56 +41,6 @@ goes into the log.
 **Delete everything** is also on the overview, once for each platform you are signed in to,
 so the most common job is one click from the page the app opens on.
 
-### 🔄 Updates
-
-The app looks for a new version when it starts and says so on the overview, with the release
-notes of what changed. Nothing is downloaded until you press **Install and restart**, and the
-download reports its progress while it runs. The check can be switched off in the settings,
-in which case updates are only found when you ask for them on the Info page.
-
-### 🧟‍♂️ Without the app: run the scripts by hand
-
-Every delete action is also published as a standalone script — one file per list, for people
-who are not on Windows or would rather not install anything.
-
-These are generated from the app's own delete engine at build time rather than written
-separately, which is the whole difference from the versions that shipped this way before 3.0:
-a selector fixed in the app is fixed in the download, because they are the same code. There is
-also nothing left to fill in — each script starts by itself and works on whatever page it is
-pasted into, so there is no function to call and no username to pass.
-
-#### 🔧 Steps
-
-1. Open the URL for the list you want to clear, and sign in. Replace `USERNAME` with your own X
-   handle — the part after `x.com/`, without the `@`.
-2. Download the script below and open it in a text editor. Read it — you are about to run it in
-   your signed-in account, and it is unminified for exactly that reason.
-3. Press <kbd>F12</kbd> to open developer tools, then go to the **Console** tab.
-4. Paste the whole file and press <kbd>Enter</kbd>.
-5. It starts immediately and reports each step. Close the tab to stop it.
-
-The two waits at the top of each file are the brake against the platform treating your session
-as automation. Raising them is always safe; lowering them is what gets a session flagged.
-
-> **Deletion cannot be undone.** The script keeps going for as long as it finds anything.
-
-#### 📜 The scripts
-
-Every link points at the newest release, so it stays current.
-
-| List             | Open this page                                                                           | Script                                                                                                                                   |
-| ---------------- | ---------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| Posts            | [`x.com/search?q=from:USERNAME`](https://x.com/search?q=from%3AUSERNAME&src=typed_query) | [delete-all-x-posts.js](https://github.com/thorstenalpers/CleanMyPosts/releases/latest/download/delete-all-x-posts.js)                   |
-| Replies          | [`x.com/USERNAME/with_replies`](https://x.com/USERNAME/with_replies)                     | [delete-all-x-replies.js](https://github.com/thorstenalpers/CleanMyPosts/releases/latest/download/delete-all-x-replies.js)               |
-| Reposts          | [`x.com/USERNAME`](https://x.com/USERNAME)                                               | [delete-all-x-reposts.js](https://github.com/thorstenalpers/CleanMyPosts/releases/latest/download/delete-all-x-reposts.js)               |
-| Likes            | [`x.com/USERNAME/likes`](https://x.com/USERNAME/likes)                                   | [delete-all-x-likes.js](https://github.com/thorstenalpers/CleanMyPosts/releases/latest/download/delete-all-x-likes.js)                   |
-| Following        | [`x.com/USERNAME/following`](https://x.com/USERNAME/following)                           | [delete-all-x-following.js](https://github.com/thorstenalpers/CleanMyPosts/releases/latest/download/delete-all-x-following.js)           |
-| YouTube comments | [`myactivity.google.com`](https://myactivity.google.com/page?page=youtube_comments)      | [delete-all-youtube-comments.js](https://github.com/thorstenalpers/CleanMyPosts/releases/latest/download/delete-all-youtube-comments.js) |
-| Liked videos     | [`youtube.com/playlist?list=LL`](https://www.youtube.com/playlist?list=LL)               | [delete-all-youtube-likes.js](https://github.com/thorstenalpers/CleanMyPosts/releases/latest/download/delete-all-youtube-likes.js)       |
-
-All seven are attached to every
-[release](https://github.com/thorstenalpers/CleanMyPosts/releases/latest) as well.
-
 ### 🤖 Assistant
 
 X and YouTube change their pages without warning, and when they do, a selector that worked
@@ -164,8 +114,7 @@ Once your system meets the requirements, follow these steps to install **CleanMy
 ## 🎬 See It in Action
 
 **Overview** — where you land. Which accounts are signed in, what each platform has to clean,
-and **Delete everything** for every platform you are signed in to. A waiting update is
-announced here too, with its release notes.
+and **Delete everything** for every platform you are signed in to.
 
 <img src="./assets/Overview.png" alt="The overview, listing what each platform can clean" width="700" />
 
@@ -182,6 +131,51 @@ controls do not disappear mid-task.
 **Assistant** — the exact text that would be sent, shown before anything is sent.
 
 <img src="./assets/Assistant.png" alt="The assistant, showing what would be sent before it is sent" width="700" />
+
+---
+
+## 🧟‍♂️ Without the App: Run the Scripts by Hand
+
+Every delete action is also published as a standalone script — one file per list, for people
+who are not on Windows or would rather not install anything.
+
+These are generated from the app's own delete engine at build time rather than written
+separately, which is the whole difference from the versions that shipped this way before 3.0:
+a selector fixed in the app is fixed in the download, because they are the same code. There is
+also nothing left to fill in — each script starts by itself and works on whatever page it is
+pasted into, so there is no function to call and no username to pass.
+
+### 🔧 Steps
+
+1. Open the URL for the list you want to clear, and sign in. Replace `USERNAME` with your own X
+   handle — the part after `x.com/`, without the `@`.
+2. Download the script below and open it in a text editor. Read it — you are about to run it in
+   your signed-in account, and it is unminified for exactly that reason.
+3. Press <kbd>F12</kbd> to open developer tools, then go to the **Console** tab.
+4. Paste the whole file and press <kbd>Enter</kbd>.
+5. It starts immediately and reports each step. Close the tab to stop it.
+
+The two waits at the top of each file are the brake against the platform treating your session
+as automation. Raising them is always safe; lowering them is what gets a session flagged.
+
+> **Deletion cannot be undone.** The script keeps going for as long as it finds anything.
+
+### 📜 The scripts
+
+Every link points at the newest release, so it stays current.
+
+| List             | Open this page                                                                           | Script                                                                                                                                                     |
+| ---------------- | ---------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Posts            | [`x.com/search?q=from:USERNAME`](https://x.com/search?q=from%3AUSERNAME&src=typed_query) | [cleanmyposts-x-delete-posts.js](https://github.com/thorstenalpers/CleanMyPosts/releases/latest/download/cleanmyposts-x-delete-posts.js)                   |
+| Replies          | [`x.com/USERNAME/with_replies`](https://x.com/USERNAME/with_replies)                     | [cleanmyposts-x-delete-replies.js](https://github.com/thorstenalpers/CleanMyPosts/releases/latest/download/cleanmyposts-x-delete-replies.js)               |
+| Reposts          | [`x.com/USERNAME`](https://x.com/USERNAME)                                               | [cleanmyposts-x-delete-reposts.js](https://github.com/thorstenalpers/CleanMyPosts/releases/latest/download/cleanmyposts-x-delete-reposts.js)               |
+| Likes            | [`x.com/USERNAME/likes`](https://x.com/USERNAME/likes)                                   | [cleanmyposts-x-delete-likes.js](https://github.com/thorstenalpers/CleanMyPosts/releases/latest/download/cleanmyposts-x-delete-likes.js)                   |
+| Following        | [`x.com/USERNAME/following`](https://x.com/USERNAME/following)                           | [cleanmyposts-x-delete-following.js](https://github.com/thorstenalpers/CleanMyPosts/releases/latest/download/cleanmyposts-x-delete-following.js)           |
+| YouTube comments | [`myactivity.google.com`](https://myactivity.google.com/page?page=youtube_comments)      | [cleanmyposts-youtube-delete-comments.js](https://github.com/thorstenalpers/CleanMyPosts/releases/latest/download/cleanmyposts-youtube-delete-comments.js) |
+| Liked videos     | [`youtube.com/playlist?list=LL`](https://www.youtube.com/playlist?list=LL)               | [cleanmyposts-youtube-delete-likes.js](https://github.com/thorstenalpers/CleanMyPosts/releases/latest/download/cleanmyposts-youtube-delete-likes.js)       |
+
+All seven are attached to every
+[release](https://github.com/thorstenalpers/CleanMyPosts/releases/latest) as well.
 
 ---
 

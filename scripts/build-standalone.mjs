@@ -17,31 +17,37 @@ import { join } from 'node:path';
 const OUT = 'dist/scripts';
 const TEMP = 'dist/.standalone-entries';
 
-/** The same actions the app offers, named the way the old downloads were. */
+/**
+ * The same actions the app offers.
+ *
+ * Named product-platform-action: a release asset lands in a downloads folder next to
+ * everything else somebody grabbed that week, so it has to say whose it is, and a file that
+ * deletes has to say so in its own name — not only in the header nobody reads twice.
+ */
 const ACTIONS = [
 	{
-		file: 'delete-all-x-posts',
+		file: 'cleanmyposts-x-delete-posts',
 		from: 'x/posts',
 		name: 'postsAction',
 		page: 'your profile’s posts'
 	},
-	{ file: 'delete-all-x-replies', from: 'x/replies', name: 'repliesAction', page: 'your replies' },
-	{ file: 'delete-all-x-reposts', from: 'x/reposts', name: 'repostsAction', page: 'your profile' },
-	{ file: 'delete-all-x-likes', from: 'x/likes', name: 'likesAction', page: 'your likes' },
+	{ file: 'cleanmyposts-x-delete-replies', from: 'x/replies', name: 'repliesAction', page: 'your replies' },
+	{ file: 'cleanmyposts-x-delete-reposts', from: 'x/reposts', name: 'repostsAction', page: 'your profile' },
+	{ file: 'cleanmyposts-x-delete-likes', from: 'x/likes', name: 'likesAction', page: 'your likes' },
 	{
-		file: 'delete-all-x-following',
+		file: 'cleanmyposts-x-delete-following',
 		from: 'x/following',
 		name: 'followingAction',
 		page: 'who you follow'
 	},
 	{
-		file: 'delete-all-youtube-comments',
+		file: 'cleanmyposts-youtube-delete-comments',
 		from: 'youtube/comments',
 		name: 'commentsAction',
 		page: 'My Activity → YouTube comments'
 	},
 	{
-		file: 'delete-all-youtube-likes',
+		file: 'cleanmyposts-youtube-delete-likes',
 		from: 'youtube/likes',
 		name: 'youTubeLikesAction',
 		page: 'your Liked videos playlist'

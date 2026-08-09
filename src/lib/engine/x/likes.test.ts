@@ -58,3 +58,37 @@ describe('likesAction.run', () => {
 		expect(deletedCount).toBe(0);
 	}, 10000);
 });
+
+/**
+ * The bug this stands for: success was "no unlike button left anywhere", which is only true
+ * once the whole list is empty. Every click but the last reported failure, so the loop retried
+ * with a growing delay, gave up after ten attempts, and counted one deletion for however many
+ * it had actually made — a page of fifty likes stopped at ten and said nothing had happened.
+ */
+describe('counting what was unliked', () => {
+	beforeEach(() => {
+		document.body.innerHTML = '';
+	});
+
+	it('counts every one, not only the one that emptied the page', async () => {
+		document.body.innerHTML = Array.from(
+			{ length: 3 },
+			() => '<article><button data-testid="unlike"></button></article>'
+		).join('');
+		document.querySelectorAll('button').forEach((button) => {
+			button.getClientRects = () => [{} as DOMRect] as unknown as DOMRectList;
+		});
+		// What X does: the row stops offering to unlike, the other rows are untouched.
+		document.body.addEventListener('click', (event) =>
+			(event.target as Element).closest('[data-testid="unlike"]')?.remove()
+		);
+
+		const deleted = await likesAction.run({
+			requestId: 'r1',
+			waitAfterDelete: 0,
+			waitBetweenRetryDeleteAttempts: 0
+		});
+
+		expect(deleted).toBe(3);
+	}, 15000);
+});

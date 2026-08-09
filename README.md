@@ -48,6 +48,19 @@ notes of what changed. Nothing is downloaded until you press **Install and resta
 download reports its progress while it runs. The check can be switched off in the settings,
 in which case updates are only found when you ask for them on the Info page.
 
+### 📄 Without the app
+
+Every delete action is also published as a standalone script on the
+[releases page](https://github.com/thorstenalpers/CleanMyPosts/releases/latest) — one file per
+list, for people who are not on Windows or would rather not install anything.
+
+Open the page it names, press F12, paste it into the Console and press Enter. It reports what
+it is doing as it goes, and closing the tab stops it.
+
+These are generated from the app's own delete engine at build time rather than written
+separately, which is the whole difference from the versions that shipped this way before 3.0:
+a selector fixed in the app is fixed in the download, because they are the same code.
+
 ### 🤖 Assistant
 
 X and YouTube change their pages without warning, and when they do, a selector that worked

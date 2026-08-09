@@ -185,6 +185,8 @@ export const en = {
 	'settings.assistant': 'Assistant',
 	'settings.assistant.description':
 		'Where answers come from. The local binary sends nothing from this app; a hosted provider is the one thing here that puts data on the network.',
+	'settings.assistant.missing':
+		'No source is set up yet, so the assistant is hidden everywhere else. Pick Claude Code on this machine, or store a provider key below.',
 	'settings.assistant.source': 'Source',
 	'settings.assistant.off': 'Off',
 	'settings.assistant.off.description':
@@ -219,9 +221,6 @@ export const en = {
 	'assistant.placeholder': 'Why did 12 posts not get deleted?',
 	'assistant.ask': 'Ask',
 	'assistant.asking': 'Asking…',
-	'assistant.noSource':
-		'No source is set up yet. Pick one in the settings — Claude Code on this machine, or a provider key.',
-	'assistant.openSettings': 'Open the settings',
 	'assistant.sendsLog':
 		'The question is sent together with the log and a description of the app. The log never contains post content, handles or cookies.',
 	'assistant.clear': 'Clear',

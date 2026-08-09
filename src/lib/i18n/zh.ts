@@ -170,6 +170,8 @@ export const zh: Record<MessageKey, string> = {
 	'settings.assistant': '助手',
 	'settings.assistant.description':
 		'答案从哪里来。本地程序不会从本应用发送任何内容；托管的服务商是这里唯一会把数据送上网络的选项。',
+	'settings.assistant.missing':
+		'尚未配置来源，因此助手在其他地方都不显示。请选择本机的 Claude Code，或在下方保存一个服务商密钥。',
 	'settings.assistant.source': '来源',
 	'settings.assistant.off': '关闭',
 	'settings.assistant.off.description': '助手已关闭，不会出现在侧边栏中。',
@@ -201,9 +203,6 @@ export const zh: Record<MessageKey, string> = {
 	'assistant.placeholder': '为什么有 12 条帖子没被删除？',
 	'assistant.ask': '提问',
 	'assistant.asking': '提问中…',
-	'assistant.noSource':
-		'还没有配置来源。请在设置中选择一个 —— 这台电脑上的 Claude Code，或者一个服务商密钥。',
-	'assistant.openSettings': '打开设置',
 	'assistant.sendsLog':
 		'问题会连同日志和应用说明一起发送。日志中从不包含帖子内容、账号名或 Cookie。',
 	'assistant.clear': '清空',

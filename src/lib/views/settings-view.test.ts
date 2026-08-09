@@ -3,6 +3,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/svelte';
 import SettingsView from './settings-view.svelte';
 import { SettingsStore } from '$lib/stores/settings.svelte';
 import { createMockHost, type MockHandlers } from '$lib/bridge/mock';
+import { en } from '$lib/i18n/en';
 
 function setup(overrides: MockHandlers = {}) {
 	const settingsSet = vi.fn();
@@ -68,6 +69,30 @@ function setup(overrides: MockHandlers = {}) {
 }
 
 describe('SettingsView', () => {
+	// The only place in the app that mentions a missing key. Everywhere else the assistant is
+	// simply not there, so if this row goes quiet nothing tells the user why.
+	it('says the assistant has no source', async () => {
+		const { client, settingsStore } = setup();
+		await settingsStore.load();
+		render(SettingsView, { bridge: client, settingsStore });
+
+		expect(await screen.findByText(en['settings.assistant.missing'])).toBeInTheDocument();
+	});
+
+	it('stops saying it once a provider has a key', async () => {
+		const { client, settingsStore } = setup({
+			'assistant.getSources': () => ({
+				local: { found: false, path: null, version: null },
+				providers: [{ id: 'gemini', label: 'Google AI', model: '', freeKeyUrl: '', hasKey: true }]
+			})
+		});
+		await settingsStore.load();
+		render(SettingsView, { bridge: client, settingsStore });
+
+		await screen.findByText(en['settings.assistant.description']);
+		expect(screen.queryByText(en['settings.assistant.missing'])).not.toBeInTheDocument();
+	});
+
 	it('sends an updated theme to the host when a theme button is clicked', async () => {
 		const { client, settingsStore, settingsSet } = setup();
 		await settingsStore.load();

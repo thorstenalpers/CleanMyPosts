@@ -174,6 +174,8 @@ export const ja: Record<MessageKey, string> = {
 	'settings.assistant': 'アシスタント',
 	'settings.assistant.description':
 		'回答がどこから来るか。ローカルのプログラムはこのアプリから何も送信しません。ホスト型プロバイダーだけが、ここでデータをネットワークに出す唯一のものです。',
+	'settings.assistant.missing':
+		'まだソースが設定されていないため、アシスタントは他のどこにも表示されません。このパソコンの Claude Code を選ぶか、下でプロバイダーのキーを保存してください。',
 	'settings.assistant.source': 'ソース',
 	'settings.assistant.off': 'オフ',
 	'settings.assistant.off.description': 'アシスタントはオフで、サイドバーには表示されません。',
@@ -207,9 +209,6 @@ export const ja: Record<MessageKey, string> = {
 	'assistant.placeholder': 'なぜ 12 件のポストが削除されなかったのですか？',
 	'assistant.ask': '質問する',
 	'assistant.asking': '問い合わせ中…',
-	'assistant.noSource':
-		'ソースがまだ設定されていません。設定で選んでください — この PC の Claude Code か、プロバイダーのキーです。',
-	'assistant.openSettings': '設定を開く',
 	'assistant.sendsLog':
 		'質問はログとアプリの説明と一緒に送信されます。ログにポストの内容、アカウント名、Cookie が入ることはありません。',
 	'assistant.clear': 'クリア',

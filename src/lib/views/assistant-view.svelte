@@ -29,7 +29,6 @@
 	import EyeOffIcon from '@lucide/svelte/icons/eye-off';
 	import ExternalLinkIcon from '@lucide/svelte/icons/external-link';
 	import BugIcon from '@lucide/svelte/icons/bug';
-	import TriangleAlertIcon from '@lucide/svelte/icons/triangle-alert';
 	import TerminalIcon from '@lucide/svelte/icons/terminal';
 
 	interface Props {
@@ -38,12 +37,11 @@
 		settingsStore: SettingsStore;
 		/** Which platform is signed in, which is the one a plan can be tried against. */
 		loginStore: SiteLoginStore;
-		onOpenSettings: () => void;
 		/** Brings a platform on screen and runs a plan on it; the layout owns both halves. */
 		runPlanOn: AppContext['runPlanOn'];
 	}
 
-	let { bridge, logStore, settingsStore, loginStore, onOpenSettings, runPlanOn }: Props = $props();
+	let { bridge, logStore, settingsStore, loginStore, runPlanOn }: Props = $props();
 
 	/** Where a report ends up. The same repository the updater already points the app at. */
 	const REPO_URL = 'https://github.com/thorstenalpers/CleanMyPosts';
@@ -76,7 +74,8 @@
 
 	/**
 	 * Whether anything can answer at all: the local binary has to be on disk, and a hosted
-	 * provider has to have a key. Saying so up front beats a failed round-trip.
+	 * provider has to have a key. The layout hides this page entirely while neither is true,
+	 * so this only covers the moment before the first read comes back.
 	 */
 	const ready = $derived(
 		sources
@@ -232,20 +231,6 @@
 		{/if}
 
 		<p class="text-xs text-muted-foreground">{t('assistant.subtitle')}</p>
-
-		<!-- An error, not a note: with no source the assistant cannot answer at all, and the
-		     page below it is a form that will refuse every submission. -->
-		{#if ready === false}
-			<Card class="border-destructive/40 bg-destructive/5">
-				<CardContent class="flex flex-wrap items-center gap-3 py-4">
-					<TriangleAlertIcon class="size-4 shrink-0 text-destructive" />
-					<p class="min-w-0 flex-1 text-sm text-destructive">{t('assistant.noSource')}</p>
-					<Button variant="outline" size="sm" class="h-8" onclick={onOpenSettings}>
-						{t('assistant.openSettings')}
-					</Button>
-				</CardContent>
-			</Card>
-		{/if}
 
 		<form
 			class="flex gap-2"

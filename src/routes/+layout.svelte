@@ -124,12 +124,37 @@
 	// confirmation and the run, and clears this the moment it has taken it.
 	let deleteAllFor = $state<Platform | undefined>(undefined);
 
+	/**
+	 * Whether anything can answer at all: the local binary on disk, or a provider with a key.
+	 *
+	 * The assistant is hidden until one exists rather than shown and refusing. An entry that
+	 * leads to a page whose only content is "this does not work" is worse than no entry, and
+	 * the app is complete without it — the settings are where a missing key is somebody's
+	 * business, and the only place it is mentioned.
+	 *
+	 * Re-read on every route change: adding a key in the settings does not touch the settings
+	 * file, so nothing else here would ever notice it appear.
+	 */
+	let assistantReady = $state(false);
+	$effect(() => {
+		// Read to depend on it: every navigation re-asks.
+		if (!routeKey) return;
+		void bridge
+			.call('assistant.getSources', undefined)
+			.then((sources) => {
+				assistantReady =
+					sources.local.found || sources.providers.some((provider) => provider.hasKey);
+			})
+			.catch(() => (assistantReady = false));
+	});
+
 	// Off until asked for. It is a column, and a column that opens by itself takes the platform
 	// page's room without anybody having decided that.
 	let assistantOpen = $state(false);
 	// Folded away with the action panel, and for the same reason: below that width there is not
-	// room for the site and a column beside it.
-	const assistantVisible = $derived(assistantOpen && !panelTooNarrow);
+	// room for the site and a column beside it. `assistantReady` is in here too, so a key
+	// forgotten while the panel is open takes the panel with it.
+	const assistantVisible = $derived(assistantOpen && assistantReady && !panelTooNarrow);
 
 	let panelClosedByUser = $state(false);
 	let panelFoldedByWidth = $state(false);
@@ -352,7 +377,7 @@
 					}
 				]
 			: []),
-		...(settingsStore.settings.showAssistant
+		...(settingsStore.settings.showAssistant && assistantReady
 			? [
 					{
 						key: 'assistant' as const,
@@ -530,7 +555,7 @@
 					{location}
 					{settingsStore}
 					onMenuOpenChange={(open: boolean) => (headerMenuOpen = open)}
-					onToggleAssistant={() => (assistantOpen = !assistantOpen)}
+					onToggleAssistant={assistantReady ? () => (assistantOpen = !assistantOpen) : undefined}
 					assistantOpen={assistantVisible}
 					onOpenActions={railPlatform && !panelVisible
 						? () => {

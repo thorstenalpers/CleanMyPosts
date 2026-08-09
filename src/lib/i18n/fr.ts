@@ -181,6 +181,8 @@ export const fr: Record<MessageKey, string> = {
 	'settings.assistant': 'Assistant',
 	'settings.assistant.description':
 		'D’où viennent les réponses. Le binaire local n’envoie rien depuis cette app ; un fournisseur hébergé est la seule chose ici qui met des données sur le réseau.',
+	'settings.assistant.missing':
+		'Aucune source n’est configurée, donc l’assistant reste masqué partout ailleurs. Choisis Claude Code sur cette machine, ou enregistre une clé de fournisseur ci-dessous.',
 	'settings.assistant.source': 'Source',
 	'settings.assistant.off': 'Désactivé',
 	'settings.assistant.off.description':
@@ -216,9 +218,6 @@ export const fr: Record<MessageKey, string> = {
 	'assistant.placeholder': 'Pourquoi 12 publications n’ont-elles pas été supprimées ?',
 	'assistant.ask': 'Demander',
 	'assistant.asking': 'Question en cours…',
-	'assistant.noSource':
-		'Aucune source n’est encore configurée. Choisis-en une dans les paramètres — Claude Code sur cette machine, ou la clé d’un fournisseur.',
-	'assistant.openSettings': 'Ouvrir les paramètres',
 	'assistant.sendsLog':
 		'La question part avec le journal et une description de l’app. Le journal ne contient jamais le contenu des publications, les identifiants ni les cookies.',
 	'assistant.clear': 'Vider',

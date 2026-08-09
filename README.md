@@ -48,18 +48,48 @@ notes of what changed. Nothing is downloaded until you press **Install and resta
 download reports its progress while it runs. The check can be switched off in the settings,
 in which case updates are only found when you ask for them on the Info page.
 
-### 📄 Without the app
+### 🧟‍♂️ Without the app: run the scripts by hand
 
-Every delete action is also published as a standalone script on the
-[releases page](https://github.com/thorstenalpers/CleanMyPosts/releases/latest) — one file per
-list, for people who are not on Windows or would rather not install anything.
-
-Open the page it names, press F12, paste it into the Console and press Enter. It reports what
-it is doing as it goes, and closing the tab stops it.
+Every delete action is also published as a standalone script — one file per list, for people
+who are not on Windows or would rather not install anything.
 
 These are generated from the app's own delete engine at build time rather than written
 separately, which is the whole difference from the versions that shipped this way before 3.0:
-a selector fixed in the app is fixed in the download, because they are the same code.
+a selector fixed in the app is fixed in the download, because they are the same code. There is
+also nothing left to fill in — each script starts by itself and works on whatever page it is
+pasted into, so there is no function to call and no username to pass.
+
+#### 🔧 Steps
+
+1. Open the URL for the list you want to clear, and sign in. Replace `USERNAME` with your own X
+   handle — the part after `x.com/`, without the `@`.
+2. Download the script below and open it in a text editor. Read it — you are about to run it in
+   your signed-in account, and it is unminified for exactly that reason.
+3. Press <kbd>F12</kbd> to open developer tools, then go to the **Console** tab.
+4. Paste the whole file and press <kbd>Enter</kbd>.
+5. It starts immediately and reports each step. Close the tab to stop it.
+
+The two waits at the top of each file are the brake against the platform treating your session
+as automation. Raising them is always safe; lowering them is what gets a session flagged.
+
+> **Deletion cannot be undone.** The script keeps going for as long as it finds anything.
+
+#### 📜 The scripts
+
+Every link points at the newest release, so it stays current.
+
+| List             | Open this page                                                                           | Script                                                                                                                                   |
+| ---------------- | ---------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| Posts            | [`x.com/search?q=from:USERNAME`](https://x.com/search?q=from%3AUSERNAME&src=typed_query) | [delete-all-x-posts.js](https://github.com/thorstenalpers/CleanMyPosts/releases/latest/download/delete-all-x-posts.js)                   |
+| Replies          | [`x.com/USERNAME/with_replies`](https://x.com/USERNAME/with_replies)                     | [delete-all-x-replies.js](https://github.com/thorstenalpers/CleanMyPosts/releases/latest/download/delete-all-x-replies.js)               |
+| Reposts          | [`x.com/USERNAME`](https://x.com/USERNAME)                                               | [delete-all-x-reposts.js](https://github.com/thorstenalpers/CleanMyPosts/releases/latest/download/delete-all-x-reposts.js)               |
+| Likes            | [`x.com/USERNAME/likes`](https://x.com/USERNAME/likes)                                   | [delete-all-x-likes.js](https://github.com/thorstenalpers/CleanMyPosts/releases/latest/download/delete-all-x-likes.js)                   |
+| Following        | [`x.com/USERNAME/following`](https://x.com/USERNAME/following)                           | [delete-all-x-following.js](https://github.com/thorstenalpers/CleanMyPosts/releases/latest/download/delete-all-x-following.js)           |
+| YouTube comments | [`myactivity.google.com`](https://myactivity.google.com/page?page=youtube_comments)      | [delete-all-youtube-comments.js](https://github.com/thorstenalpers/CleanMyPosts/releases/latest/download/delete-all-youtube-comments.js) |
+| Liked videos     | [`youtube.com/playlist?list=LL`](https://www.youtube.com/playlist?list=LL)               | [delete-all-youtube-likes.js](https://github.com/thorstenalpers/CleanMyPosts/releases/latest/download/delete-all-youtube-likes.js)       |
+
+All seven are attached to every
+[release](https://github.com/thorstenalpers/CleanMyPosts/releases/latest) as well.
 
 ### 🤖 Assistant
 
@@ -98,6 +128,11 @@ leaves the machine until you press the button.
 It runs against [Claude Code](https://claude.com/claude-code) if it is installed on this
 machine, or against a provider of your choice with your own API key — and it can be switched
 off entirely in the settings.
+
+The assistant is the only part of the app that needs either one. **Without them the app is
+whole**: every list still deletes, and the assistant is simply not there — no entry, no icon,
+no prompt to set one up. The settings say once that no source is configured, and nothing else
+in the app mentions it again.
 
 <br clear="both" />
 
@@ -193,7 +228,6 @@ list along with your log.
 | _"Deletion failed."_ immediately, on every item                                         | The platform changed its markup, so the buttons the engine looks for are no longer where they were.                                    | Update to the [latest release](https://github.com/thorstenalpers/CleanMyPosts/releases/latest) first. If that does not fix it, this is a real bug — report it with the log.                                             |
 | Some likes or followings survive several runs                                           | Not everything is reachable from the list: protected accounts, items behind _Show more_, and posts that were already gone server-side. | Run the action once more. What is left after two clean runs belongs in a bug report.                                                                                                                                    |
 | YouTube comments cannot be reached                                                      | My Activity asks for the Google sign-in again, per session.                                                                            | Open the YouTube pane, sign in, and start the action again.                                                                                                                                                             |
-| The assistant says no source is set up                                                  | Neither Claude Code nor a provider key was found.                                                                                      | **Settings → Assistant**: point it at `claude.exe`, or store an API key. Nothing is sent anywhere until one of the two exists.                                                                                          |
 | _Check for updates_ reports nothing                                                     | Updates only work in the installed build, and the check needs network access.                                                          | Compare your version on the **Info** page with the [latest release](https://github.com/thorstenalpers/CleanMyPosts/releases/latest) and install it manually if they differ.                                             |
 
 Deletions cannot be undone, and no run is ever resumed from a copy of your data — there is

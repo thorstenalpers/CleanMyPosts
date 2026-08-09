@@ -128,7 +128,9 @@ export function defaultMockHandlers(): MockHandlers {
 		'system.openLicense': () => undefined,
 		'log.getBuffer': () => [],
 		'assistant.getSources': () => ({
-			local: { found: false, path: null, version: null },
+			// Found, because the assistant is hidden without a source and a preview that cannot
+			// show it is not a preview of this app.
+			local: { found: true, path: 'claude.exe', version: 'mock' },
 			providers: [
 				{
 					id: 'gemini',

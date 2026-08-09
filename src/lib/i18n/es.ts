@@ -180,6 +180,8 @@ export const es: Record<MessageKey, string> = {
 	'settings.assistant': 'Asistente',
 	'settings.assistant.description':
 		'De dónde vienen las respuestas. El binario local no envía nada desde esta app; un proveedor alojado es lo único aquí que pone datos en la red.',
+	'settings.assistant.missing':
+		'Todavía no hay ninguna fuente configurada, así que el asistente está oculto en todo lo demás. Elige Claude Code en este equipo o guarda abajo una clave de proveedor.',
 	'settings.assistant.source': 'Origen',
 	'settings.assistant.off': 'Desactivado',
 	'settings.assistant.off.description':
@@ -215,9 +217,6 @@ export const es: Record<MessageKey, string> = {
 	'assistant.placeholder': '¿Por qué no se eliminaron 12 publicaciones?',
 	'assistant.ask': 'Preguntar',
 	'assistant.asking': 'Preguntando…',
-	'assistant.noSource':
-		'Aún no hay ningún origen configurado. Elige uno en los ajustes: Claude Code en este equipo, o la clave de un proveedor.',
-	'assistant.openSettings': 'Abrir los ajustes',
 	'assistant.sendsLog':
 		'La pregunta se envía junto con el registro y una descripción de la app. El registro nunca contiene contenido de publicaciones, nombres de cuenta ni cookies.',
 	'assistant.clear': 'Vaciar',

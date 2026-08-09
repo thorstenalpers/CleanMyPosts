@@ -60,8 +60,7 @@ describe('AssistantView', () => {
 			logStore,
 			settingsStore,
 			loginStore,
-			runPlanOn,
-			onOpenSettings: () => {}
+			runPlanOn
 		});
 
 		const button = await screen.findByRole('button', { name: /troubleshooting/i });
@@ -79,8 +78,7 @@ describe('AssistantView', () => {
 			logStore,
 			settingsStore,
 			loginStore,
-			runPlanOn,
-			onOpenSettings: () => {}
+			runPlanOn
 		});
 
 		expect(screen.queryByText(/known failures and fixes/i)).not.toBeInTheDocument();
@@ -116,8 +114,7 @@ describe('AssistantView', () => {
 			logStore,
 			settingsStore,
 			loginStore,
-			runPlanOn,
-			onOpenSettings: () => {}
+			runPlanOn
 		});
 
 		await fireEvent.click(screen.getByRole('radio', { name: /ai repair/i }));
@@ -149,8 +146,7 @@ describe('AssistantView', () => {
 			logStore,
 			settingsStore,
 			loginStore,
-			runPlanOn,
-			onOpenSettings: () => {}
+			runPlanOn
 		});
 
 		await fireEvent.click(screen.getByRole('radio', { name: /ai repair/i }));
@@ -177,8 +173,7 @@ describe('AssistantView', () => {
 			logStore,
 			settingsStore,
 			loginStore,
-			runPlanOn,
-			onOpenSettings: () => {}
+			runPlanOn
 		});
 
 		await fireEvent.input(screen.getByRole('textbox'), { target: { value: 'why?' } });
@@ -214,8 +209,7 @@ describe('AssistantView', () => {
 			logStore,
 			settingsStore,
 			loginStore,
-			runPlanOn,
-			onOpenSettings: () => {}
+			runPlanOn
 		});
 
 		await fireEvent.click(screen.getByRole('radio', { name: /ai repair/i }));
@@ -241,8 +235,7 @@ describe('AssistantView', () => {
 			logStore,
 			settingsStore,
 			loginStore,
-			runPlanOn,
-			onOpenSettings: () => {}
+			runPlanOn
 		});
 
 		await fireEvent.click(screen.getByRole('radio', { name: /ai repair/i }));
@@ -274,8 +267,7 @@ describe('AssistantView', () => {
 			logStore,
 			settingsStore,
 			loginStore,
-			runPlanOn,
-			onOpenSettings: () => {}
+			runPlanOn
 		});
 
 		await fireEvent.click(screen.getByRole('radio', { name: /ai repair/i }));

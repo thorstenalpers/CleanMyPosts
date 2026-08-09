@@ -36,6 +36,7 @@
 	import MoonIcon from '@lucide/svelte/icons/moon';
 	import LaptopIcon from '@lucide/svelte/icons/laptop';
 	import SparklesIcon from '@lucide/svelte/icons/sparkles';
+	import TriangleAlertIcon from '@lucide/svelte/icons/triangle-alert';
 	import Trash2Icon from '@lucide/svelte/icons/trash-2';
 	import ChevronUpIcon from '@lucide/svelte/icons/chevron-up';
 	import PencilIcon from '@lucide/svelte/icons/pencil';
@@ -73,6 +74,11 @@
 	const usingLocal = $derived(settingsStore.settings.assistantSource === LOCAL_ASSISTANT_SOURCE);
 	const activeProvider = $derived(
 		sources?.providers.find((entry) => entry.id === settingsStore.settings.assistantSource)
+	);
+
+	/** Whether anything can answer. Below the assistant is hidden app-wide until it can. */
+	const assistantReady = $derived(
+		sources ? sources.local.found || sources.providers.some((entry) => entry.hasKey) : true
 	);
 
 	/** Re-read after every write: `hasKey` is the only thing the store will say about a key. */
@@ -448,6 +454,19 @@
 				<CardDescription>{t('settings.assistant.description')}</CardDescription>
 			</CardHeader>
 			<CardContent class="divide-y divide-border/60">
+				<!-- The one place a missing source is mentioned. Everywhere else the assistant is
+				     simply not there: the app deletes without it, and an entry leading to a page
+				     that can only say "this does not work" is worse than no entry. -->
+				{#if settingsStore.settings.showAssistant && sources && !assistantReady}
+					<div
+						class="mb-3 flex items-start gap-2 rounded-md border border-amber-500/40 bg-amber-500/5 px-2.5 py-2"
+					>
+						<TriangleAlertIcon class="mt-0.5 size-3.5 shrink-0 text-amber-600" />
+						<p class="min-w-0 flex-1 text-xs text-muted-foreground">
+							{t('settings.assistant.missing')}
+						</p>
+					</div>
+				{/if}
 				<SettingRow
 					label={t('settings.assistant.source')}
 					description={!settingsStore.settings.showAssistant

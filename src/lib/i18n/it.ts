@@ -181,6 +181,8 @@ export const it: Record<MessageKey, string> = {
 	'settings.assistant': 'Assistente',
 	'settings.assistant.description':
 		'Da dove arrivano le risposte. Il binario locale non manda nulla da questa app; un provider ospitato è l’unica cosa qui che mette dati in rete.',
+	'settings.assistant.missing':
+		'Nessuna fonte è ancora configurata, quindi l’assistente resta nascosto ovunque altro. Scegli Claude Code su questo computer, o salva qui sotto una chiave di un fornitore.',
 	'settings.assistant.source': 'Origine',
 	'settings.assistant.off': 'Disattivato',
 	'settings.assistant.off.description':
@@ -216,9 +218,6 @@ export const it: Record<MessageKey, string> = {
 	'assistant.placeholder': 'Perché 12 post non sono stati eliminati?',
 	'assistant.ask': 'Chiedi',
 	'assistant.asking': 'Sto chiedendo…',
-	'assistant.noSource':
-		'Non è ancora configurata nessuna origine. Scegline una nelle impostazioni: Claude Code su questo computer, oppure la chiave di un provider.',
-	'assistant.openSettings': 'Apri le impostazioni',
 	'assistant.sendsLog':
 		'La domanda viene inviata insieme al registro e a una descrizione dell’app. Il registro non contiene mai il contenuto dei post, i nomi utente o i cookie.',
 	'assistant.clear': 'Svuota',

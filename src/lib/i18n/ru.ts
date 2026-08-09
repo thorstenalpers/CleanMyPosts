@@ -177,6 +177,8 @@ export const ru: Record<MessageKey, string> = {
 	'settings.assistant': 'Ассистент',
 	'settings.assistant.description':
 		'Откуда берутся ответы. Локальная программа ничего не отправляет из этого приложения; облачный провайдер — единственное здесь, что выпускает данные в сеть.',
+	'settings.assistant.missing':
+		'Источник ещё не настроен, поэтому ассистент скрыт во всех остальных местах. Выберите Claude Code на этом компьютере или сохраните ниже ключ провайдера.',
 	'settings.assistant.source': 'Источник',
 	'settings.assistant.off': 'Выключен',
 	'settings.assistant.off.description': 'Ассистент выключен и не отображается в боковой панели.',
@@ -210,9 +212,6 @@ export const ru: Record<MessageKey, string> = {
 	'assistant.placeholder': 'Почему 12 постов не удалились?',
 	'assistant.ask': 'Спросить',
 	'assistant.asking': 'Спрашиваю…',
-	'assistant.noSource':
-		'Источник ещё не настроен. Выберите его в настройках — Claude Code на этом компьютере или ключ провайдера.',
-	'assistant.openSettings': 'Открыть настройки',
 	'assistant.sendsLog':
 		'Вопрос отправляется вместе с журналом и описанием приложения. В журнале никогда нет содержимого постов, имён аккаунтов и cookie.',
 	'assistant.clear': 'Очистить',

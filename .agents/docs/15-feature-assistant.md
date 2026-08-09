@@ -29,6 +29,14 @@ Two kinds of source, and the choice is the user's:
 - **A hosted provider** — Google AI, Groq, OpenAI, Anthropic or Mistral. Needs an API key,
   and is the only thing in this app that puts data on the network on purpose.
 
+**With neither, the assistant is hidden rather than shown and refusing.** `+layout.svelte`
+reads `assistant.getSources` on every route change and drops the sidebar entry and the header
+icon while nothing can answer; `/assistant` is then not in `reachable`, so the route guard
+sends it home. The one place that says so is the settings' assistant card
+(`settings.assistant.missing`) — the app deletes without a key, and an entry leading to a page
+whose only content is "this does not work" is worse than no entry. The mock host reports the
+binary as found, or the assistant could never be previewed in `vite dev`.
+
 The table lives in `src-tauri/src/assistant/providers.rs`. Google AI and Groq hand out a free
 key, so they come first and carry a link to their key page. Three of the five speak OpenAI's
 dialect; Gemini and Anthropic each want their own request body, which is why the request is

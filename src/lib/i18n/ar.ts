@@ -174,6 +174,8 @@ export const ar: Record<MessageKey, string> = {
 	'settings.assistant': 'المساعد',
 	'settings.assistant.description':
 		'من أين تأتي الإجابات. البرنامج المحلي لا يرسل شيئًا من هذا التطبيق؛ أما المزوّد المستضاف فهو الشيء الوحيد هنا الذي يضع بيانات على الشبكة.',
+	'settings.assistant.missing':
+		'لم يتم إعداد أي مصدر بعد، لذلك يظل المساعد مخفيًا في كل مكان آخر. اختر Claude Code على هذا الجهاز، أو احفظ مفتاح مزوّد أدناه.',
 	'settings.assistant.source': 'المصدر',
 	'settings.assistant.off': 'مُعطَّل',
 	'settings.assistant.off.description': 'المساعد مُعطَّل ولا يظهر في الشريط الجانبي.',
@@ -206,9 +208,6 @@ export const ar: Record<MessageKey, string> = {
 	'assistant.placeholder': 'لماذا لم يُحذَف 12 منشورًا؟',
 	'assistant.ask': 'اسأل',
 	'assistant.asking': 'جارٍ السؤال…',
-	'assistant.noSource':
-		'لم يُعدّ أي مصدر بعد. اختر واحدًا من الإعدادات — Claude Code على هذا الجهاز، أو مفتاح مزوّد.',
-	'assistant.openSettings': 'فتح الإعدادات',
 	'assistant.sendsLog':
 		'يُرسَل السؤال مع السجل ومع وصف للتطبيق. لا يحتوي السجل أبدًا على محتوى المنشورات أو أسماء الحسابات أو ملفات تعريف الارتباط.',
 	'assistant.clear': 'مسح',

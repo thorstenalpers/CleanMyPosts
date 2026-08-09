@@ -181,6 +181,8 @@ export const de: Record<MessageKey, string> = {
 	'settings.assistant': 'Assistent',
 	'settings.assistant.description':
 		'Woher Antworten kommen. Das lokale Programm sendet nichts aus dieser App; ein gehosteter Anbieter ist das Einzige hier, das Daten ins Netz gibt.',
+	'settings.assistant.missing':
+		'Es ist noch keine Quelle eingerichtet, deshalb ist der Assistent überall sonst ausgeblendet. Wähle Claude Code auf diesem Rechner, oder hinterlege unten einen Anbieter-Key.',
 	'settings.assistant.source': 'Quelle',
 	'settings.assistant.off': 'Aus',
 	'settings.assistant.off.description':
@@ -217,9 +219,6 @@ export const de: Record<MessageKey, string> = {
 	'assistant.placeholder': 'Warum wurden 12 Beiträge nicht gelöscht?',
 	'assistant.ask': 'Fragen',
 	'assistant.asking': 'Wird gefragt…',
-	'assistant.noSource':
-		'Es ist noch keine Quelle eingerichtet. Wähle eine in den Einstellungen — Claude Code auf diesem Rechner oder einen Anbieterschlüssel.',
-	'assistant.openSettings': 'Einstellungen öffnen',
 	'assistant.sendsLog':
 		'Die Frage geht zusammen mit dem Protokoll und einer Beschreibung der App raus. Das Protokoll enthält nie Beitragsinhalte, Kontonamen oder Cookies.',
 	'assistant.clear': 'Leeren',

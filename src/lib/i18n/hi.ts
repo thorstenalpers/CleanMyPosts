@@ -178,6 +178,8 @@ export const hi: Record<MessageKey, string> = {
 	'settings.assistant': 'सहायक',
 	'settings.assistant.description':
 		'जवाब कहाँ से आते हैं। स्थानीय प्रोग्राम इस ऐप से कुछ नहीं भेजता; होस्टेड प्रदाता ही यहाँ अकेली चीज़ है जो डेटा नेटवर्क पर भेजती है।',
+	'settings.assistant.missing':
+		'अभी कोई स्रोत सेट नहीं है, इसलिए सहायक बाकी हर जगह छिपा है। इस मशीन पर Claude Code चुनें, या नीचे कोई प्रदाता कुंजी सहेजें।',
 	'settings.assistant.source': 'स्रोत',
 	'settings.assistant.off': 'बंद',
 	'settings.assistant.off.description': 'सहायक बंद है और साइडबार में नहीं दिखता।',
@@ -211,9 +213,6 @@ export const hi: Record<MessageKey, string> = {
 	'assistant.placeholder': '12 पोस्ट क्यों नहीं हटीं?',
 	'assistant.ask': 'पूछें',
 	'assistant.asking': 'पूछा जा रहा है…',
-	'assistant.noSource':
-		'अभी कोई स्रोत तय नहीं है। सेटिंग्स में एक चुनें — इस मशीन पर Claude Code, या किसी प्रदाता की कुंजी।',
-	'assistant.openSettings': 'सेटिंग्स खोलें',
 	'assistant.sendsLog':
 		'सवाल लॉग और ऐप के विवरण के साथ भेजा जाता है। लॉग में कभी पोस्ट की सामग्री, खाता नाम या कुकी नहीं होतीं।',
 	'assistant.clear': 'खाली करें',

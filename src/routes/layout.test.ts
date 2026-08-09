@@ -29,7 +29,9 @@ const host = vi.hoisted(() => ({
 	calls: [] as { method: string; params: unknown }[],
 	emit: undefined as undefined | ((event: unknown) => void),
 	/** Merged into whatever `settings.get` answers, so a test can start from a switch that is off. */
-	settingsPatch: {}
+	settingsPatch: {},
+	/** A machine with neither the binary nor a key — the state a fresh install is in. */
+	noAssistantSource: false
 }));
 
 vi.mock('$lib/bridge/mock', async (importOriginal) => {
@@ -48,9 +50,21 @@ vi.mock('$lib/bridge/mock', async (importOriginal) => {
 					(params: unknown) => {
 						host.calls.push({ method, params });
 						const result = (handler as (p: unknown) => unknown)(params);
-						return method === 'settings.get'
-							? { ...(result as object), ...host.settingsPatch }
-							: result;
+						if (method === 'settings.get') return { ...(result as object), ...host.settingsPatch };
+						if (method === 'assistant.getSources' && host.noAssistantSource)
+							return {
+								local: { found: false, path: null, version: null },
+								providers: [
+									{
+										id: 'gemini',
+										label: 'Google AI',
+										model: '',
+										freeKeyUrl: '',
+										hasKey: false
+									}
+								]
+							};
+						return result;
 					}
 				])
 			)
@@ -339,6 +353,31 @@ describe('the assistant panel', () => {
 		host.settingsPatch = {};
 		url.pathname = '/';
 		window.innerWidth = 1200;
+		host.noAssistantSource = false;
+	});
+
+	// Hidden rather than shown and refusing: without a source the assistant cannot answer, and
+	// the app deletes without it. The settings are the one place that says a key is missing.
+	it('is nowhere in the app while nothing can answer', async () => {
+		host.noAssistantSource = true;
+		url.pathname = '/x';
+		await renderLayout();
+
+		await waitFor(() =>
+			expect(host.calls.some((call) => call.method === 'assistant.getSources')).toBe(true)
+		);
+		expect(screen.queryByRole('button', { name: 'Assistant' })).not.toBeInTheDocument();
+		expect(screen.queryByRole('link', { name: 'Assistant' })).not.toBeInTheDocument();
+	});
+
+	// Reachability follows the sidebar, so the page a hidden entry led to sends the user home
+	// instead of standing there empty.
+	it('sends the assistant page home while nothing can answer', async () => {
+		host.noAssistantSource = true;
+		url.pathname = '/assistant';
+		await renderLayout();
+
+		await waitFor(() => expect(goto).toHaveBeenCalledWith('/'));
 	});
 
 	it('opens beside the platform from the header, and closes on its own button', async () => {

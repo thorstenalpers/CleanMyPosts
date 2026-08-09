@@ -8,32 +8,31 @@ use tokio::sync::oneshot;
 /// `show*` and `delete*` share a target because deleting always happens on the page that
 /// lists the items.
 ///
-/// Every url asks for English, whatever the app is set to. The engine finds the menu entry it
-/// has to click by its wording, and one wording is testable where a hundred are not.
-///
-/// Asked for, not guaranteed: both platforms let the account's own language win, and in
-/// practice it usually does. The parameter costs nothing where it is ignored and saves the
-/// run where it is honoured, which is the whole case for keeping it.
+/// The pages are asked for in no particular language. Every url used to carry `lang=en`, on
+/// the theory that one testable wording beats a hundred — but both platforms let the account's
+/// own language win, and in practice they did. So the parameter mostly did not work, and where
+/// it did it left the app showing a page in a language its owner had not chosen. The engine
+/// matches the wordings it needs in every language the app offers instead; see
+/// `deleteMenuText` in `src/lib/engine/config.ts`.
 fn target_url(platform: &str, action: &str, user_name: &str) -> Option<String> {
     let user = urlencoding_minimal(user_name);
     let url = match (platform, action) {
         ("x", "showPosts" | "deletePosts") => {
-            // Already carries a query, so the language joins it rather than starting a new one.
-            format!("https://x.com/search?q=from%3A{user}&src=typed_query&lang=en")
+            format!("https://x.com/search?q=from%3A{user}&src=typed_query")
         }
         ("x", "showReplies" | "deleteReplies") => {
-            format!("https://x.com/{user}/with_replies?lang=en")
+            format!("https://x.com/{user}/with_replies")
         }
-        ("x", "showReposts" | "deleteReposts") => format!("https://x.com/{user}?lang=en"),
-        ("x", "showLikes" | "deleteLikes") => format!("https://x.com/{user}/likes?lang=en"),
+        ("x", "showReposts" | "deleteReposts") => format!("https://x.com/{user}"),
+        ("x", "showLikes" | "deleteLikes") => format!("https://x.com/{user}/likes"),
         ("x", "showFollowing" | "deleteFollowing") => {
-            format!("https://x.com/{user}/following?lang=en")
+            format!("https://x.com/{user}/following")
         }
         ("youtube", "showComments" | "deleteComments") => {
-            "https://myactivity.google.com/page?page=youtube_comments&hl=en".to_string()
+            "https://myactivity.google.com/page?page=youtube_comments".to_string()
         }
         ("youtube", "showLikes" | "deleteLikes") => {
-            "https://www.youtube.com/playlist?list=LL&hl=en".to_string()
+            "https://www.youtube.com/playlist?list=LL".to_string()
         }
         _ => return None,
     };
@@ -654,23 +653,23 @@ mod tests {
     fn builds_every_x_page() {
         assert_eq!(
             target_url("x", "deletePosts", "someuser").unwrap(),
-            "https://x.com/search?q=from%3Asomeuser&src=typed_query&lang=en"
+            "https://x.com/search?q=from%3Asomeuser&src=typed_query"
         );
         assert_eq!(
             target_url("x", "showReplies", "someuser").unwrap(),
-            "https://x.com/someuser/with_replies?lang=en"
+            "https://x.com/someuser/with_replies"
         );
         assert_eq!(
             target_url("x", "deleteReposts", "someuser").unwrap(),
-            "https://x.com/someuser?lang=en"
+            "https://x.com/someuser"
         );
         assert_eq!(
             target_url("x", "deleteLikes", "someuser").unwrap(),
-            "https://x.com/someuser/likes?lang=en"
+            "https://x.com/someuser/likes"
         );
         assert_eq!(
             target_url("x", "showFollowing", "someuser").unwrap(),
-            "https://x.com/someuser/following?lang=en"
+            "https://x.com/someuser/following"
         );
     }
 
@@ -704,23 +703,39 @@ mod tests {
     fn youtube_pages_ignore_the_handle() {
         assert_eq!(
             target_url("youtube", "deleteComments", "").unwrap(),
-            "https://myactivity.google.com/page?page=youtube_comments&hl=en"
+            "https://myactivity.google.com/page?page=youtube_comments"
         );
         assert_eq!(
             target_url("youtube", "showLikes", "").unwrap(),
-            "https://www.youtube.com/playlist?list=LL&hl=en"
+            "https://www.youtube.com/playlist?list=LL"
         );
     }
 
-    /// The engine matches the menu entry by its wording, so every page it is sent to has to
-    /// come back in the one language that wording is written in.
+    /// The parameter that used to pin every page to English is gone.
+    ///
+    /// It mostly did not work — both platforms answer in the account's language whatever the
+    /// url asks — and where it did, it showed somebody their own account in a language they
+    /// had not chosen. The engine carries the wordings it needs in every language the app
+    /// offers instead; see `deleteMenuText` in `src/lib/engine/config.ts`.
     #[test]
-    fn every_youtube_page_is_asked_for_in_english() {
-        for action in ["showComments", "deleteComments", "showLikes", "deleteLikes"] {
-            let url = target_url("youtube", action, "").unwrap();
+    fn no_page_is_pinned_to_a_language() {
+        let actions = [
+            ("x", "showPosts"),
+            ("x", "deletePosts"),
+            ("x", "showReplies"),
+            ("x", "deleteReposts"),
+            ("x", "deleteLikes"),
+            ("x", "deleteFollowing"),
+            ("youtube", "showComments"),
+            ("youtube", "deleteComments"),
+            ("youtube", "showLikes"),
+            ("youtube", "deleteLikes"),
+        ];
+        for (platform, action) in actions {
+            let url = target_url(platform, action, "someuser").unwrap();
             assert!(
-                url.contains("hl=en"),
-                "{action} is not pinned to a language: {url}"
+                !url.contains("lang=") && !url.contains("hl="),
+                "{platform}/{action} still asks for a language: {url}"
             );
         }
     }

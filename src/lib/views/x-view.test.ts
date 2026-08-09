@@ -1,10 +1,11 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor, within } from '@testing-library/svelte';
 import XView from './x-view.svelte';
 import { SettingsStore } from '$lib/stores/settings.svelte';
 import { SiteLoginStore } from '$lib/stores/site-login.svelte';
 import { ActionRunner } from '$lib/stores/action-runner.svelte';
 import { createMockHost, type MockHandlers } from '$lib/bridge/mock';
+import { i18n, t } from '$lib/i18n/index.svelte';
 
 const SAVED_ACTION = {
 	id: 'saved-1',
@@ -74,6 +75,44 @@ async function loadAndLogin(settingsStore: SettingsStore, emit: ReturnType<typeo
 }
 
 describe('XView', () => {
+	afterEach(() => {
+		i18n.setting = 'System';
+		i18n.applyToDocument();
+	});
+
+	// The app's language and the platform's are two unrelated settings, and the app never tells
+	// the platform which one it is in — the engine reads the page it finds. So an Arabic app
+	// deleting from a Spanish X sends exactly what an English one would; only what the user
+	// reads is mirrored.
+	it('sends the same run whatever language the app is in', async () => {
+		const { client, emit, settingsStore, loginStore, runner, runAction } = setup(false);
+		await loadAndLogin(settingsStore, emit);
+		i18n.setting = 'ar';
+		i18n.applyToDocument();
+
+		render(XView, {
+			bridge: client,
+			settingsStore,
+			loginStore,
+			runner,
+			open: true,
+			startDeleteAll: false,
+			onDeleteAllStarted: vi.fn(),
+			onDialogOpenChange: vi.fn(),
+			onClose: () => {}
+		});
+
+		expect(document.documentElement.dir).toBe('rtl');
+		await fireEvent.click(
+			screen.getByRole('button', { name: t('action.delete', { label: t('group.posts') }) })
+		);
+
+		await waitFor(() => expect(runAction).toHaveBeenCalled());
+		const [params] = runAction.mock.calls[0] as unknown as [Record<string, unknown>];
+		expect(Object.keys(params).sort()).toEqual(['action', 'platform', 'requestId', 'timeouts']);
+		expect(params.action).toBe('deletePosts');
+	});
+
 	it('navigates when a Show button is clicked', async () => {
 		const { client, emit, settingsStore, loginStore, runner, navigate } = setup(true);
 		await loadAndLogin(settingsStore, emit);

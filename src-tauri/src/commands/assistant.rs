@@ -102,21 +102,30 @@ pub async fn ask(app: AppHandle, params: &Value) -> Result<Value> {
 /// there is no argv layer to escape through, so the quoting is cmd's own and means what it
 /// says.
 fn open_script(prompt: &std::path::Path, binary: &std::path::Path) -> String {
+    // The prompt is named, not piped. `claude` without `--print` is an interactive session,
+    // and an interactive session handed a redirected stdin drains the pipe and then waits on a
+    // handle that will never be a terminal — which is the window that never came back.
+    //
     // CRLF because it is read by cmd, and `@echo off` so the window opens on the answer
     // rather than on a copy of the command that produced it.
     format!(
-        "@echo off\r\ntype \"{}\" | \"{}\"\r\n",
-        prompt.display(),
-        binary.display()
+        "@echo off\r\n\"{}\" \"Read {} - it holds a question about CleanMyPosts together with the app log - and answer it.\"\r\n",
+        binary.display(),
+        prompt.display()
     )
 }
 
 /// Opens the prompt in Claude Code, in a terminal window of its own.
 ///
 /// Through a file rather than an argument: the prompt carries the whole log and runs to
-/// thousands of characters, which a Windows command line neither fits nor quotes safely.
-/// The window stays open (`cmd /k`) so the conversation can go on from there — which is the
-/// point of handing it over rather than asking from inside the app.
+/// thousands of characters, which a Windows command line neither fits nor quotes safely — so
+/// the command line carries the file's name and Claude Code reads it. The window stays open
+/// (`cmd /k`) so the conversation can go on from there, which is the point of handing it over
+/// rather than asking from inside the app.
+///
+/// This is the Claude Code CLI, not the Claude desktop app. Both ship a binary called
+/// `claude`, and the desktop one has no interface for being handed a prompt at all — which is
+/// why `candidates` names the CLI's own install paths instead of searching for the name.
 pub fn open_in_cli(app: &AppHandle, params: &Value) -> Result<Value> {
     let prompt = params
         .get("prompt")
@@ -177,11 +186,13 @@ mod tests {
             !script.contains(r#"\""#),
             "cmd reads a backslash before a quote as two literal characters"
         );
-        assert!(script.contains(r#""C:\Users\thor\AppData\Local\Temp\prompt.txt""#));
+        assert!(script.contains(r"C:\Users\thor\AppData\Local\Temp\prompt.txt"));
         assert!(script.contains(r#""C:\Users\thor\.local\bin\claude.exe""#));
     }
 
-    // A path with a space in it is the ordinary case on Windows, not the exotic one.
+    /// A path with a space in it is the ordinary case on Windows, not the exotic one. The
+    /// binary carries its own quotes; the prompt's path rides inside the opening sentence,
+    /// which is quoted as a whole — so the spaces are somebody's, either way.
     #[test]
     fn a_path_with_a_space_stays_inside_its_quotes() {
         let script = open_script(
@@ -189,8 +200,9 @@ mod tests {
             Path::new(r"C:\Program Files\claude\claude.exe"),
         );
 
-        assert!(script.contains(r#""C:\Users\Anna Meier\AppData\Local\Temp\prompt.txt""#));
         assert!(script.contains(r#""C:\Program Files\claude\claude.exe""#));
+        let sentence = script.split('"').nth(3).unwrap();
+        assert!(sentence.contains(r"C:\Users\Anna Meier\AppData\Local\Temp\prompt.txt"));
     }
 
     /// Read by cmd, which wants CRLF, and opens on the answer rather than on the command.
@@ -200,6 +212,24 @@ mod tests {
 
         assert!(script.starts_with("@echo off\r\n"));
         assert!(script.ends_with("\r\n"));
-        assert!(script.contains(" | "));
+    }
+
+    /// The bug this stands for: the window opened, said nothing and never came back.
+    ///
+    /// `type prompt.txt | claude.exe` starts an interactive session — `--print` is what makes
+    /// it answer once and stop — and an interactive session whose stdin is a pipe drains it
+    /// and then waits forever on a handle that will never be a terminal. Naming the file on
+    /// the command line instead leaves stdin on the keyboard, where the rest of the
+    /// conversation has to come from.
+    #[test]
+    fn it_does_not_pipe_the_prompt_into_an_interactive_session() {
+        let script = open_script(Path::new("prompt.txt"), Path::new("claude.exe"));
+
+        assert!(
+            !script.contains('|'),
+            "a pipe leaves stdin as something nobody can type into"
+        );
+        assert!(!script.contains("type "));
+        assert!(script.contains("prompt.txt"));
     }
 }

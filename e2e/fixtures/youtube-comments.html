@@ -8,16 +8,20 @@
     <div id="contents">
       <div role="listitem">
         <span>Comment 1</span>
-        <button aria-label="Delete activity item">Delete</button>
+        <div jscontroller="Fs3gzb">
+          <button aria-label="Delete activity item">Delete</button>
+        </div>
       </div>
       <div role="listitem">
         <span>Comment 2</span>
-        <button aria-label="Delete activity item">Delete</button>
+        <div jscontroller="Fs3gzb">
+          <button aria-label="Delete activity item">Delete</button>
+        </div>
       </div>
     </div>
 
     <div role="dialog">
-      <div role="button" data-id="EBS5u">Delete</div>
+      <div role="button" data-id="EBS5u"><span class="Crf1o">Delete</span></div>
     </div>
 
     <script>
@@ -25,12 +29,12 @@
       // delete button arms it, confirming removes that comment's listitem.
       let pending = null;
       document.addEventListener('click', (e) => {
-        const del = e.target.closest?.('button[aria-label^="Delete activity item"]');
+        const del = e.target.closest?.('div[jscontroller="Fs3gzb"] button');
         if (del) {
           pending = del.closest('div[role="listitem"]');
           return;
         }
-        const confirm = e.target.closest?.('div[role="button"][data-id="EBS5u"]');
+        const confirm = e.target.closest?.('div[role="button"]');
         if (confirm && pending) {
           pending.remove();
           pending = null;

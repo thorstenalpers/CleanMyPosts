@@ -170,6 +170,10 @@ describe('where a plan may navigate', () => {
 		expect(isAllowedUrl('https://www.youtube.com/feed/channels')).toBe(true);
 		expect(isAllowedUrl('https://x.com/home')).toBe(true);
 		expect(isAllowedUrl('https://myactivity.google.com/page')).toBe(true);
+		// The two pages that change the site's own language, so a run can be watched in another
+		// one without a VPN: YouTube persists it from the URL, X has a settings page for it.
+		expect(isAllowedUrl('https://www.youtube.com/?persist_hl=1&hl=es')).toBe(true);
+		expect(isAllowedUrl('https://x.com/settings/language')).toBe(true);
 	});
 
 	it('refuses anywhere else, and anything that is not https', () => {

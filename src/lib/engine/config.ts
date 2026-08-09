@@ -192,7 +192,12 @@ export const siteConfig: SiteConfig = {
 			'gostei',
 			'verwijderen uit',
 			'usuń z',
-			'удалить из'
+			'удалить из',
+			'高く評価した動画',
+			'我喜欢的视频',
+			'أعجبتني',
+			'पसंद किए गए वीडियो',
+			'beğenilen videolardan'
 		]
 	}
 };

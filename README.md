@@ -17,34 +17,6 @@ YouTube does not stop a run.
 
 ---
 
-## ℹ️ How It Works
-
-There is **no API, no OAuth, and no token**. You sign in exactly as you would in a browser,
-and the app clicks the same buttons you would — just without stopping. Deletions are
-deliberately paced; the waits between them are configurable and exist to keep the platforms
-from treating you as a bot.
-
-### Why a browser and not an API?
-
-Because neither platform will sell you the thing you actually want, and one of them will
-charge you for the detour.
-
-**Bulk deletion is not offered.** Not on X, not on YouTube. Their interfaces delete one item
-at a time, each behind its own menu and its own confirmation — which is fine for a mistake
-and hopeless for ten years of posting.
-
-**The programmatic route costs.** X keeps API access behind paid tiers, so deleting your own
-posts through it means paying a monthly fee for the privilege. YouTube's Data API is free but
-metered: every deletion spends from a daily quota that runs out long before a busy account is
-clean, and a large clean-up turns into a job spread over days.
-
-**Driving the browser costs nothing.** The app opens the same pages you would, in your own
-signed-in session, and presses the same buttons. No developer account, no key, no monthly
-fee, no quota — and nothing about you leaves the machine, because there is no server of ours
-for it to leave to.
-
----
-
 ## 🚀 Features
 
 <img align="right" src="./assets/CleanMyPosts_X.png" alt="CleanMyPosts cleaning up an X account" width="460" />
@@ -113,6 +85,34 @@ no prompt to set one up. The settings say once that no source is configured, and
 in the app mentions it again.
 
 <br clear="both" />
+
+---
+
+## ℹ️ How It Works
+
+There is **no API, no OAuth, and no token**. You sign in exactly as you would in a browser,
+and the app clicks the same buttons you would — just without stopping. Deletions are
+deliberately paced; the waits between them are configurable and exist to keep the platforms
+from treating you as a bot.
+
+### Why a browser and not an API?
+
+Because neither platform will sell you the thing you actually want, and one of them will
+charge you for the detour.
+
+**Bulk deletion is not offered.** Not on X, not on YouTube. Their interfaces delete one item
+at a time, each behind its own menu and its own confirmation — which is fine for a mistake
+and hopeless for ten years of posting.
+
+**The programmatic route costs.** X keeps API access behind paid tiers, so deleting your own
+posts through it means paying a monthly fee for the privilege. YouTube's Data API is free but
+metered: every deletion spends from a daily quota that runs out long before a busy account is
+clean, and a large clean-up turns into a job spread over days.
+
+**Driving the browser costs nothing.** The app opens the same pages you would, in your own
+signed-in session, and presses the same buttons. No developer account, no key, no monthly
+fee, no quota — and nothing about you leaves the machine, because there is no server of ours
+for it to leave to.
 
 ---
 

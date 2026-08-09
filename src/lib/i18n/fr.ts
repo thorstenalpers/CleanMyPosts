@@ -291,6 +291,12 @@ export const fr: Record<MessageKey, string> = {
 	'settings.actions.empty':
 		'Rien de gardé pour l’instant. Demande un plan à l’assistant et garde-le depuis là.',
 	'settings.actions.made': '{platform} · gardé le {date}',
+	'settings.actions.moveUp': 'Monter',
+	'settings.actions.moveDown': 'Descendre',
+	'settings.actions.rename': 'Renommer',
+	'settings.actions.plan': 'Plan',
+	'overview.saved': 'Actions enregistrées',
+	'overview.saved.description': 'Des plans que tu as gardés. Un clic l’exécute sur sa plateforme.',
 	'settings.actions.forget': 'Oublier',
 	'settings.actions.forgetAll': 'Tout oublier',
 	'settings.actions.forgetAll.confirmBody':

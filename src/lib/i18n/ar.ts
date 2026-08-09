@@ -275,6 +275,12 @@ export const ar: Record<MessageKey, string> = {
 		'خطط كتبها المساعد واحتفظت بها. كل واحدة محدِّد، فتتوقف عن العمل عندما تتغير المنصة.',
 	'settings.actions.empty': 'لم تحتفظ بشيء بعد. اطلب خطة من المساعد ثم احتفظ بها من هناك.',
 	'settings.actions.made': '{platform} · حُفظت في {date}',
+	'settings.actions.moveUp': 'تحريك لأعلى',
+	'settings.actions.moveDown': 'تحريك لأسفل',
+	'settings.actions.rename': 'إعادة تسمية',
+	'settings.actions.plan': 'الخطة',
+	'overview.saved': 'الإجراءات المحفوظة',
+	'overview.saved.description': 'خطط احتفظت بها. نقرة واحدة تشغّلها على منصتها.',
 	'settings.actions.forget': 'تجاهل',
 	'settings.actions.forgetAll': 'تجاهل الكل',
 	'settings.actions.forgetAll.confirmBody':

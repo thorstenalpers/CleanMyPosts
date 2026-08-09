@@ -267,6 +267,12 @@ export const zh: Record<MessageKey, string> = {
 	'settings.actions.description': '助手写下、你留存的计划。每一个都是选择器，平台一变就不再有效。',
 	'settings.actions.empty': '还没有保存任何内容。向助手要一个计划，然后从那里保存。',
 	'settings.actions.made': '{platform} · {date} 保存',
+	'settings.actions.moveUp': '上移',
+	'settings.actions.moveDown': '下移',
+	'settings.actions.rename': '重命名',
+	'settings.actions.plan': '计划',
+	'overview.saved': '已保存的操作',
+	'overview.saved.description': '你留存的计划。点击一次即在其平台上执行。',
 	'settings.actions.forget': '丢弃',
 	'settings.actions.forgetAll': '全部丢弃',
 	'settings.actions.forgetAll.confirmBody':

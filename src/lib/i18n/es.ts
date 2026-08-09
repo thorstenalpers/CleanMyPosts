@@ -289,6 +289,12 @@ export const es: Record<MessageKey, string> = {
 	'settings.actions.empty':
 		'Todavía no has guardado nada. Pide un plan al asistente y guárdalo desde allí.',
 	'settings.actions.made': '{platform} · guardado el {date}',
+	'settings.actions.moveUp': 'Subir',
+	'settings.actions.moveDown': 'Bajar',
+	'settings.actions.rename': 'Renombrar',
+	'settings.actions.plan': 'Plan',
+	'overview.saved': 'Acciones guardadas',
+	'overview.saved.description': 'Planes que guardaste. Un clic lo ejecuta en su plataforma.',
 	'settings.actions.forget': 'Olvidar',
 	'settings.actions.forgetAll': 'Olvidar todo',
 	'settings.actions.forgetAll.confirmBody':

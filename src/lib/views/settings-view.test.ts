@@ -252,4 +252,65 @@ describe('saved actions in the settings', () => {
 			expect(settingsSet).toHaveBeenCalledWith(expect.objectContaining({ customActions: [] }))
 		);
 	});
+
+	// The order is the user's now, and it is the order every other surface reads from: the
+	// sidebar, the platform panel and the overview all render this same list.
+	it('moves a row, and the ends do not move', async () => {
+		const second = { ...action, id: 'a2', label: 'Drafts' };
+		const { client, settingsStore, settingsSet } = setup();
+		await settingsStore.load();
+		settingsStore.settings = { ...settingsStore.settings, customActions: [action, second] };
+		render(SettingsView, { bridge: client, settingsStore });
+
+		const [downFirst] = screen.getAllByRole('button', { name: /move down/i });
+		await fireEvent.click(downFirst!);
+
+		await waitFor(() =>
+			expect(settingsSet).toHaveBeenCalledWith(
+				expect.objectContaining({
+					customActions: [
+						expect.objectContaining({ id: 'a2' }),
+						expect.objectContaining({ id: 'a1' })
+					]
+				})
+			)
+		);
+	});
+
+	it('renames one in place', async () => {
+		const { client, settingsStore, settingsSet } = setup();
+		await settingsStore.load();
+		settingsStore.settings = { ...settingsStore.settings, customActions: [action] };
+		render(SettingsView, { bridge: client, settingsStore });
+
+		await fireEvent.click(screen.getByRole('button', { name: /rename/i }));
+		const field = screen.getByRole('textbox', { name: /rename/i });
+		await fireEvent.input(field, { target: { value: 'Old bookmarks' } });
+		await fireEvent.blur(field);
+
+		await waitFor(() =>
+			expect(settingsSet).toHaveBeenCalledWith(
+				expect.objectContaining({
+					customActions: [expect.objectContaining({ label: 'Old bookmarks' })]
+				})
+			)
+		);
+	});
+
+	/** Readable before it is trusted: that a person can check it is the whole case for a plan. */
+	it('shows the plan itself on request', async () => {
+		const { client, settingsStore } = setup();
+		await settingsStore.load();
+		settingsStore.settings = { ...settingsStore.settings, customActions: [action] };
+		render(SettingsView, { bridge: client, settingsStore });
+
+		expect(screen.queryByText(/scrollUntil|"kind"/)).not.toBeInTheDocument();
+
+		await fireEvent.click(screen.getByRole('button', { name: /^plan$/i }));
+
+		// The steps themselves, as they are stored — not a summary of them.
+		const shown = screen.getByText(/"kind"/);
+		expect(shown).toHaveTextContent('loop');
+		expect(shown).toHaveTextContent('bookmark');
+	});
 });

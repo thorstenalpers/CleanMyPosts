@@ -279,6 +279,13 @@ export const ja: Record<MessageKey, string> = {
 	'settings.actions.empty':
 		'まだ何も残していません。アシスタントにプランを頼み、そこから残してください。',
 	'settings.actions.made': '{platform} · {date} に保存',
+	'settings.actions.moveUp': '上へ',
+	'settings.actions.moveDown': '下へ',
+	'settings.actions.rename': '名前を変更',
+	'settings.actions.plan': 'プラン',
+	'overview.saved': '保存した操作',
+	'overview.saved.description':
+		'残したプランです。クリックすると対象のプラットフォームで実行します。',
 	'settings.actions.forget': '破棄',
 	'settings.actions.forgetAll': 'すべて破棄',
 	'settings.actions.forgetAll.confirmBody':

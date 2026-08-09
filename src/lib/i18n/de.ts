@@ -291,6 +291,12 @@ export const de: Record<MessageKey, string> = {
 	'settings.actions.empty':
 		'Noch nichts behalten. Frag den Assistenten nach einem Plan und behalte ihn dort.',
 	'settings.actions.made': '{platform} · behalten am {date}',
+	'settings.actions.moveUp': 'Nach oben',
+	'settings.actions.moveDown': 'Nach unten',
+	'settings.actions.rename': 'Umbenennen',
+	'settings.actions.plan': 'Plan',
+	'overview.saved': 'Gespeicherte Aktionen',
+	'overview.saved.description': 'Behaltene Pläne. Ein Klick führt sie auf ihrer Plattform aus.',
 	'settings.actions.forget': 'Verwerfen',
 	'settings.actions.forgetAll': 'Alle verwerfen',
 	'settings.actions.forgetAll.confirmBody':

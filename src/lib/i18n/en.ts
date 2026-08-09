@@ -293,6 +293,12 @@ export const en = {
 	'settings.actions.empty':
 		'Nothing kept yet. Ask the assistant for a plan and keep it from there.',
 	'settings.actions.made': '{platform} · kept {date}',
+	'settings.actions.moveUp': 'Move up',
+	'settings.actions.moveDown': 'Move down',
+	'settings.actions.rename': 'Rename',
+	'settings.actions.plan': 'Plan',
+	'overview.saved': 'Saved actions',
+	'overview.saved.description': 'Plans you kept. One click runs it on its platform.',
 	'settings.actions.forget': 'Forget',
 	'settings.actions.forgetAll': 'Forget all',
 	'settings.actions.forgetAll.confirmBody':

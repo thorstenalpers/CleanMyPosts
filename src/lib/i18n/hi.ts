@@ -282,6 +282,12 @@ export const hi: Record<MessageKey, string> = {
 		'सहायक की लिखी योजनाएँ जो आपने रखीं। हर एक एक सेलेक्टर है, इसलिए प्लेटफ़ॉर्म बदलते ही काम करना बंद कर देती है।',
 	'settings.actions.empty': 'अभी कुछ नहीं रखा गया। सहायक से योजना माँगें और वहीं से रखें।',
 	'settings.actions.made': '{platform} · {date} को रखा',
+	'settings.actions.moveUp': 'ऊपर ले जाएँ',
+	'settings.actions.moveDown': 'नीचे ले जाएँ',
+	'settings.actions.rename': 'नाम बदलें',
+	'settings.actions.plan': 'योजना',
+	'overview.saved': 'सहेजी गई क्रियाएँ',
+	'overview.saved.description': 'आपकी रखी योजनाएँ। एक क्लिक उसे उसके प्लेटफ़ॉर्म पर चलाता है।',
 	'settings.actions.forget': 'भूलें',
 	'settings.actions.forgetAll': 'सब भूलें',
 	'settings.actions.forgetAll.confirmBody':

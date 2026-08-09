@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { Platform } from '$lib/bridge/contract';
 	import type { SettingsStore } from '$lib/stores/settings.svelte';
+	import type { AppContext } from '$lib/app-context';
 	import type { SiteLoginStore } from '$lib/stores/site-login.svelte';
 	import type { LogStore } from '$lib/stores/log.svelte';
 	import type { ActionRunner } from '$lib/stores/action-runner.svelte';
@@ -22,6 +23,8 @@
 	import { Progress } from '$lib/components/ui/progress';
 	import XIcon from '$lib/components/icons/x-icon.svelte';
 	import YouTubeIcon from '$lib/components/icons/youtube-icon.svelte';
+	import WandIcon from '@lucide/svelte/icons/wand-sparkles';
+	import PlayIcon from '@lucide/svelte/icons/play';
 	import ArrowRightIcon from '@lucide/svelte/icons/arrow-right';
 	import DownloadIcon from '@lucide/svelte/icons/download';
 	import Trash2Icon from '@lucide/svelte/icons/trash-2';
@@ -40,10 +43,38 @@
 		onOpen: (platform: Platform, options?: { deleteAll?: boolean }) => void;
 		/** Ticking the box writes it away for good; Settings is the way back. */
 		onDismissIntro: () => void;
+		/** Brings a platform on screen and runs a plan on it; the layout owns both halves. */
+		runPlanOn: AppContext['runPlanOn'];
 	}
 
-	let { settingsStore, loginStore, logStore, runner, updater, onOpen, onDismissIntro }: Props =
-		$props();
+	let {
+		settingsStore,
+		loginStore,
+		logStore,
+		runner,
+		updater,
+		onOpen,
+		onDismissIntro,
+		runPlanOn
+	}: Props = $props();
+
+	/** In the order the user put them in, which is the order the settings let them change. */
+	const saved = $derived(settingsStore.settings.customActions);
+
+	let running = $state<string | undefined>(undefined);
+
+	async function run(action: (typeof saved)[number]): Promise<void> {
+		if (runner.running || running) return;
+		running = action.id;
+		try {
+			await runPlanOn({ platform: action.platform, plan: action.plan, label: action.label });
+		} catch {
+			// The log has it, and the status bar reports the run. A card is not the place to
+			// repeat either.
+		} finally {
+			running = undefined;
+		}
+	}
 
 	const downloadLabel = $derived(
 		updater.percent === undefined
@@ -234,6 +265,37 @@
 				</Card>
 			{/each}
 		</div>
+
+		<!-- Above "right now", because this is a list somebody acts on and that one only
+		     reports. Every kept plan, whichever platform it belongs to: the overview is the one
+		     page that does not already have a platform in mind. -->
+		{#if saved.length > 0}
+			<Card>
+				<CardHeader>
+					<CardTitle>{t('overview.saved')}</CardTitle>
+					<CardDescription>{t('overview.saved.description')}</CardDescription>
+				</CardHeader>
+				<CardContent class="flex flex-col gap-1.5">
+					{#each saved as action (action.id)}
+						<button
+							type="button"
+							disabled={runner.running || running !== undefined}
+							onclick={() => run(action)}
+							class="group/saved flex h-9 cursor-pointer items-center gap-2 rounded-md border border-border/60 px-2.5 text-start transition-colors duration-150 hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none disabled:pointer-events-none disabled:opacity-40"
+						>
+							<WandIcon class="size-3.5 shrink-0 text-muted-foreground" />
+							<span class="min-w-0 flex-1 truncate text-[13px]">{action.label}</span>
+							<span class="shrink-0 text-xs text-muted-foreground">
+								{action.platform === 'x' ? 'X' : 'YouTube'}
+							</span>
+							<PlayIcon
+								class="size-3.5 shrink-0 text-muted-foreground/60 group-hover/saved:text-foreground"
+							/>
+						</button>
+					{/each}
+				</CardContent>
+			</Card>
+		{/if}
 
 		<Card>
 			<CardHeader>

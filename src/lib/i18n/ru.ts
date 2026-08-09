@@ -283,6 +283,13 @@ export const ru: Record<MessageKey, string> = {
 	'settings.actions.empty':
 		'Пока ничего не сохранено. Попросите у ассистента план и сохраните его оттуда.',
 	'settings.actions.made': '{platform} · сохранено {date}',
+	'settings.actions.moveUp': 'Выше',
+	'settings.actions.moveDown': 'Ниже',
+	'settings.actions.rename': 'Переименовать',
+	'settings.actions.plan': 'План',
+	'overview.saved': 'Сохранённые действия',
+	'overview.saved.description':
+		'Сохранённые вами планы. Один клик выполняет план на его платформе.',
 	'settings.actions.forget': 'Забыть',
 	'settings.actions.forgetAll': 'Забыть всё',
 	'settings.actions.forgetAll.confirmBody':

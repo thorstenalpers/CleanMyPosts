@@ -288,6 +288,12 @@ export const it: Record<MessageKey, string> = {
 		'Piani scritti dall’assistente che hai tenuto. Ognuno è un selettore, quindi smette di funzionare quando la piattaforma cambia.',
 	'settings.actions.empty': 'Ancora niente tenuto. Chiedi un piano all’assistente e tienilo da lì.',
 	'settings.actions.made': '{platform} · tenuto il {date}',
+	'settings.actions.moveUp': 'Sposta su',
+	'settings.actions.moveDown': 'Sposta giù',
+	'settings.actions.rename': 'Rinomina',
+	'settings.actions.plan': 'Piano',
+	'overview.saved': 'Azioni salvate',
+	'overview.saved.description': 'Piani che hai tenuto. Un clic lo esegue sulla sua piattaforma.',
 	'settings.actions.forget': 'Dimentica',
 	'settings.actions.forgetAll': 'Dimentica tutto',
 	'settings.actions.forgetAll.confirmBody':

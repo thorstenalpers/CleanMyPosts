@@ -88,7 +88,9 @@
 	}
 
 	function onCustomClick(action: CustomAction): void {
-		if (settingsStore.settings.confirmDeletion) {
+		// The question is about deleting, so a plan that deletes nothing does not get asked it.
+		// Opening a page or clicking a banner away is not something anybody needs talking out of.
+		if (settingsStore.settings.confirmDeletion && action.plan.kind !== 'once') {
 			confirmTarget = action;
 			confirmOpen = true;
 		} else {

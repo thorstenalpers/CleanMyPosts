@@ -333,6 +333,8 @@ export const BridgeMethods = {
 			requestId: z.string(),
 			platform: PlatformSchema,
 			plan: ActionPlanSchema,
+			/** What the user called it, for the log. Absent for a plan that is only being tried. */
+			label: z.string().max(60).optional(),
 			timeouts: TimeoutSettingsSchema
 		}),
 		result: ActionResultSchema

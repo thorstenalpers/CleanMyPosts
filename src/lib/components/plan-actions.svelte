@@ -9,8 +9,7 @@
 	 */
 	import type { BridgeClient } from '$lib/bridge/client';
 	import type { SettingsStore } from '$lib/stores/settings.svelte';
-	import type { ActionRunner } from '$lib/stores/action-runner.svelte';
-	import type { CustomAction, Platform } from '$lib/bridge/contract';
+	import type { ActionPlan, ActionResult, CustomAction, Platform } from '$lib/bridge/contract';
 	import { parseActionPlan } from '$lib/assistant-context';
 	import { notify } from '$lib/notify';
 	import { Button } from '$lib/components/ui/button';
@@ -23,14 +22,25 @@
 	interface Props {
 		bridge: BridgeClient;
 		settingsStore: SettingsStore;
-		runner: ActionRunner;
 		/** The model's answer, verbatim. Whether it is a plan is this component's question. */
 		answer: string;
 		/** Where a plan would act. Absent means no platform is signed in, and nothing can be tried. */
 		platform: Platform | undefined;
+		/**
+		 * Brings that platform on screen and runs the plan on it.
+		 *
+		 * Handed down rather than taken from the app context: the layout owns the route and the
+		 * hand-off timer, but a component that reaches for the context cannot be rendered on its
+		 * own, and this one is rendered by two parents and tested apart from both.
+		 */
+		runPlanOn: (action: {
+			platform: Platform;
+			plan: ActionPlan;
+			label?: string;
+		}) => Promise<ActionResult>;
 	}
 
-	let { bridge, settingsStore, runner, answer, platform }: Props = $props();
+	let { bridge, settingsStore, answer, platform, runPlanOn }: Props = $props();
 
 	// Read straight off the answer rather than kept beside it: there is one answer on screen at
 	// a time, and a second copy of what it means is a second thing that can be stale.
@@ -71,11 +81,7 @@
 		outcome = '';
 		failure = '';
 		try {
-			const result = await runner.runPlan({
-				platform,
-				plan,
-				timeouts: settingsStore.settings.timeouts
-			});
+			const result = await runPlanOn({ platform, plan });
 			outcome = t('assistant.plan.removed', { count: result.deletedCount });
 		} catch (cause) {
 			failure = cause instanceof Error ? cause.message : String(cause);

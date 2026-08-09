@@ -15,8 +15,8 @@
 	import type { BridgeClient } from '$lib/bridge/client';
 	import type { LogStore } from '$lib/stores/log.svelte';
 	import type { SettingsStore } from '$lib/stores/settings.svelte';
+	import type { AppContext } from '$lib/app-context';
 	import type { SiteLoginStore } from '$lib/stores/site-login.svelte';
-	import type { ActionRunner } from '$lib/stores/action-runner.svelte';
 	import type { AssistantEffort, AssistantSources, Platform } from '$lib/bridge/contract';
 	import { LOCAL_ASSISTANT_SOURCE } from '$lib/bridge/contract';
 	import { buildPrompt } from '$lib/assistant-context';
@@ -37,11 +37,12 @@
 		logStore: LogStore;
 		settingsStore: SettingsStore;
 		loginStore: SiteLoginStore;
-		runner: ActionRunner;
 		onClose: () => void;
+		/** Brings a platform on screen and runs a plan on it; the layout owns both halves. */
+		runPlanOn: AppContext['runPlanOn'];
 	}
 
-	let { bridge, logStore, settingsStore, loginStore, runner, onClose }: Props = $props();
+	let { bridge, logStore, settingsStore, loginStore, onClose, runPlanOn }: Props = $props();
 
 	interface Turn {
 		who: 'user' | 'assistant';
@@ -289,7 +290,7 @@
 		<!-- Only under the newest answer: an older plan in the same conversation was written
 		     against a page that has since been clicked through. -->
 		{#if lastAnswer && !asking}
-			<PlanActions {bridge} {settingsStore} {runner} answer={lastAnswer} {platform} />
+			<PlanActions {bridge} {settingsStore} answer={lastAnswer} {platform} {runPlanOn} />
 		{/if}
 
 		{#if error}

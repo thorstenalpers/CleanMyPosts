@@ -240,12 +240,21 @@ pub async fn run_plan(app: AppHandle, params: &Value) -> Result<Value> {
         json!(request_id)
     );
 
-    crate::bridge::log(&app, "info", format!("{platform}: running a plan"));
+    // Named where the user named it. A log that says "a plan" cannot be read back months
+    // later against a list of saved actions that all look alike.
+    let what = params
+        .get("label")
+        .and_then(Value::as_str)
+        .filter(|label| !label.trim().is_empty())
+        .map(|label| format!("\"{}\"", label.trim()))
+        .unwrap_or_else(|| "an unsaved plan".to_owned());
+
+    crate::bridge::log(&app, "info", format!("{platform}: running {what}"));
     let deleted = await_page(&app, platform, &request_id, script).await?;
     crate::bridge::log(
         &app,
         "info",
-        format!("{platform}: the plan removed {deleted}"),
+        format!("{platform}: {what} removed {deleted}"),
     );
     Ok(json!({ "deletedCount": deleted }))
 }

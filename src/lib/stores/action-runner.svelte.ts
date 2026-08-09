@@ -20,6 +20,8 @@ export interface RunPlanInput {
 	platform: Platform;
 	plan: ActionPlan;
 	timeouts: TimeoutSettings;
+	/** What the user called it. Named in the log, so a run can be told apart months later. */
+	label?: string;
 }
 
 /** Drives a single `site.runAction` call and tracks its live progress events. */
@@ -95,6 +97,7 @@ export class ActionRunner {
 				requestId,
 				platform: input.platform,
 				plan: input.plan,
+				label: input.label,
 				timeouts: input.timeouts
 			});
 		} finally {

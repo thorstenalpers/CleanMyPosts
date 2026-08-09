@@ -28,8 +28,17 @@ function setup(overrides: MockHandlers = {}) {
 		...overrides
 	});
 
+	/** The layout's job in the real app; here it only has to record that it was asked. */
+	const ran: unknown[] = [];
+	const runPlanOn = async (action: unknown) => {
+		ran.push(action);
+		return { deletedCount: 0 };
+	};
+
 	return {
 		client,
+		ran,
+		runPlanOn,
 		logStore: new LogStore(client),
 		settingsStore: new SettingsStore(client),
 		loginStore: new SiteLoginStore(client),
@@ -40,7 +49,7 @@ function setup(overrides: MockHandlers = {}) {
 describe('AssistantView', () => {
 	it('opens the troubleshooting guide in the host browser', async () => {
 		const openUrl = vi.fn();
-		const { client, logStore, settingsStore, loginStore, runner } = setup({
+		const { client, logStore, settingsStore, loginStore, runPlanOn } = setup({
 			'system.openUrl': (params) => {
 				openUrl(params);
 				return undefined;
@@ -51,7 +60,7 @@ describe('AssistantView', () => {
 			logStore,
 			settingsStore,
 			loginStore,
-			runner,
+			runPlanOn,
 			onOpenSettings: () => {}
 		});
 
@@ -64,13 +73,13 @@ describe('AssistantView', () => {
 	});
 
 	it('shows the request only once it is asked for, question included', async () => {
-		const { client, logStore, settingsStore, loginStore, runner } = setup();
+		const { client, logStore, settingsStore, loginStore, runPlanOn } = setup();
 		render(AssistantView, {
 			bridge: client,
 			logStore,
 			settingsStore,
 			loginStore,
-			runner,
+			runPlanOn,
 			onOpenSettings: () => {}
 		});
 
@@ -95,7 +104,7 @@ describe('AssistantView', () => {
 	 */
 	it('asks against the live engine config, and offers no way to save the answer as a script', async () => {
 		const asked: { prompt: string }[] = [];
-		const { client, logStore, settingsStore, loginStore, runner } = setup({
+		const { client, logStore, settingsStore, loginStore, runPlanOn } = setup({
 			'assistant.ask': (params: { prompt: string }) => {
 				asked.push(params);
 				return { text: 'I could not tell what you meant — which list did you mean?' };
@@ -107,7 +116,7 @@ describe('AssistantView', () => {
 			logStore,
 			settingsStore,
 			loginStore,
-			runner,
+			runPlanOn,
 			onOpenSettings: () => {}
 		});
 
@@ -129,7 +138,7 @@ describe('AssistantView', () => {
 	// user's language in a few sentences. Asked for a plan, that is exactly what came back.
 	it('tells the model it is writing data, not answering in German', async () => {
 		const asked: { prompt: string }[] = [];
-		const { client, logStore, settingsStore, loginStore, runner } = setup({
+		const { client, logStore, settingsStore, loginStore, runPlanOn } = setup({
 			'assistant.ask': (params: { prompt: string }) => {
 				asked.push(params);
 				return { text: 'ok' };
@@ -140,7 +149,7 @@ describe('AssistantView', () => {
 			logStore,
 			settingsStore,
 			loginStore,
-			runner,
+			runPlanOn,
 			onOpenSettings: () => {}
 		});
 
@@ -160,13 +169,15 @@ describe('AssistantView', () => {
 			asked.push(params);
 			return { text: 'ok' };
 		});
-		const { client, logStore, settingsStore, loginStore, runner } = setup({ 'assistant.ask': ask });
+		const { client, logStore, settingsStore, loginStore, runPlanOn } = setup({
+			'assistant.ask': ask
+		});
 		render(AssistantView, {
 			bridge: client,
 			logStore,
 			settingsStore,
 			loginStore,
-			runner,
+			runPlanOn,
 			onOpenSettings: () => {}
 		});
 
@@ -190,7 +201,7 @@ describe('AssistantView', () => {
 		};
 		// Fenced, with a sentence in front of it: the ordinary way a model answers.
 		const answer = ['Here you go:', '```json', JSON.stringify(plan), '```'].join('\n');
-		const { client, logStore, settingsStore, loginStore, runner } = setup({
+		const { client, logStore, settingsStore, loginStore, runPlanOn } = setup({
 			'assistant.ask': () => ({ text: answer }),
 			'site.countMatches': (params) => {
 				counted.push(params);
@@ -203,7 +214,7 @@ describe('AssistantView', () => {
 			logStore,
 			settingsStore,
 			loginStore,
-			runner,
+			runPlanOn,
 			onOpenSettings: () => {}
 		});
 
@@ -221,7 +232,7 @@ describe('AssistantView', () => {
 	// An answer that is not a plan looks exactly like one that is. Saying why beats leaving the
 	// buttons quietly absent.
 	it('says why an answer was refused instead of just offering nothing', async () => {
-		const { client, logStore, settingsStore, loginStore, runner } = setup({
+		const { client, logStore, settingsStore, loginStore, runPlanOn } = setup({
 			'assistant.ask': () => ({ text: '{ "target": { "index": 5 }, "steps": [] }' })
 		});
 		loginStore.loggedIn.x = true;
@@ -230,7 +241,7 @@ describe('AssistantView', () => {
 			logStore,
 			settingsStore,
 			loginStore,
-			runner,
+			runPlanOn,
 			onOpenSettings: () => {}
 		});
 
@@ -254,7 +265,7 @@ describe('AssistantView', () => {
 			target: { selector: '[data-testid="unlike"]' },
 			steps: [{ step: 'click', target: { selector: '[data-testid="unlike"]' } }]
 		};
-		const { client, logStore, settingsStore, loginStore, runner } = setup({
+		const { client, logStore, settingsStore, loginStore, runPlanOn } = setup({
 			'assistant.ask': () => ({ text: JSON.stringify(plan) })
 		});
 		loginStore.loggedIn.x = true;
@@ -263,7 +274,7 @@ describe('AssistantView', () => {
 			logStore,
 			settingsStore,
 			loginStore,
-			runner,
+			runPlanOn,
 			onOpenSettings: () => {}
 		});
 

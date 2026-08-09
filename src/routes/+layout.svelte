@@ -7,7 +7,7 @@
 	import { createBridgeClient } from '$lib/bridge/client';
 	import { createTauriHost, isTauri } from '$lib/bridge/tauri-host';
 	import { createMockHost, defaultMockHandlers } from '$lib/bridge/mock';
-	import type { AppTheme, Platform } from '$lib/bridge/contract';
+	import type { ActionPlan, ActionResult, AppTheme, Platform } from '$lib/bridge/contract';
 	import { SettingsStore } from '$lib/stores/settings.svelte';
 	import { LogStore } from '$lib/stores/log.svelte';
 	import { SiteLoginStore } from '$lib/stores/site-login.svelte';
@@ -168,6 +168,33 @@
 	);
 
 	/**
+	 * Brings a platform on screen, waits until it is actually there, and runs the plan.
+	 *
+	 * The waiting is the whole of it. `site.show` happens on a timer after the route settles,
+	 * and a plan that started before it acted on a webview parked off screen: it clicked, it
+	 * reported a count, and the user saw nothing and concluded it had not run.
+	 */
+	async function runPlanOn(action: {
+		platform: Platform;
+		plan: ActionPlan;
+		label?: string;
+	}): Promise<ActionResult> {
+		if (railPlatform !== action.platform) {
+			panelClosedByUser = false;
+			pendingKey = action.platform;
+			await goto(resolve(ROUTES[action.platform]));
+			// Past the hand-off, so the page the plan acts on is the page the user is looking at.
+			await new Promise((resolve) => setTimeout(resolve, HAND_OFF_MS + 120));
+		}
+		return runner.runPlan({
+			platform: action.platform,
+			plan: action.plan,
+			label: action.label,
+			timeouts: settingsStore.settings.timeouts
+		});
+	}
+
+	/**
 	 * Runs a kept plan straight from the sidebar.
 	 *
 	 * Only the one-shot shape gets here — opening a page, dismissing a banner. A deletion is
@@ -177,14 +204,8 @@
 	async function runSaved(id: string): Promise<void> {
 		const action = savedNavItems.find((entry) => entry.id === id);
 		if (!action || runner.running) return;
-		pendingKey = action.platform;
-		await goto(resolve(ROUTES[action.platform]));
 		try {
-			await runner.runPlan({
-				platform: action.platform,
-				plan: action.plan,
-				timeouts: settingsStore.settings.timeouts
-			});
+			await runPlanOn({ platform: action.platform, plan: action.plan, label: action.label });
 		} catch {
 			// Reported in the log by the host; a nav item is not the place for an error card.
 		}
@@ -211,6 +232,7 @@
 		loginStore,
 		runner,
 		updater,
+		runPlanOn,
 		openPlatform: (platform: Platform, options?: { deleteAll?: boolean }) => {
 			// Same as clicking the platform in the sidebar: arriving without its actions leaves
 			// the user on a page with nothing to do.
@@ -464,7 +486,7 @@
 					{logStore}
 					{settingsStore}
 					{loginStore}
-					{runner}
+					{runPlanOn}
 					onClose={() => (assistantOpen = false)}
 				/>
 			{/if}

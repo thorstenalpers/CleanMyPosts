@@ -2,7 +2,6 @@
 	import type { BridgeClient } from '$lib/bridge/client';
 	import type { LogStore } from '$lib/stores/log.svelte';
 	import type { SiteLoginStore } from '$lib/stores/site-login.svelte';
-	import type { ActionRunner } from '$lib/stores/action-runner.svelte';
 	import type { AppInfo, AssistantSources, Platform } from '$lib/bridge/contract';
 	import {
 		buildPrompt,
@@ -13,6 +12,7 @@
 		type PromptMode
 	} from '$lib/assistant-context';
 	import type { SettingsStore } from '$lib/stores/settings.svelte';
+	import type { AppContext } from '$lib/app-context';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { Card, CardContent } from '$lib/components/ui/card';
@@ -38,12 +38,12 @@
 		settingsStore: SettingsStore;
 		/** Which platform is signed in, which is the one a plan can be tried against. */
 		loginStore: SiteLoginStore;
-		/** The same runner the panels use, so a plan run reaches the same stop button. */
-		runner: ActionRunner;
 		onOpenSettings: () => void;
+		/** Brings a platform on screen and runs a plan on it; the layout owns both halves. */
+		runPlanOn: AppContext['runPlanOn'];
 	}
 
-	let { bridge, logStore, settingsStore, loginStore, runner, onOpenSettings }: Props = $props();
+	let { bridge, logStore, settingsStore, loginStore, onOpenSettings, runPlanOn }: Props = $props();
 
 	/** Where a report ends up. The same repository the updater already points the app at. */
 	const REPO_URL = 'https://github.com/thorstenalpers/CleanMyPosts';
@@ -347,7 +347,7 @@
 
 					{#if mode === 'patch'}
 						<div class="mt-3 flex flex-col gap-2">
-							<PlanActions {bridge} {settingsStore} {runner} {answer} platform={openPlatform} />
+							<PlanActions {bridge} {settingsStore} {answer} platform={openPlatform} {runPlanOn} />
 						</div>
 					{/if}
 

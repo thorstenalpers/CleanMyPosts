@@ -30,9 +30,9 @@ function setup(overrides: MockHandlers = {}) {
 
 	/** The layout's job in the real app; here it only has to record that it was asked. */
 	const ran: unknown[] = [];
-	const runPlanOn = async (action: unknown) => {
+	const runPlanOn = (action: unknown) => {
 		ran.push(action);
-		return { deletedCount: 0 };
+		return Promise.resolve({ deletedCount: 0 });
 	};
 
 	return {

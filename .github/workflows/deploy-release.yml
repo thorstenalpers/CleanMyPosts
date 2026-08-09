@@ -127,5 +127,6 @@ jobs:
             artifacts/*-setup.exe
             artifacts/*-setup.exe.sig
             artifacts/latest.json
+            dist/scripts/*.js
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

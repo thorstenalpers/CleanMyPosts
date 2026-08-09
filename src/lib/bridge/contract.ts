@@ -53,6 +53,139 @@ export const ThemePresetSchema = z.enum([
 ]);
 export type ThemePreset = z.infer<typeof ThemePresetSchema>;
 
+// Above the settings rather than beside the actions below: a saved action names the platform
+// it belongs to, and the settings carry those.
+export const PlatformSchema = z.enum(['x', 'youtube']);
+export type Platform = z.infer<typeof PlatformSchema>;
+
+/**
+ * How hard the assistant is asked to think. Providers word this differently — a token budget
+ * on one, a reasoning parameter on another — so the app names the intent and the host maps it.
+ */
+export const AssistantEffortSchema = z.enum(['low', 'medium', 'high']);
+export type AssistantEffort = z.infer<typeof AssistantEffortSchema>;
+
+/**
+ * How one element is named.
+ *
+ * A selector, optionally narrowed to the one carrying a given word — which is how both
+ * platforms are actually navigated, since a menu entry has no mark of its own beyond what it
+ * says. Never an index into the page: that is what makes a recorded plan worthless the moment
+ * the page renders again.
+ */
+export const TargetSchema = z.object({
+	selector: z.string().min(1).max(300),
+	/** Matched case-insensitively against the element's text. Absent means: the first match. */
+	text: z.string().max(120).optional()
+});
+export type Target = z.infer<typeof TargetSchema>;
+
+/** The longest any single step may block, so a bad plan cannot hang a run for ever. */
+const MAX_STEP_WAIT = 30_000;
+
+/**
+ * One step of a plan.
+ *
+ * Deliberately small, and every entry maps onto a primitive `$lib/engine/dom.ts` already has.
+ * The vocabulary is the guarantee: a plan can only do what the engine could already do, so
+ * nothing arrives that has to be trusted the way a script would.
+ */
+export const PlanStepSchema = z.discriminatedUnion('step', [
+	z.object({
+		step: z.literal('click'),
+		target: TargetSchema,
+		pointerSequence: z.boolean().optional()
+	}),
+	z.object({
+		step: z.literal('waitFor'),
+		target: TargetSchema,
+		maxWaitMs: z.number().int().min(0).max(MAX_STEP_WAIT).optional()
+	}),
+	z.object({
+		step: z.literal('waitGone'),
+		target: TargetSchema,
+		maxWaitMs: z.number().int().min(0).max(MAX_STEP_WAIT).optional()
+	}),
+	z.object({
+		step: z.literal('scrollUntil'),
+		target: TargetSchema,
+		maxWaitMs: z.number().int().min(0).max(MAX_STEP_WAIT).optional()
+	}),
+	z.object({ step: z.literal('wait'), ms: z.number().int().min(0).max(MAX_STEP_WAIT) }),
+	/**
+	 * Opens a page in the platform's own webview.
+	 *
+	 * Which addresses are allowed is decided in the engine, against the same origins the
+	 * injected script guards — a step that could send a signed-in session anywhere is not a
+	 * step, it is a way out of the app.
+	 */
+	z.object({ step: z.literal('navigate'), url: z.string().url().max(500) }),
+	/**
+	 * Fills a field.
+	 *
+	 * The one step that puts something on the page rather than taking it away, and the only
+	 * one that can produce content in the user's name. Everything else here can only trigger
+	 * what the page already offered. Capped short: this is for a search box or a field being
+	 * corrected, not for composing.
+	 */
+	z.object({ step: z.literal('type'), target: TargetSchema, text: z.string().max(200) }),
+	/** A key, for what a click cannot reach — a form that submits on Enter, a menu on Escape. */
+	z.object({
+		step: z.literal('press'),
+		key: z.enum(['Enter', 'Escape', 'Tab', 'Backspace', 'ArrowDown', 'ArrowUp']),
+		target: TargetSchema.optional()
+	})
+]);
+export type PlanStep = z.infer<typeof PlanStepSchema>;
+
+/**
+ * What removes one item, and how to tell there is one left to remove.
+ *
+ * The loop is not in here on purpose. The app owns repeating, counting, the waits between
+ * deletions, the stop button and the shield — everything that makes a run safe — and the plan
+ * only says what one round of it does.
+ */
+export const ActionPlanSchema = z
+	.object({
+		/**
+		 * `loop` repeats the steps until the target finds nothing — a deletion, and what every
+		 * plan used to be. `once` runs them a single time, which is what opening a page or
+		 * dismissing a banner is: those have nothing to count and nothing to empty.
+		 *
+		 * Defaulted, so a plan saved before this existed still reads as what it was.
+		 */
+		kind: z.enum(['loop', 'once']).default('loop'),
+		/** What one still-present item looks like. Required for `loop`, meaningless for `once`. */
+		target: TargetSchema.optional(),
+		steps: z.array(PlanStepSchema).min(1).max(10)
+	})
+	.refine((plan) => plan.kind === 'once' || plan.target !== undefined, {
+		message: 'a looping plan needs a target, or it would never know when to stop',
+		path: ['target']
+	});
+export type ActionPlan = z.infer<typeof ActionPlanSchema>;
+
+/**
+ * A plan the assistant wrote and the user kept.
+ *
+ * It becomes a row in that platform's action panel, beside the built-in lists. `createdAt` is
+ * carried so the settings can say how old one is: these accumulate, and a platform that has
+ * since changed its markup makes yesterday's plan worse than nothing.
+ */
+export const CustomActionSchema = z.object({
+	id: z.string().min(1),
+	label: z.string().min(1).max(60),
+	platform: PlatformSchema,
+	/**
+	 * Where it is offered. `panel` is beside that platform's own lists; `sidebar` puts it in
+	 * the app's navigation, for something that is not a deletion and has no list to belong to.
+	 */
+	place: z.enum(['panel', 'sidebar']).default('panel'),
+	plan: ActionPlanSchema,
+	createdAt: z.iso.datetime({ offset: true })
+});
+export type CustomAction = z.infer<typeof CustomActionSchema>;
+
 export const AppSettingsSchema = z.object({
 	theme: AppThemeSchema,
 	language: LanguageSchema,
@@ -89,6 +222,11 @@ export const AppSettingsSchema = z.object({
 	 * Empty means the built-in behaviour — see `$lib/engine/config.ts`.
 	 */
 	engineScript: z.string(),
+	/** Empty means whatever `assistant.getSources` reports for the chosen provider. */
+	assistantModel: z.string(),
+	assistantEffort: AssistantEffortSchema,
+	/** Scripts the assistant wrote that the user kept. Shown in each platform's action panel. */
+	customActions: z.array(CustomActionSchema),
 	timeouts: TimeoutSettingsSchema
 });
 export type AppSettings = z.infer<typeof AppSettingsSchema>;
@@ -115,9 +253,6 @@ export const AssistantSourcesSchema = z.object({
 	providers: z.array(AssistantProviderSchema)
 });
 export type AssistantSources = z.infer<typeof AssistantSourcesSchema>;
-
-export const PlatformSchema = z.enum(['x', 'youtube']);
-export type Platform = z.infer<typeof PlatformSchema>;
 
 export const XActionSchema = z.enum([
 	'showPosts',
@@ -201,6 +336,40 @@ export const BridgeMethods = {
 		}),
 		result: ActionResultSchema
 	},
+	/**
+	 * Runs an assistant's plan on the page that is already open, once.
+	 *
+	 * Deliberately does not navigate the way `site.runAction` does: this is "try what you just
+	 * got where you are standing", and a plan is judged against the page it was written for.
+	 * Stopped by `site.cancelAction` like any other run.
+	 */
+	'site.runPlan': {
+		params: z.object({
+			requestId: z.string(),
+			platform: PlatformSchema,
+			plan: ActionPlanSchema,
+			/** What the user called it, for the log. Absent for a plan that is only being tried. */
+			label: z.string().max(60).optional(),
+			timeouts: TimeoutSettingsSchema
+		}),
+		result: ActionResultSchema
+	},
+	/** The dry run: how many elements the plan's target finds, having touched none of them. */
+	'site.countMatches': {
+		params: z.object({ platform: PlatformSchema, target: TargetSchema }),
+		result: z.object({ count: z.number().int().nonnegative() })
+	},
+	/**
+	 * A text-free skeleton of the platform page, for the assistant to write a selector against.
+	 *
+	 * Redacted in the page itself, before it crosses this wire — see `$lib/engine/structure.ts`.
+	 * The one thing the app sends that comes off the page, and the user reads it in the preview
+	 * before it goes anywhere.
+	 */
+	'site.readStructure': {
+		params: z.object({ platform: PlatformSchema }),
+		result: z.object({ structure: z.string() })
+	},
 	/** Stops an in-flight `site.runAction`; that call then resolves with the count deleted so far. */
 	'site.cancelAction': { params: z.object({ requestId: z.string() }), result: voidSchema },
 	'site.hide': { params: z.object({ hide: z.boolean() }), result: voidSchema },
@@ -217,13 +386,20 @@ export const BridgeMethods = {
 	'site.reload': { params: z.object({ platform: PlatformSchema }), result: voidSchema },
 	/** Brings a platform's webview forward without navigating it — each platform keeps its own page for the whole session. */
 	'site.show': { params: z.object({ platform: PlatformSchema }), result: voidSchema },
-	/** Where the site webview sits: right of the app's own columns, below its header bar. */
+	/** Where the site webview sits: beside the app's own columns, below its header bar. */
 	'layout.setSiteInset': {
 		params: z.object({
+			/**
+			 * How wide the app's own columns are — not which edge they are against. `rtl` decides
+			 * that, and the host has no other way to know: it places the webview in physical
+			 * pixels and cannot see the `dir` on `<html>`.
+			 */
 			left: z.number().positive(),
 			top: z.number().nonnegative(),
 			/** Room kept below the platform for the status bar. The site is shortened, not covered. */
-			bottom: z.number().nonnegative()
+			bottom: z.number().nonnegative(),
+			/** True while the shell is mirrored, which puts those columns on the right. */
+			rtl: z.boolean()
 		}),
 		result: voidSchema
 	},

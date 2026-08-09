@@ -15,6 +15,14 @@ pub struct Run {
 #[derive(Default)]
 pub struct Runs(pub Mutex<HashMap<String, Run>>);
 
+/// One in-flight question to the page that comes back with text rather than a count.
+///
+/// Kept apart from `Runs` rather than folded into it: a run has a count that a cancel can
+/// still resolve with, and giving that a second meaning would make the stop button's job
+/// ambiguous. Nothing here is cancellable — a probe answers or it times out with the page.
+#[derive(Default)]
+pub struct Probes(pub Mutex<HashMap<String, oneshot::Sender<Result<String, String>>>>);
+
 /// What the site webview last told us about itself. `eval` has no return channel, so the
 /// injected script reports this instead of the host asking for it.
 #[derive(Default)]
@@ -28,6 +36,7 @@ pub struct AppState {
     pub settings: SettingsStore,
     pub logs: LogBuffer,
     pub runs: Runs,
+    pub probes: Probes,
     pub site: Mutex<SiteInfo>,
     /// Held between the check and the install so the version the user agreed to is the one
     /// that gets written over the running app.

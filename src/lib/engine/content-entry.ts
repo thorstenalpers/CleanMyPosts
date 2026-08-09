@@ -2,7 +2,19 @@ import { xActions, getUserName, getLoginStatus as getXLoginStatus } from './x';
 import { youTubeActions, getLoginStatus as getYouTubeLoginStatus } from './youtube';
 import { startConsentWatcher } from './consent';
 import { siteConfig } from './config';
-import { hideCursor, hideShield, postDone, postError, postLog, showShield, showToast } from './dom';
+import {
+	hideCursor,
+	hideShield,
+	postDone,
+	postError,
+	postLog,
+	postProbe,
+	postProbeError,
+	showShield,
+	showToast
+} from './dom';
+import { countTargets, planAction, type ActionPlan, type Target } from './plan';
+import { pageStructure } from './structure';
 import type { CmpApi, Platform, RunParams, XAction, YouTubeAction } from './protocol';
 import type { DeleteActionDefinition } from './types';
 
@@ -11,6 +23,31 @@ function getActionDefinition(
 	action: XAction | YouTubeAction
 ): DeleteActionDefinition | undefined {
 	return platform === 'x' ? xActions[action as XAction] : youTubeActions[action as YouTubeAction];
+}
+
+/**
+ * Drives one definition to its end and reports it.
+ *
+ * Shared by the built-in actions and by a plan, deliberately: the shield, the pointer and the
+ * one report back are what a run *is*, and a plan that skipped any of them would be a second
+ * kind of run with a second set of guarantees.
+ */
+function drive(definition: DeleteActionDefinition, params: RunParams, what: string): void {
+	showShield();
+	definition
+		.run(params)
+		.then((deletedCount) => postDone(params.requestId, deletedCount))
+		.catch((error: unknown) => {
+			const message = error instanceof Error ? error.message : String(error);
+			postLog('error', `${what} failed: ${message}`);
+			postError(params.requestId, message);
+		})
+		// Whatever the outcome: the run is over, so the pointer stops standing on the page
+		// and the page takes clicks again.
+		.finally(() => {
+			hideCursor();
+			hideShield();
+		});
 }
 
 const api: CmpApi = {
@@ -27,21 +64,31 @@ const api: CmpApi = {
 			return;
 		}
 
-		showShield();
-		definition
-			.run(params)
-			.then((deletedCount) => postDone(params.requestId, deletedCount))
-			.catch((error: unknown) => {
-				const message = error instanceof Error ? error.message : String(error);
-				postLog('error', `${platform}:${action} failed: ${message}`);
-				postError(params.requestId, message);
-			})
-			// Whatever the outcome: the run is over, so the pointer stops standing on the page
-			// and the page takes clicks again.
-			.finally(() => {
-				hideCursor();
-				hideShield();
-			});
+		drive(definition, params, `${platform}:${action}`);
+	},
+
+	runPlan(paramsJson) {
+		const params = JSON.parse(paramsJson) as RunParams & { plan: ActionPlan };
+		drive(planAction(params.plan), params, 'the plan');
+	},
+
+	// No shield and no pointer: nothing is clicked, so there is nothing to protect the page
+	// from and nothing to show. Counting is the one thing here that leaves the page as it was.
+	countMatches(requestId, targetJson) {
+		const target = JSON.parse(targetJson) as Target;
+		try {
+			postDone(requestId, countTargets(target));
+		} catch (error: unknown) {
+			postError(requestId, error instanceof Error ? error.message : String(error));
+		}
+	},
+
+	readStructure(requestId) {
+		try {
+			postProbe(requestId, pageStructure());
+		} catch (error: unknown) {
+			postProbeError(requestId, error instanceof Error ? error.message : String(error));
+		}
 	},
 
 	isEmpty(platform, action) {

@@ -31,6 +31,33 @@ export const ru: Record<MessageKey, string> = {
 	'action.close': 'Закрыть действия {platform}',
 	'action.open': 'Открыть действия {platform}',
 
+	'assistant.controls': 'Настройки ассистента',
+	'assistant.close': 'Закрыть ассистента',
+	'assistant.effort': 'Усилие',
+	'assistant.effort.low': 'Кратко',
+	'assistant.effort.medium': 'Обычно',
+	'assistant.effort.high': 'Тщательно',
+	'assistant.model': 'Модель',
+	'assistant.model.default': 'По умолчанию у провайдера',
+	'assistant.panel.empty':
+		'Попросите план для страницы рядом — что убрать и как исчезает один из них.',
+	'assistant.noSource.short': 'Нет источника',
+
+	'assistant.plan.save': 'Сохранить как действие',
+	'assistant.plan.name': 'Название действия',
+	'assistant.plan.keep': 'Сохранить',
+	'assistant.plan.saved': 'Сохранено — {label} теперь среди действий',
+	'panel.saved': 'Сохранённые действия',
+	'confirm.saved.description':
+		'Выполняет {label} — план, написанный ассистентом для {platform} в том виде, в каком она была тогда. Отменить нельзя.',
+	'assistant.plan.count': 'Сначала проверить',
+	'assistant.plan.run': 'Выполнить один раз',
+	'assistant.plan.matches': 'Совпадений на этой странице: {count}',
+	'assistant.plan.removed': 'Удалено: {count}',
+	'assistant.plan.rejected': 'Это не план — {reason}',
+	'assistant.plan.noPlatform': 'Войдите на платформу, чтобы попробовать здесь',
+	'assistant.plan.label': 'План ассистента',
+
 	'group.posts': 'Посты',
 	'group.replies': 'Ответы',
 	'group.reposts': 'Репосты',
@@ -150,6 +177,8 @@ export const ru: Record<MessageKey, string> = {
 	'settings.assistant': 'Ассистент',
 	'settings.assistant.description':
 		'Откуда берутся ответы. Локальная программа ничего не отправляет из этого приложения; облачный провайдер — единственное здесь, что выпускает данные в сеть.',
+	'settings.assistant.missing':
+		'Источник ещё не настроен, поэтому ассистент скрыт во всех остальных местах. Выберите Claude Code на этом компьютере или сохраните ниже ключ провайдера.',
 	'settings.assistant.source': 'Источник',
 	'settings.assistant.off': 'Выключен',
 	'settings.assistant.off.description': 'Ассистент выключен и не отображается в боковой панели.',
@@ -183,9 +212,6 @@ export const ru: Record<MessageKey, string> = {
 	'assistant.placeholder': 'Почему 12 постов не удалились?',
 	'assistant.ask': 'Спросить',
 	'assistant.asking': 'Спрашиваю…',
-	'assistant.noSource':
-		'Источник ещё не настроен. Выберите его в настройках — Claude Code на этом компьютере или ключ провайдера.',
-	'assistant.openSettings': 'Открыть настройки',
 	'assistant.sendsLog':
 		'Вопрос отправляется вместе с журналом и описанием приложения. В журнале никогда нет содержимого постов, имён аккаунтов и cookie.',
 	'assistant.clear': 'Очистить',
@@ -250,6 +276,24 @@ export const ru: Record<MessageKey, string> = {
 	'settings.autoConsent': 'Закрывать баннеры о cookie',
 	'settings.autoConsent.description':
 		'Закрывать баннеры согласия автоматически, выбирая кнопку отказа там, где она есть.',
+	'settings.actions': 'Сохранённые действия',
+	'settings.actions.description':
+		'Планы, написанные ассистентом, которые вы оставили. Каждый — это селектор, поэтому он перестаёт работать, когда платформа меняется.',
+	'settings.actions.empty':
+		'Пока ничего не сохранено. Попросите у ассистента план и сохраните его оттуда.',
+	'settings.actions.made': '{platform} · сохранено {date}',
+	'settings.actions.moveUp': 'Выше',
+	'settings.actions.moveDown': 'Ниже',
+	'settings.actions.rename': 'Переименовать',
+	'settings.actions.plan': 'План',
+	'overview.saved': 'Сохранённые действия',
+	'overview.saved.description':
+		'Сохранённые вами планы. Один клик выполняет план на его платформе.',
+	'settings.actions.forget': 'Забыть',
+	'settings.actions.forgetAll': 'Забыть всё',
+	'settings.actions.forgetAll.confirmBody':
+		'Это выбросит сохранённых действий: {count}. Вернуть их нельзя — ответа, из которого они появились, уже нет, а страница изменилась.',
+
 	'settings.reset.title': 'Сброс',
 	'settings.reset.description': 'Возвращает все настройки к состоянию новой установки.',
 	'settings.reset.action': 'Сбросить настройки',
@@ -300,5 +344,7 @@ export const ru: Record<MessageKey, string> = {
 	'log.sortBy': 'Сортировать по столбцу «{column}»',
 
 	'assistant.preview.source': 'Где лежит код',
+	'assistant.preview.structure': 'Страница сейчас',
+	'assistant.preview.engine': 'Как это делает движок',
 	'assistant.preview.patch': 'Задание на патч'
 };

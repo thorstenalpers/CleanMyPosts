@@ -32,6 +32,33 @@ export const pt: Record<MessageKey, string> = {
 	'action.close': 'Fechar as ações do {platform}',
 	'action.open': 'Abrir as ações do {platform}',
 
+	'assistant.controls': 'Definições do assistente',
+	'assistant.close': 'Fechar o assistente',
+	'assistant.effort': 'Esforço',
+	'assistant.effort.low': 'Breve',
+	'assistant.effort.medium': 'Normal',
+	'assistant.effort.high': 'A fundo',
+	'assistant.model': 'Modelo',
+	'assistant.model.default': 'Predefinição do fornecedor',
+	'assistant.panel.empty':
+		'Pede um plano para a página ao lado: o que remover e como um deles desaparece.',
+	'assistant.noSource.short': 'Sem fonte',
+
+	'assistant.plan.save': 'Guardar como ação',
+	'assistant.plan.name': 'Nome desta ação',
+	'assistant.plan.keep': 'Guardar',
+	'assistant.plan.saved': 'Guardado — {label} está agora nas ações',
+	'panel.saved': 'Ações guardadas',
+	'confirm.saved.description':
+		'Executa {label}, um plano que o assistente escreveu para o {platform} tal como estava então. Não pode ser desfeito.',
+	'assistant.plan.count': 'Verificar primeiro',
+	'assistant.plan.run': 'Executar uma vez',
+	'assistant.plan.matches': '{count} correspondências nesta página',
+	'assistant.plan.removed': '{count} removidos',
+	'assistant.plan.rejected': 'Não é um plano — {reason}',
+	'assistant.plan.noPlatform': 'Inicia sessão numa plataforma para experimentar aqui',
+	'assistant.plan.label': 'Plano do assistente',
+
 	'group.posts': 'Publicações',
 	'group.replies': 'Respostas',
 	'group.reposts': 'Reposts',
@@ -152,6 +179,8 @@ export const pt: Record<MessageKey, string> = {
 	'settings.assistant': 'Assistente',
 	'settings.assistant.description':
 		'De onde vêm as respostas. O binário local não envia nada desta app; um fornecedor alojado é a única coisa aqui que põe dados na rede.',
+	'settings.assistant.missing':
+		'Ainda não há nenhuma fonte configurada, por isso o assistente fica escondido em todo o resto. Escolhe o Claude Code neste computador, ou guarda abaixo uma chave de fornecedor.',
 	'settings.assistant.source': 'Origem',
 	'settings.assistant.off': 'Desligado',
 	'settings.assistant.off.description':
@@ -187,9 +216,6 @@ export const pt: Record<MessageKey, string> = {
 	'assistant.placeholder': 'Porque é que 12 publicações não foram eliminadas?',
 	'assistant.ask': 'Perguntar',
 	'assistant.asking': 'A perguntar…',
-	'assistant.noSource':
-		'Ainda não há nenhuma origem configurada. Escolhe uma nas definições — Claude Code neste computador, ou a chave de um fornecedor.',
-	'assistant.openSettings': 'Abrir as definições',
 	'assistant.sendsLog':
 		'A pergunta é enviada juntamente com o registo e uma descrição da app. O registo nunca contém conteúdo de publicações, nomes de utilizador ou cookies.',
 	'assistant.clear': 'Limpar',
@@ -255,6 +281,23 @@ export const pt: Record<MessageKey, string> = {
 	'settings.autoConsent': 'Fechar avisos de cookies',
 	'settings.autoConsent.description':
 		'Fecha os avisos de consentimento sozinha, usando o botão que recusa sempre que o aviso tem um.',
+	'settings.actions': 'Ações guardadas',
+	'settings.actions.description':
+		'Planos que o assistente escreveu e que guardaste. Cada um é um seletor, por isso deixa de funcionar quando a plataforma muda.',
+	'settings.actions.empty':
+		'Ainda nada guardado. Pede um plano ao assistente e guarda-o a partir daí.',
+	'settings.actions.made': '{platform} · guardado em {date}',
+	'settings.actions.moveUp': 'Mover para cima',
+	'settings.actions.moveDown': 'Mover para baixo',
+	'settings.actions.rename': 'Mudar o nome',
+	'settings.actions.plan': 'Plano',
+	'overview.saved': 'Ações guardadas',
+	'overview.saved.description': 'Planos que guardaste. Um clique executa-o na sua plataforma.',
+	'settings.actions.forget': 'Esquecer',
+	'settings.actions.forgetAll': 'Esquecer tudo',
+	'settings.actions.forgetAll.confirmBody':
+		'Isto deita fora {count} ações guardadas. Não há como recuperar: a resposta de onde vieram desapareceu e a página mudou.',
+
 	'settings.reset.title': 'Repor',
 	'settings.reset.description': 'Coloca todas as definições no estado de uma instalação nova.',
 	'settings.reset.action': 'Repor predefinições',
@@ -305,5 +348,7 @@ export const pt: Record<MessageKey, string> = {
 	'log.sortBy': 'Ordenar por {column}',
 
 	'assistant.preview.source': 'Onde está o código',
+	'assistant.preview.structure': 'A página agora',
+	'assistant.preview.engine': 'Como o motor faz',
 	'assistant.preview.patch': 'A tarefa do patch'
 };

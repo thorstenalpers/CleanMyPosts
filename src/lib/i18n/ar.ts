@@ -32,6 +32,32 @@ export const ar: Record<MessageKey, string> = {
 	'action.close': 'إغلاق إجراءات {platform}',
 	'action.open': 'فتح إجراءات {platform}',
 
+	'assistant.controls': 'إعدادات المساعد',
+	'assistant.close': 'إغلاق المساعد',
+	'assistant.effort': 'الجهد',
+	'assistant.effort.low': 'موجز',
+	'assistant.effort.medium': 'عادي',
+	'assistant.effort.high': 'شامل',
+	'assistant.model': 'النموذج',
+	'assistant.model.default': 'افتراضي المزوّد',
+	'assistant.panel.empty': 'اطلب خطة للصفحة المجاورة — ما الذي يُحذف، وكيف يختفي واحد منه.',
+	'assistant.noSource.short': 'لا مصدر',
+
+	'assistant.plan.save': 'احتفظ كإجراء',
+	'assistant.plan.name': 'اسم هذا الإجراء',
+	'assistant.plan.keep': 'احتفظ',
+	'assistant.plan.saved': 'تم الحفظ — {label} أصبح ضمن الإجراءات',
+	'panel.saved': 'الإجراءات المحفوظة',
+	'confirm.saved.description':
+		'ينفذ {label}، وهي خطة كتبها المساعد لـ {platform} كما بدت حينها. لا يمكن التراجع عن ذلك.',
+	'assistant.plan.count': 'تحقق أولاً',
+	'assistant.plan.run': 'شغّل مرة واحدة',
+	'assistant.plan.matches': '{count} مطابقة في هذه الصفحة',
+	'assistant.plan.removed': 'تمت إزالة {count}',
+	'assistant.plan.rejected': 'ليست خطة — {reason}',
+	'assistant.plan.noPlatform': 'سجّل الدخول إلى منصة لتجربة هذا هنا',
+	'assistant.plan.label': 'خطة المساعد',
+
 	'group.posts': 'المنشورات',
 	'group.replies': 'الردود',
 	'group.reposts': 'إعادات النشر',
@@ -148,6 +174,8 @@ export const ar: Record<MessageKey, string> = {
 	'settings.assistant': 'المساعد',
 	'settings.assistant.description':
 		'من أين تأتي الإجابات. البرنامج المحلي لا يرسل شيئًا من هذا التطبيق؛ أما المزوّد المستضاف فهو الشيء الوحيد هنا الذي يضع بيانات على الشبكة.',
+	'settings.assistant.missing':
+		'لم يتم إعداد أي مصدر بعد، لذلك يظل المساعد مخفيًا في كل مكان آخر. اختر Claude Code على هذا الجهاز، أو احفظ مفتاح مزوّد أدناه.',
 	'settings.assistant.source': 'المصدر',
 	'settings.assistant.off': 'مُعطَّل',
 	'settings.assistant.off.description': 'المساعد مُعطَّل ولا يظهر في الشريط الجانبي.',
@@ -180,9 +208,6 @@ export const ar: Record<MessageKey, string> = {
 	'assistant.placeholder': 'لماذا لم يُحذَف 12 منشورًا؟',
 	'assistant.ask': 'اسأل',
 	'assistant.asking': 'جارٍ السؤال…',
-	'assistant.noSource':
-		'لم يُعدّ أي مصدر بعد. اختر واحدًا من الإعدادات — Claude Code على هذا الجهاز، أو مفتاح مزوّد.',
-	'assistant.openSettings': 'فتح الإعدادات',
 	'assistant.sendsLog':
 		'يُرسَل السؤال مع السجل ومع وصف للتطبيق. لا يحتوي السجل أبدًا على محتوى المنشورات أو أسماء الحسابات أو ملفات تعريف الارتباط.',
 	'assistant.clear': 'مسح',
@@ -244,6 +269,22 @@ export const ar: Record<MessageKey, string> = {
 	'settings.autoConsent': 'إغلاق لافتات الكوكيز',
 	'settings.autoConsent.description':
 		'إغلاق لافتات الموافقة تلقائيًا، مع اختيار زر الرفض حيثما توفّره اللافتة.',
+	'settings.actions': 'الإجراءات المحفوظة',
+	'settings.actions.description':
+		'خطط كتبها المساعد واحتفظت بها. كل واحدة محدِّد، فتتوقف عن العمل عندما تتغير المنصة.',
+	'settings.actions.empty': 'لم تحتفظ بشيء بعد. اطلب خطة من المساعد ثم احتفظ بها من هناك.',
+	'settings.actions.made': '{platform} · حُفظت في {date}',
+	'settings.actions.moveUp': 'تحريك لأعلى',
+	'settings.actions.moveDown': 'تحريك لأسفل',
+	'settings.actions.rename': 'إعادة تسمية',
+	'settings.actions.plan': 'الخطة',
+	'overview.saved': 'الإجراءات المحفوظة',
+	'overview.saved.description': 'خطط احتفظت بها. نقرة واحدة تشغّلها على منصتها.',
+	'settings.actions.forget': 'تجاهل',
+	'settings.actions.forgetAll': 'تجاهل الكل',
+	'settings.actions.forgetAll.confirmBody':
+		'سيؤدي هذا إلى إزالة {count} من الإجراءات المحفوظة. لا يمكن استرجاعها — فالإجابة التي جاءت منها اختفت والصفحة تغيّرت.',
+
 	'settings.reset.title': 'إعادة تعيين',
 	'settings.reset.description': 'يعيد كل الإعدادات إلى حالة التثبيت الجديد.',
 	'settings.reset.action': 'إعادة التعيين إلى الافتراضي',
@@ -294,5 +335,7 @@ export const ar: Record<MessageKey, string> = {
 	'log.sortBy': 'الترتيب حسب {column}',
 
 	'assistant.preview.source': 'أين تقع الشيفرة',
+	'assistant.preview.structure': 'الصفحة الآن',
+	'assistant.preview.engine': 'كيف يفعلها المحرك',
 	'assistant.preview.patch': 'مهمة التصحيح'
 };

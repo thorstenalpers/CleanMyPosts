@@ -32,6 +32,33 @@ export const fr: Record<MessageKey, string> = {
 	'action.close': 'Fermer les actions {platform}',
 	'action.open': 'Ouvrir les actions {platform}',
 
+	'assistant.controls': 'Réglages de l’assistant',
+	'assistant.close': 'Fermer l’assistant',
+	'assistant.effort': 'Effort',
+	'assistant.effort.low': 'Bref',
+	'assistant.effort.medium': 'Normal',
+	'assistant.effort.high': 'Approfondi',
+	'assistant.model': 'Modèle',
+	'assistant.model.default': 'Valeur par défaut du fournisseur',
+	'assistant.panel.empty':
+		'Demande un plan pour la page d’à côté : ce qu’il faut retirer, et comment l’un d’eux disparaît.',
+	'assistant.noSource.short': 'Aucune source',
+
+	'assistant.plan.save': 'Garder comme action',
+	'assistant.plan.name': 'Nom de cette action',
+	'assistant.plan.keep': 'Garder',
+	'assistant.plan.saved': 'Enregistré — {label} figure maintenant dans les actions',
+	'panel.saved': 'Actions enregistrées',
+	'confirm.saved.description':
+		'Exécute {label}, un plan écrit par l’assistant pour {platform} telle qu’elle était alors. C’est irréversible.',
+	'assistant.plan.count': 'Vérifier d’abord',
+	'assistant.plan.run': 'Exécuter une fois',
+	'assistant.plan.matches': '{count} correspondances sur cette page',
+	'assistant.plan.removed': '{count} supprimés',
+	'assistant.plan.rejected': 'Pas un plan — {reason}',
+	'assistant.plan.noPlatform': 'Connecte-toi à une plateforme pour essayer ici',
+	'assistant.plan.label': 'Plan de l’assistant',
+
 	'group.posts': 'Publications',
 	'group.replies': 'Réponses',
 	'group.reposts': 'Reposts',
@@ -154,6 +181,8 @@ export const fr: Record<MessageKey, string> = {
 	'settings.assistant': 'Assistant',
 	'settings.assistant.description':
 		'D’où viennent les réponses. Le binaire local n’envoie rien depuis cette app ; un fournisseur hébergé est la seule chose ici qui met des données sur le réseau.',
+	'settings.assistant.missing':
+		'Aucune source n’est configurée, donc l’assistant reste masqué partout ailleurs. Choisis Claude Code sur cette machine, ou enregistre une clé de fournisseur ci-dessous.',
 	'settings.assistant.source': 'Source',
 	'settings.assistant.off': 'Désactivé',
 	'settings.assistant.off.description':
@@ -189,9 +218,6 @@ export const fr: Record<MessageKey, string> = {
 	'assistant.placeholder': 'Pourquoi 12 publications n’ont-elles pas été supprimées ?',
 	'assistant.ask': 'Demander',
 	'assistant.asking': 'Question en cours…',
-	'assistant.noSource':
-		'Aucune source n’est encore configurée. Choisis-en une dans les paramètres — Claude Code sur cette machine, ou la clé d’un fournisseur.',
-	'assistant.openSettings': 'Ouvrir les paramètres',
 	'assistant.sendsLog':
 		'La question part avec le journal et une description de l’app. Le journal ne contient jamais le contenu des publications, les identifiants ni les cookies.',
 	'assistant.clear': 'Vider',
@@ -258,6 +284,23 @@ export const fr: Record<MessageKey, string> = {
 	'settings.autoConsent': 'Fermer les bandeaux de cookies',
 	'settings.autoConsent.description':
 		'Ferme les bandeaux de consentement automatiquement, en prenant le bouton de refus quand il y en a un.',
+	'settings.actions': 'Actions enregistrées',
+	'settings.actions.description':
+		'Des plans écrits par l’assistant que tu as gardés. Chacun est un sélecteur, donc il cesse de fonctionner quand la plateforme bouge.',
+	'settings.actions.empty':
+		'Rien de gardé pour l’instant. Demande un plan à l’assistant et garde-le depuis là.',
+	'settings.actions.made': '{platform} · gardé le {date}',
+	'settings.actions.moveUp': 'Monter',
+	'settings.actions.moveDown': 'Descendre',
+	'settings.actions.rename': 'Renommer',
+	'settings.actions.plan': 'Plan',
+	'overview.saved': 'Actions enregistrées',
+	'overview.saved.description': 'Des plans que tu as gardés. Un clic l’exécute sur sa plateforme.',
+	'settings.actions.forget': 'Oublier',
+	'settings.actions.forgetAll': 'Tout oublier',
+	'settings.actions.forgetAll.confirmBody':
+		'Cela jette {count} actions enregistrées. Impossible de les récupérer : la réponse dont elles venaient a disparu et la page a changé.',
+
 	'settings.reset.title': 'Réinitialiser',
 	'settings.reset.description': 'Remet tous les réglages dans l’état d’une nouvelle installation.',
 	'settings.reset.action': 'Rétablir les valeurs par défaut',
@@ -308,5 +351,7 @@ export const fr: Record<MessageKey, string> = {
 	'log.sortBy': 'Trier par {column}',
 
 	'assistant.preview.source': 'Où est le code',
+	'assistant.preview.structure': 'La page en ce moment',
+	'assistant.preview.engine': 'Comment le moteur s’y prend',
 	'assistant.preview.patch': 'La mission du correctif'
 };

@@ -31,6 +31,14 @@ export interface SiteConfig {
 		menu: string;
 		menuItem: string;
 		/** The red "Delete" in the post menu, matched by text where the colour is not enough. */
+		/**
+		 * The wording of the menu entry that deletes, in every language the app offers.
+		 *
+		 * Multilingual rather than English-only because the url no longer asks for English: the
+		 * platforms mostly ignored that request anyway and answered in the account's language,
+		 * which left the one English word here matching nothing. Matched case-insensitively as
+		 * a substring, so a short stem covers the sentence around it.
+		 */
 		deleteMenuText: string[];
 		confirm: string;
 		unretweet: string;
@@ -81,7 +89,23 @@ export const siteConfig: SiteConfig = {
 		article: 'article',
 		menu: '[role="menu"]',
 		menuItem: '[role="menuitem"]',
-		deleteMenuText: ['delete'],
+		deleteMenuText: [
+			'delete',
+			'löschen',
+			'supprimer',
+			'eliminar',
+			'borrar',
+			'elimina',
+			'excluir',
+			'verwijderen',
+			'usuń',
+			'удалить',
+			'削除',
+			'删除',
+			'حذف',
+			'हटाएं',
+			'sil'
+		],
 		confirm: "button[data-testid='confirmationSheetConfirm']",
 		unretweet: 'button[data-testid="unretweet"]',
 		unretweetConfirm: 'div[role="menuitem"][data-testid="unretweetConfirm"]',
@@ -132,7 +156,23 @@ export const siteConfig: SiteConfig = {
 		// An obfuscated Google class, which is what this sheet gives us — it changes with a
 		// deployment, so it is here where it can be patched rather than buried in a module.
 		confirmLabel: 'span.Crf1o',
-		confirmDeleteText: ['delete'],
+		confirmDeleteText: [
+			'delete',
+			'löschen',
+			'supprimer',
+			'eliminar',
+			'borrar',
+			'elimina',
+			'excluir',
+			'verwijderen',
+			'usuń',
+			'удалить',
+			'削除',
+			'删除',
+			'حذف',
+			'हटाएं',
+			'sil'
+		],
 		loadMore: 'button[jsname="T8gEfd"]',
 		removeFromLikedText: [
 			'remove from liked',
@@ -152,7 +192,12 @@ export const siteConfig: SiteConfig = {
 			'gostei',
 			'verwijderen uit',
 			'usuń z',
-			'удалить из'
+			'удалить из',
+			'高く評価した動画',
+			'我喜欢的视频',
+			'أعجبتني',
+			'पसंद किए गए वीडियो',
+			'beğenilen videolardan'
 		]
 	}
 };

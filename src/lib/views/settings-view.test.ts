@@ -3,6 +3,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/svelte';
 import SettingsView from './settings-view.svelte';
 import { SettingsStore } from '$lib/stores/settings.svelte';
 import { createMockHost, type MockHandlers } from '$lib/bridge/mock';
+import { en } from '$lib/i18n/en';
 
 function setup(overrides: MockHandlers = {}) {
 	const settingsSet = vi.fn();
@@ -32,6 +33,9 @@ function setup(overrides: MockHandlers = {}) {
 			assistantSource: 'claude-code',
 			assistantCliPath: '',
 			engineScript: '',
+			assistantModel: '',
+			assistantEffort: 'medium' as const,
+			customActions: [],
 			timeouts: {
 				waitAfterDelete: 500,
 				waitBetweenRetryDeleteAttempts: 500,
@@ -65,6 +69,30 @@ function setup(overrides: MockHandlers = {}) {
 }
 
 describe('SettingsView', () => {
+	// The only place in the app that mentions a missing key. Everywhere else the assistant is
+	// simply not there, so if this row goes quiet nothing tells the user why.
+	it('says the assistant has no source', async () => {
+		const { client, settingsStore } = setup();
+		await settingsStore.load();
+		render(SettingsView, { bridge: client, settingsStore });
+
+		expect(await screen.findByText(en['settings.assistant.missing'])).toBeInTheDocument();
+	});
+
+	it('stops saying it once a provider has a key', async () => {
+		const { client, settingsStore } = setup({
+			'assistant.getSources': () => ({
+				local: { found: false, path: null, version: null },
+				providers: [{ id: 'gemini', label: 'Google AI', model: '', freeKeyUrl: '', hasKey: true }]
+			})
+		});
+		await settingsStore.load();
+		render(SettingsView, { bridge: client, settingsStore });
+
+		await screen.findByText(en['settings.assistant.description']);
+		expect(screen.queryByText(en['settings.assistant.missing'])).not.toBeInTheDocument();
+	});
+
 	it('sends an updated theme to the host when a theme button is clicked', async () => {
 		const { client, settingsStore, settingsSet } = setup();
 		await settingsStore.load();
@@ -112,6 +140,9 @@ describe('SettingsView', () => {
 			assistantSource: 'claude-code',
 			assistantCliPath: '',
 			engineScript: '',
+			assistantModel: '',
+			assistantEffort: 'medium' as const,
+			customActions: [],
 			timeouts: {
 				waitAfterDelete: 500,
 				waitBetweenRetryDeleteAttempts: 500,
@@ -184,5 +215,127 @@ describe('SettingsView', () => {
 		await waitFor(() =>
 			expect(settingsSet).toHaveBeenCalledWith(expect.objectContaining({ confirmDeletion: false }))
 		);
+	});
+});
+
+/**
+ * A saved plan is a selector against a page that has since moved, so these go stale on their
+ * own and the list is where somebody comes to clear them out.
+ */
+describe('saved actions in the settings', () => {
+	const action = {
+		id: 'a1',
+		label: 'Bookmarks',
+		platform: 'x' as const,
+		place: 'panel' as const,
+		plan: {
+			kind: 'loop' as const,
+			target: { selector: '[data-testid="bookmark"]' },
+			steps: [{ step: 'click' as const, target: { selector: '[data-testid="bookmark"]' } }]
+		},
+		createdAt: '2026-08-08T10:00:00+02:00'
+	};
+
+	it('says so plainly when nothing has been kept', async () => {
+		const { client, settingsStore } = setup();
+		await settingsStore.load();
+		render(SettingsView, { bridge: client, settingsStore });
+
+		expect(screen.getByText(/nothing kept yet/i)).toBeInTheDocument();
+	});
+
+	it('lists what was kept, and forgets one on its own button', async () => {
+		const { client, settingsStore, settingsSet } = setup();
+		await settingsStore.load();
+		settingsStore.settings = { ...settingsStore.settings, customActions: [action] };
+		render(SettingsView, { bridge: client, settingsStore });
+
+		expect(screen.getByText('Bookmarks')).toBeInTheDocument();
+
+		await fireEvent.click(screen.getByRole('button', { name: /^forget$/i }));
+
+		await waitFor(() =>
+			expect(settingsSet).toHaveBeenCalledWith(expect.objectContaining({ customActions: [] }))
+		);
+	});
+
+	// Forgetting one is not worth a dialog; forgetting the lot is, because there is no getting
+	// a plan back once the answer it came from is gone.
+	it('asks before it forgets all of them', async () => {
+		const { client, settingsStore, settingsSet } = setup();
+		await settingsStore.load();
+		settingsStore.settings = { ...settingsStore.settings, customActions: [action] };
+		render(SettingsView, { bridge: client, settingsStore });
+
+		await fireEvent.click(screen.getByRole('button', { name: /forget all/i }));
+		expect(settingsSet).not.toHaveBeenCalled();
+
+		const confirms = await screen.findAllByRole('button', { name: /forget all/i });
+		await fireEvent.click(confirms[confirms.length - 1]!);
+
+		await waitFor(() =>
+			expect(settingsSet).toHaveBeenCalledWith(expect.objectContaining({ customActions: [] }))
+		);
+	});
+
+	// The order is the user's now, and it is the order every other surface reads from: the
+	// sidebar, the platform panel and the overview all render this same list.
+	it('moves a row, and the ends do not move', async () => {
+		const second = { ...action, id: 'a2', label: 'Drafts' };
+		const { client, settingsStore, settingsSet } = setup();
+		await settingsStore.load();
+		settingsStore.settings = { ...settingsStore.settings, customActions: [action, second] };
+		render(SettingsView, { bridge: client, settingsStore });
+
+		const [downFirst] = screen.getAllByRole('button', { name: /move down/i });
+		await fireEvent.click(downFirst!);
+
+		await waitFor(() =>
+			expect(settingsSet).toHaveBeenCalledWith(
+				expect.objectContaining({
+					customActions: [
+						expect.objectContaining({ id: 'a2' }),
+						expect.objectContaining({ id: 'a1' })
+					]
+				})
+			)
+		);
+	});
+
+	it('renames one in place', async () => {
+		const { client, settingsStore, settingsSet } = setup();
+		await settingsStore.load();
+		settingsStore.settings = { ...settingsStore.settings, customActions: [action] };
+		render(SettingsView, { bridge: client, settingsStore });
+
+		await fireEvent.click(screen.getByRole('button', { name: /rename/i }));
+		const field = screen.getByRole('textbox', { name: /rename/i });
+		await fireEvent.input(field, { target: { value: 'Old bookmarks' } });
+		await fireEvent.blur(field);
+
+		await waitFor(() =>
+			expect(settingsSet).toHaveBeenCalledWith(
+				expect.objectContaining({
+					customActions: [expect.objectContaining({ label: 'Old bookmarks' })]
+				})
+			)
+		);
+	});
+
+	/** Readable before it is trusted: that a person can check it is the whole case for a plan. */
+	it('shows the plan itself on request', async () => {
+		const { client, settingsStore } = setup();
+		await settingsStore.load();
+		settingsStore.settings = { ...settingsStore.settings, customActions: [action] };
+		render(SettingsView, { bridge: client, settingsStore });
+
+		expect(screen.queryByText(/scrollUntil|"kind"/)).not.toBeInTheDocument();
+
+		await fireEvent.click(screen.getByRole('button', { name: /^plan$/i }));
+
+		// The steps themselves, as they are stored — not a summary of them.
+		const shown = screen.getByText(/"kind"/);
+		expect(shown).toHaveTextContent('loop');
+		expect(shown).toHaveTextContent('bookmark');
 	});
 });

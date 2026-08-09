@@ -96,19 +96,66 @@ pub fn catalogue() -> serde_json::Value {
     serde_json::Value::Array(rows)
 }
 
+/// What the app's three effort levels mean in tokens.
+///
+/// A budget rather than a reasoning flag: it is the one control every dialect here honours,
+/// and the difference the user actually feels is whether the answer had room to finish. A
+/// patch for the engine is a line or two; a bug report or a read of the log is not.
+fn answer_tokens(effort: &str) -> u32 {
+    match effort {
+        "low" => 512,
+        "high" => 8192,
+        _ => 2048,
+    }
+}
+
+/// Gemini names the model in the path instead of the body, so an override has to be spliced
+/// into the url. Derived from the constant rather than rebuilt, so there is still one place
+/// the address is written down.
+fn endpoint(provider: &Provider, override_model: &str) -> String {
+    let chosen = model(provider, override_model);
+    if matches!(provider.dialect, Dialect::Gemini) && chosen != provider.model {
+        return provider.endpoint.replace(provider.model, chosen);
+    }
+    provider.endpoint.to_owned()
+}
+
+/// Which model to name: the user's own choice if they made one, else the provider's default.
+fn model<'a>(provider: &'a Provider, override_model: &'a str) -> &'a str {
+    let chosen = override_model.trim();
+    if chosen.is_empty() {
+        provider.model
+    } else {
+        chosen
+    }
+}
+
 /// The request body, in whichever dialect the provider expects.
-fn body(provider: &Provider, prompt: &str) -> serde_json::Value {
+fn body(
+    provider: &Provider,
+    prompt: &str,
+    override_model: &str,
+    effort: &str,
+) -> serde_json::Value {
+    let model = model(provider, override_model);
+    let tokens = answer_tokens(effort);
     match provider.dialect {
+        // `max_tokens` rather than `max_completion_tokens`: Groq and Mistral speak this dialect
+        // too, and it is the spelling all three accept. A reasoning model named by hand in the
+        // settings is the one case that would want the newer key.
         Dialect::OpenAi => serde_json::json!({
-            "model": provider.model,
+            "model": model,
+            "max_tokens": tokens,
             "messages": [{ "role": "user", "content": prompt }],
         }),
+        // Gemini names the model in the url, not in the body, so only the budget travels here.
         Dialect::Gemini => serde_json::json!({
             "contents": [{ "parts": [{ "text": prompt }] }],
+            "generationConfig": { "maxOutputTokens": tokens },
         }),
         Dialect::Anthropic => serde_json::json!({
-            "model": provider.model,
-            "max_tokens": 1024,
+            "model": model,
+            "max_tokens": tokens,
             "messages": [{ "role": "user", "content": prompt }],
         }),
     }
@@ -128,7 +175,13 @@ fn extract(provider: &Provider, value: &serde_json::Value) -> Option<String> {
 ///
 /// The call is made here rather than in the chrome webview on purpose: the key never
 /// reaches the frontend, and the window's content policy stays closed to every remote host.
-pub fn ask(provider: &Provider, key: &str, prompt: &str) -> Result<String> {
+pub fn ask(
+    provider: &Provider,
+    key: &str,
+    prompt: &str,
+    override_model: &str,
+    effort: &str,
+) -> Result<String> {
     if key.trim().is_empty() {
         return Err(Error::Message(format!(
             "no API key set for {}",
@@ -141,7 +194,12 @@ pub fn ask(provider: &Provider, key: &str, prompt: &str) -> Result<String> {
         .build()
         .map_err(|error| Error::Message(error.to_string()))?;
 
-    let mut request = client.post(provider.endpoint).json(&body(provider, prompt));
+    let mut request = client.post(endpoint(provider, override_model)).json(&body(
+        provider,
+        prompt,
+        override_model,
+        effort,
+    ));
 
     request = match provider.dialect {
         Dialect::OpenAi => request.bearer_auth(key),
@@ -209,14 +267,55 @@ mod tests {
     #[test]
     fn each_dialect_builds_the_body_it_expects() {
         let openai = find("openai").unwrap();
-        assert_eq!(body(openai, "hi")["messages"][0]["content"], "hi");
+        assert_eq!(
+            body(openai, "hi", "", "medium")["messages"][0]["content"],
+            "hi"
+        );
 
         let gemini = find("gemini").unwrap();
-        assert_eq!(body(gemini, "hi")["contents"][0]["parts"][0]["text"], "hi");
+        assert_eq!(
+            body(gemini, "hi", "", "medium")["contents"][0]["parts"][0]["text"],
+            "hi"
+        );
 
         let anthropic = find("anthropic").unwrap();
-        assert_eq!(body(anthropic, "hi")["messages"][0]["content"], "hi");
-        assert!(body(anthropic, "hi")["max_tokens"].is_number());
+        assert_eq!(
+            body(anthropic, "hi", "", "medium")["messages"][0]["content"],
+            "hi"
+        );
+        assert!(body(anthropic, "hi", "", "medium")["max_tokens"].is_number());
+    }
+
+    #[test]
+    fn effort_decides_the_room_the_answer_gets() {
+        let anthropic = find("anthropic").unwrap();
+        let tokens = |effort| {
+            body(anthropic, "hi", "", effort)["max_tokens"]
+                .as_u64()
+                .unwrap()
+        };
+
+        assert!(tokens("low") < tokens("medium"));
+        assert!(tokens("medium") < tokens("high"));
+        // A settings file from before this existed carries no level at all.
+        assert_eq!(tokens(""), tokens("medium"));
+    }
+
+    #[test]
+    fn a_named_model_replaces_the_provider_default_wherever_it_lives() {
+        let anthropic = find("anthropic").unwrap();
+        assert_eq!(
+            body(anthropic, "hi", "claude-opus-4-1", "low")["model"],
+            "claude-opus-4-1"
+        );
+        assert_eq!(body(anthropic, "hi", "  ", "low")["model"], anthropic.model);
+
+        // Gemini carries it in the path instead, so the url is what has to change.
+        let gemini = find("gemini").unwrap();
+        assert!(endpoint(gemini, "gemini-3-pro").contains("gemini-3-pro:generateContent"));
+        assert_eq!(endpoint(gemini, ""), gemini.endpoint);
+        // Everyone else posts to one address whatever the model is.
+        assert_eq!(endpoint(anthropic, "claude-opus-4-1"), anthropic.endpoint);
     }
 
     #[test]
@@ -244,7 +343,7 @@ mod tests {
     #[test]
     fn a_missing_key_never_reaches_the_network() {
         let provider = find("openai").unwrap();
-        assert!(ask(provider, "   ", "question").is_err());
+        assert!(ask(provider, "   ", "question", "", "medium").is_err());
     }
 
     #[test]

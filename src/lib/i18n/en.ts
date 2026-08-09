@@ -38,6 +38,33 @@ export const en = {
 	'action.close': 'Close {platform} actions',
 	'action.open': 'Open {platform} actions',
 
+	'assistant.controls': 'Assistant settings',
+	'assistant.close': 'Close the assistant',
+	'assistant.effort': 'Effort',
+	'assistant.effort.low': 'Brief',
+	'assistant.effort.medium': 'Normal',
+	'assistant.effort.high': 'Thorough',
+	'assistant.model': 'Model',
+	'assistant.model.default': 'Provider default',
+	'assistant.panel.empty':
+		'Ask for a plan for the page beside this — what to remove, and how one of them goes away.',
+	'assistant.noSource.short': 'No source',
+
+	'assistant.plan.save': 'Keep as action',
+	'assistant.plan.name': 'Name this action',
+	'assistant.plan.keep': 'Keep',
+	'assistant.plan.saved': 'Saved — {label} is now in the actions',
+	'panel.saved': 'Saved actions',
+	'confirm.saved.description':
+		'Runs {label}, a plan the assistant wrote against {platform} as it looked when you kept it. This cannot be undone.',
+	'assistant.plan.count': 'Check first',
+	'assistant.plan.run': 'Run once',
+	'assistant.plan.matches': '{count} on this page match it',
+	'assistant.plan.removed': '{count} removed',
+	'assistant.plan.rejected': 'Not a plan — {reason}',
+	'assistant.plan.noPlatform': 'Sign in to a platform to try this here',
+	'assistant.plan.label': 'Assistant plan',
+
 	'group.posts': 'Posts',
 	'group.replies': 'Replies',
 	'group.reposts': 'Reposts',
@@ -158,6 +185,8 @@ export const en = {
 	'settings.assistant': 'Assistant',
 	'settings.assistant.description':
 		'Where answers come from. The local binary sends nothing from this app; a hosted provider is the one thing here that puts data on the network.',
+	'settings.assistant.missing':
+		'No source is set up yet, so the assistant is hidden everywhere else. Pick Claude Code on this machine, or store a provider key below.',
 	'settings.assistant.source': 'Source',
 	'settings.assistant.off': 'Off',
 	'settings.assistant.off.description':
@@ -192,9 +221,6 @@ export const en = {
 	'assistant.placeholder': 'Why did 12 posts not get deleted?',
 	'assistant.ask': 'Ask',
 	'assistant.asking': 'Asking…',
-	'assistant.noSource':
-		'No source is set up yet. Pick one in the settings — Claude Code on this machine, or a provider key.',
-	'assistant.openSettings': 'Open the settings',
 	'assistant.sendsLog':
 		'The question is sent together with the log and a description of the app. The log never contains post content, handles or cookies.',
 	'assistant.clear': 'Clear',
@@ -260,6 +286,23 @@ export const en = {
 	'settings.autoConsent': 'Dismiss cookie banners',
 	'settings.autoConsent.description':
 		'Click consent banners away automatically, taking the rejecting button wherever the banner offers one.',
+	'settings.actions': 'Saved actions',
+	'settings.actions.description':
+		'Plans the assistant wrote that you kept. Each one is a selector, so it stops working when the platform moves.',
+	'settings.actions.empty':
+		'Nothing kept yet. Ask the assistant for a plan and keep it from there.',
+	'settings.actions.made': '{platform} · kept {date}',
+	'settings.actions.moveUp': 'Move up',
+	'settings.actions.moveDown': 'Move down',
+	'settings.actions.rename': 'Rename',
+	'settings.actions.plan': 'Plan',
+	'overview.saved': 'Saved actions',
+	'overview.saved.description': 'Plans you kept. One click runs it on its platform.',
+	'settings.actions.forget': 'Forget',
+	'settings.actions.forgetAll': 'Forget all',
+	'settings.actions.forgetAll.confirmBody':
+		'This throws away {count} saved actions. There is no getting one back — the answer it came from is gone and the page has moved on.',
+
 	'settings.reset.title': 'Reset',
 	'settings.reset.description': 'Puts every setting back to the way a fresh installation starts.',
 	'settings.reset.action': 'Reset to defaults',
@@ -310,6 +353,8 @@ export const en = {
 	'log.sortBy': 'Sort by {column}',
 
 	'assistant.preview.source': 'Where the code is',
+	'assistant.preview.structure': 'The page right now',
+	'assistant.preview.engine': 'How the engine does it',
 	'assistant.preview.patch': 'The patching task'
 } as const;
 

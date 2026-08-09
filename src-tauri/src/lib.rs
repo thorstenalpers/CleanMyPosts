@@ -43,6 +43,12 @@ static SITE_TOP: AtomicU32 = AtomicU32::new(DEFAULT_HEADER_HEIGHT);
 /// What the app keeps for itself below the platform: the status bar. The site is shortened
 /// rather than covered — one webview cannot paint over another, so the room has to be real.
 static SITE_BOTTOM: AtomicU32 = AtomicU32::new(0);
+/// Which edge the app's own columns are against.
+///
+/// The chrome mirrors itself for a right-to-left language — one `dir` on `<html>` and the
+/// whole shell swaps sides. Nothing here can see that: this file places a webview in physical
+/// pixels, so it has to be told, or it puts the platform exactly where the sidebar now is.
+static SITE_RTL: AtomicBool = AtomicBool::new(false);
 /// Hidden until the UI says otherwise: the app opens on Overview, and a site webview
 /// flashing over it before the first layout call would be the first thing the user sees.
 static SITE_HIDDEN: AtomicBool = AtomicBool::new(true);
@@ -216,6 +222,8 @@ fn site_init_script(auto_consent: bool) -> String {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
+
     /// A stray control character anywhere in this string is a `SyntaxError` for the whole
     /// script, in every document — the engine never registers, and the app sees exactly what
     /// it sees when a platform renames a selector: nothing at all.
@@ -231,6 +239,83 @@ mod tests {
             found.is_empty(),
             "control characters in the script: {found:?}"
         );
+    }
+
+    /// The window the app opens at, with the sidebar and one action rail beside it.
+    const WIDTH: f64 = 1200.0;
+    const HEIGHT: f64 = 800.0;
+    const CHROME: f64 = 240.0 + 224.0;
+    const TOP: f64 = 44.0;
+
+    /// The bug this stands for, reported in Arabic: the sidebar vanished on X and YouTube, and
+    /// only there. The shell mirrors on one `dir`, which moves every column the app owns to the
+    /// right edge — and this side went on placing the platform from the left, straight over it.
+    /// Everywhere else the platform is hidden, which is why it read as two broken pages rather
+    /// than a broken layout.
+    #[test]
+    fn a_mirrored_shell_puts_the_platform_on_the_other_side() {
+        let ltr = site_rect(WIDTH, HEIGHT, CHROME, TOP, 0.0, false, true);
+        let rtl = site_rect(WIDTH, HEIGHT, CHROME, TOP, 0.0, true, true);
+
+        assert_eq!(
+            ltr.x, CHROME,
+            "left to right, the site starts after the columns"
+        );
+        assert_eq!(
+            rtl.x, 0.0,
+            "mirrored, the columns are right and the site starts at zero"
+        );
+        // The columns did not get wider or narrower, they changed sides.
+        assert_eq!(ltr.width, rtl.width);
+        assert_eq!(ltr.width, WIDTH - CHROME);
+    }
+
+    // Whichever way round it is, the app keeps exactly the room it asked for.
+    #[test]
+    fn the_columns_are_never_covered() {
+        for rtl in [false, true] {
+            let rect = site_rect(WIDTH, HEIGHT, CHROME, TOP, 0.0, rtl, true);
+            let free = if rtl {
+                WIDTH - (rect.x + rect.width)
+            } else {
+                rect.x
+            };
+            assert_eq!(free, CHROME, "rtl={rtl}");
+        }
+    }
+
+    /// Parked off the right edge rather than resized away: a zero-sized webview stops laying
+    /// out, and the platform page would lose its scroll position on every glance at Settings.
+    #[test]
+    fn a_hidden_platform_keeps_the_rectangle_it_comes_back_at() {
+        let hidden = site_rect(WIDTH, HEIGHT, CHROME, TOP, 0.0, false, false);
+        let showing = site_rect(WIDTH, HEIGHT, CHROME, TOP, 0.0, false, true);
+
+        assert_eq!(hidden.x, WIDTH);
+        assert_eq!(hidden.width, showing.width);
+        assert_eq!(hidden.height, showing.height);
+    }
+
+    // The status bar is real room below the platform, not something painted over it: one
+    // webview cannot paint over another.
+    #[test]
+    fn the_status_bar_shortens_the_platform() {
+        let bare = site_rect(WIDTH, HEIGHT, CHROME, TOP, 0.0, false, true);
+        let with_bar = site_rect(WIDTH, HEIGHT, CHROME, TOP, 36.0, false, true);
+
+        assert_eq!(bare.height - with_bar.height, 36.0);
+        assert_eq!(with_bar.y, TOP);
+    }
+
+    /// A window dragged narrower than the app's own columns. Nothing here may reach zero or go
+    /// negative — a webview given either stops laying out and never recovers.
+    #[test]
+    fn a_window_smaller_than_the_chrome_still_gets_a_real_rectangle() {
+        let rect = site_rect(200.0, 100.0, CHROME, TOP, 36.0, false, true);
+
+        assert!(rect.width >= 1.0);
+        assert!(rect.height >= 1.0);
+        assert!(rect.y <= 100.0);
     }
 }
 
@@ -262,11 +347,16 @@ async fn bridge_call(app: tauri::AppHandle, method: String, params: Value) -> er
     commands::dispatch(app, method, params).await
 }
 
-/// Where the site webview starts: right of the app's own columns, below its header bar.
-pub fn set_site_inset(app: &tauri::AppHandle, left: u32, top: u32, bottom: u32) {
-    CHROME_WIDTH.store(left.max(1), Ordering::Relaxed);
+/// Where the site webview starts: beside the app's own columns, below its header bar.
+///
+/// `chrome` is how wide those columns are, not which edge they sit against — `rtl` decides
+/// that, because the shell mirrors for a right-to-left language and the host has no other way
+/// to know.
+pub fn set_site_inset(app: &tauri::AppHandle, chrome: u32, top: u32, bottom: u32, rtl: bool) {
+    CHROME_WIDTH.store(chrome.max(1), Ordering::Relaxed);
     SITE_TOP.store(top, Ordering::Relaxed);
     SITE_BOTTOM.store(bottom, Ordering::Relaxed);
+    SITE_RTL.store(rtl, Ordering::Relaxed);
     layout_webviews(app);
 }
 
@@ -283,6 +373,50 @@ pub fn show_site(app: &tauri::AppHandle, platform: &str) {
     layout_webviews(app);
 }
 
+/// The rectangle a site webview gets from the window.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct SiteRect {
+    pub x: f64,
+    pub y: f64,
+    pub width: f64,
+    pub height: f64,
+}
+
+/// Where one site webview belongs.
+///
+/// Pulled out of the placement below because this arithmetic is the whole of the bug it was
+/// written for: mirrored, the app's columns are against the right edge and the site belongs
+/// at zero, and getting that wrong does not read as a layout slip — the platform covers the
+/// sidebar and the app looks like it has lost its menu. A window cannot be built in a unit
+/// test; four numbers can.
+pub fn site_rect(
+    window_width: f64,
+    window_height: f64,
+    chrome: f64,
+    top: f64,
+    bottom: f64,
+    rtl: bool,
+    showing: bool,
+) -> SiteRect {
+    let inset = chrome.min(window_width);
+    let y = top.min(window_height);
+    let width = (window_width - inset).max(1.0);
+    let height = (window_height - y - bottom).max(1.0);
+
+    // Parked off the right edge rather than resized to zero: a zero-sized webview stops
+    // laying out, which would reset the platform page's scroll position every time the user
+    // glances at Settings — or at the other platform.
+    let resting = if rtl { 0.0 } else { inset };
+    let x = if showing { resting } else { window_width };
+
+    SiteRect {
+        x,
+        y,
+        width,
+        height,
+    }
+}
+
 fn layout_webviews(app: &tauri::AppHandle) {
     let Some(window) = app.get_window("main") else {
         return;
@@ -293,8 +427,6 @@ fn layout_webviews(app: &tauri::AppHandle) {
     let size = size.to_logical::<f64>(scale);
 
     let site_hidden = SITE_HIDDEN.load(Ordering::Relaxed);
-    let site_x = f64::from(CHROME_WIDTH.load(Ordering::Relaxed)).min(size.width);
-    let site_y = f64::from(SITE_TOP.load(Ordering::Relaxed)).min(size.height);
 
     // The chrome always covers the whole window, and the site is laid on top of it, inset.
     // That is what lets one bar run the full width above both: a webview is a rectangle, so
@@ -309,21 +441,22 @@ fn layout_webviews(app: &tauri::AppHandle) {
     // Sized and placed against the inset rather than against what is on screen now: a site
     // parked off to the side must keep the rectangle it will come back at, or it reflows on
     // the way in.
-    let site_width = (size.width - site_x).max(1.0);
-    let site_bottom = f64::from(SITE_BOTTOM.load(Ordering::Relaxed));
-    let site_height = (size.height - site_y - site_bottom).max(1.0);
     let active = active_site_webview_label();
     for (label, _) in SITE_WEBVIEWS {
         let Some(site) = app.get_webview(label) else {
             continue;
         };
-        // Parked off-screen rather than resized to zero: a zero-sized webview stops
-        // laying out, which would reset the platform page's scroll position every time
-        // the user glances at Settings — or at the other platform.
-        let showing = !site_hidden && label == active;
-        let x = if showing { site_x } else { size.width };
-        let _ = site.set_size(LogicalSize::new(site_width, site_height));
-        let _ = site.set_position(LogicalPosition::new(x, site_y));
+        let rect = site_rect(
+            size.width,
+            size.height,
+            f64::from(CHROME_WIDTH.load(Ordering::Relaxed)),
+            f64::from(SITE_TOP.load(Ordering::Relaxed)),
+            f64::from(SITE_BOTTOM.load(Ordering::Relaxed)),
+            SITE_RTL.load(Ordering::Relaxed),
+            !site_hidden && label == active,
+        );
+        let _ = site.set_size(LogicalSize::new(rect.width, rect.height));
+        let _ = site.set_position(LogicalPosition::new(rect.x, rect.y));
     }
 }
 
@@ -348,6 +481,7 @@ pub fn run() {
                 settings: settings::SettingsStore::load(settings_path),
                 logs: log::LogBuffer::new(),
                 runs: state::Runs::default(),
+                probes: state::Probes::default(),
                 site: std::sync::Mutex::new(state::SiteInfo::default()),
                 pending_update: std::sync::Mutex::new(None),
             });

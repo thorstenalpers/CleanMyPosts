@@ -40,11 +40,30 @@ in a store this project would then be responsible for.
    check and — only on an explicit Ask, and only when the user has chosen a hosted assistant
    provider — that provider. No telemetry, no crash reporting, no analytics — not opt-out,
    but not present.
-5. **An assistant question carries the log and nothing else.** The prompt is built in
-   `src/lib/assistant-context.ts` from a fixed description of the app plus the tail of the log
-   buffer. That buffer is already the one thing this project guarantees is free of post
-   content, handles, cookies and tokens, which is what makes it safe to hand to a third party.
-   Anything else — the site DOM, the user's name, the settings — deliberately stays behind.
+5. **An assistant question carries the log, and — only when asked for a plan — a text-free
+   skeleton of the page.** The prompt is built in `src/lib/assistant-context.ts` from a fixed
+   description of the app plus the tail of the log buffer. That buffer is the one thing this
+   project guarantees is free of post content, handles, cookies and tokens, which is what
+   makes it safe to hand to a third party.
+
+   Asking for an action plan adds one more part, because a plan is a selector and a selector
+   cannot be written against a page nobody has seen. What goes is a skeleton produced by
+   `src/lib/engine/structure.ts`: tag names, `data-testid`, roles, ids, class lists, the state
+   attributes that decide whether a control is live, and the short label of an interactive
+   element. What does not go: every text node that is not such a label, every `href` and
+   `src`, and any label that matches a handle, an address, an email or a long opaque id —
+   dropped whole rather than patched, because a half-redacted string is one somebody would
+   have to check.
+
+   Three things make this defensible rather than a hole. The redaction runs **in the site
+   webview**, so what it refuses never reaches the host process at all. It is attached to the
+   plan mode alone — a question about the log still carries only the log. And the preview
+   renders it verbatim before anything is sent, so the person deciding is looking at the same
+   bytes the provider would.
+
+   Still deliberately behind: the user's name, the settings, and the site DOM as it actually
+   is. What a hosted provider receives is a shape, not a page.
+
 6. **The API key never reaches the frontend.** The HTTP call to a provider is made in the host,
    not in the chrome webview: the key is read from the credential store at the moment of the
    request, is scrubbed out of any error message on the way back, and the webview's CSP stays

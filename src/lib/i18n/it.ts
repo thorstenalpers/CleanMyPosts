@@ -32,6 +32,33 @@ export const it: Record<MessageKey, string> = {
 	'action.close': 'Chiudi le azioni di {platform}',
 	'action.open': 'Apri le azioni di {platform}',
 
+	'assistant.controls': 'Impostazioni dell’assistente',
+	'assistant.close': 'Chiudi l’assistente',
+	'assistant.effort': 'Impegno',
+	'assistant.effort.low': 'Breve',
+	'assistant.effort.medium': 'Normale',
+	'assistant.effort.high': 'Approfondito',
+	'assistant.model': 'Modello',
+	'assistant.model.default': 'Predefinito del fornitore',
+	'assistant.panel.empty':
+		'Chiedi un piano per la pagina accanto: cosa togliere e come ne sparisce uno.',
+	'assistant.noSource.short': 'Nessuna fonte',
+
+	'assistant.plan.save': 'Salva come azione',
+	'assistant.plan.name': 'Nome di questa azione',
+	'assistant.plan.keep': 'Salva',
+	'assistant.plan.saved': 'Salvato — {label} è ora tra le azioni',
+	'panel.saved': 'Azioni salvate',
+	'confirm.saved.description':
+		'Esegue {label}, un piano che l’assistente ha scritto per {platform} com’era allora. Non è reversibile.',
+	'assistant.plan.count': 'Controlla prima',
+	'assistant.plan.run': 'Esegui una volta',
+	'assistant.plan.matches': '{count} corrispondenze in questa pagina',
+	'assistant.plan.removed': '{count} rimossi',
+	'assistant.plan.rejected': 'Non è un piano — {reason}',
+	'assistant.plan.noPlatform': 'Accedi a una piattaforma per provarlo qui',
+	'assistant.plan.label': 'Piano dell’assistente',
+
 	'group.posts': 'Post',
 	'group.replies': 'Risposte',
 	'group.reposts': 'Repost',
@@ -154,6 +181,8 @@ export const it: Record<MessageKey, string> = {
 	'settings.assistant': 'Assistente',
 	'settings.assistant.description':
 		'Da dove arrivano le risposte. Il binario locale non manda nulla da questa app; un provider ospitato è l’unica cosa qui che mette dati in rete.',
+	'settings.assistant.missing':
+		'Nessuna fonte è ancora configurata, quindi l’assistente resta nascosto ovunque altro. Scegli Claude Code su questo computer, o salva qui sotto una chiave di un fornitore.',
 	'settings.assistant.source': 'Origine',
 	'settings.assistant.off': 'Disattivato',
 	'settings.assistant.off.description':
@@ -189,9 +218,6 @@ export const it: Record<MessageKey, string> = {
 	'assistant.placeholder': 'Perché 12 post non sono stati eliminati?',
 	'assistant.ask': 'Chiedi',
 	'assistant.asking': 'Sto chiedendo…',
-	'assistant.noSource':
-		'Non è ancora configurata nessuna origine. Scegline una nelle impostazioni: Claude Code su questo computer, oppure la chiave di un provider.',
-	'assistant.openSettings': 'Apri le impostazioni',
 	'assistant.sendsLog':
 		'La domanda viene inviata insieme al registro e a una descrizione dell’app. Il registro non contiene mai il contenuto dei post, i nomi utente o i cookie.',
 	'assistant.clear': 'Svuota',
@@ -256,6 +282,22 @@ export const it: Record<MessageKey, string> = {
 	'settings.autoConsent': 'Chiudi i banner dei cookie',
 	'settings.autoConsent.description':
 		'Chiude da sé i banner di consenso, usando il pulsante che rifiuta dove il banner ne offre uno.',
+	'settings.actions': 'Azioni salvate',
+	'settings.actions.description':
+		'Piani scritti dall’assistente che hai tenuto. Ognuno è un selettore, quindi smette di funzionare quando la piattaforma cambia.',
+	'settings.actions.empty': 'Ancora niente tenuto. Chiedi un piano all’assistente e tienilo da lì.',
+	'settings.actions.made': '{platform} · tenuto il {date}',
+	'settings.actions.moveUp': 'Sposta su',
+	'settings.actions.moveDown': 'Sposta giù',
+	'settings.actions.rename': 'Rinomina',
+	'settings.actions.plan': 'Piano',
+	'overview.saved': 'Azioni salvate',
+	'overview.saved.description': 'Piani che hai tenuto. Un clic lo esegue sulla sua piattaforma.',
+	'settings.actions.forget': 'Dimentica',
+	'settings.actions.forgetAll': 'Dimentica tutto',
+	'settings.actions.forgetAll.confirmBody':
+		'Questo butta via {count} azioni salvate. Non si recuperano: la risposta da cui venivano non c’è più e la pagina è cambiata.',
+
 	'settings.reset.title': 'Ripristina',
 	'settings.reset.description':
 		'Riporta tutte le impostazioni allo stato di una nuova installazione.',
@@ -307,5 +349,7 @@ export const it: Record<MessageKey, string> = {
 	'log.sortBy': 'Ordina per {column}',
 
 	'assistant.preview.source': 'Dov’è il codice',
+	'assistant.preview.structure': 'La pagina in questo momento',
+	'assistant.preview.engine': 'Come lo fa il motore',
 	'assistant.preview.patch': 'Il compito della patch'
 };

@@ -10,14 +10,45 @@
  * The user can read the whole thing before sending it: the assistant's preview renders these
  * same sections, so nothing about the request is only visible from here.
  */
-import type { LogEntry } from '$lib/bridge/contract';
+import {
+	ActionPlanSchema,
+	type ActionPlan,
+	type LogEntry,
+	type Platform
+} from '$lib/bridge/contract';
 import { X_GROUPS, YOUTUBE_GROUPS } from '$lib/actions';
 import { siteConfig } from '$lib/engine/config';
+// The modules themselves rather than a description of them, so what the model is shown cannot
+// drift from what the engine actually runs.
+import xLikesSource from '$lib/engine/x/likes.ts?raw';
+import youtubeLikesSource from '$lib/engine/youtube/likes.ts?raw';
 
 /** The last stretch of the log; older lines rarely explain the run being asked about. */
 const LOG_LINES = 200;
 
-function describeRole(language: string): string {
+/**
+ * Who the model is being asked to be, which is not the same thing in every mode.
+ *
+ * This used to say "you answer questions… and nothing else", in the user's language, a few
+ * sentences — and it said it first, above the task. Asked for a plan, models did what it
+ * said: back came a polite clarifying question in German where a JSON object was needed. The
+ * task section further down asked for the opposite and lost, because this one is the role.
+ */
+function describeRole(language: string, mode: PromptMode): string {
+	if (mode === 'patch') {
+		return [
+			'You are the delete engine of CleanMyPosts, writing one action plan.',
+			'',
+			'Your entire answer is a JSON object over the vocabulary given below. Not prose, not',
+			'an explanation, not a question back — data. Where the request leaves something open,',
+			'take the reading that matches the page you are shown and write the plan for it.',
+			'',
+			'The answer is in no human language, so translate nothing into',
+			`${language} here. The words in a selector are matched against the page and are copied`,
+			'from it exactly as they stand there.'
+		].join('\n');
+	}
+
 	return [
 		'You are the support assistant built into CleanMyPosts. You answer questions about',
 		'this app and about the log the user is looking at, and nothing else.',
@@ -36,9 +67,9 @@ function describeApp(): string {
 		'## The app',
 		'',
 		'CleanMyPosts is a Windows desktop app that bulk-deletes a user’s own content on',
-		'social platforms. It uses no platform API: it drives an embedded browser and clicks',
-		'the same buttons a person would, so it only ever works inside a session the user is',
-		'already signed in to.',
+		'social platforms, and can be taught to do other things on those pages besides. It uses',
+		'no platform API: it drives an embedded browser and clicks the same buttons a person',
+		'would, so it only ever works inside a session the user is already signed in to.',
 		'',
 		`On X it can delete: ${x}.`,
 		`On YouTube it can delete: ${youtube}.`,
@@ -135,32 +166,128 @@ function describeSource(): string {
 }
 
 /**
- * What the model has to know to write a patch: the live configuration, and the one shape the
- * app can actually run.
+ * What the model has to know to write a plan: the vocabulary, the live configuration, and the
+ * one rule that decides whether the plan is still worth anything tomorrow.
  */
 function describePatchTask(): string {
 	return [
-		'## Write a patch for the delete engine',
+		'## Write an action plan',
 		'',
-		'The user says the platform page does not look the way the engine expects — usually',
-		'because their language or region words a menu item differently.',
+		'The user wants something done on the platform page: a list emptied that the engine does',
+		'not already handle, a selector fixed that the platform has since moved, or a page or a',
+		'button reached that the app does not offer yet.',
 		'',
-		'The app evaluates your answer inside the platform page before the next run.',
-		'`window.__cmp.config` is a plain mutable object; this is its current content:',
+		'You are not writing code. The app does not evaluate anything you send. Answer with a',
+		'JSON object over exactly this vocabulary, and nothing else — no prose, no fence:',
+		'',
+		'```json',
+		JSON.stringify(
+			{
+				kind: 'loop or once',
+				target: { selector: 'string', text: 'optional, matched case-insensitively' },
+				steps: [
+					{ step: 'click', target: { selector: 'string' }, pointerSequence: 'optional boolean' },
+					{ step: 'waitFor', target: { selector: 'string' }, maxWaitMs: 5000 },
+					{ step: 'waitGone', target: { selector: 'string' }, maxWaitMs: 5000 },
+					{ step: 'scrollUntil', target: { selector: 'string' }, maxWaitMs: 5000 },
+					{ step: 'wait', ms: 500 },
+					{ step: 'navigate', url: 'https://www.youtube.com/feed/channels' },
+					{ step: 'type', target: { selector: 'string' }, text: 'what to put in the field' },
+					{ step: 'press', key: 'Enter' }
+				]
+			},
+			null,
+			2
+		),
+		'```',
+		'',
+		'A plan is one of two shapes, and `kind` says which.',
+		'',
+		'`kind: "loop"` empties a list. `target` says what one still-present item looks like and',
+		'`steps` say what makes that one item go away. Do not write the loop itself: the app',
+		'repeats the steps, counts what went, waits between rounds and stops when the target',
+		'finds nothing.',
+		'',
+		'`kind: "once"` does the steps a single time and needs no `target`. That is the shape for',
+		'anything that is not a deletion — opening a page, dismissing a cookie banner, expanding',
+		'a section. Use `navigate` to open a page; only addresses on the platform itself are',
+		'allowed, and anything else is refused.',
+		'',
+		'`type` fills a field and `press` sends one key, for what a click cannot reach: a search',
+		'box, a field being corrected, a form that commits on Enter. Use them for the smallest',
+		'thing that does the job the user asked for. Do not use them to write a post, a reply or',
+		'a message — the user asked for their own page to be changed, not for something to be',
+		'said in their name, and anything published under their handle is not yours to write.',
+		'',
+		'Ten steps at most, either way.',
+		'',
+		'Name elements by selector, and where a selector is not enough by the word the element',
+		'carries. Never by position, index or nth-child: the plan is saved and run again later,',
+		'and by then the page has rendered differently. `pointerSequence: true` is for a control',
+		'that only reacts to a full mouse sequence — YouTube’s menu entries are the known case.',
+		'',
+		'This is what the engine already looks for, as a guide to how these pages are built:',
 		'',
 		'```json',
 		JSON.stringify(siteConfig, null, 2),
 		'```',
 		'',
-		'Answer with JavaScript only — no markdown fence, no explanation around it, nothing',
-		'that is not runnable. Change the least that solves it: push the wording the user',
-		'reports onto the matching array, or reassign the one selector that moved. Do not',
-		'redefine `window.__cmp`, do not fetch anything, do not add listeners, and do not',
-		'delete entries that are already there — another language depends on each of them.',
+		'A whole good answer for emptying a list:',
+		JSON.stringify(
+			{
+				kind: 'loop',
+				target: { selector: '[data-testid="unlike"]' },
+				steps: [
+					{ step: 'click', target: { selector: '[data-testid="unlike"]' } },
+					{ step: 'waitGone', target: { selector: '[data-testid="unlike"]' }, maxWaitMs: 5000 }
+				]
+			},
+			null,
+			2
+		),
 		'',
-		'Example of a whole good answer:',
-		"window.__cmp.config.youtube.removeFromLikedText.push('beğenilenlerden kaldır');"
+		'And one for opening a page, which is kept as an entry in the app’s own navigation:',
+		JSON.stringify(
+			{
+				kind: 'once',
+				steps: [{ step: 'navigate', url: 'https://www.youtube.com/feed/channels' }]
+			},
+			null,
+			2
+		)
 	].join('\n');
+}
+
+/**
+ * Reads the model's answer as a plan, or says why it is not one.
+ *
+ * Tolerant about the wrapping and strict about the content: a fence or a sentence of preamble
+ * is the ordinary way a model answers and is not worth refusing over, but what is inside has
+ * to satisfy `ActionPlanSchema` exactly. That check is the whole reason a plan can be run at
+ * all, so nothing here may fall back to "close enough".
+ */
+export function parseActionPlan(answer: string): { plan: ActionPlan } | { error: string } {
+	const fenced = answer.match(/```(?:json)?\s*([\s\S]*?)```/);
+	const body = (fenced?.[1] ?? answer).trim();
+	// A model that explained itself first still put the object in there somewhere.
+	const start = body.indexOf('{');
+	const end = body.lastIndexOf('}');
+	if (start === -1 || end <= start) return { error: 'the answer carries no JSON object' };
+
+	let value: unknown;
+	try {
+		value = JSON.parse(body.slice(start, end + 1));
+	} catch (cause) {
+		return { error: cause instanceof Error ? cause.message : String(cause) };
+	}
+
+	const result = ActionPlanSchema.safeParse(value);
+	if (!result.success) {
+		const first = result.error.issues[0];
+		const where = first?.path.join('.');
+		return { error: where ? `${where}: ${first?.message}` : (first?.message ?? 'not a plan') };
+	}
+	return { plan: result.data };
 }
 
 /**
@@ -194,6 +321,53 @@ function describeReportTask(appVersion: string): string {
 	].join('\n');
 }
 
+/**
+ * The page the plan is for, as the page itself described it.
+ *
+ * Redacted in the site webview before it ever crosses the bridge — see
+ * `$lib/engine/structure.ts` for what survives and what does not. This is the only part of a
+ * request that comes off a platform page, and it is why the preview matters more than it did.
+ */
+function describeStructure(structure: string): string {
+	return [
+		'## The page, as it is right now',
+		'',
+		'A skeleton of what is on screen. Every text node that is not the label of a control has',
+		'been removed, along with every address and anything naming a person — so an element you',
+		'can see here with no words in it may well carry a post, and you are not being shown it.',
+		'',
+		'Write your selectors against what is here.',
+		'',
+		'```html',
+		structure,
+		'```'
+	].join('\n');
+}
+
+/**
+ * How the engine already empties a list, in its own source.
+ *
+ * The plan vocabulary is small enough to explain in a paragraph, but the shape of a *good*
+ * plan — open the menu, wait for it, click the entry by its wording, wait for it to go — is
+ * easier to copy than to describe. `?raw` keeps these in step with the modules themselves
+ * rather than with a paraphrase of them that would rot.
+ */
+function describeEngineSource(platform: Platform | undefined): string {
+	if (!platform) return '';
+	const source = platform === 'x' ? xLikesSource : youtubeLikesSource;
+	return [
+		'## How the built-in actions do it',
+		'',
+		`The engine module that empties likes on ${platform === 'x' ? 'X' : 'YouTube'}. You are`,
+		'not writing this — your plan is data, not code — but the order of the steps and what it',
+		'waits for between them is exactly what a good plan copies.',
+		'',
+		'```ts',
+		source.trim(),
+		'```'
+	].join('\n');
+}
+
 export type PromptMode = 'question' | 'patch' | 'report';
 
 export interface PromptSection {
@@ -204,23 +378,40 @@ export interface PromptSection {
 		| 'assistant.preview.fixes'
 		| 'assistant.preview.source'
 		| 'assistant.preview.patch'
+		| 'assistant.preview.engine'
+		| 'assistant.preview.structure'
 		| 'assistant.preview.report';
 	body: string;
 }
 
+/** Everything a request is built from besides the log and the question. */
+export interface PromptContext {
+	language: string;
+	mode?: PromptMode;
+	appVersion?: string;
+	/** The platform whose page a plan would act on, when one is open. */
+	platform?: Platform;
+	/** The redacted page skeleton, when it could be read. Absent is normal, not an error. */
+	structure?: string;
+}
+
 /** The fixed parts, in the order they are sent. The log and the question follow them. */
-export function promptSections(
-	language: string,
-	mode: PromptMode = 'question',
-	appVersion = ''
-): PromptSection[] {
+export function promptSections(context: PromptContext): PromptSection[] {
+	const { language, mode = 'question', appVersion = '', platform, structure } = context;
+	const engine = mode === 'patch' ? describeEngineSource(platform) : '';
 	return [
-		{ titleKey: 'assistant.preview.role', body: describeRole(language) },
+		{ titleKey: 'assistant.preview.role', body: describeRole(language, mode) },
 		{ titleKey: 'assistant.preview.app', body: describeApp() },
 		{ titleKey: 'assistant.preview.fixes', body: describeTroubleshooting() },
 		{ titleKey: 'assistant.preview.source', body: describeSource() },
 		...(mode === 'patch'
 			? [{ titleKey: 'assistant.preview.patch' as const, body: describePatchTask() }]
+			: []),
+		...(engine ? [{ titleKey: 'assistant.preview.engine' as const, body: engine }] : []),
+		// Last of the fixed parts and closest to the question: it is what the answer is about,
+		// and it is the one part the user is being asked to vouch for before sending.
+		...(mode === 'patch' && structure
+			? [{ titleKey: 'assistant.preview.structure' as const, body: describeStructure(structure) }]
 			: []),
 		...(mode === 'report'
 			? [{ titleKey: 'assistant.preview.report' as const, body: describeReportTask(appVersion) }]
@@ -228,15 +419,9 @@ export function promptSections(
 	];
 }
 
-export function buildPrompt(
-	question: string,
-	entries: LogEntry[],
-	language: string,
-	mode: PromptMode = 'question',
-	appVersion = ''
-): string {
+export function buildPrompt(question: string, entries: LogEntry[], context: PromptContext): string {
 	return [
-		...promptSections(language, mode, appVersion).map((section) => section.body),
+		...promptSections(context).map((section) => section.body),
 		describeLog(entries),
 		`## The question\n\n${question.trim()}`
 	].join('\n\n');

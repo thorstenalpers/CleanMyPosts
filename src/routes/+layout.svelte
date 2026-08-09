@@ -7,7 +7,7 @@
 	import { createBridgeClient } from '$lib/bridge/client';
 	import { createTauriHost, isTauri } from '$lib/bridge/tauri-host';
 	import { createMockHost, defaultMockHandlers } from '$lib/bridge/mock';
-	import type { AppTheme, Platform } from '$lib/bridge/contract';
+	import type { ActionPlan, ActionResult, AppTheme, Platform } from '$lib/bridge/contract';
 	import { SettingsStore } from '$lib/stores/settings.svelte';
 	import { LogStore } from '$lib/stores/log.svelte';
 	import { SiteLoginStore } from '$lib/stores/site-login.svelte';
@@ -21,6 +21,7 @@
 	import BootSplash from '$lib/components/boot-splash.svelte';
 	import XView from '$lib/views/x-view.svelte';
 	import YouTubeView from '$lib/views/youtube-view.svelte';
+	import AssistantPanel from '$lib/views/assistant-panel.svelte';
 	import {
 		ACTION_RAIL_WIDTH,
 		HEADER_HEIGHT,
@@ -28,7 +29,8 @@
 		SIDEBAR_COLLAPSED_WIDTH,
 		SIDEBAR_EXPANDED_WIDTH,
 		SIDEBAR_FOLD_WIDTH,
-		PANEL_FOLD_WIDTH
+		PANEL_FOLD_WIDTH,
+		ASSISTANT_PANEL_WIDTH
 	} from '$lib/layout';
 	import { applyPreset, applyThemeChange } from '$lib/theme/preset';
 	import { i18n, t } from '$lib/i18n/index.svelte';
@@ -40,6 +42,7 @@
 	import SparklesIcon from '@lucide/svelte/icons/sparkles';
 	import SettingsIcon from '@lucide/svelte/icons/settings';
 	import InfoIcon from '@lucide/svelte/icons/info';
+	import WandIcon from '@lucide/svelte/icons/wand-sparkles';
 	import '../app.css';
 
 	/**
@@ -121,6 +124,38 @@
 	// confirmation and the run, and clears this the moment it has taken it.
 	let deleteAllFor = $state<Platform | undefined>(undefined);
 
+	/**
+	 * Whether anything can answer at all: the local binary on disk, or a provider with a key.
+	 *
+	 * The assistant is hidden until one exists rather than shown and refusing. An entry that
+	 * leads to a page whose only content is "this does not work" is worse than no entry, and
+	 * the app is complete without it — the settings are where a missing key is somebody's
+	 * business, and the only place it is mentioned.
+	 *
+	 * Re-read on every route change: adding a key in the settings does not touch the settings
+	 * file, so nothing else here would ever notice it appear.
+	 */
+	let assistantReady = $state(false);
+	$effect(() => {
+		// Read to depend on it: every navigation re-asks.
+		if (!routeKey) return;
+		void bridge
+			.call('assistant.getSources', undefined)
+			.then((sources) => {
+				assistantReady =
+					sources.local.found || sources.providers.some((provider) => provider.hasKey);
+			})
+			.catch(() => (assistantReady = false));
+	});
+
+	// Off until asked for. It is a column, and a column that opens by itself takes the platform
+	// page's room without anybody having decided that.
+	let assistantOpen = $state(false);
+	// Folded away with the action panel, and for the same reason: below that width there is not
+	// room for the site and a column beside it. `assistantReady` is in here too, so a key
+	// forgotten while the panel is open takes the panel with it.
+	const assistantVisible = $derived(assistantOpen && assistantReady && !panelTooNarrow);
+
 	let panelClosedByUser = $state(false);
 	let panelFoldedByWidth = $state(false);
 	let shell = $state<HTMLElement | undefined>(undefined);
@@ -152,7 +187,60 @@
 		untrack(() => (panelFoldedByWidth = narrow));
 	});
 
+	/** Kept plans that asked for a place in the navigation rather than beside a platform's lists. */
+	const savedNavItems = $derived(
+		settingsStore.settings.customActions.filter((action) => action.place === 'sidebar')
+	);
+
+	/**
+	 * Brings a platform on screen, waits until it is actually there, and runs the plan.
+	 *
+	 * The waiting is the whole of it. `site.show` happens on a timer after the route settles,
+	 * and a plan that started before it acted on a webview parked off screen: it clicked, it
+	 * reported a count, and the user saw nothing and concluded it had not run.
+	 */
+	async function runPlanOn(action: {
+		platform: Platform;
+		plan: ActionPlan;
+		label?: string;
+	}): Promise<ActionResult> {
+		if (railPlatform !== action.platform) {
+			panelClosedByUser = false;
+			pendingKey = action.platform;
+			await goto(resolve(ROUTES[action.platform]));
+			// Past the hand-off, so the page the plan acts on is the page the user is looking at.
+			await new Promise((resolve) => setTimeout(resolve, HAND_OFF_MS + 120));
+		}
+		return runner.runPlan({
+			platform: action.platform,
+			plan: action.plan,
+			label: action.label,
+			timeouts: settingsStore.settings.timeouts
+		});
+	}
+
+	/**
+	 * Runs a kept plan straight from the sidebar.
+	 *
+	 * Only the one-shot shape gets here — opening a page, dismissing a banner. A deletion is
+	 * kept beside its platform's own lists instead, where the confirmation and the stop button
+	 * are, because a sidebar item that empties an account on one click is not a menu entry.
+	 */
+	async function runSaved(id: string): Promise<void> {
+		const action = savedNavItems.find((entry) => entry.id === id);
+		if (!action || runner.running) return;
+		try {
+			await runPlanOn({ platform: action.platform, plan: action.plan, label: action.label });
+		} catch {
+			// Reported in the log by the host; a nav item is not the place for an error card.
+		}
+	}
+
 	function onNavigate(key: NavKey): void {
+		if (key.startsWith('saved:')) {
+			void runSaved(key.slice('saved:'.length));
+			return;
+		}
 		const platform = key === 'x' || key === 'youtube' ? key : undefined;
 		// Opening only, never toggling: the actions are what a platform is for, and the panel
 		// carries the running deletion and its result. Closing it is a deliberate click on its
@@ -169,6 +257,7 @@
 		loginStore,
 		runner,
 		updater,
+		runPlanOn,
 		openPlatform: (platform: Platform, options?: { deleteAll?: boolean }) => {
 			// Same as clicking the platform in the sidebar: arriving without its actions leaves
 			// the user on a page with nothing to do.
@@ -288,7 +377,7 @@
 					}
 				]
 			: []),
-		...(settingsStore.settings.showAssistant
+		...(settingsStore.settings.showAssistant && assistantReady
 			? [
 					{
 						key: 'assistant' as const,
@@ -306,6 +395,13 @@
 					}
 				]
 			: []),
+		// What the assistant wrote and the user kept, between the platforms and the app's own
+		// pages: they act on a platform, so they belong nearer to one than to Settings.
+		...savedNavItems.map((action) => ({
+			key: `saved:${action.id}` as NavKey,
+			label: action.label,
+			icon: WandIcon
+		})),
 		// Info above Settings: the way out of the app sits at the very bottom.
 		{ key: 'info' as const, label: t('nav.info'), icon: InfoIcon, footer: true },
 		{ key: 'settings' as const, label: t('nav.settings'), icon: SettingsIcon, footer: true }
@@ -334,7 +430,9 @@
 
 	// Hiding a page in the settings has to close the one you are standing on, and the same
 	// guard catches a URL that names a route the sidebar does not offer.
-	const reachable = $derived(new Set<string>(navItems.map((item) => item.key)));
+	const reachable = $derived(
+		new Set<string>(navItems.map((item) => item.key).filter((key) => !key.startsWith('saved:')))
+	);
 
 	// Against the route, not the optimistic key: a click that has not arrived yet is on its
 	// way to a page the sidebar does offer, and bouncing it here would cancel it mid-flight.
@@ -346,9 +444,16 @@
 	$effect(() => {
 		const sidebar = sidebarExpanded ? SIDEBAR_EXPANDED_WIDTH : SIDEBAR_COLLAPSED_WIDTH;
 		void bridge.call('layout.setSiteInset', {
-			left: sidebar + (panelVisible ? ACTION_RAIL_WIDTH : 0),
+			left:
+				sidebar +
+				(panelVisible ? ACTION_RAIL_WIDTH : 0) +
+				(assistantVisible ? ASSISTANT_PANEL_WIDTH : 0),
 			top: HEADER_HEIGHT,
-			bottom: railPlatform ? STATUS_BAR_HEIGHT : 0
+			bottom: railPlatform ? STATUS_BAR_HEIGHT : 0,
+			// Arabic mirrors the shell, which moves every column above to the other edge. The
+			// host lays the site out in physical pixels and cannot see that, so it has to be
+			// told — otherwise it covers the sidebar with the platform and the menu is gone.
+			rtl: i18n.isRtl
 		});
 	});
 
@@ -398,6 +503,19 @@
 	     reports was started there. -->
 	<div class="flex min-w-0 flex-1 flex-col">
 		<div class="flex min-h-0 flex-1">
+			<!-- First of the app's own columns, so the platform page keeps the far side of the
+			     window: what is being asked about stays where it was while the asking happens. -->
+			{#if assistantVisible}
+				<AssistantPanel
+					{bridge}
+					{logStore}
+					{settingsStore}
+					{loginStore}
+					{runPlanOn}
+					onClose={() => (assistantOpen = false)}
+				/>
+			{/if}
+
 			{#if railPlatform === 'x'}
 				<XView
 					{bridge}
@@ -437,6 +555,8 @@
 					{location}
 					{settingsStore}
 					onMenuOpenChange={(open: boolean) => (headerMenuOpen = open)}
+					onToggleAssistant={assistantReady ? () => (assistantOpen = !assistantOpen) : undefined}
+					assistantOpen={assistantVisible}
 					onOpenActions={railPlatform && !panelVisible
 						? () => {
 								panelClosedByUser = false;

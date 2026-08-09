@@ -1,12 +1,12 @@
 {
 	"$schema": "https://schema.tauri.app/config/2",
 	"productName": "CleanMyPosts",
-	"version": "3.3.0",
+	"version": "3.4.0",
 	"identifier": "com.thorstenalpers.cleanmyposts",
 	"build": {
 		"frontendDist": "../build",
 		"devUrl": "http://localhost:5175",
-		"beforeDevCommand": "npm run dev",
+		"beforeDevCommand": "npm run dev:app",
 		"beforeBuildCommand": "npm run build"
 	},
 	"app": {

@@ -358,12 +358,37 @@ export function hideShield(): void {
 	shieldAbort = null;
 }
 
+/**
+ * The one way out of the page.
+ *
+ * Inside the app that is the WebView2 bridge. Outside it — a standalone script pasted into a
+ * browser console, which is how somebody without Windows uses this — there is no bridge, and
+ * a run that reported nothing would look like a run that did nothing. The console is the only
+ * surface left there, so it gets the same lines.
+ */
 function post(message: ContentMessage): void {
-	window.chrome?.webview?.postMessage(message);
+	const bridge = window.chrome?.webview;
+	if (bridge) {
+		bridge.postMessage(message);
+		return;
+	}
+	if (message.type === 'log') console.log(`[CleanMyPosts] ${message.message}`);
+	else if (message.type === 'progress')
+		console.log(`[CleanMyPosts] ${message.deletedCount} removed`);
+	else if (message.type === 'error') console.error(`[CleanMyPosts] ${message.message}`);
 }
 
 export function postLog(level: 'debug' | 'info' | 'warning' | 'error', message: string): void {
 	post({ type: 'log', level, message });
+}
+
+/** Answers a question that came back with text rather than a count. */
+export function postProbe(requestId: string, payload: string): void {
+	post({ type: 'probe', requestId, payload });
+}
+
+export function postProbeError(requestId: string, error: string): void {
+	post({ type: 'probe', requestId, error });
 }
 
 /**

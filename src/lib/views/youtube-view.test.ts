@@ -30,6 +30,9 @@ function setup(confirmDeletion: boolean) {
 			assistantSource: 'claude-code',
 			assistantCliPath: '',
 			engineScript: '',
+			assistantModel: '',
+			assistantEffort: 'medium' as const,
+			customActions: [],
 			timeouts: { waitAfterDelete: 1, waitBetweenRetryDeleteAttempts: 1, waitAfterDocumentLoad: 1 }
 		}),
 		'site.navigate': navigate,

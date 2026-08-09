@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<title>X likes</title>
+	</head>
+	<body>
+		<article><span>post one</span><button data-testid="unlike">Unlike</button></article>
+		<article><span>post two</span><button data-testid="unlike">Unlike</button></article>
+		<article><span>post three</span><button data-testid="unlike">Unlike</button></article>
+		<script>
+			// What X does when the button is pressed: the row stops offering it.
+			document.addEventListener('click', (event) => {
+				const button = event.target.closest('[data-testid="unlike"]');
+				if (button) button.remove();
+			});
+		</script>
+	</body>
+</html>

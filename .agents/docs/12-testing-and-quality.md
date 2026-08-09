@@ -23,11 +23,62 @@ Three places decide whether the app is trustworthy:
 4. **Bridge parity.** The same problem one level up: `contract.ts` and the host's `dispatch`
    are two lists nothing reconciles. See below.
 
+## The language matrix
+
+`e2e/languages.spec.ts` runs the three text-dependent actions — X posts, YouTube liked
+videos, YouTube comments — against the same fixtures in German, Spanish, Japanese, Turkish
+and Arabic. `e2e/fixtures/languages.ts` does the translating, and takes away every
+language-independent hook the real page offers at the same time: `data-id` on Google's
+confirm button, and both `aria-label`s. What is left is what the engine has to reach through
+on a page nobody here can read — a class, a `jscontroller`, and a word from
+`config.ts`.
+
+**What it proves and what it does not.** The strings are translations written for the test,
+not copies taken from the live pages; this repository has no account on either platform to
+read them from. So the matrix catches a hard-coded `'Delete'`, a case-sensitive compare, a
+structural selector that only worked because an English label happened to be there, and an
+RTL assumption. It does not confirm that `deleteMenuText`, `confirmDeleteText` and
+`removeFromLikedText` say what X and YouTube actually ship. Only a run on a real account in
+that language does that.
+
+It has already earned its keep twice: `removeFromLikedText` had no entry for Japanese,
+Chinese, Arabic, Hindi or Turkish, and the comments fixture hung its ✕ off the wrong element,
+so the English spec passed for a reason the real page does not have.
+
+### Watching a real run in another language
+
+Both platforms can be switched without a VPN, and both addresses are inside the plan
+allow-list, so a saved action reaches them:
+
+```json
+{
+	"kind": "once",
+	"steps": [{ "step": "navigate", "url": "https://www.youtube.com/?persist_hl=1&hl=es" }]
+}
+```
+
+YouTube takes the language from the URL and keeps it. X has no such parameter — its display
+language is a `<select>`, which the plan vocabulary deliberately cannot set, so the plan can
+only open the page:
+
+```json
+{ "kind": "once", "steps": [{ "step": "navigate", "url": "https://x.com/settings/language" }] }
+```
+
+Neither has been run against a live account from here; the allow-list entries are covered by
+`plan.test.ts`, the pages themselves are not.
+
 ## What is not tested
 
 No E2E tests against live platforms. They need real accounts, delete real data, and fail
 whenever a platform changes something — which the fixture test catches earlier and more
 reliably.
+
+**Nothing in this repository creates content.** No test posts, reposts, likes or follows to
+seed something to delete: it would need credentials CI does not have, it would publish to a
+real account and reach real third parties on every run, and it would put a "post to X"
+capability into a delete engine that has no other reason to carry one. The fixtures already
+contain the objects to delete, in every language.
 
 The one thing not covered by a compiler is now covered by a test: `dispatch-parity.test.ts`
 reads the `match` in `src-tauri/src/commands/mod.rs` and compares its arms to the keys of

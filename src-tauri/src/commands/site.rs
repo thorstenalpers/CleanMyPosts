@@ -8,32 +8,31 @@ use tokio::sync::oneshot;
 /// `show*` and `delete*` share a target because deleting always happens on the page that
 /// lists the items.
 ///
-/// Every url asks for English, whatever the app is set to. The engine finds the menu entry it
-/// has to click by its wording, and one wording is testable where a hundred are not.
-///
-/// Asked for, not guaranteed: both platforms let the account's own language win, and in
-/// practice it usually does. The parameter costs nothing where it is ignored and saves the
-/// run where it is honoured, which is the whole case for keeping it.
+/// The pages are asked for in no particular language. Every url used to carry `lang=en`, on
+/// the theory that one testable wording beats a hundred — but both platforms let the account's
+/// own language win, and in practice they did. So the parameter mostly did not work, and where
+/// it did it left the app showing a page in a language its owner had not chosen. The engine
+/// matches the wordings it needs in every language the app offers instead; see
+/// `deleteMenuText` in `src/lib/engine/config.ts`.
 fn target_url(platform: &str, action: &str, user_name: &str) -> Option<String> {
     let user = urlencoding_minimal(user_name);
     let url = match (platform, action) {
         ("x", "showPosts" | "deletePosts") => {
-            // Already carries a query, so the language joins it rather than starting a new one.
-            format!("https://x.com/search?q=from%3A{user}&src=typed_query&lang=en")
+            format!("https://x.com/search?q=from%3A{user}&src=typed_query")
         }
         ("x", "showReplies" | "deleteReplies") => {
-            format!("https://x.com/{user}/with_replies?lang=en")
+            format!("https://x.com/{user}/with_replies")
         }
-        ("x", "showReposts" | "deleteReposts") => format!("https://x.com/{user}?lang=en"),
-        ("x", "showLikes" | "deleteLikes") => format!("https://x.com/{user}/likes?lang=en"),
+        ("x", "showReposts" | "deleteReposts") => format!("https://x.com/{user}"),
+        ("x", "showLikes" | "deleteLikes") => format!("https://x.com/{user}/likes"),
         ("x", "showFollowing" | "deleteFollowing") => {
-            format!("https://x.com/{user}/following?lang=en")
+            format!("https://x.com/{user}/following")
         }
         ("youtube", "showComments" | "deleteComments") => {
-            "https://myactivity.google.com/page?page=youtube_comments&hl=en".to_string()
+            "https://myactivity.google.com/page?page=youtube_comments".to_string()
         }
         ("youtube", "showLikes" | "deleteLikes") => {
-            "https://www.youtube.com/playlist?list=LL&hl=en".to_string()
+            "https://www.youtube.com/playlist?list=LL".to_string()
         }
         _ => return None,
     };
@@ -146,6 +145,238 @@ fn unshield(app: &AppHandle, platform: &str) {
     }
 }
 
+/// A key for a round trip the caller did not name one for.
+static PROBE_SEQUENCE: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+
+/// How long a question to the page may go unanswered before it is given up on.
+///
+/// Only for the questions that answer at once — counting and reading the structure. A run has
+/// no business timing out, because a run legitimately takes hours; it has the stop button
+/// instead. An `eval` aimed at a document that is navigating lands nowhere and is answered by
+/// nobody, and without this the call waits for the rest of the session.
+const PROBE_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(15);
+
+/// Hands the page a script and waits for it to answer.
+///
+/// The same registry and the same oneshot `run_action` uses, deliberately: it is what the
+/// stop button reaches into, so anything that answers through a channel of its own would be
+/// a run nobody could stop.
+async fn await_page(
+    app: &AppHandle,
+    platform: &str,
+    request_id: &str,
+    script: String,
+) -> Result<u32> {
+    let (tx, rx) = oneshot::channel();
+    // Scoped so the `State` guard is dropped before the await below: a webview handle is not
+    // `Send`, and neither is a mutex guard held across a suspension point.
+    {
+        let state = app.state::<AppState>();
+        state.runs.0.lock().expect("runs mutex").insert(
+            request_id.to_owned(),
+            Run {
+                deleted: 0,
+                responder: Some(tx),
+            },
+        );
+    }
+
+    let evaluated = app
+        .get_webview(crate::site_webview_label(platform))
+        .ok_or_else(|| Error::Site("site webview is gone".into()))
+        .and_then(|site| site.eval(&script).map_err(Error::from));
+
+    if let Err(error) = evaluated {
+        app.state::<AppState>()
+            .runs
+            .0
+            .lock()
+            .expect("runs mutex")
+            .remove(request_id);
+        unshield(app, platform);
+        return Err(error);
+    }
+
+    match rx.await {
+        Ok(Ok(count)) => Ok(count),
+        Ok(Err(message)) => Err(Error::Message(message)),
+        Err(_) => {
+            unshield(app, platform);
+            Err(Error::Abandoned)
+        }
+    }
+}
+
+/// Runs a plan on the page that is already open.
+///
+/// No navigation, unlike `run_action`: this is "try what you just got, where you are
+/// standing", and a plan is only ever written against a page someone was looking at.
+pub async fn run_plan(app: AppHandle, params: &Value) -> Result<Value> {
+    let request_id = params
+        .get("requestId")
+        .and_then(Value::as_str)
+        .ok_or(Error::MissingParam("requestId"))?
+        .to_owned();
+    let platform = params
+        .get("platform")
+        .and_then(Value::as_str)
+        .ok_or(Error::MissingParam("platform"))?;
+    let plan = params.get("plan").ok_or(Error::MissingParam("plan"))?;
+    let timeouts = params.get("timeouts").cloned().unwrap_or(json!({}));
+
+    let run_params = json!({
+        "requestId": request_id,
+        "waitAfterDelete": timeouts.get("waitAfterDelete").and_then(Value::as_u64).unwrap_or(500),
+        "waitBetweenRetryDeleteAttempts": timeouts
+            .get("waitBetweenRetryDeleteAttempts").and_then(Value::as_u64).unwrap_or(500),
+        "plan": plan,
+    });
+    let script = format!(
+        "if (window.__cmp) window.__cmp.runPlan({}); \
+         else window.chrome.webview.postMessage({{ type: 'error', requestId: {}, \
+           message: 'The delete engine is not loaded on this page.' }});",
+        json!(run_params.to_string()),
+        json!(request_id)
+    );
+
+    // Named where the user named it. A log that says "a plan" cannot be read back months
+    // later against a list of saved actions that all look alike.
+    let what = params
+        .get("label")
+        .and_then(Value::as_str)
+        .filter(|label| !label.trim().is_empty())
+        .map(|label| format!("\"{}\"", label.trim()))
+        .unwrap_or_else(|| "an unsaved plan".to_owned());
+
+    crate::bridge::log(&app, "info", format!("{platform}: running {what}"));
+    let deleted = await_page(&app, platform, &request_id, script).await?;
+    crate::bridge::log(
+        &app,
+        "info",
+        format!("{platform}: {what} removed {deleted}"),
+    );
+    Ok(json!({ "deletedCount": deleted }))
+}
+
+/// The page's own account of itself, redacted in the page before it is handed over.
+///
+/// What comes back is a skeleton — tags, testids, roles, classes, and the short label of a
+/// control — with every text node that is not such a label already dropped by the time the
+/// host sees it. The redaction is deliberately on the page's side of the wire: nothing that
+/// was refused there ever reaches this process, let alone a model.
+pub async fn read_structure(app: AppHandle, params: &Value) -> Result<Value> {
+    let platform = params
+        .get("platform")
+        .and_then(Value::as_str)
+        .ok_or(Error::MissingParam("platform"))?;
+
+    let request_id = format!(
+        "probe-{}",
+        PROBE_SEQUENCE.fetch_add(1, std::sync::atomic::Ordering::Relaxed)
+    );
+
+    let (tx, rx) = oneshot::channel();
+    {
+        let state = app.state::<AppState>();
+        state
+            .probes
+            .0
+            .lock()
+            .expect("probes mutex")
+            .insert(request_id.clone(), tx);
+    }
+
+    let script = format!(
+        "if (window.__cmp) window.__cmp.readStructure({id}); \
+         else window.chrome.webview.postMessage({{ type: 'probe', requestId: {id}, \
+           error: 'The delete engine is not loaded on this page.' }});",
+        id = json!(request_id)
+    );
+
+    let evaluated = app
+        .get_webview(crate::site_webview_label(platform))
+        .ok_or_else(|| Error::Site("site webview is gone".into()))
+        .and_then(|site| site.eval(&script).map_err(Error::from));
+
+    if let Err(error) = evaluated {
+        app.state::<AppState>()
+            .probes
+            .0
+            .lock()
+            .expect("probes mutex")
+            .remove(&request_id);
+        return Err(error);
+    }
+
+    match tokio::time::timeout(PROBE_TIMEOUT, rx).await {
+        Err(_) => {
+            app.state::<AppState>()
+                .probes
+                .0
+                .lock()
+                .expect("probes mutex")
+                .remove(&request_id);
+            Err(Error::Message("the page did not answer".to_owned()))
+        }
+        Ok(Ok(Ok(structure))) => {
+            crate::bridge::log(
+                &app,
+                "info",
+                format!(
+                    "{platform}: read {} characters of page structure for the assistant",
+                    structure.chars().count()
+                ),
+            );
+            Ok(json!({ "structure": structure }))
+        }
+        Ok(Ok(Err(message))) => Err(Error::Message(message)),
+        Ok(Err(_)) => Err(Error::Abandoned),
+    }
+}
+
+/// How many the plan's target finds, having touched none of them.
+pub async fn count_matches(app: AppHandle, params: &Value) -> Result<Value> {
+    let platform = params
+        .get("platform")
+        .and_then(Value::as_str)
+        .ok_or(Error::MissingParam("platform"))?;
+    let target = params.get("target").ok_or(Error::MissingParam("target"))?;
+
+    // Nobody correlates a count, so nobody had to name it — but the registry is keyed, so it
+    // needs a key of its own that cannot collide with a run's.
+    let request_id = format!(
+        "probe-{}",
+        PROBE_SEQUENCE.fetch_add(1, std::sync::atomic::Ordering::Relaxed)
+    );
+    let script = format!(
+        "if (window.__cmp) window.__cmp.countMatches({}, {}); \
+         else window.chrome.webview.postMessage({{ type: 'error', requestId: {}, \
+           message: 'The delete engine is not loaded on this page.' }});",
+        json!(request_id),
+        json!(target.to_string()),
+        json!(request_id)
+    );
+
+    let count = match tokio::time::timeout(
+        PROBE_TIMEOUT,
+        await_page(&app, platform, &request_id, script),
+    )
+    .await
+    {
+        Ok(result) => result?,
+        Err(_) => {
+            app.state::<AppState>()
+                .runs
+                .0
+                .lock()
+                .expect("runs mutex")
+                .remove(&request_id);
+            return Err(Error::Message("the page did not answer".to_owned()));
+        }
+    };
+    Ok(json!({ "count": count }))
+}
+
 pub async fn run_action(app: AppHandle, params: &Value) -> Result<Value> {
     let request_id = params
         .get("requestId")
@@ -226,24 +457,38 @@ pub async fn run_action(app: AppHandle, params: &Value) -> Result<Value> {
         "waitAfterDelete": wait_after_delete,
         "waitBetweenRetryDeleteAttempts": wait_between,
     });
-    // The user's own patch runs first, in a try/catch of its own: it is written by hand or by
-    // the assistant, and a syntax error in it must cost nothing more than the patch. Applied
-    // per run rather than at page load, so saving a fix takes effect on the next action
-    // instead of the next navigation.
+    // The user's own patch goes over in an eval of its own, and that separation is the whole
+    // point of it.
+    //
+    // It used to be spliced into the script below, inside a try/catch, on the theory that a
+    // bad patch would cost nothing more than the patch. That theory was wrong: a `try` catches
+    // what happens at run time, and a patch that is not valid JavaScript fails at *parse*
+    // time, which takes the entire script with it — including the `run` call underneath. The
+    // page then never starts and never reports, so the run finds nothing and waits for ever.
+    //
+    // Two evals cannot do that to each other. What is left is a patch that silently does
+    // nothing, which is the failure this was always supposed to have.
     let patch = app.state::<AppState>().settings.get().engine_script;
-    let patch_script = if patch.trim().is_empty() {
-        String::new()
-    } else {
-        format!(
+    if !patch.trim().is_empty() {
+        let patch_script = format!(
             "try {{ (function () {{ {patch} }})(); }} \
              catch (e) {{ window.chrome.webview.postMessage({{ type: 'log', level: 'warning', \
                message: 'The engine script from the settings failed: ' + e }}); }}"
-        )
-    };
+        );
+        if let Some(site) = app.get_webview(crate::site_webview_label(platform)) {
+            if site.eval(&patch_script).is_err() {
+                crate::bridge::log(
+                    &app,
+                    "warning",
+                    "the engine script from the settings could not be applied",
+                );
+            }
+        }
+    }
 
     let script = format!(
         "(function () {{ var p = {run_params}; \
-           if (window.__cmp) {{ {patch_script} p.userName = window.__cmp.getUserName(); \
+           if (window.__cmp) {{ p.userName = window.__cmp.getUserName(); \
              window.__cmp.run('{platform}', '{engine}', JSON.stringify(p)); }} \
            else {{ window.chrome.webview.postMessage({{ type: 'error', requestId: '{request_id}', \
              message: 'The delete engine is not loaded on this page.' }}); }} }})();"
@@ -395,6 +640,7 @@ pub fn set_site_inset(app: &AppHandle, params: &Value) -> Result<Value> {
         read("left", crate::DEFAULT_CHROME_WIDTH),
         read("top", crate::DEFAULT_HEADER_HEIGHT),
         read("bottom", 0),
+        params.get("rtl").and_then(Value::as_bool).unwrap_or(false),
     );
     Ok(Value::Null)
 }
@@ -407,23 +653,23 @@ mod tests {
     fn builds_every_x_page() {
         assert_eq!(
             target_url("x", "deletePosts", "someuser").unwrap(),
-            "https://x.com/search?q=from%3Asomeuser&src=typed_query&lang=en"
+            "https://x.com/search?q=from%3Asomeuser&src=typed_query"
         );
         assert_eq!(
             target_url("x", "showReplies", "someuser").unwrap(),
-            "https://x.com/someuser/with_replies?lang=en"
+            "https://x.com/someuser/with_replies"
         );
         assert_eq!(
             target_url("x", "deleteReposts", "someuser").unwrap(),
-            "https://x.com/someuser?lang=en"
+            "https://x.com/someuser"
         );
         assert_eq!(
             target_url("x", "deleteLikes", "someuser").unwrap(),
-            "https://x.com/someuser/likes?lang=en"
+            "https://x.com/someuser/likes"
         );
         assert_eq!(
             target_url("x", "showFollowing", "someuser").unwrap(),
-            "https://x.com/someuser/following?lang=en"
+            "https://x.com/someuser/following"
         );
     }
 
@@ -457,23 +703,39 @@ mod tests {
     fn youtube_pages_ignore_the_handle() {
         assert_eq!(
             target_url("youtube", "deleteComments", "").unwrap(),
-            "https://myactivity.google.com/page?page=youtube_comments&hl=en"
+            "https://myactivity.google.com/page?page=youtube_comments"
         );
         assert_eq!(
             target_url("youtube", "showLikes", "").unwrap(),
-            "https://www.youtube.com/playlist?list=LL&hl=en"
+            "https://www.youtube.com/playlist?list=LL"
         );
     }
 
-    /// The engine matches the menu entry by its wording, so every page it is sent to has to
-    /// come back in the one language that wording is written in.
+    /// The parameter that used to pin every page to English is gone.
+    ///
+    /// It mostly did not work — both platforms answer in the account's language whatever the
+    /// url asks — and where it did, it showed somebody their own account in a language they
+    /// had not chosen. The engine carries the wordings it needs in every language the app
+    /// offers instead; see `deleteMenuText` in `src/lib/engine/config.ts`.
     #[test]
-    fn every_youtube_page_is_asked_for_in_english() {
-        for action in ["showComments", "deleteComments", "showLikes", "deleteLikes"] {
-            let url = target_url("youtube", action, "").unwrap();
+    fn no_page_is_pinned_to_a_language() {
+        let actions = [
+            ("x", "showPosts"),
+            ("x", "deletePosts"),
+            ("x", "showReplies"),
+            ("x", "deleteReposts"),
+            ("x", "deleteLikes"),
+            ("x", "deleteFollowing"),
+            ("youtube", "showComments"),
+            ("youtube", "deleteComments"),
+            ("youtube", "showLikes"),
+            ("youtube", "deleteLikes"),
+        ];
+        for (platform, action) in actions {
+            let url = target_url(platform, action, "someuser").unwrap();
             assert!(
-                url.contains("hl=en"),
-                "{action} is not pinned to a language: {url}"
+                !url.contains("lang=") && !url.contains("hl="),
+                "{platform}/{action} still asks for a language: {url}"
             );
         }
     }

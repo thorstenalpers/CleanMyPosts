@@ -51,11 +51,46 @@ export interface ContentErrorMessage {
 	message: string;
 }
 
+/** A question that comes back with text. Its own type, so a run can never be mistaken for one. */
+export interface ContentProbeMessage {
+	type: 'probe';
+	requestId: string;
+	payload?: string;
+	error?: string;
+}
+
 export type ContentMessage =
-	ContentLogMessage | ContentProgressMessage | ContentDoneMessage | ContentErrorMessage;
+	| ContentLogMessage
+	| ContentProgressMessage
+	| ContentDoneMessage
+	| ContentErrorMessage
+	| ContentProbeMessage;
 
 export interface CmpApi {
 	run(platform: Platform, action: XAction | YouTubeAction, paramsJson: string): void;
+	/**
+	 * Runs an action plan instead of a built-in action.
+	 *
+	 * `paramsJson` is `RunParams` with a `plan` alongside it. The plan has already been checked
+	 * against `ActionPlanSchema` in the chrome — this side takes it as given, the same way it
+	 * takes the timeouts as given.
+	 */
+	runPlan(paramsJson: string): void;
+	/**
+	 * Answers how many elements a target finds, and touches none of them.
+	 *
+	 * The dry run: it is how a plan can be judged before it is allowed to delete anything.
+	 * Reports through the same channel a run does, so the count arrives as `done`.
+	 */
+	countMatches(requestId: string, targetJson: string): void;
+	/**
+	 * Hands back a text-free skeleton of this page.
+	 *
+	 * Answers over the `probe` channel rather than `done`, because what comes back is text and
+	 * not a count. The redaction happens here, in the page: what `structure.ts` refuses never
+	 * leaves the webview at all, let alone the machine.
+	 */
+	readStructure(requestId: string): void;
 	isEmpty(platform: Platform, action: XAction | YouTubeAction): boolean;
 	getUserName(): string;
 	getLoginStatus(): string;

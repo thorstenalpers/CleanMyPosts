@@ -30,6 +30,32 @@ export const zh: Record<MessageKey, string> = {
 	'action.close': '关闭 {platform} 操作',
 	'action.open': '打开 {platform} 操作',
 
+	'assistant.controls': '助手设置',
+	'assistant.close': '关闭助手',
+	'assistant.effort': '投入',
+	'assistant.effort.low': '简短',
+	'assistant.effort.medium': '常规',
+	'assistant.effort.high': '详尽',
+	'assistant.model': '模型',
+	'assistant.model.default': '服务商默认',
+	'assistant.panel.empty': '为旁边这个页面要一个计划 —— 要删什么，以及其中一个怎么消失。',
+	'assistant.noSource.short': '没有来源',
+
+	'assistant.plan.save': '保存为操作',
+	'assistant.plan.name': '为此操作命名',
+	'assistant.plan.keep': '保存',
+	'assistant.plan.saved': '已保存 — {label} 现在在操作列表中',
+	'panel.saved': '已保存的操作',
+	'confirm.saved.description':
+		'执行 {label}，这是助手当时针对 {platform} 写的计划。此操作无法撤销。',
+	'assistant.plan.count': '先检查',
+	'assistant.plan.run': '运行一次',
+	'assistant.plan.matches': '本页有 {count} 处匹配',
+	'assistant.plan.removed': '已移除 {count} 项',
+	'assistant.plan.rejected': '不是计划 — {reason}',
+	'assistant.plan.noPlatform': '请先登录平台再在这里试用',
+	'assistant.plan.label': '助手的计划',
+
 	'group.posts': '帖子',
 	'group.replies': '回复',
 	'group.reposts': '转帖',
@@ -144,6 +170,8 @@ export const zh: Record<MessageKey, string> = {
 	'settings.assistant': '助手',
 	'settings.assistant.description':
 		'答案从哪里来。本地程序不会从本应用发送任何内容；托管的服务商是这里唯一会把数据送上网络的选项。',
+	'settings.assistant.missing':
+		'尚未配置来源，因此助手在其他地方都不显示。请选择本机的 Claude Code，或在下方保存一个服务商密钥。',
 	'settings.assistant.source': '来源',
 	'settings.assistant.off': '关闭',
 	'settings.assistant.off.description': '助手已关闭，不会出现在侧边栏中。',
@@ -175,9 +203,6 @@ export const zh: Record<MessageKey, string> = {
 	'assistant.placeholder': '为什么有 12 条帖子没被删除？',
 	'assistant.ask': '提问',
 	'assistant.asking': '提问中…',
-	'assistant.noSource':
-		'还没有配置来源。请在设置中选择一个 —— 这台电脑上的 Claude Code，或者一个服务商密钥。',
-	'assistant.openSettings': '打开设置',
 	'assistant.sendsLog':
 		'问题会连同日志和应用说明一起发送。日志中从不包含帖子内容、账号名或 Cookie。',
 	'assistant.clear': '清空',
@@ -237,6 +262,21 @@ export const zh: Record<MessageKey, string> = {
 	'settings.notifications.description': '一次运行结束时的简短提示，一秒后自动消失。',
 	'settings.autoConsent': '关闭 Cookie 横幅',
 	'settings.autoConsent.description': '自动关闭同意横幅；横幅提供拒绝按钮时优先按拒绝。',
+	'settings.actions': '已保存的操作',
+	'settings.actions.description': '助手写下、你留存的计划。每一个都是选择器，平台一变就不再有效。',
+	'settings.actions.empty': '还没有保存任何内容。向助手要一个计划，然后从那里保存。',
+	'settings.actions.made': '{platform} · {date} 保存',
+	'settings.actions.moveUp': '上移',
+	'settings.actions.moveDown': '下移',
+	'settings.actions.rename': '重命名',
+	'settings.actions.plan': '计划',
+	'overview.saved': '已保存的操作',
+	'overview.saved.description': '你留存的计划。点击一次即在其平台上执行。',
+	'settings.actions.forget': '丢弃',
+	'settings.actions.forgetAll': '全部丢弃',
+	'settings.actions.forgetAll.confirmBody':
+		'这会丢弃 {count} 个已保存的操作。无法找回 —— 它们来自的回答已经不在，页面也变了。',
+
 	'settings.reset.title': '重置',
 	'settings.reset.description': '将所有设置恢复为全新安装时的状态。',
 	'settings.reset.action': '恢复默认设置',
@@ -287,5 +327,7 @@ export const zh: Record<MessageKey, string> = {
 	'log.sortBy': '按{column}排序',
 
 	'assistant.preview.source': '代码在哪里',
+	'assistant.preview.structure': '当前页面',
+	'assistant.preview.engine': '引擎的做法',
 	'assistant.preview.patch': '补丁任务'
 };

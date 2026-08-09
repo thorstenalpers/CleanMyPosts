@@ -45,7 +45,8 @@ All three webviews are children of one window, positioned by hand in `layout_web
 **chrome webview** — the SvelteKit app, served from `build/`. It always renders the
 sidebar, plus the action panel beside it while one is open. For Overview, Settings and Log
 it takes the full window width via `site.hide`. Its width is whatever the UI reports
-through `layout.setSiteInset`; the host stores that number and nothing else.
+through `layout.setSiteInset`, along with which edge those columns are against; the host
+stores those and nothing else.
 
 **site webviews** — the embedded browsers where the user is logged in to X and YouTube,
 one per platform. The content-script IIFE is registered with

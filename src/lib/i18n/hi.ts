@@ -32,6 +32,33 @@ export const hi: Record<MessageKey, string> = {
 	'action.close': '{platform} की क्रियाएँ बंद करें',
 	'action.open': '{platform} की क्रियाएँ खोलें',
 
+	'assistant.controls': 'सहायक की सेटिंग',
+	'assistant.close': 'सहायक बंद करें',
+	'assistant.effort': 'प्रयास',
+	'assistant.effort.low': 'संक्षिप्त',
+	'assistant.effort.medium': 'सामान्य',
+	'assistant.effort.high': 'विस्तृत',
+	'assistant.model': 'मॉडल',
+	'assistant.model.default': 'प्रदाता का डिफ़ॉल्ट',
+	'assistant.panel.empty':
+		'साथ वाले पृष्ठ के लिए योजना माँगें — क्या हटाना है और उनमें से एक कैसे जाता है।',
+	'assistant.noSource.short': 'कोई स्रोत नहीं',
+
+	'assistant.plan.save': 'क्रिया के रूप में रखें',
+	'assistant.plan.name': 'इस क्रिया का नाम',
+	'assistant.plan.keep': 'रखें',
+	'assistant.plan.saved': 'सहेजा गया — {label} अब क्रियाओं में है',
+	'panel.saved': 'सहेजी गई क्रियाएँ',
+	'confirm.saved.description':
+		'{label} चलाता है — एक योजना जो सहायक ने {platform} के लिए तब लिखी थी। इसे पूर्ववत नहीं किया जा सकता।',
+	'assistant.plan.count': 'पहले जाँचें',
+	'assistant.plan.run': 'एक बार चलाएँ',
+	'assistant.plan.matches': 'इस पृष्ठ पर {count} मेल',
+	'assistant.plan.removed': '{count} हटाए गए',
+	'assistant.plan.rejected': 'यह योजना नहीं है — {reason}',
+	'assistant.plan.noPlatform': 'यहाँ आज़माने के लिए किसी प्लेटफ़ॉर्म में साइन इन करें',
+	'assistant.plan.label': 'सहायक की योजना',
+
 	'group.posts': 'पोस्ट',
 	'group.replies': 'जवाब',
 	'group.reposts': 'रीपोस्ट',
@@ -151,6 +178,8 @@ export const hi: Record<MessageKey, string> = {
 	'settings.assistant': 'सहायक',
 	'settings.assistant.description':
 		'जवाब कहाँ से आते हैं। स्थानीय प्रोग्राम इस ऐप से कुछ नहीं भेजता; होस्टेड प्रदाता ही यहाँ अकेली चीज़ है जो डेटा नेटवर्क पर भेजती है।',
+	'settings.assistant.missing':
+		'अभी कोई स्रोत सेट नहीं है, इसलिए सहायक बाकी हर जगह छिपा है। इस मशीन पर Claude Code चुनें, या नीचे कोई प्रदाता कुंजी सहेजें।',
 	'settings.assistant.source': 'स्रोत',
 	'settings.assistant.off': 'बंद',
 	'settings.assistant.off.description': 'सहायक बंद है और साइडबार में नहीं दिखता।',
@@ -184,9 +213,6 @@ export const hi: Record<MessageKey, string> = {
 	'assistant.placeholder': '12 पोस्ट क्यों नहीं हटीं?',
 	'assistant.ask': 'पूछें',
 	'assistant.asking': 'पूछा जा रहा है…',
-	'assistant.noSource':
-		'अभी कोई स्रोत तय नहीं है। सेटिंग्स में एक चुनें — इस मशीन पर Claude Code, या किसी प्रदाता की कुंजी।',
-	'assistant.openSettings': 'सेटिंग्स खोलें',
 	'assistant.sendsLog':
 		'सवाल लॉग और ऐप के विवरण के साथ भेजा जाता है। लॉग में कभी पोस्ट की सामग्री, खाता नाम या कुकी नहीं होतीं।',
 	'assistant.clear': 'खाली करें',
@@ -250,6 +276,22 @@ export const hi: Record<MessageKey, string> = {
 	'settings.autoConsent': 'कुकी बैनर हटाएँ',
 	'settings.autoConsent.description':
 		'सहमति बैनर अपने आप बंद करें, और जहाँ बैनर मना करने वाला बटन देता है, वही दबाएँ।',
+	'settings.actions': 'सहेजी गई क्रियाएँ',
+	'settings.actions.description':
+		'सहायक की लिखी योजनाएँ जो आपने रखीं। हर एक एक सेलेक्टर है, इसलिए प्लेटफ़ॉर्म बदलते ही काम करना बंद कर देती है।',
+	'settings.actions.empty': 'अभी कुछ नहीं रखा गया। सहायक से योजना माँगें और वहीं से रखें।',
+	'settings.actions.made': '{platform} · {date} को रखा',
+	'settings.actions.moveUp': 'ऊपर ले जाएँ',
+	'settings.actions.moveDown': 'नीचे ले जाएँ',
+	'settings.actions.rename': 'नाम बदलें',
+	'settings.actions.plan': 'योजना',
+	'overview.saved': 'सहेजी गई क्रियाएँ',
+	'overview.saved.description': 'आपकी रखी योजनाएँ। एक क्लिक उसे उसके प्लेटफ़ॉर्म पर चलाता है।',
+	'settings.actions.forget': 'भूलें',
+	'settings.actions.forgetAll': 'सब भूलें',
+	'settings.actions.forgetAll.confirmBody':
+		'इससे {count} सहेजी गई क्रियाएँ हट जाएँगी। इन्हें वापस नहीं लाया जा सकता — जिस उत्तर से वे आई थीं वह जा चुका है और पृष्ठ बदल चुका है।',
+
 	'settings.reset.title': 'रीसेट',
 	'settings.reset.description': 'सभी सेटिंग्स को नई स्थापना जैसी स्थिति में लौटाता है।',
 	'settings.reset.action': 'डिफ़ॉल्ट पर रीसेट करें',
@@ -300,5 +342,7 @@ export const hi: Record<MessageKey, string> = {
 	'log.sortBy': '{column} से क्रम लगाएँ',
 
 	'assistant.preview.source': 'कोड कहाँ है',
+	'assistant.preview.structure': 'अभी का पृष्ठ',
+	'assistant.preview.engine': 'इंजन यह कैसे करता है',
 	'assistant.preview.patch': 'पैच का काम'
 };

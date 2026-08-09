@@ -29,7 +29,9 @@ const host = vi.hoisted(() => ({
 	calls: [] as { method: string; params: unknown }[],
 	emit: undefined as undefined | ((event: unknown) => void),
 	/** Merged into whatever `settings.get` answers, so a test can start from a switch that is off. */
-	settingsPatch: {}
+	settingsPatch: {},
+	/** A machine with neither the binary nor a key — the state a fresh install is in. */
+	noAssistantSource: false
 }));
 
 vi.mock('$lib/bridge/mock', async (importOriginal) => {
@@ -48,9 +50,21 @@ vi.mock('$lib/bridge/mock', async (importOriginal) => {
 					(params: unknown) => {
 						host.calls.push({ method, params });
 						const result = (handler as (p: unknown) => unknown)(params);
-						return method === 'settings.get'
-							? { ...(result as object), ...host.settingsPatch }
-							: result;
+						if (method === 'settings.get') return { ...(result as object), ...host.settingsPatch };
+						if (method === 'assistant.getSources' && host.noAssistantSource)
+							return {
+								local: { found: false, path: null, version: null },
+								providers: [
+									{
+										id: 'gemini',
+										label: 'Google AI',
+										model: '',
+										freeKeyUrl: '',
+										hasKey: false
+									}
+								]
+							};
+						return result;
 					}
 				])
 			)
@@ -81,6 +95,9 @@ function hideYouTube() {
 			assistantSource: 'claude-code',
 			assistantCliPath: '',
 			engineScript: '',
+			assistantModel: '',
+			assistantEffort: 'medium',
+			customActions: [],
 			timeouts: {
 				waitAfterDelete: 500,
 				waitBetweenRetryDeleteAttempts: 500,
@@ -320,5 +337,182 @@ describe('app layout', () => {
 		await waitFor(() =>
 			expect(host.calls).toContainEqual({ method: 'site.hide', params: { hide: true } })
 		);
+	});
+});
+
+/**
+ * The panel lives in the column the app owns rather than floating over the platform page.
+ * Anything floating there would be painted behind a webview that is laid on top of this one —
+ * the same reason every dialog in this app pushes the platform off screen first.
+ */
+describe('the assistant panel', () => {
+	// Its own reset: this block sits outside the one above, and the width a previous test left
+	// behind would fold the sidebar and change the number under test.
+	beforeEach(() => {
+		host.calls.length = 0;
+		host.settingsPatch = {};
+		url.pathname = '/';
+		window.innerWidth = 1200;
+		host.noAssistantSource = false;
+	});
+
+	// Hidden rather than shown and refusing: without a source the assistant cannot answer, and
+	// the app deletes without it. The settings are the one place that says a key is missing.
+	it('is nowhere in the app while nothing can answer', async () => {
+		host.noAssistantSource = true;
+		url.pathname = '/x';
+		await renderLayout();
+
+		await waitFor(() =>
+			expect(host.calls.some((call) => call.method === 'assistant.getSources')).toBe(true)
+		);
+		expect(screen.queryByRole('button', { name: 'Assistant' })).not.toBeInTheDocument();
+		expect(screen.queryByRole('link', { name: 'Assistant' })).not.toBeInTheDocument();
+	});
+
+	// Reachability follows the sidebar, so the page a hidden entry led to sends the user home
+	// instead of standing there empty.
+	it('sends the assistant page home while nothing can answer', async () => {
+		host.noAssistantSource = true;
+		url.pathname = '/assistant';
+		await renderLayout();
+
+		await waitFor(() => expect(goto).toHaveBeenCalledWith('/'));
+	});
+
+	it('opens beside the platform from the header, and closes on its own button', async () => {
+		url.pathname = '/x';
+		await renderLayout();
+
+		expect(screen.queryByRole('complementary', { name: /assistant/i })).not.toBeInTheDocument();
+
+		await fireEvent.click(screen.getByRole('button', { name: 'Assistant', pressed: false }));
+
+		const panel = await screen.findByRole('complementary', { name: /assistant/i });
+		expect(panel).toBeInTheDocument();
+		// Beside, not instead of: the platform's own actions are still there next to it.
+		expect(screen.getByRole('complementary', { name: 'X actions' })).toBeInTheDocument();
+
+		await fireEvent.click(screen.getByRole('button', { name: /close the assistant/i }));
+
+		await waitFor(() =>
+			expect(screen.queryByRole('complementary', { name: /assistant/i })).not.toBeInTheDocument()
+		);
+	});
+
+	// The host has to shorten the site webview by exactly what the app is covering, or the page
+	// renders under a column it cannot see.
+	it('tells the host that the site starts further in while it is open', async () => {
+		url.pathname = '/x';
+		await renderLayout();
+		await waitFor(() => expect(host.calls.some((call) => call.method === 'layout.setSiteInset')));
+		host.calls.length = 0;
+
+		await fireEvent.click(screen.getByRole('button', { name: 'Assistant', pressed: false }));
+
+		await waitFor(() => {
+			const inset = host.calls
+				.filter((call) => call.method === 'layout.setSiteInset')
+				.map((call) => call.params as { left: number })
+				.pop();
+			expect(inset?.left).toBe(240 + 224 + 320);
+		});
+	});
+
+	// Below the width where the action column already steps aside there is no room for a second
+	// one either, so it folds with it rather than squeezing the page to nothing.
+	it('folds away on a window too narrow to hold it', async () => {
+		url.pathname = '/x';
+		await renderLayout();
+		await fireEvent.click(screen.getByRole('button', { name: 'Assistant', pressed: false }));
+		await screen.findByRole('complementary', { name: /assistant/i });
+
+		await resizeTo(700);
+
+		await waitFor(() =>
+			expect(screen.queryByRole('complementary', { name: /assistant/i })).not.toBeInTheDocument()
+		);
+	});
+});
+
+/**
+ * Arabic mirrors the whole shell with one `dir` on `<html>`, which puts every column the app
+ * owns against the other edge. The host places the platform webview in physical pixels and
+ * cannot see that, so it has to be told. Getting it wrong does not look like a layout slip:
+ * the platform covers the sidebar and the app appears to have lost its menu — which is only
+ * visible on X and YouTube, because everywhere else the platform is hidden.
+ */
+describe('a mirrored shell', () => {
+	// Its own reset: this block sits outside the one above, and the width a previous test left
+	// behind would fold the sidebar and change the number under test.
+	beforeEach(() => {
+		host.calls.length = 0;
+		host.settingsPatch = {};
+		url.pathname = '/';
+		window.innerWidth = 1200;
+	});
+
+	function speak(language: string) {
+		host.emit?.({
+			event: 'settingsChanged',
+			payload: {
+				theme: 'Default',
+				language,
+				showIntro: true,
+				showLogs: true,
+				showX: true,
+				showYouTube: true,
+				confirmDeletion: true,
+				notifications: true,
+				debugLogging: false,
+				autoConsent: true,
+				persistSession: true,
+				checkUpdatesOnStart: true,
+				themePreset: 'default',
+				showAssistant: true,
+				assistantSource: 'claude-code',
+				assistantCliPath: '',
+				engineScript: '',
+				assistantModel: '',
+				assistantEffort: 'medium',
+				customActions: [],
+				timeouts: {
+					waitAfterDelete: 500,
+					waitBetweenRetryDeleteAttempts: 500,
+					waitAfterDocumentLoad: 3000
+				}
+			}
+		});
+	}
+
+	function lastInset() {
+		return host.calls
+			.filter((call) => call.method === 'layout.setSiteInset')
+			.map((call) => call.params as { left: number; rtl: boolean })
+			.pop();
+	}
+
+	it('tells the host which side its columns are on', async () => {
+		url.pathname = '/x';
+		await renderLayout();
+		await waitFor(() => expect(lastInset()).toBeDefined());
+		expect(lastInset()?.rtl).toBe(false);
+
+		speak('ar');
+
+		await waitFor(() => expect(lastInset()?.rtl).toBe(true));
+		// The width is the same either way — it is the edge that moved, not the columns.
+		expect(lastInset()?.left).toBe(240 + 224);
+	});
+
+	it('says so again when the language goes back', async () => {
+		url.pathname = '/x';
+		await renderLayout();
+		speak('ar');
+		await waitFor(() => expect(lastInset()?.rtl).toBe(true));
+
+		speak('de');
+
+		await waitFor(() => expect(lastInset()?.rtl).toBe(false));
 	});
 });

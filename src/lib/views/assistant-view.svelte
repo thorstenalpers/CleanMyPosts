@@ -1,23 +1,25 @@
 <script lang="ts">
 	import type { BridgeClient } from '$lib/bridge/client';
 	import type { LogStore } from '$lib/stores/log.svelte';
-	import type { AppInfo, AssistantSources } from '$lib/bridge/contract';
+	import type { SiteLoginStore } from '$lib/stores/site-login.svelte';
+	import type { AppInfo, AssistantSources, Platform } from '$lib/bridge/contract';
 	import {
 		buildPrompt,
 		describeLog,
 		promptSections,
 		toIssueUrl,
+		type PromptContext,
 		type PromptMode
 	} from '$lib/assistant-context';
 	import type { SettingsStore } from '$lib/stores/settings.svelte';
-	import { notify } from '$lib/notify';
+	import type { AppContext } from '$lib/app-context';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { Card, CardContent } from '$lib/components/ui/card';
+	import PlanActions from '$lib/components/plan-actions.svelte';
 	import { i18n, t } from '$lib/i18n/index.svelte';
 	import { cn } from '$lib/utils';
 	import WrenchIcon from '@lucide/svelte/icons/wrench';
-	import SaveIcon from '@lucide/svelte/icons/save';
 	import XIcon from '@lucide/svelte/icons/x';
 	import SendIcon from '@lucide/svelte/icons/send';
 	import ShieldIcon from '@lucide/svelte/icons/shield';
@@ -27,17 +29,19 @@
 	import EyeOffIcon from '@lucide/svelte/icons/eye-off';
 	import ExternalLinkIcon from '@lucide/svelte/icons/external-link';
 	import BugIcon from '@lucide/svelte/icons/bug';
-	import TriangleAlertIcon from '@lucide/svelte/icons/triangle-alert';
 	import TerminalIcon from '@lucide/svelte/icons/terminal';
 
 	interface Props {
 		bridge: BridgeClient;
 		logStore: LogStore;
 		settingsStore: SettingsStore;
-		onOpenSettings: () => void;
+		/** Which platform is signed in, which is the one a plan can be tried against. */
+		loginStore: SiteLoginStore;
+		/** Brings a platform on screen and runs a plan on it; the layout owns both halves. */
+		runPlanOn: AppContext['runPlanOn'];
 	}
 
-	let { bridge, logStore, settingsStore, onOpenSettings }: Props = $props();
+	let { bridge, logStore, settingsStore, loginStore, runPlanOn }: Props = $props();
 
 	/** Where a report ends up. The same repository the updater already points the app at. */
 	const REPO_URL = 'https://github.com/thorstenalpers/CleanMyPosts';
@@ -70,13 +74,28 @@
 
 	/**
 	 * Whether anything can answer at all: the local binary has to be on disk, and a hosted
-	 * provider has to have a key. Saying so up front beats a failed round-trip.
+	 * provider has to have a key. The layout hides this page entirely while neither is true,
+	 * so this only covers the moment before the first read comes back.
 	 */
 	const ready = $derived(
 		sources
 			? sources.local.found || sources.providers.some((provider) => provider.hasKey)
 			: undefined
 	);
+
+	/**
+	 * What every request is built from. One function so the preview and the request cannot
+	 * drift: a preview that only resembles what is sent is worse than none.
+	 */
+	function promptContext(): PromptContext {
+		return {
+			language: languageName(),
+			mode,
+			appVersion: appInfo?.version ?? '',
+			platform: openPlatform,
+			structure
+		};
+	}
 
 	/** Named in English because the prompt is. */
 	function languageName(): string {
@@ -86,7 +105,7 @@
 	// The preview is assembled from the same functions `buildPrompt` calls, so it cannot drift
 	// from what is actually sent — a preview that only resembles the request is worse than none.
 	const preview = $derived([
-		...promptSections(languageName(), mode, appInfo?.version ?? '').map((section) => ({
+		...promptSections(promptContext()).map((section) => ({
 			title: t(section.titleKey),
 			body: section.body
 		})),
@@ -125,22 +144,35 @@
 	function openInCli(): void {
 		void bridge
 			.call('assistant.openInCli', {
-				prompt: buildPrompt(
-					question,
-					logStore.entries,
-					languageName(),
-					mode,
-					appInfo?.version ?? ''
-				)
+				prompt: buildPrompt(question, logStore.entries, promptContext())
 			})
 			.catch((cause: unknown) => {
 				error = cause instanceof Error ? cause.message : String(cause);
 			});
 	}
 
-	function saveAsScript(): void {
-		void settingsStore.update({ ...settingsStore.settings, engineScript: answer.trim() });
-		notify(settingsStore, 'success', t('assistant.patch.applied'));
+	/** Which platform a plan would be tried on: the one whose page is up behind this panel. */
+	const openPlatform = $derived<Platform | undefined>(
+		loginStore.loggedIn.x ? 'x' : loginStore.loggedIn.youtube ? 'youtube' : undefined
+	);
+
+	/**
+	 * The page's own account of itself, as it will be sent.
+	 *
+	 * Undefined until a request needs it. Failing to read it is not an error worth stopping
+	 * for — a question about the log does not need the page, and a platform that is not up
+	 * cannot answer — so the request simply goes without it.
+	 */
+	let structure = $state<string | undefined>(undefined);
+
+	async function readStructure(): Promise<void> {
+		if (!openPlatform) return;
+		try {
+			const result = await bridge.call('site.readStructure', { platform: openPlatform });
+			structure = result.structure;
+		} catch {
+			structure = undefined;
+		}
 	}
 
 	async function ask(): Promise<void> {
@@ -149,14 +181,11 @@
 		error = '';
 		answer = '';
 		try {
+			// Read at the moment of asking, not kept live: the page moves while someone types,
+			// and what the answer is about has to be what was actually sent.
+			if (mode === 'patch' && openPlatform) await readStructure();
 			const result = await bridge.call('assistant.ask', {
-				prompt: buildPrompt(
-					question,
-					logStore.entries,
-					languageName(),
-					mode,
-					appInfo?.version ?? ''
-				)
+				prompt: buildPrompt(question, logStore.entries, promptContext())
 			});
 			answer = result.text;
 		} catch (cause) {
@@ -202,20 +231,6 @@
 		{/if}
 
 		<p class="text-xs text-muted-foreground">{t('assistant.subtitle')}</p>
-
-		<!-- An error, not a note: with no source the assistant cannot answer at all, and the
-		     page below it is a form that will refuse every submission. -->
-		{#if ready === false}
-			<Card class="border-destructive/40 bg-destructive/5">
-				<CardContent class="flex flex-wrap items-center gap-3 py-4">
-					<TriangleAlertIcon class="size-4 shrink-0 text-destructive" />
-					<p class="min-w-0 flex-1 text-sm text-destructive">{t('assistant.noSource')}</p>
-					<Button variant="outline" size="sm" class="h-8" onclick={onOpenSettings}>
-						{t('assistant.openSettings')}
-					</Button>
-				</CardContent>
-			</Card>
-		{/if}
 
 		<form
 			class="flex gap-2"
@@ -314,17 +329,18 @@
 			<Card>
 				<CardContent class="py-4">
 					<p class="text-sm whitespace-pre-wrap">{answer}</p>
+
+					{#if mode === 'patch'}
+						<div class="mt-3 flex flex-col gap-2">
+							<PlanActions {bridge} {settingsStore} {answer} platform={openPlatform} {runPlanOn} />
+						</div>
+					{/if}
+
 					<div class="mt-3 flex flex-wrap gap-2">
 						{#if sources?.local.found}
 							<Button variant="outline" size="sm" class="h-8" onclick={openInCli}>
 								<TerminalIcon />
 								{t('assistant.openInCli')}
-							</Button>
-						{/if}
-						{#if mode === 'patch'}
-							<Button size="sm" class="h-8" onclick={saveAsScript}>
-								<SaveIcon />
-								{t('assistant.patch.apply')}
 							</Button>
 						{/if}
 						{#if mode === 'report'}

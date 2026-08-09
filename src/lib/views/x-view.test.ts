@@ -1,12 +1,30 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor, within } from '@testing-library/svelte';
 import XView from './x-view.svelte';
 import { SettingsStore } from '$lib/stores/settings.svelte';
 import { SiteLoginStore } from '$lib/stores/site-login.svelte';
 import { ActionRunner } from '$lib/stores/action-runner.svelte';
 import { createMockHost, type MockHandlers } from '$lib/bridge/mock';
+import { i18n, t } from '$lib/i18n/index.svelte';
 
-function setup(confirmDeletion: boolean, overrides: MockHandlers = {}) {
+const SAVED_ACTION = {
+	id: 'saved-1',
+	label: 'Bookmarks',
+	platform: 'x' as const,
+	place: 'panel' as const,
+	plan: {
+		kind: 'loop' as const,
+		target: { selector: '[data-testid="bookmark"]' },
+		steps: [{ step: 'click' as const, target: { selector: '[data-testid="bookmark"]' } }]
+	},
+	createdAt: '2026-08-08T10:00:00+02:00'
+};
+
+function setup(
+	confirmDeletion: boolean,
+	overrides: MockHandlers = {},
+	customActions: (typeof SAVED_ACTION)[] = []
+) {
 	const navigate = vi.fn(() => ({ ok: true }));
 	const runAction = vi.fn(() => ({ deletedCount: 3 }));
 	const hide = vi.fn();
@@ -30,6 +48,9 @@ function setup(confirmDeletion: boolean, overrides: MockHandlers = {}) {
 			assistantSource: 'claude-code',
 			assistantCliPath: '',
 			engineScript: '',
+			assistantModel: '',
+			assistantEffort: 'medium' as const,
+			customActions,
 			timeouts: { waitAfterDelete: 1, waitBetweenRetryDeleteAttempts: 1, waitAfterDocumentLoad: 1 }
 		}),
 		'site.navigate': navigate,
@@ -54,6 +75,44 @@ async function loadAndLogin(settingsStore: SettingsStore, emit: ReturnType<typeo
 }
 
 describe('XView', () => {
+	afterEach(() => {
+		i18n.setting = 'System';
+		i18n.applyToDocument();
+	});
+
+	// The app's language and the platform's are two unrelated settings, and the app never tells
+	// the platform which one it is in — the engine reads the page it finds. So an Arabic app
+	// deleting from a Spanish X sends exactly what an English one would; only what the user
+	// reads is mirrored.
+	it('sends the same run whatever language the app is in', async () => {
+		const { client, emit, settingsStore, loginStore, runner, runAction } = setup(false);
+		await loadAndLogin(settingsStore, emit);
+		i18n.setting = 'ar';
+		i18n.applyToDocument();
+
+		render(XView, {
+			bridge: client,
+			settingsStore,
+			loginStore,
+			runner,
+			open: true,
+			startDeleteAll: false,
+			onDeleteAllStarted: vi.fn(),
+			onDialogOpenChange: vi.fn(),
+			onClose: () => {}
+		});
+
+		expect(document.documentElement.dir).toBe('rtl');
+		await fireEvent.click(
+			screen.getByRole('button', { name: t('action.delete', { label: t('group.posts') }) })
+		);
+
+		await waitFor(() => expect(runAction).toHaveBeenCalled());
+		const [params] = runAction.mock.calls[0] as unknown as [Record<string, unknown>];
+		expect(Object.keys(params).sort()).toEqual(['action', 'platform', 'requestId', 'timeouts']);
+		expect(params.action).toBe('deletePosts');
+	});
+
 	it('navigates when a Show button is clicked', async () => {
 		const { client, emit, settingsStore, loginStore, runner, navigate } = setup(true);
 		await loadAndLogin(settingsStore, emit);
@@ -266,5 +325,71 @@ describe('XView', () => {
 			)
 		);
 		expect(screen.queryByText('Delete all posts?')).not.toBeInTheDocument();
+	});
+});
+
+/**
+ * A plan the assistant wrote becomes a row here, which is the whole point of keeping one: it
+ * is run months later by somebody who is not going to read the JSON again.
+ */
+describe('a saved action in the panel', () => {
+	it('is offered beside the built-in lists and runs the plan it holds', async () => {
+		const runPlan = vi.fn((params: unknown) => {
+			planned.push(params);
+			return { deletedCount: 4 };
+		});
+		const planned: unknown[] = [];
+		const { settingsStore, loginStore, runner, emit, client } = setup(
+			false,
+			{ 'site.runPlan': runPlan },
+			[SAVED_ACTION]
+		);
+		await loadAndLogin(settingsStore, emit);
+		render(XView, {
+			bridge: client,
+			settingsStore,
+			loginStore,
+			runner,
+			open: true,
+			startDeleteAll: false,
+			onDeleteAllStarted: () => {},
+			onDialogOpenChange: () => {},
+			onClose: () => {}
+		});
+
+		const row = await screen.findByRole('button', { name: /bookmarks/i });
+		await fireEvent.click(row);
+
+		await waitFor(() => expect(runPlan).toHaveBeenCalled());
+		expect(planned[0]).toMatchObject({ platform: 'x', plan: SAVED_ACTION.plan });
+	});
+
+	// Deliberately outside "Delete everything": a saved plan is the user's own, it can go stale
+	// on its own schedule, and sweeping it into a run that empties the account is not something
+	// anyone asked for.
+	it('is left out of the run that empties everything', async () => {
+		const runPlan = vi.fn(() => ({ deletedCount: 0 }));
+		const { settingsStore, loginStore, runner, emit, client } = setup(
+			false,
+			{ 'site.runPlan': runPlan },
+			[SAVED_ACTION]
+		);
+		await loadAndLogin(settingsStore, emit);
+		render(XView, {
+			bridge: client,
+			settingsStore,
+			loginStore,
+			runner,
+			open: true,
+			startDeleteAll: false,
+			onDeleteAllStarted: () => {},
+			onDialogOpenChange: () => {},
+			onClose: () => {}
+		});
+
+		await fireEvent.click(await screen.findByRole('button', { name: /delete everything/i }));
+
+		await waitFor(() => expect(screen.queryByRole('button', { name: /bookmarks/i })).toBeTruthy());
+		expect(runPlan).not.toHaveBeenCalled();
 	});
 });

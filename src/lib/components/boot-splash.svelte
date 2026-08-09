@@ -7,7 +7,7 @@
 		minimumMs?: number;
 	}
 
-	let { minimumMs = 3000 }: Props = $props();
+	let { minimumMs = 2000 }: Props = $props();
 
 	/** In step with `duration-500` below. */
 	const FADE_MS = 500;

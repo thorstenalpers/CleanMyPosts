@@ -10,7 +10,7 @@
 		type Language
 	} from '$lib/bridge/contract';
 	import { THEME_PRESETS } from '$lib/theme/preset';
-	import { LANGUAGES, t } from '$lib/i18n/index.svelte';
+	import { LANGUAGES, i18n, t } from '$lib/i18n/index.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { Switch } from '$lib/components/ui/switch';
@@ -36,6 +36,11 @@
 	import MoonIcon from '@lucide/svelte/icons/moon';
 	import LaptopIcon from '@lucide/svelte/icons/laptop';
 	import SparklesIcon from '@lucide/svelte/icons/sparkles';
+	import TriangleAlertIcon from '@lucide/svelte/icons/triangle-alert';
+	import Trash2Icon from '@lucide/svelte/icons/trash-2';
+	import ChevronUpIcon from '@lucide/svelte/icons/chevron-up';
+	import PencilIcon from '@lucide/svelte/icons/pencil';
+	import EyeIcon from '@lucide/svelte/icons/eye';
 	import KeyRoundIcon from '@lucide/svelte/icons/key-round';
 	import ChevronDownIcon from '@lucide/svelte/icons/chevron-down';
 	import CheckIcon from '@lucide/svelte/icons/check';
@@ -69,6 +74,11 @@
 	const usingLocal = $derived(settingsStore.settings.assistantSource === LOCAL_ASSISTANT_SOURCE);
 	const activeProvider = $derived(
 		sources?.providers.find((entry) => entry.id === settingsStore.settings.assistantSource)
+	);
+
+	/** Whether anything can answer. Below the assistant is hidden app-wide until it can. */
+	const assistantReady = $derived(
+		sources ? sources.local.found || sources.providers.some((entry) => entry.hasKey) : true
 	);
 
 	/** Re-read after every write: `hasKey` is the only thing the store will say about a key. */
@@ -131,6 +141,67 @@
 	}
 
 	let resetOpen = $state(false);
+	let forgetAllOpen = $state(false);
+
+	/**
+	 * In the order they are stored, because that order is now the user's.
+	 *
+	 * It used to be sorted newest-first here, which quietly made the arrows below a lie: the
+	 * list is what every other surface renders from, so moving a row has to move it there too.
+	 */
+	const savedActions = $derived(settingsStore.settings.customActions);
+
+	/** Which row is open for reading, and which is being renamed. `undefined` for neither. */
+	let openAction = $state<string | undefined>(undefined);
+	let renaming = $state<string | undefined>(undefined);
+	let draftName = $state('');
+
+	/** Moves one row past its neighbour. The ends simply do not move. */
+	function move(id: string, by: -1 | 1): void {
+		const actions = [...settingsStore.settings.customActions];
+		const from = actions.findIndex((action) => action.id === id);
+		const to = from + by;
+		if (from === -1 || to < 0 || to >= actions.length) return;
+		const [moved] = actions.splice(from, 1);
+		if (moved) actions.splice(to, 0, moved);
+		void commit({ customActions: actions });
+	}
+
+	function startRename(id: string, current: string): void {
+		renaming = id;
+		draftName = current;
+	}
+
+	function applyRename(): void {
+		const id = renaming;
+		const label = draftName.trim().slice(0, 60);
+		renaming = undefined;
+		if (!id || label === '') return;
+		void commit({
+			customActions: settingsStore.settings.customActions.map((action) =>
+				action.id === id ? { ...action, label } : action
+			)
+		});
+	}
+
+	/** The day only. A plan is stale or it is not; the minute it was kept decides nothing. */
+	function madeOn(iso: string): string {
+		const date = new Date(iso);
+		return Number.isNaN(date.getTime())
+			? iso
+			: date.toLocaleDateString(i18n.locale, { year: 'numeric', month: 'short', day: 'numeric' });
+	}
+
+	function forget(id: string): void {
+		void commit({
+			customActions: settingsStore.settings.customActions.filter((action) => action.id !== id)
+		});
+	}
+
+	function forgetAll(): void {
+		void commit({ customActions: [] });
+		forgetAllOpen = false;
+	}
 
 	/**
 	 * Hands the whole file back to its defaults.
@@ -383,6 +454,19 @@
 				<CardDescription>{t('settings.assistant.description')}</CardDescription>
 			</CardHeader>
 			<CardContent class="divide-y divide-border/60">
+				<!-- The one place a missing source is mentioned. Everywhere else the assistant is
+				     simply not there: the app deletes without it, and an entry leading to a page
+				     that can only say "this does not work" is worse than no entry. -->
+				{#if settingsStore.settings.showAssistant && sources && !assistantReady}
+					<div
+						class="mb-3 flex items-start gap-2 rounded-md border border-amber-500/40 bg-amber-500/5 px-2.5 py-2"
+					>
+						<TriangleAlertIcon class="mt-0.5 size-3.5 shrink-0 text-amber-600" />
+						<p class="min-w-0 flex-1 text-xs text-muted-foreground">
+							{t('settings.assistant.missing')}
+						</p>
+					</div>
+				{/if}
 				<SettingRow
 					label={t('settings.assistant.source')}
 					description={!settingsStore.settings.showAssistant
@@ -561,6 +645,125 @@
 			</CardContent>
 		</Card>
 
+		<!-- Its own card rather than a row under Automation: these accumulate, and the thing a
+		     person comes here to do is get rid of one, which needs room for a list. -->
+		<Card>
+			<CardHeader>
+				{@render cardTitle(t('settings.actions'), SparklesIcon)}
+				<CardDescription>{t('settings.actions.description')}</CardDescription>
+			</CardHeader>
+			<CardContent class="flex flex-col gap-2">
+				{#if savedActions.length === 0}
+					<p class="text-xs text-muted-foreground">{t('settings.actions.empty')}</p>
+				{:else}
+					{#each savedActions as action, index (action.id)}
+						<div class="flex flex-col gap-1.5 rounded-md border border-border/60 px-2.5 py-1.5">
+							<div class="flex items-center gap-1">
+								<!-- Order is the user's, and it is the order every other surface renders
+								     from: the sidebar, the panel and the overview all read this list. -->
+								<div class="flex shrink-0 flex-col">
+									<button
+										type="button"
+										aria-label={t('settings.actions.moveUp')}
+										disabled={index === 0}
+										onclick={() => move(action.id, -1)}
+										class="flex h-3.5 w-5 cursor-pointer items-center justify-center rounded text-muted-foreground hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none disabled:pointer-events-none disabled:opacity-30"
+									>
+										<ChevronUpIcon class="size-3" />
+									</button>
+									<button
+										type="button"
+										aria-label={t('settings.actions.moveDown')}
+										disabled={index === savedActions.length - 1}
+										onclick={() => move(action.id, 1)}
+										class="flex h-3.5 w-5 cursor-pointer items-center justify-center rounded text-muted-foreground hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none disabled:pointer-events-none disabled:opacity-30"
+									>
+										<ChevronDownIcon class="size-3" />
+									</button>
+								</div>
+
+								<div class="min-w-0 flex-1">
+									{#if renaming === action.id}
+										<form
+											onsubmit={(event: SubmitEvent) => {
+												event.preventDefault();
+												applyRename();
+											}}
+										>
+											<Input
+												class="h-7 text-[13px]"
+												aria-label={t('settings.actions.rename')}
+												bind:value={draftName}
+												autofocus
+												onblur={applyRename}
+											/>
+										</form>
+									{:else}
+										<p class="truncate text-[13px]">{action.label}</p>
+										<!-- The day it was made, because that is what decides whether it still
+										     works: a plan is a selector, and the platform has moved since. -->
+										<p class="text-xs text-muted-foreground">
+											{t('settings.actions.made', {
+												platform: action.platform === 'x' ? 'X' : 'YouTube',
+												date: madeOn(action.createdAt)
+											})}
+										</p>
+									{/if}
+								</div>
+
+								<Button
+									variant="ghost"
+									size="sm"
+									class="h-7 shrink-0 px-2 text-xs"
+									aria-expanded={openAction === action.id}
+									onclick={() => (openAction = openAction === action.id ? undefined : action.id)}
+								>
+									<EyeIcon />
+									{t('settings.actions.plan')}
+								</Button>
+								<Button
+									variant="ghost"
+									size="sm"
+									class="h-7 shrink-0 px-2 text-xs"
+									onclick={() => startRename(action.id, action.label)}
+								>
+									<PencilIcon />
+									{t('settings.actions.rename')}
+								</Button>
+								<Button
+									variant="ghost"
+									size="sm"
+									class="h-7 shrink-0 px-2 text-xs"
+									onclick={() => forget(action.id)}
+								>
+									<Trash2Icon />
+									{t('settings.actions.forget')}
+								</Button>
+							</div>
+
+							<!-- Readable before it is trusted. It is a handful of steps, and the whole
+							     case for a plan over a script is that a person can check it. -->
+							{#if openAction === action.id}
+								<pre
+									class="max-h-56 overflow-auto rounded-md bg-muted p-2.5 text-[11px] leading-relaxed whitespace-pre-wrap">{JSON.stringify(
+										action.plan,
+										null,
+										2
+									)}</pre>
+							{/if}
+						</div>
+					{/each}
+
+					<div>
+						<Button variant="outline" size="sm" class="h-8" onclick={() => (forgetAllOpen = true)}>
+							<Trash2Icon />
+							{t('settings.actions.forgetAll')}
+						</Button>
+					</div>
+				{/if}
+			</CardContent>
+		</Card>
+
 		<Card>
 			<CardHeader>
 				{@render cardTitle(t('settings.reset.title'), RotateCcwIcon)}
@@ -583,6 +786,18 @@
 	confirmLabel={t('settings.reset.action')}
 	cancelLabel={t('confirm.cancel')}
 	onConfirm={resetAll}
+/>
+
+<!-- Asked for, because there is no getting a plan back: the answer it came from is long gone
+     and the page it was written against has moved on. Forgetting one is not worth a dialog;
+     forgetting the lot is. -->
+<ConfirmDialog
+	bind:open={forgetAllOpen}
+	title={t('settings.actions.forgetAll')}
+	description={t('settings.actions.forgetAll.confirmBody', { count: savedActions.length })}
+	confirmLabel={t('settings.actions.forgetAll')}
+	cancelLabel={t('confirm.cancel')}
+	onConfirm={forgetAll}
 />
 
 <EngineScriptDialog

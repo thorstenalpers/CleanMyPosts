@@ -32,6 +32,33 @@ export const de: Record<MessageKey, string> = {
 	'action.close': 'Aktionen für {platform} schließen',
 	'action.open': 'Aktionen für {platform} öffnen',
 
+	'assistant.controls': 'Einstellungen des Assistenten',
+	'assistant.close': 'Assistent schließen',
+	'assistant.effort': 'Aufwand',
+	'assistant.effort.low': 'Knapp',
+	'assistant.effort.medium': 'Normal',
+	'assistant.effort.high': 'Gründlich',
+	'assistant.model': 'Modell',
+	'assistant.model.default': 'Vorgabe des Anbieters',
+	'assistant.panel.empty':
+		'Frag nach einem Plan für die Seite daneben — was weg soll und wie eines davon verschwindet.',
+	'assistant.noSource.short': 'Keine Quelle',
+
+	'assistant.plan.save': 'Als Aktion behalten',
+	'assistant.plan.name': 'Name für diese Aktion',
+	'assistant.plan.keep': 'Behalten',
+	'assistant.plan.saved': 'Gespeichert — {label} steht jetzt bei den Aktionen',
+	'panel.saved': 'Gespeicherte Aktionen',
+	'confirm.saved.description':
+		'Führt {label} aus — ein Plan, den der Assistent gegen {platform} geschrieben hat, so wie die Seite damals aussah. Das lässt sich nicht rückgängig machen.',
+	'assistant.plan.count': 'Erst prüfen',
+	'assistant.plan.run': 'Einmal ausführen',
+	'assistant.plan.matches': '{count} Treffer auf dieser Seite',
+	'assistant.plan.removed': '{count} entfernt',
+	'assistant.plan.rejected': 'Kein Plan — {reason}',
+	'assistant.plan.noPlatform': 'Melde dich bei einer Plattform an, um das hier zu probieren',
+	'assistant.plan.label': 'Plan des Assistenten',
+
 	'group.posts': 'Beiträge',
 	'group.replies': 'Antworten',
 	'group.reposts': 'Reposts',
@@ -154,6 +181,8 @@ export const de: Record<MessageKey, string> = {
 	'settings.assistant': 'Assistent',
 	'settings.assistant.description':
 		'Woher Antworten kommen. Das lokale Programm sendet nichts aus dieser App; ein gehosteter Anbieter ist das Einzige hier, das Daten ins Netz gibt.',
+	'settings.assistant.missing':
+		'Es ist noch keine Quelle eingerichtet, deshalb ist der Assistent überall sonst ausgeblendet. Wähle Claude Code auf diesem Rechner, oder hinterlege unten einen Anbieter-Key.',
 	'settings.assistant.source': 'Quelle',
 	'settings.assistant.off': 'Aus',
 	'settings.assistant.off.description':
@@ -190,9 +219,6 @@ export const de: Record<MessageKey, string> = {
 	'assistant.placeholder': 'Warum wurden 12 Beiträge nicht gelöscht?',
 	'assistant.ask': 'Fragen',
 	'assistant.asking': 'Wird gefragt…',
-	'assistant.noSource':
-		'Es ist noch keine Quelle eingerichtet. Wähle eine in den Einstellungen — Claude Code auf diesem Rechner oder einen Anbieterschlüssel.',
-	'assistant.openSettings': 'Einstellungen öffnen',
 	'assistant.sendsLog':
 		'Die Frage geht zusammen mit dem Protokoll und einer Beschreibung der App raus. Das Protokoll enthält nie Beitragsinhalte, Kontonamen oder Cookies.',
 	'assistant.clear': 'Leeren',
@@ -258,6 +284,23 @@ export const de: Record<MessageKey, string> = {
 	'settings.autoConsent': 'Cookie-Banner wegklicken',
 	'settings.autoConsent.description':
 		'Zustimmungsbanner automatisch schließen, und zwar über den ablehnenden Knopf, wo das Banner einen anbietet.',
+	'settings.actions': 'Gespeicherte Aktionen',
+	'settings.actions.description':
+		'Pläne, die der Assistent geschrieben hat und die du behalten hast. Jeder ist ein Selektor und hört auf zu funktionieren, wenn die Plattform sich bewegt.',
+	'settings.actions.empty':
+		'Noch nichts behalten. Frag den Assistenten nach einem Plan und behalte ihn dort.',
+	'settings.actions.made': '{platform} · behalten am {date}',
+	'settings.actions.moveUp': 'Nach oben',
+	'settings.actions.moveDown': 'Nach unten',
+	'settings.actions.rename': 'Umbenennen',
+	'settings.actions.plan': 'Plan',
+	'overview.saved': 'Gespeicherte Aktionen',
+	'overview.saved.description': 'Behaltene Pläne. Ein Klick führt sie auf ihrer Plattform aus.',
+	'settings.actions.forget': 'Verwerfen',
+	'settings.actions.forgetAll': 'Alle verwerfen',
+	'settings.actions.forgetAll.confirmBody':
+		'Das wirft {count} gespeicherte Aktionen weg. Zurückholen geht nicht — die Antwort, aus der sie kamen, ist fort und die Seite hat sich weiterbewegt.',
+
 	'settings.reset.title': 'Zurücksetzen',
 	'settings.reset.description':
 		'Setzt alle Einstellungen auf den Stand einer Neuinstallation zurück.',
@@ -309,5 +352,7 @@ export const de: Record<MessageKey, string> = {
 	'log.sortBy': 'Nach {column} sortieren',
 
 	'assistant.preview.source': 'Wo der Code liegt',
+	'assistant.preview.structure': 'Die Seite gerade jetzt',
+	'assistant.preview.engine': 'Wie die Engine es macht',
 	'assistant.preview.patch': 'Der Auftrag für das Skript'
 };

@@ -31,6 +31,33 @@ export const ja: Record<MessageKey, string> = {
 	'action.close': '{platform} の操作を閉じる',
 	'action.open': '{platform} の操作を開く',
 
+	'assistant.controls': 'アシスタントの設定',
+	'assistant.close': 'アシスタントを閉じる',
+	'assistant.effort': '労力',
+	'assistant.effort.low': '簡潔',
+	'assistant.effort.medium': '標準',
+	'assistant.effort.high': '入念',
+	'assistant.model': 'モデル',
+	'assistant.model.default': 'プロバイダーの既定',
+	'assistant.panel.empty':
+		'隣のページのプランを頼んでください — 何を消すか、その一つがどう消えるか。',
+	'assistant.noSource.short': 'ソースなし',
+
+	'assistant.plan.save': '操作として保存',
+	'assistant.plan.name': 'この操作の名前',
+	'assistant.plan.keep': '保存',
+	'assistant.plan.saved': '保存しました — {label} が操作に加わりました',
+	'panel.saved': '保存した操作',
+	'confirm.saved.description':
+		'{label} を実行します。当時の {platform} に対してアシスタントが書いたプランです。元に戻せません。',
+	'assistant.plan.count': '先に確認',
+	'assistant.plan.run': '一度実行',
+	'assistant.plan.matches': 'このページで {count} 件一致',
+	'assistant.plan.removed': '{count} 件を削除',
+	'assistant.plan.rejected': 'プランではありません — {reason}',
+	'assistant.plan.noPlatform': 'ここで試すにはプラットフォームにサインインしてください',
+	'assistant.plan.label': 'アシスタントのプラン',
+
 	'group.posts': 'ポスト',
 	'group.replies': '返信',
 	'group.reposts': 'リポスト',
@@ -147,6 +174,8 @@ export const ja: Record<MessageKey, string> = {
 	'settings.assistant': 'アシスタント',
 	'settings.assistant.description':
 		'回答がどこから来るか。ローカルのプログラムはこのアプリから何も送信しません。ホスト型プロバイダーだけが、ここでデータをネットワークに出す唯一のものです。',
+	'settings.assistant.missing':
+		'まだソースが設定されていないため、アシスタントは他のどこにも表示されません。このパソコンの Claude Code を選ぶか、下でプロバイダーのキーを保存してください。',
 	'settings.assistant.source': 'ソース',
 	'settings.assistant.off': 'オフ',
 	'settings.assistant.off.description': 'アシスタントはオフで、サイドバーには表示されません。',
@@ -180,9 +209,6 @@ export const ja: Record<MessageKey, string> = {
 	'assistant.placeholder': 'なぜ 12 件のポストが削除されなかったのですか？',
 	'assistant.ask': '質問する',
 	'assistant.asking': '問い合わせ中…',
-	'assistant.noSource':
-		'ソースがまだ設定されていません。設定で選んでください — この PC の Claude Code か、プロバイダーのキーです。',
-	'assistant.openSettings': '設定を開く',
 	'assistant.sendsLog':
 		'質問はログとアプリの説明と一緒に送信されます。ログにポストの内容、アカウント名、Cookie が入ることはありません。',
 	'assistant.clear': 'クリア',
@@ -246,6 +272,24 @@ export const ja: Record<MessageKey, string> = {
 	'settings.autoConsent': 'Cookie バナーを閉じる',
 	'settings.autoConsent.description':
 		'同意バナーを自動で閉じます。拒否のボタンがあるバナーでは、そちらを押します。',
+	'settings.actions': '保存した操作',
+	'settings.actions.description':
+		'アシスタントが書き、あなたが残したプランです。どれもセレクタなので、プラットフォームが変わると動かなくなります。',
+	'settings.actions.empty':
+		'まだ何も残していません。アシスタントにプランを頼み、そこから残してください。',
+	'settings.actions.made': '{platform} · {date} に保存',
+	'settings.actions.moveUp': '上へ',
+	'settings.actions.moveDown': '下へ',
+	'settings.actions.rename': '名前を変更',
+	'settings.actions.plan': 'プラン',
+	'overview.saved': '保存した操作',
+	'overview.saved.description':
+		'残したプランです。クリックすると対象のプラットフォームで実行します。',
+	'settings.actions.forget': '破棄',
+	'settings.actions.forgetAll': 'すべて破棄',
+	'settings.actions.forgetAll.confirmBody':
+		'保存した操作 {count} 件を捨てます。取り戻せません — 元になった回答は残っておらず、ページも変わっています。',
+
 	'settings.reset.title': 'リセット',
 	'settings.reset.description': 'すべての設定を新規インストール直後の状態に戻します。',
 	'settings.reset.action': '初期設定に戻す',
@@ -296,5 +340,7 @@ export const ja: Record<MessageKey, string> = {
 	'log.sortBy': '{column}で並べ替え',
 
 	'assistant.preview.source': 'コードの在りか',
+	'assistant.preview.structure': '現在のページ',
+	'assistant.preview.engine': 'エンジンのやり方',
 	'assistant.preview.patch': 'パッチの指示'
 };

@@ -32,6 +32,33 @@ export const es: Record<MessageKey, string> = {
 	'action.close': 'Cerrar las acciones de {platform}',
 	'action.open': 'Abrir las acciones de {platform}',
 
+	'assistant.controls': 'Ajustes del asistente',
+	'assistant.close': 'Cerrar el asistente',
+	'assistant.effort': 'Esfuerzo',
+	'assistant.effort.low': 'Breve',
+	'assistant.effort.medium': 'Normal',
+	'assistant.effort.high': 'A fondo',
+	'assistant.model': 'Modelo',
+	'assistant.model.default': 'Predeterminado del proveedor',
+	'assistant.panel.empty':
+		'Pide un plan para la página de al lado: qué quitar y cómo desaparece uno de ellos.',
+	'assistant.noSource.short': 'Sin fuente',
+
+	'assistant.plan.save': 'Guardar como acción',
+	'assistant.plan.name': 'Nombre de esta acción',
+	'assistant.plan.keep': 'Guardar',
+	'assistant.plan.saved': 'Guardado — {label} ya está en las acciones',
+	'panel.saved': 'Acciones guardadas',
+	'confirm.saved.description':
+		'Ejecuta {label}, un plan que el asistente escribió para {platform} tal como estaba entonces. No se puede deshacer.',
+	'assistant.plan.count': 'Comprobar primero',
+	'assistant.plan.run': 'Ejecutar una vez',
+	'assistant.plan.matches': '{count} coincidencias en esta página',
+	'assistant.plan.removed': '{count} eliminados',
+	'assistant.plan.rejected': 'No es un plan — {reason}',
+	'assistant.plan.noPlatform': 'Inicia sesión en una plataforma para probarlo aquí',
+	'assistant.plan.label': 'Plan del asistente',
+
 	'group.posts': 'Publicaciones',
 	'group.replies': 'Respuestas',
 	'group.reposts': 'Reposts',
@@ -153,6 +180,8 @@ export const es: Record<MessageKey, string> = {
 	'settings.assistant': 'Asistente',
 	'settings.assistant.description':
 		'De dónde vienen las respuestas. El binario local no envía nada desde esta app; un proveedor alojado es lo único aquí que pone datos en la red.',
+	'settings.assistant.missing':
+		'Todavía no hay ninguna fuente configurada, así que el asistente está oculto en todo lo demás. Elige Claude Code en este equipo o guarda abajo una clave de proveedor.',
 	'settings.assistant.source': 'Origen',
 	'settings.assistant.off': 'Desactivado',
 	'settings.assistant.off.description':
@@ -188,9 +217,6 @@ export const es: Record<MessageKey, string> = {
 	'assistant.placeholder': '¿Por qué no se eliminaron 12 publicaciones?',
 	'assistant.ask': 'Preguntar',
 	'assistant.asking': 'Preguntando…',
-	'assistant.noSource':
-		'Aún no hay ningún origen configurado. Elige uno en los ajustes: Claude Code en este equipo, o la clave de un proveedor.',
-	'assistant.openSettings': 'Abrir los ajustes',
 	'assistant.sendsLog':
 		'La pregunta se envía junto con el registro y una descripción de la app. El registro nunca contiene contenido de publicaciones, nombres de cuenta ni cookies.',
 	'assistant.clear': 'Vaciar',
@@ -256,6 +282,23 @@ export const es: Record<MessageKey, string> = {
 	'settings.autoConsent': 'Cerrar avisos de cookies',
 	'settings.autoConsent.description':
 		'Cierra los avisos de consentimiento automáticamente, usando el botón de rechazo cuando el aviso ofrece uno.',
+	'settings.actions': 'Acciones guardadas',
+	'settings.actions.description':
+		'Planes que escribió el asistente y que has guardado. Cada uno es un selector, así que deja de funcionar cuando la plataforma cambia.',
+	'settings.actions.empty':
+		'Todavía no has guardado nada. Pide un plan al asistente y guárdalo desde allí.',
+	'settings.actions.made': '{platform} · guardado el {date}',
+	'settings.actions.moveUp': 'Subir',
+	'settings.actions.moveDown': 'Bajar',
+	'settings.actions.rename': 'Renombrar',
+	'settings.actions.plan': 'Plan',
+	'overview.saved': 'Acciones guardadas',
+	'overview.saved.description': 'Planes que guardaste. Un clic lo ejecuta en su plataforma.',
+	'settings.actions.forget': 'Olvidar',
+	'settings.actions.forgetAll': 'Olvidar todo',
+	'settings.actions.forgetAll.confirmBody':
+		'Esto descarta {count} acciones guardadas. No se pueden recuperar: la respuesta de la que salieron ya no está y la página ha cambiado.',
+
 	'settings.reset.title': 'Restablecer',
 	'settings.reset.description': 'Devuelve todos los ajustes al estado de una instalación nueva.',
 	'settings.reset.action': 'Restablecer valores',
@@ -306,5 +349,7 @@ export const es: Record<MessageKey, string> = {
 	'log.sortBy': 'Ordenar por {column}',
 
 	'assistant.preview.source': 'Dónde está el código',
+	'assistant.preview.structure': 'La página ahora mismo',
+	'assistant.preview.engine': 'Cómo lo hace el motor',
 	'assistant.preview.patch': 'El encargo del parche'
 };

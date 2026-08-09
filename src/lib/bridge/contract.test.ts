@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+	ActionPlanSchema,
 	AppSettingsSchema,
 	BridgeMethods,
 	HostMessageSchema,
@@ -28,6 +29,26 @@ describe('AppSettingsSchema', () => {
 			assistantSource: 'claude-code',
 			assistantCliPath: '',
 			engineScript: '',
+			assistantModel: '',
+			assistantEffort: 'medium',
+			customActions: [
+				{
+					id: 'a1',
+					label: 'Drafts',
+					platform: 'x',
+					place: 'panel',
+					plan: {
+						kind: 'loop',
+						target: { selector: '[data-testid="draft"]' },
+						steps: [
+							{ step: 'click', target: { selector: '[data-testid="draft-delete"]' } },
+							{ step: 'click', target: { selector: '[role="menuitem"]', text: 'delete' } },
+							{ step: 'waitGone', target: { selector: '[role="menuitem"]' }, maxWaitMs: 3000 }
+						]
+					},
+					createdAt: '2026-08-08T10:00:00+02:00'
+				}
+			],
 			timeouts: {
 				waitAfterDelete: 500,
 				waitBetweenRetryDeleteAttempts: 500,
@@ -145,5 +166,51 @@ describe('BridgeMethods', () => {
 			expect(typeof spec.params.parse, `${name}.params should be a Zod schema`).toBe('function');
 			expect(typeof spec.result.parse, `${name}.result should be a Zod schema`).toBe('function');
 		}
+	});
+});
+
+/**
+ * The plan is the app's answer to running a model's output at all: the vocabulary is fixed,
+ * so a wrong plan can only do what the engine could already do. That guarantee is this schema
+ * and nothing else, which is why what it refuses matters as much as what it takes.
+ */
+describe('ActionPlanSchema', () => {
+	const good = {
+		target: { selector: '[data-testid="unlike"]' },
+		steps: [{ step: 'click' as const, target: { selector: '[data-testid="unlike"]' } }]
+	};
+
+	it('takes a plan over the vocabulary it knows', () => {
+		expect(ActionPlanSchema.safeParse(good).success).toBe(true);
+	});
+
+	it('refuses a step it has no primitive for', () => {
+		const result = ActionPlanSchema.safeParse({
+			...good,
+			steps: [{ step: 'eval', code: 'fetch("https://evil.test")' }]
+		});
+
+		expect(result.success).toBe(false);
+	});
+
+	it('refuses a plan with nothing in it, and one that never ends', () => {
+		expect(ActionPlanSchema.safeParse({ ...good, steps: [] }).success).toBe(false);
+		expect(
+			ActionPlanSchema.safeParse({
+				...good,
+				steps: [{ step: 'wait', ms: 60 * 60 * 1000 }]
+			}).success
+		).toBe(false);
+	});
+
+	// An index is what makes browser-use's recorded runs worthless on the next render, and it
+	// is the one way of naming an element this schema will not carry.
+	it('names elements by selector, never by position', () => {
+		const result = ActionPlanSchema.safeParse({
+			target: { index: 5 },
+			steps: good.steps
+		});
+
+		expect(result.success).toBe(false);
 	});
 });

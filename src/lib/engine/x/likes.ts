@@ -23,7 +23,14 @@ async function clickUnlikeButton(waitTime: number): Promise<boolean> {
 	clickWithCursor(btn);
 	await delay(waitTime);
 
-	return findUnlikeButton() === null;
+	// This button, not the page.
+	//
+	// It used to ask whether *any* unlike button was left, which is only true once the whole
+	// list is empty. So every click but the last reported failure: the loop retried with a
+	// growing delay, gave up after ten attempts with "Failed to unlike", and counted one
+	// deletion for however many it had actually made. A page of fifty likes stopped at ten and
+	// said nothing had happened.
+	return !btn.isConnected || !btn.matches(siteConfig.x.unlike);
 }
 
 async function tryUnlike(waitTime: number, maxTries: number): Promise<boolean> {

@@ -87,7 +87,7 @@ so an L-shaped chrome column — a bar along the top plus a sidebar down the lef
 one. Instead the chrome covers the whole window and the site is laid _on top of it_, inset by
 the sidebar (plus the rail when it is open) and by the bar's height. The sites are created
 after the chrome and therefore sit above it; everything the chrome paints underneath a
-visible site is simply covered. `layout.setSiteInset` carries both numbers, because the host
+visible site is simply covered. `layout.setSiteInset` carries those numbers, because the host
 cannot see either.
 
 The overview sits at `/`, not behind a redirect: the entry point has to be the prerendered

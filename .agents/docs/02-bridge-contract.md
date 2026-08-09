@@ -43,9 +43,12 @@ never learned that the host changed.
 | `site.navigate`            | `{ platform, action }`                      | `{ ok: boolean }`               |
 | `site.runAction`           | `{ requestId, platform, action, timeouts }` | `{ deletedCount }`              |
 | `site.cancelAction`        | `{ requestId }`                             | —                               |
+| `site.runPlan`             | `{ requestId, platform, plan, timeouts }`   | `{ deletedCount }`              |
+| `site.countMatches`        | `{ platform, target }`                      | `{ count }`                     |
+| `site.readStructure`       | `{ platform }`                              | `{ structure }`                 |
 | `site.hide`                | `{ hide: boolean }`                         | —                               |
 | `site.show`                | `{ platform }`                              | —                               |
-| `layout.setSiteInset`      | `{ left, top }`                             | —                               |
+| `layout.setSiteInset`      | `{ left, top, bottom, rtl }`                | —                               |
 | `layout.setBackground`     | `{ color: '#RRGGBB' }`                      | —                               |
 | `updater.checkForUpdates`  | —                                           | `{ updateAvailable, message? }` |
 | `system.openUrl`           | `{ url }`                                   | —                               |
@@ -66,7 +69,9 @@ invents can be handed to the shell.
 
 `site.show`, `site.hide` and `layout.setSiteInset` drive the shell layout. `site.show` brings
 a platform's webview forward, `site.hide` parks every site webview off-screen, and
-`setSiteInset` says where a site sits once it is on screen. The host does not know how the UI
+`setSiteInset` says where a site sits once it is on screen. `left` is how wide the app's own
+columns are, not which edge they are against — `rtl` decides that, and without it the host
+places the platform straight over a mirrored sidebar. The host does not know how the UI
 is composed — the layout adds up the sidebar (240px or 56px) and the action panel (224px,
 only while it is open) for `left`, and the header bar's height (44px) for `top`. The chrome
 webview always covers the whole window; the site is laid on top of it, inset by those two

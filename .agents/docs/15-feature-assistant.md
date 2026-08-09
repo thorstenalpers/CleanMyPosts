@@ -1,7 +1,8 @@
 # Assistant
 
 Answers two kinds of question — what this app does, and what just happened in the log — and
-writes **action plans** for lists the engine does not already handle. It is optional in every
+writes **action plans**: for a list the engine does not already handle, for a selector that
+has moved, or for a page or a button the app does not offer yet. It is optional in every
 direction: hideable in the Navigation settings, and useless until the user picks a source.
 
 Two surfaces, one implementation. The **page** at `/assistant` is the long form: modes, the
@@ -13,8 +14,8 @@ is the only arrangement where somebody can look at the page they are asking abou
 
 The panel keeps a conversation and folds it into each request as one more section; `assistant.ask`
 is a single round trip with no memory of its own. Both surfaces share `plan-actions.svelte`,
-because the order of those four buttons is a judgement about safety and it must not be right in
-one place and wrong in the other.
+because the order of those buttons is a judgement about safety and it must not be right in one
+place and wrong in the other.
 
 ## Where an answer comes from
 
@@ -37,8 +38,11 @@ built per family rather than per provider.
 
 Built in `src/lib/assistant-context.ts`, and deliberately only these:
 
-1. The instructions: answer from what follows, say so when the log does not explain
-   something, and answer in the user's language.
+1. The instructions, which differ by mode. For a question or a report: answer from what
+   follows, say so when the log does not explain something, and write in the user's language.
+   For a plan: the answer is data, in no human language, and a question back is not one of the
+   options. That distinction is not decoration — the old single wording told the model to
+   answer questions in German, and asked for a plan it did exactly that.
 2. A fixed description of the app — what it deletes on each platform (read from the same
    `$lib/actions.ts` table the buttons use, so the list cannot drift), and why deletion is
    slow.
@@ -61,7 +65,8 @@ runs), and a redacted skeleton of the open page.
 ## Plans
 
 The answer is not code. It is a JSON object over a fixed vocabulary — `click`, `waitFor`,
-`waitGone`, `scrollUntil`, `wait` — checked against `ActionPlanSchema` before anything runs.
+`waitGone`, `scrollUntil`, `wait`, `navigate` — checked against `ActionPlanSchema` before
+anything runs.
 That check is the whole guarantee: a wrong plan can only ask for things the engine could
 already do, and nothing a model produced is ever evaluated inside the signed-in session.
 
@@ -69,19 +74,31 @@ Elements are named by selector and by the word they carry, **never by index**. A
 to the snapshot the model was shown and means something else on the next render, which is
 exactly why recorded browser-agent runs stop working; a test holds the schema to refusing one.
 
-The plan says how _one_ item goes away. Repeating, counting, the waits between deletions, the
-stop button and the shield stay with the app — they are what makes a run slow enough not to be
-flagged and stoppable while it goes, and none of that is a model's decision.
+A plan is one of two shapes, and `kind` says which. `loop` empties a list: `target` says what
+one still-present item looks like, the steps say how it goes away, and the app owns the
+repeating, the counting, the waits between deletions, the stop button and the shield — none of
+which is a model's decision. `once` runs the steps a single time and needs no target, which is
+the shape of opening a page or dismissing a banner: neither has anything to exhaust, so the
+loop would never know it had finished.
+
+`navigate` is allowed only on the hosts the injected script is allowed into, https only, whole
+hosts and never substrings. A step that could point a signed-in session at any address is not a
+step in a plan; it is a way out of the app.
 
 Three things can be done with a plan, in this order. **Check first** counts what the target
 finds and touches none of it. **Run once** runs it on the page that is already open, through
 the same runner and the same stop button as a built-in action. **Keep as action** asks for a
-name and puts it in that platform's panel, where it runs like any other row — and stays out of
-"Delete everything", because it goes stale on its own schedule. The settings list every kept
-plan with the day it was kept, which is the fact that decides whether it still works.
+name and keeps it. Where it lands follows from what it is rather than being asked: a `loop`
+goes into that platform's panel, where the confirmation and the stop button are, and stays out
+of "Delete everything" because it goes stale on its own schedule; a `once` goes into the app's
+own navigation, because it has no list to sit beside. A sidebar item that emptied an account on
+one click would not be a menu entry. The settings list every kept plan with the day it was
+kept, which is the fact that decides whether it still works.
 
-Saving an answer as the raw engine script is still there, unchanged, for what the vocabulary
-does not cover.
+The assistant no longer offers to save an answer as the raw engine script. It answers with
+plans, JSON is not JavaScript, and a plan written into a script that is evaluated before every
+run fails at parse time and takes the run with it. The script stays editable in the settings,
+for what the vocabulary does not cover.
 
 **The request can be read before it is sent.** The page's preview renders exactly these
 sections, built by calling the same functions `buildPrompt` calls — a preview assembled

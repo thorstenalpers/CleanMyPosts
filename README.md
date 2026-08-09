@@ -55,14 +55,18 @@ last week finds nothing. The assistant is the answer to that, and it does three 
 
 - 🩹 **Write an action plan** — hand it the log of a failed run, or ask for a list the app
   does not handle yet, and it answers with a short plan: what to remove, and how one of them
-  goes away. Not code. It is a fixed vocabulary of clicks, waits and scrolls, checked against
-  a schema before anything runs, so a wrong answer can only ask for things the delete engine
-  could already do. Nothing a model wrote is ever evaluated inside your signed-in session.
+  goes away — or how to reach a page or a button the app does not offer yet. Not code. It is a
+  fixed vocabulary of clicks, waits, scrolls and navigation, checked against a schema before
+  anything runs, so a wrong answer can only ask for things the delete engine could already do,
+  and only on the platform's own pages. Nothing a model wrote is ever evaluated inside your
+  signed-in session.
 
   Then, in this order: **Check first** counts what the plan would find and touches none of
-  it. **Run once** tries it on the page in front of you. **Keep as action** gives it a name
-  and puts it in that platform's list, where it runs like any built-in one. The settings show
-  every plan you kept with the day you kept it — a plan is a selector, and the platform moves.
+  it. **Run once** tries it on the page in front of you. **Keep as action** gives it a name and
+  keeps it: something that deletes lands in that platform's list beside the built-in ones,
+  something that only opens a page or clicks a banner away lands in the sidebar as an entry of
+  its own. The settings show every plan you kept with the day you kept it — a plan is a
+  selector, and the platform moves.
 
 - 🐞 **File a bug report** — it turns the same log into a report a maintainer can act on,
   and opens GitHub's issue form with the title and body already filled in. Pressing submit

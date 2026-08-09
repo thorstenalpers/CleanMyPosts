@@ -31,8 +31,18 @@ const ACTIONS = [
 		name: 'postsAction',
 		page: 'your profile’s posts'
 	},
-	{ file: 'cleanmyposts-x-delete-replies', from: 'x/replies', name: 'repliesAction', page: 'your replies' },
-	{ file: 'cleanmyposts-x-delete-reposts', from: 'x/reposts', name: 'repostsAction', page: 'your profile' },
+	{
+		file: 'cleanmyposts-x-delete-replies',
+		from: 'x/replies',
+		name: 'repliesAction',
+		page: 'your replies'
+	},
+	{
+		file: 'cleanmyposts-x-delete-reposts',
+		from: 'x/reposts',
+		name: 'repostsAction',
+		page: 'your profile'
+	},
 	{ file: 'cleanmyposts-x-delete-likes', from: 'x/likes', name: 'likesAction', page: 'your likes' },
 	{
 		file: 'cleanmyposts-x-delete-following',

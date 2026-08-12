@@ -197,18 +197,25 @@ interface Activation {
 /**
  * Every way this entry can be told to fire, in order of likelihood.
  *
- * The mouse sequence on each candidate node first, and the keyboard last. That order is what
- * a log said to do: all three nodes were clicked, the entry acknowledged none of them, and at
- * that point the node was never the variable — the kind of event was. An entry carrying
- * `role="menuitem"` answers Enter whether or not anything is listening for a pointer.
+ * Plain click on every candidate first, then the keyboard, and the full mouse sequence last —
+ * an order the logs argued for twice. Three nodes were clicked with that sequence and none
+ * acted, while the menu shut the moment the first one landed. `pointerdown` opens that
+ * sequence, this menu closes on it, and a menu that has closed cannot act on the `click` five
+ * events later. So the cheapest event goes first and the one that dismisses the thing it is
+ * aimed at goes last.
  */
 function activations(match: HTMLElement): Activation[] {
+	const targets = removeTargets(match);
 	return [
-		...removeTargets(match).map((el) => ({
-			what: `a click on ${describe(el)}`,
-			run: () => clickWithCursor(el, { pointerSequence: true })
+		...targets.map((el) => ({
+			what: `a plain click on ${describe(el)}`,
+			run: () => clickWithCursor(el)
 		})),
-		{ what: `Enter on ${describe(match)}`, run: () => pressEnter(match) }
+		{ what: `Enter on ${describe(match)}`, run: () => pressEnter(match) },
+		...targets.map((el) => ({
+			what: `a full mouse press on ${describe(el)}`,
+			run: () => clickWithCursor(el, { pointerSequence: true })
+		}))
 	];
 }
 
@@ -315,9 +322,9 @@ export const youTubeLikesAction: DeleteActionDefinition = {
 	async run(params: RunParams): Promise<number> {
 		let deletedCount = 0;
 		let failures = 0;
-		// One per way `activations` can fire an entry, so the last of them — the keyboard — is
-		// actually reached. Three stopped one short of it.
-		const maxFailures = 4;
+		// One per way `activations` can fire an entry, so the last of them is actually reached
+		// rather than the loop stopping partway through the list it just built.
+		const maxFailures = 7;
 
 		while (failures < maxFailures) {
 			dismissSurveyBanner();

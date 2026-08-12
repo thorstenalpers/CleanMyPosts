@@ -149,7 +149,35 @@ function findRemoveMatch(
 
 type ParentElement = Document | Element;
 
-async function clickRemoveFromLiked(): Promise<boolean> {
+/**
+ * Where the handler might be on a menu entry, most likely first.
+ *
+ * Which node actually listens differs between YouTube's shapes and is not readable from here:
+ * the view model puts it on an inner button, the old renderer on the `tp-yt-paper-item`, and
+ * the shorts sheet on the entry itself. Guessing once and reporting success is what left three
+ * identical attempts clicking the same wrong node three times.
+ */
+function removeTargets(match: HTMLElement): HTMLElement[] {
+	const candidates = [
+		match.querySelector<HTMLElement>('button'),
+		match.querySelector<HTMLElement>('.ytListItemViewModelTextWrapper'),
+		match.querySelector<HTMLElement>('tp-yt-paper-item'),
+		match
+	].filter((el): el is HTMLElement => el !== null);
+	return [...new Set(candidates)];
+}
+
+/** Enough of an element to tell two candidates apart in a log line. */
+function describe(el: HTMLElement): string {
+	const cls = el.className.split(' ').filter(Boolean)[0];
+	return el.tagName.toLowerCase() + (cls ? `.${cls}` : '');
+}
+
+/**
+ * @param attempt Which candidate to click. The run's failure count, so each retry tries a
+ * different node rather than repeating the one that just did nothing.
+ */
+async function clickRemoveFromLiked(attempt: number): Promise<boolean> {
 	const delays = [200, 300, 400, 500, 600, 800, 1000, 1500];
 
 	for (const ms of delays) {
@@ -168,14 +196,14 @@ async function clickRemoveFromLiked(): Promise<boolean> {
 				'[role="text"]'
 			]);
 			if (match) {
-				// The clickable node, not the wrapper: the view model puts the handler on an inner
-				// button, and clicking the host does nothing at all. This one takes the full mouse
-				// sequence — it commits on `pointerup` and ignores a bare click.
-				const target =
-					match.querySelector<HTMLElement>('button') ??
-					match.querySelector<HTMLElement>('.ytListItemViewModelTextWrapper') ??
-					match.querySelector<HTMLElement>('tp-yt-paper-item') ??
-					match;
+				const targets = removeTargets(match);
+				const target = targets[Math.min(attempt, targets.length - 1)] ?? match;
+				// The full mouse sequence: these entries commit on `pointerup` and ignore a bare
+				// click. Which node hears it is what `attempt` walks through.
+				postLog(
+					'info',
+					`Clicking "${describe(target)}" (${attempt + 1} of ${targets.length} places the handler could be).`
+				);
 				clickWithCursor(target, { pointerSequence: true });
 				return true;
 			}
@@ -209,14 +237,14 @@ async function closeMenu(): Promise<void> {
 	await delay(200);
 }
 
-async function unlikeVideo(waitTime: number): Promise<boolean> {
+async function unlikeVideo(waitTime: number, attempt: number): Promise<boolean> {
 	const item = findVideoItem();
 	if (!item) return false;
 
 	highlightElement(item);
 	if (!(await clickMenuButton(item, waitTime))) return false;
 
-	if (!(await clickRemoveFromLiked())) {
+	if (!(await clickRemoveFromLiked(attempt))) {
 		await closeMenu();
 		return false;
 	}
@@ -269,7 +297,7 @@ export const youTubeLikesAction: DeleteActionDefinition = {
 				continue;
 			}
 
-			const success = await unlikeVideo(params.waitBetweenRetryDeleteAttempts);
+			const success = await unlikeVideo(params.waitBetweenRetryDeleteAttempts, failures);
 			if (success) {
 				deletedCount++;
 				postProgress(params.requestId, deletedCount);

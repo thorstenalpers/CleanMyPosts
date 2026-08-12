@@ -18,15 +18,21 @@ function matchesRemovePattern(text: string): boolean {
 }
 
 /**
- * The first entry still in the list.
+ * The first entry still in the list that is worth trying.
  *
  * Always searched fresh: the list is virtualised, so a node collected on an earlier pass is
  * long gone. `hidden` and `is-dismissed` are how the old renderers marked a removed row; the
  * new view models simply leave the document, which `unlikeVideo` checks for instead.
+ *
+ * `skip` holds the ones YouTube took the removal for and left on screen anyway. Without it
+ * this returns the same stuck row every pass, and a list of two hundred videos ends after the
+ * first one that would not go.
  */
-function findVideoItem(): HTMLElement | null {
+function findVideoItem(skip: ReadonlySet<string> = new Set()): HTMLElement | null {
 	for (const item of document.querySelectorAll<HTMLElement>(siteConfig.youtube.videoItem)) {
-		if (!item.hasAttribute('is-dismissed') && !item.hasAttribute('hidden')) return item;
+		if (item.hasAttribute('is-dismissed') || item.hasAttribute('hidden')) continue;
+		if (skip.has(videoIdOf(item))) continue;
+		return item;
 	}
 	return null;
 }
@@ -283,9 +289,11 @@ function videoIdOf(item: HTMLElement): string {
 	return /content-id-([\w-]+)/.exec(host.className)?.[1] ?? '';
 }
 
-async function unlikeVideo(waitTime: number, attempt: number): Promise<boolean> {
-	const item = findVideoItem();
-	if (!item) return false;
+async function unlikeVideo(
+	item: HTMLElement,
+	waitTime: number,
+	attempt: number
+): Promise<boolean> {
 	const id = videoIdOf(item);
 
 	highlightElement(item);
@@ -321,20 +329,32 @@ export const youTubeLikesAction: DeleteActionDefinition = {
 
 	async run(params: RunParams): Promise<number> {
 		let deletedCount = 0;
-		let failures = 0;
+		let attempts = 0;
+		let emptyPasses = 0;
+		/**
+		 * Videos YouTube accepted the removal for and left on screen anyway.
+		 *
+		 * Common enough to design around: the row stays until the page is loaded again, and
+		 * retrying it is retrying something already done. They are stepped over so the rest of
+		 * the list gets its turn, and the count of them is what the caller reloads on.
+		 */
+		const stuck = new Set<string>();
+
 		// One per way `activations` can fire an entry, so the last of them is actually reached
 		// rather than the loop stopping partway through the list it just built.
-		const maxFailures = 7;
+		const maxAttempts = 7;
+		/** Past this many rows that would not go, the page is stale and worth reloading. */
+		const maxStuck = 5;
 
-		while (failures < maxFailures) {
+		while (attempts < maxAttempts && stuck.size < maxStuck && emptyPasses < 3) {
 			dismissSurveyBanner();
 
-			const found = await waitForByScrolling(() => findVideoItem() !== null, 400, {
+			const found = await waitForByScrolling(() => findVideoItem(stuck) !== null, 400, {
 				maxWaitMs: 5000,
 				intervalMs: 300
 			});
 			if (!found) {
-				failures++;
+				emptyPasses++;
 				const prevScroll = window.scrollY;
 				window.scrollBy(0, 500);
 				await delay(500);
@@ -342,24 +362,45 @@ export const youTubeLikesAction: DeleteActionDefinition = {
 				if (window.scrollY === prevScroll) {
 					// The end of the list, or a page whose markup this engine no longer recognises.
 					// Those two used to look identical from the log.
-					reportNothingFound();
+					if (stuck.size === 0) reportNothingFound();
 					break;
 				}
 				continue;
 			}
 
-			const success = await unlikeVideo(params.waitBetweenRetryDeleteAttempts, failures);
-			if (success) {
+			const item = findVideoItem(stuck);
+			if (!item) continue;
+			const id = videoIdOf(item);
+
+			if (await unlikeVideo(item, params.waitBetweenRetryDeleteAttempts, attempts)) {
 				deletedCount++;
 				postProgress(params.requestId, deletedCount);
-				failures = 0;
+				attempts = 0;
+				emptyPasses = 0;
 				await delay(params.waitAfterDelete);
-			} else {
-				failures++;
-				postLog('info', `Attempt ${failures} of ${maxFailures} left this video in place.`);
-				await closeMenu();
-				await delay(500);
+				continue;
 			}
+
+			attempts++;
+			await closeMenu();
+			await delay(500);
+
+			// Every way of firing it has been tried. It is not going away on this page load, so
+			// the next video gets the turn instead of a ninth attempt at this one.
+			if (attempts >= maxAttempts) {
+				stuck.add(id);
+				attempts = 0;
+				postLog('info', `Leaving this one for a reload; ${stuck.size} so far.`);
+			} else {
+				postLog('info', `Attempt ${attempts} of ${maxAttempts} left this video in place.`);
+			}
+		}
+
+		if (stuck.size > 0) {
+			postLog(
+				'info',
+				`${stuck.size} video(s) stayed on screen after being removed. They go on the next page load.`
+			);
 		}
 
 		return deletedCount;

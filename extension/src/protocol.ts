@@ -27,6 +27,15 @@ export interface RunState {
 	 */
 	queue: Action[];
 	/**
+	 * How many times the current action has been re-run on a freshly loaded page.
+	 *
+	 * Both platforms leave items on screen that they have already removed — the row goes on the
+	 * next page load and not before — so a round that deleted something is not evidence the
+	 * list is empty. Only a round that deletes nothing is. Capped, because "it deleted one" is
+	 * also what an engine looping on the same item would report.
+	 */
+	rounds: number;
+	/**
 	 * The handle, read off the page once and kept for the rest of the queue.
 	 *
 	 * In `storage.session`, which is memory and gone when the browser closes — the alternative
@@ -36,7 +45,13 @@ export interface RunState {
 	message?: string;
 }
 
-export const IDLE: RunState = { status: 'idle', deletedCount: 0, totalCount: 0, queue: [] };
+export const IDLE: RunState = {
+	status: 'idle',
+	deletedCount: 0,
+	totalCount: 0,
+	queue: [],
+	rounds: 0
+};
 
 /** Everything one platform can be emptied of, in the order it is done. */
 export const ALL_ACTIONS: Record<Platform, Action[]> = {

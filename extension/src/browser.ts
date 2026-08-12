@@ -39,6 +39,7 @@ interface BrowserApi {
 		onMessage: { addListener<M = unknown>(callback: MessageListener<M>): void };
 	};
 	tabs: {
+		get(tabId: number): Promise<Tab>;
 		query(query: { active?: boolean; currentWindow?: boolean }): Promise<Tab[]>;
 		create(properties: { url?: string; active?: boolean }): Promise<Tab>;
 		update(tabId: number, properties: { url?: string }): Promise<Tab | undefined>;

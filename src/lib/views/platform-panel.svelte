@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { BridgeClient } from '$lib/bridge/client';
 	import type { Platform } from '$lib/bridge/contract';
-	import type { ActionGroupDef } from '$lib/actions';
+	import { MAX_DELETE_ROUNDS, type ActionGroupDef } from '$lib/actions';
 	import type { CustomAction } from '$lib/bridge/contract';
 	import type { SettingsStore } from '$lib/stores/settings.svelte';
 	import type { ActionRunner } from '$lib/stores/action-runner.svelte';
@@ -142,22 +142,39 @@
 		void bridge.call('site.toast', { platform, message, kind }).catch(() => {});
 	}
 
-	async function runDelete(group: ActionGroupDef): Promise<void> {
-		// A run opens its own page before it starts, so the marked row has to move with it.
-		// Marking only on a show left the highlight on whatever was looked at last while the
-		// site had already jumped somewhere else.
-		shown = group.key;
-		try {
+	/**
+	 * One list, emptied until a pass finds nothing.
+	 *
+	 * Not one run: both platforms leave rows on screen that they have already removed, and those
+	 * only go on the next page load — so a pass that deleted something says nothing about the
+	 * list being empty. Each round opens the page again, which is what clears them.
+	 */
+	async function runUntilEmpty(group: ActionGroupDef): Promise<number> {
+		let total = 0;
+		for (let round = 0; round < MAX_DELETE_ROUNDS; round++) {
 			const result = await runner.run({
 				platform,
 				action: group.deleteAction,
 				timeouts: settingsStore.settings.timeouts,
 				label: group.label
 			});
-			if (result.deletedCount === 0) {
+			total += result.deletedCount;
+			if (result.deletedCount === 0 || runner.cancelled) break;
+		}
+		return total;
+	}
+
+	async function runDelete(group: ActionGroupDef): Promise<void> {
+		// A run opens its own page before it starts, so the marked row has to move with it.
+		// Marking only on a show left the highlight on whatever was looked at last while the
+		// site had already jumped somewhere else.
+		shown = group.key;
+		try {
+			const deletedCount = await runUntilEmpty(group);
+			if (deletedCount === 0) {
 				report('info', t('run.none', { plural: t(group.plural) }));
 			} else {
-				report('success', t('run.done', { count: result.deletedCount, plural: t(group.plural) }));
+				report('success', t('run.done', { count: deletedCount, plural: t(group.plural) }));
 			}
 		} catch (error) {
 			report('error', error instanceof Error ? error.message : t('run.failed'));
@@ -183,13 +200,7 @@
 		for (const group of groups) {
 			shown = group.key;
 			try {
-				const result = await runner.run({
-					platform,
-					action: group.deleteAction,
-					timeouts: settingsStore.settings.timeouts,
-					label: group.label
-				});
-				total += result.deletedCount;
+				total += await runUntilEmpty(group);
 			} catch {
 				failed++;
 			}

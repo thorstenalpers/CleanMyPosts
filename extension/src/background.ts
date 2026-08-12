@@ -9,6 +9,7 @@
  */
 
 import type { Platform } from '$lib/engine/protocol';
+import { MAX_DELETE_ROUNDS } from '$lib/actions';
 import { browser, type TabChangeInfo } from './browser';
 import {
 	DEFAULT_WAITS,
@@ -80,7 +81,18 @@ function notify(message: BackgroundMessage): void {
 	void browser.runtime.sendMessage(message).catch(() => {});
 }
 
-function navigate(tabId: number, url: string): Promise<void> {
+/**
+ * Drives the tab to a url and waits for it to finish.
+ *
+ * Reloads rather than navigates when the tab is already there. `tabs.update` to the url a tab
+ * is showing is not guaranteed to start a load at all, and this waits for `complete` — one
+ * that never comes leaves a run hanging with nothing in the log. Running the same action twice
+ * in a row does exactly that.
+ */
+async function navigate(tabId: number, url: string): Promise<void> {
+	const current = await browser.tabs.get(tabId).catch(() => undefined);
+	const same = current?.url === url;
+
 	return new Promise((resolve) => {
 		function onUpdated(id: number, info: TabChangeInfo): void {
 			if (id !== tabId || info.status !== 'complete') return;
@@ -88,7 +100,8 @@ function navigate(tabId: number, url: string): Promise<void> {
 			resolve();
 		}
 		browser.tabs.onUpdated.addListener(onUpdated);
-		void browser.tabs.update(tabId, { url });
+		if (same) void browser.tabs.reload(tabId);
+		else void browser.tabs.update(tabId, { url });
 	});
 }
 
@@ -237,14 +250,24 @@ async function relay(message: ContentReport['message']): Promise<void> {
 
 	if (message.type === 'done') {
 		const totalCount = state.totalCount + message.deletedCount;
-		const carryOn = state.queue.length > 0;
+
+		// A round that deleted something says nothing about the list being empty: both platforms
+		// leave rows on screen that they have already removed, and those only go on the next page
+		// load. So the action goes back to the front of the queue and `navigate` reloads into it.
+		// Only a round that deleted nothing ends it.
+		const again = message.deletedCount > 0 && state.action && state.rounds < MAX_DELETE_ROUNDS;
+		const queue = again && state.action ? [state.action, ...state.queue] : state.queue;
+		const carryOn = queue.length > 0;
+
 		// `deletedCount` belongs to the action that just ended and has been folded into the total,
 		// so it goes back to zero — the popup shows the sum of the two and would count twice.
 		await setState({
 			...state,
 			status: carryOn ? 'running' : 'done',
 			deletedCount: 0,
-			totalCount
+			totalCount,
+			queue,
+			rounds: again ? state.rounds + 1 : 0
 		});
 		// This message is also what woke the worker, if it had been stopped. Everything the next
 		// action needs was read back from storage a line ago.

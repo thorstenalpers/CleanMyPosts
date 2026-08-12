@@ -8,6 +8,16 @@ import Repeat2Icon from '@lucide/svelte/icons/repeat-2';
 import HeartIcon from '@lucide/svelte/icons/heart';
 import UserMinusIcon from '@lucide/svelte/icons/user-minus';
 
+/**
+ * How often one action may be re-run on a freshly loaded page before it is given up on.
+ *
+ * Both platforms leave rows on screen that they have already removed — the item goes on the
+ * next page load and not before. So a round that deleted something is not evidence the list is
+ * empty; only a round that deleted nothing is. Capped, because "it deleted one" is also what
+ * an engine looping on the same item would report.
+ */
+export const MAX_DELETE_ROUNDS = 10;
+
 export interface ActionGroupDef {
 	key: string;
 	/** Message keys, not text: the same group is named in the panel, the dialog and a toast. */

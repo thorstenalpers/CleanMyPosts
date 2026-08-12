@@ -3,7 +3,14 @@
 	import XIcon from '$lib/components/icons/x-icon.svelte';
 	import YoutubeIcon from '$lib/components/icons/youtube-icon.svelte';
 	import { browser } from '../browser';
-	import { IDLE, type Action, type BackgroundMessage, type RunState } from '../protocol';
+	import {
+		IDLE,
+		LOG_LIMIT,
+		type Action,
+		type BackgroundMessage,
+		type RunState,
+		type Snapshot
+	} from '../protocol';
 
 	const CHOICES: { platform: Platform; action: Action; label: string }[] = [
 		{ platform: 'x', action: 'deletePosts', label: 'Posts' },
@@ -22,16 +29,21 @@
 
 	const busy = $derived(run.status === 'preparing' || run.status === 'running');
 
-	void browser.runtime.sendMessage<RunState>({ kind: 'getState' }).then((s) => (run = s));
+	// Chrome closes this window as soon as focus leaves it, so nothing here is state — it is a
+	// view of what the worker holds, fetched again on every open.
+	void browser.runtime.sendMessage<Snapshot>({ kind: 'getState' }).then((snapshot) => {
+		run = snapshot.state;
+		lines = snapshot.lines;
+	});
 
 	// A content script's `sendMessage` reaches every extension context, this popup included, so
 	// its raw reports arrive here alongside the worker's. Matched on `kind` rather than fallen
 	// through to, or one renders as the string "[object Object]".
 	browser.runtime.onMessage.addListener((message: BackgroundMessage) => {
 		if (message.kind === 'state') run = message.state;
-		// Trimmed on the way in: the popup is 400px tall and a run logs for as long as it deletes.
+		// The worker's own limit, so a live line and a reopened popup show the same list.
 		else if (message.kind === 'log' && message.level !== 'debug')
-			lines = [...lines, message.message].slice(-40);
+			lines = [...lines, message.message].slice(-LOG_LIMIT);
 	});
 
 	function start(platform: Platform, action: Action): void {

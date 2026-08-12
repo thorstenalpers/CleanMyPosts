@@ -20,6 +20,21 @@ export interface RunState {
 
 export const IDLE: RunState = { status: 'idle', deletedCount: 0 };
 
+/**
+ * What the popup needs to rebuild itself from nothing.
+ *
+ * Chrome closes a popup the moment focus leaves it, taking every local variable with it. So
+ * neither the status nor the lines under it may live in the component — reopening has to look
+ * like it was never shut, mid-run included.
+ */
+export interface Snapshot {
+	state: RunState;
+	lines: string[];
+}
+
+/** How many log lines are kept for a reopened popup. */
+export const LOG_LIMIT = 100;
+
 /** Popup -> background. */
 export type PopupMessage =
 	{ kind: 'start'; platform: Platform; action: Action } | { kind: 'stop' } | { kind: 'getState' };

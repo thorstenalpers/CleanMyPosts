@@ -13,15 +13,18 @@ import { browser, type TabChangeInfo } from './browser';
 import {
 	DEFAULT_WAITS,
 	IDLE,
+	LOG_LIMIT,
 	type Action,
 	type BackgroundMessage,
 	type ContentReport,
 	type HostMessage,
 	type PopupMessage,
-	type RunState
+	type RunState,
+	type Snapshot
 } from './protocol';
 
 const STATE_KEY = 'runState';
+const LOG_KEY = 'runLog';
 
 /**
  * The same targets `src-tauri/src/commands/site.rs` builds, kept in step by hand — the host's
@@ -61,6 +64,17 @@ async function setState(state: RunState): Promise<void> {
 	notify({ kind: 'state', state });
 }
 
+async function getLines(): Promise<string[]> {
+	const stored = await browser.storage.session.get(LOG_KEY);
+	return (stored[LOG_KEY] as string[] | undefined) ?? [];
+}
+
+/** Kept here rather than in the popup, which does not survive losing focus. */
+async function appendLine(line: string): Promise<void> {
+	const lines = [...(await getLines()), line].slice(-LOG_LIMIT);
+	await browser.storage.session.set({ [LOG_KEY]: lines });
+}
+
 /** The popup is usually shut, and a broadcast nobody listens to rejects. That is not an error. */
 function notify(message: BackgroundMessage): void {
 	void browser.runtime.sendMessage(message).catch(() => {});
@@ -96,6 +110,7 @@ async function ask<T>(tabId: number, message: HostMessage, attempts = 20): Promi
 }
 
 async function start(platform: Platform, action: Action): Promise<void> {
+	await browser.storage.session.set({ [LOG_KEY]: [] });
 	await setState({ status: 'preparing', platform, action, deletedCount: 0 });
 
 	const [active] = await browser.tabs.query({ active: true, currentWindow: true });
@@ -148,6 +163,9 @@ async function stop(): Promise<void> {
 async function relay(message: ContentReport['message']): Promise<void> {
 	if (message.type === 'log') {
 		notify({ kind: 'log', level: message.level, message: message.message });
+		// `debug` carries the markup dumps, which belong in the tab console and would push
+		// everything readable out of a 100-line buffer.
+		if (message.level !== 'debug') await appendLine(message.message);
 		return;
 	}
 
@@ -169,7 +187,9 @@ browser.runtime.onMessage.addListener(
 		}
 
 		if (message.kind === 'getState') {
-			void getState().then(sendResponse);
+			void Promise.all([getState(), getLines()]).then(([state, lines]) =>
+				sendResponse({ state, lines } satisfies Snapshot)
+			);
 			return true;
 		}
 

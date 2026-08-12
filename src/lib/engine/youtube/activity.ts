@@ -60,27 +60,36 @@ function dismissSurveyBanner(): void {
 	}
 }
 
-async function clickConfirmDeleteButton(): Promise<boolean> {
-	const delays = [100, 200, 300, 500, 500, 500, 1000, 1000];
-
-	for (const ms of delays) {
-		await delay(ms);
-
-		for (const btn of document.querySelectorAll<HTMLElement>(siteConfig.youtube.confirmButton)) {
-			if (btn.offsetParent === null) continue;
-			// The label lives in a span, except where the sheet does not use one — then the button's
-			// own text is the label. A generated class used to pick the span out; it no longer can.
-			const label =
-				btn.querySelector(siteConfig.youtube.confirmLabel)?.textContent ?? btn.textContent;
-			if (matchesAny(label ?? '', siteConfig.youtube.confirmDeleteText)) {
-				clickWithCursor(btn);
-				return true;
-			}
-		}
+/**
+ * Polls `check` until it answers or the budget runs out.
+ *
+ * A budget, not a list of waits. The list this replaced summed to four seconds and was spent
+ * in full every time the thing being waited for never arrived — which, for a confirmation
+ * sheet that this page does not always put up, was every single item.
+ */
+async function waitUntil(check: () => boolean, budgetMs: number, stepMs = 150): Promise<boolean> {
+	const deadline = Date.now() + budgetMs;
+	while (Date.now() < deadline) {
+		if (check()) return true;
+		await delay(stepMs);
 	}
-
-	return false;
+	return check();
 }
+
+function findConfirmButton(): HTMLElement | null {
+	for (const btn of document.querySelectorAll<HTMLElement>(siteConfig.youtube.confirmButton)) {
+		if (btn.offsetParent === null) continue;
+		// The label lives in a span, except where the sheet does not use one — then the button's
+		// own text is the label. A generated class used to pick the span out; it no longer can.
+		const label =
+			btn.querySelector(siteConfig.youtube.confirmLabel)?.textContent ?? btn.textContent;
+		if (matchesAny(label ?? '', siteConfig.youtube.confirmDeleteText)) return btn;
+	}
+	return null;
+}
+
+/** How long a confirmation sheet, or a row's disappearance, is given to happen. */
+const STEP_BUDGET_MS = 1500;
 
 async function clickDeleteButton(waitBetweenRetryDeleteAttempts: number): Promise<boolean> {
 	const deleteButton = findDeleteButton();
@@ -90,15 +99,16 @@ async function clickDeleteButton(waitBetweenRetryDeleteAttempts: number): Promis
 	clickWithCursor(deleteButton);
 	await delay(waitBetweenRetryDeleteAttempts);
 
-	await clickConfirmDeleteButton();
-	await delay(300);
+	// Gone already means nothing asked to be confirmed. Not every list here puts a sheet up,
+	// and waiting one out for a row that has already left is the cost of the whole run.
+	if (!document.contains(deleteButton)) return true;
 
-	const waitDelays = [100, 200, 300, 500, 500, 500, 1000];
-	for (const ms of waitDelays) {
-		await delay(ms);
-		if (!document.contains(deleteButton)) return true;
+	if (await waitUntil(() => findConfirmButton() !== null, STEP_BUDGET_MS)) {
+		const confirm = findConfirmButton();
+		if (confirm) clickWithCursor(confirm);
 	}
 
+	await waitUntil(() => !document.contains(deleteButton), STEP_BUDGET_MS);
 	return true;
 }
 

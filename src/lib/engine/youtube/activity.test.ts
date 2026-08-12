@@ -50,6 +50,28 @@ describe('activityAction.run', () => {
 		expect(deletedCount).toBe(0);
 	}, 20000);
 
+	// A row that goes on the first click asks for no confirmation, and this list does not always
+	// put a sheet up. Waiting one out per item is what made a handful of likes take ten seconds.
+	it('does not wait for a confirmation sheet once the row has gone', async () => {
+		document.body.innerHTML =
+			'<div role="listitem"><button aria-label="Delete activity item"></button></div>';
+		const row = document.querySelector('div[role="listitem"]');
+		// The platform's own behaviour: the row leaves on the click, with nothing to confirm.
+		document
+			.querySelector('button')
+			?.addEventListener('click', () => setTimeout(() => row?.remove(), 10));
+
+		const started = Date.now();
+		const deletedCount = await activityAction.run({
+			requestId: 'r1',
+			waitAfterDelete: 1,
+			waitBetweenRetryDeleteAttempts: 50
+		});
+
+		expect(deletedCount).toBe(1);
+		expect(Date.now() - started).toBeLessThan(3000);
+	}, 20000);
+
 	// The point of reading the notice is the time it saves; a version that still waited out the
 	// scroll timeouts would pass every other assertion here.
 	it('stops at once when the page says there is no activity', async () => {

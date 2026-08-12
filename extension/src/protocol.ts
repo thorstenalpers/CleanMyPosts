@@ -62,6 +62,8 @@ export const LOG_LIMIT = 100;
 /** Popup -> background. One action or all of them is the same request with a longer list. */
 export type PopupMessage =
 	| { kind: 'start'; platform: Platform; actions: Action[] }
+	/** Opens the page a list lives on and touches nothing — what a row click does. */
+	| { kind: 'show'; platform: Platform; action: Action }
 	| { kind: 'stop' }
 	| { kind: 'getState' };
 

@@ -118,32 +118,44 @@ const HOME: Record<Platform, string> = {
 	youtube: 'https://www.youtube.com'
 };
 
-/** Sets the queue up and starts it. One action or seven is the same path. */
-async function start(platform: Platform, actions: Action[]): Promise<void> {
-	await browser.storage.session.set({ [LOG_KEY]: [] });
-	await setState({ ...IDLE, status: 'preparing', platform, queue: actions });
-
+async function openTab(platform: Platform): Promise<number> {
 	const [active] = await browser.tabs.query({ active: true, currentWindow: true });
 	const tab = active?.id
 		? active
 		: await browser.tabs.create({ url: HOME[platform], active: true });
-	const tabId = tab.id;
-	if (!tabId) throw new Error('no tab to work in');
+	if (!tab.id) throw new Error('no tab to work in');
+	return tab.id;
+}
 
-	let userName = '';
-	if (platform === 'x') {
-		// The handle is in the page, not in any store: it is read off the signed-in nav rail,
-		// which means X has to be open before a target url can be built at all. Read once here
-		// rather than before each action, which would be five more navigations.
-		await navigate(tabId, HOME.x);
-		const answer = await ask<{ value?: string }>(tabId, {
-			kind: 'probe',
-			requestId: 'username',
-			what: 'userName'
-		});
-		userName = answer.value ?? '';
-		if (!userName) throw new Error('not signed in to X');
-	}
+/**
+ * The handle, off the signed-in nav rail.
+ *
+ * It is in the page and in no store, which means X has to be open before a target url can be
+ * built at all — hence the detour to the home page. Read once per queue rather than before
+ * each action, which would be five more of them.
+ */
+async function readHandle(tabId: number): Promise<string> {
+	await navigate(tabId, HOME.x);
+	const answer = await ask<{ value?: string }>(tabId, {
+		kind: 'probe',
+		requestId: 'username',
+		what: 'userName'
+	});
+	const userName = answer.value ?? '';
+	if (!userName) throw new Error('not signed in to X');
+	return userName;
+}
+
+/** Sets the queue up and starts it. One action or seven is the same path. */
+async function start(platform: Platform, actions: Action[]): Promise<void> {
+	// Read before the reset below wipes it. `||`, not `??`: a YouTube run stores the empty
+	// string, and treating that as a known handle would build every X url without one.
+	const known = (await getState()).userName;
+	await browser.storage.session.set({ [LOG_KEY]: [] });
+	await setState({ ...IDLE, status: 'preparing', platform, queue: actions });
+
+	const tabId = await openTab(platform);
+	const userName = platform === 'x' ? known || (await readHandle(tabId)) : '';
 
 	await setState({ ...IDLE, status: 'preparing', platform, tabId, userName, queue: actions });
 	await runNext();
@@ -176,6 +188,24 @@ async function runNext(): Promise<void> {
 		action,
 		params: { requestId: action, ...DEFAULT_WAITS, userName: state.userName }
 	});
+}
+
+/**
+ * Opens the page a list lives on, and stops there.
+ *
+ * The whole of what a row click does. It leaves `action` set so the popup can mark the row
+ * the tab is actually on, and `status` idle because nothing is running.
+ */
+async function show(platform: Platform, action: Action): Promise<void> {
+	const known = (await getState()).userName;
+	const tabId = await openTab(platform);
+	const userName = platform === 'x' ? known || (await readHandle(tabId)) : '';
+
+	const url = targetUrl(platform, action, userName);
+	if (!url) throw new Error(`unknown action "${platform}:${action}"`);
+
+	await navigate(tabId, url);
+	await setState({ ...IDLE, platform, action, tabId, userName });
 }
 
 /**
@@ -246,6 +276,17 @@ browser.runtime.onMessage.addListener(
 
 		if (message.kind === 'stop') {
 			void stop().then(() => sendResponse({ ok: true }));
+			return true;
+		}
+
+		if (message.kind === 'show') {
+			void show(message.platform, message.action)
+				.then(() => sendResponse({ ok: true }))
+				.catch((error: unknown) => {
+					const text = error instanceof Error ? error.message : String(error);
+					void setState({ ...IDLE, status: 'error', message: text });
+					sendResponse({ ok: false, error: text });
+				});
 			return true;
 		}
 

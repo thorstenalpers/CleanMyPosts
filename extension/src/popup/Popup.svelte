@@ -22,10 +22,14 @@
 
 	void browser.runtime.sendMessage<RunState>({ kind: 'getState' }).then((s) => (run = s));
 
+	// A content script's `sendMessage` reaches every extension context, this popup included, so
+	// its raw reports arrive here alongside the worker's. Matched on `kind` rather than fallen
+	// through to, or one renders as the string "[object Object]".
 	browser.runtime.onMessage.addListener((message: BackgroundMessage) => {
 		if (message.kind === 'state') run = message.state;
 		// Trimmed on the way in: the popup is 400px tall and a run logs for as long as it deletes.
-		else if (message.level !== 'debug') lines = [...lines, message.message].slice(-40);
+		else if (message.kind === 'log' && message.level !== 'debug')
+			lines = [...lines, message.message].slice(-40);
 	});
 
 	function start(platform: Platform, action: Action): void {

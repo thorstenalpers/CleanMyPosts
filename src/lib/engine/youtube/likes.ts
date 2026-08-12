@@ -314,7 +314,9 @@ async function unlikeVideo(item: HTMLElement, waitTime: number, attempt: number)
 		if (id && videoIdOf(item) !== id) return true;
 	}
 
-	postLog('warning', 'Tried to remove it from Liked videos, and it is still in the list.');
+	// Not an error on its own — this list routinely keeps a row it has already dropped. The
+	// caller decides what to make of it; see `run`.
+	postLog('info', 'Asked for the removal; the row is still on screen.');
 	return false;
 }
 
@@ -325,24 +327,24 @@ export const youTubeLikesAction: DeleteActionDefinition = {
 
 	async run(params: RunParams): Promise<number> {
 		let deletedCount = 0;
-		let attempts = 0;
 		let emptyPasses = 0;
+		/** Which entry in `activations` to use. Only moves while nothing is working. */
+		let way = 0;
+		/** Removals seen to happen, as opposed to asked for. Zero of these ends the run. */
+		let confirmed = 0;
 		/**
 		 * Videos YouTube accepted the removal for and left on screen anyway.
 		 *
 		 * Common enough to design around: the row stays until the page is loaded again, and
 		 * retrying it is retrying something already done. They are stepped over so the rest of
-		 * the list gets its turn, and the count of them is what the caller reloads on.
+		 * the list gets its turn, and the caller's reload is what clears them.
 		 */
 		const stuck = new Set<string>();
 
-		// One per way `activations` can fire an entry, so the last of them is actually reached
-		// rather than the loop stopping partway through the list it just built.
-		const maxAttempts = 7;
-		/** Past this many rows that would not go, the page is stale and worth reloading. */
-		const maxStuck = 5;
+		/** More ways than `activations` can produce, so the index below always has one to give. */
+		const maxWays = 7;
 
-		while (attempts < maxAttempts && stuck.size < maxStuck && emptyPasses < 3) {
+		while (emptyPasses < 3) {
 			dismissSurveyBanner();
 
 			const found = await waitForByScrolling(() => findVideoItem(stuck) !== null, 400, {
@@ -368,37 +370,48 @@ export const youTubeLikesAction: DeleteActionDefinition = {
 			if (!item) continue;
 			const id = videoIdOf(item);
 
-			if (await unlikeVideo(item, params.waitBetweenRetryDeleteAttempts, attempts)) {
-				deletedCount++;
-				postProgress(params.requestId, deletedCount);
-				attempts = 0;
-				emptyPasses = 0;
-				await delay(params.waitAfterDelete);
-				continue;
-			}
+			const went = await unlikeVideo(item, params.waitBetweenRetryDeleteAttempts, way);
 
-			attempts++;
-			await closeMenu();
-			await delay(500);
-
-			// Every way of firing it has been tried. It is not going away on this page load, so
-			// the next video gets the turn instead of a ninth attempt at this one.
-			if (attempts >= maxAttempts) {
-				stuck.add(id);
-				attempts = 0;
-				postLog('info', `Leaving this one for a reload; ${stuck.size} so far.`);
+			if (went) {
+				confirmed++;
+				// A way that just worked is the way. It only moves on while nothing at all does.
+				way = 0;
 			} else {
-				postLog('info', `Attempt ${attempts} of ${maxAttempts} left this video in place.`);
+				// One try per video, then on to the next.
+				//
+				// A row that stayed is not evidence the click failed: YouTube leaves rows on screen
+				// it has already removed, and they only go on the next page load. Six more attempts
+				// would be six clicks at something already deleted, paid for with the rest of the
+				// list. So it counts — the removal was asked for and the menu took it — and the
+				// reload that follows is what settles whether it happened.
+				stuck.add(id);
+				way = Math.min(way + 1, maxWays - 1);
+
+				// Nothing has visibly worked yet and every way has now been tried. At that point
+				// the assumption above has nothing holding it up, so the run stops rather than
+				// reporting a list of deletions it never saw.
+				if (confirmed === 0 && stuck.size >= maxWays) {
+					postLog('warning', 'Nothing visibly left the list. Stopping rather than guessing.');
+					break;
+				}
 			}
+
+			deletedCount++;
+			postProgress(params.requestId, deletedCount);
+			emptyPasses = 0;
+			await closeMenu();
+			await delay(params.waitAfterDelete);
 		}
 
 		if (stuck.size > 0) {
 			postLog(
 				'info',
-				`${stuck.size} video(s) stayed on screen after being removed. They go on the next page load.`
+				`${deletedCount} removed, ${stuck.size} of them still on screen — those go on the reload that follows.`
 			);
 		}
 
-		return deletedCount;
+		// Nothing seen to go means nothing to report, whatever was asked for. Reporting the asks
+		// would also have the caller reload and try again on the strength of them.
+		return confirmed === 0 ? 0 : deletedCount;
 	}
 };

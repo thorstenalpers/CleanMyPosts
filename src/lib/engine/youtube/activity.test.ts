@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { siteConfig } from '../config';
 import { activityAction } from './activity';
 
 describe('activityAction.isEmpty', () => {
@@ -48,6 +49,24 @@ describe('activityAction.run', () => {
 			waitBetweenRetryDeleteAttempts: 1
 		});
 		expect(deletedCount).toBe(0);
+	}, 20000);
+
+	// The waits being in `siteConfig` is only worth anything if the run reads them from there,
+	// which a copy left behind in the module would not show up as anything but slowness.
+	it('takes its search budget from the config', async () => {
+		const original = { ...siteConfig.youtube.waits };
+		siteConfig.youtube.waits.searchMs = 3000;
+		try {
+			const started = Date.now();
+			await activityAction.run({
+				requestId: 'r1',
+				waitAfterDelete: 1,
+				waitBetweenRetryDeleteAttempts: 1
+			});
+			expect(Date.now() - started).toBeGreaterThan(2500);
+		} finally {
+			Object.assign(siteConfig.youtube.waits, original);
+		}
 	}, 20000);
 
 	// A row that goes on the first click asks for no confirmation, and this list does not always

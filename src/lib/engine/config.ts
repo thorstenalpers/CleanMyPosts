@@ -93,6 +93,21 @@ export interface SiteConfig {
 		/** Where a "there is nothing here" notice would be, and what it says. */
 		emptyScope: string;
 		emptyText: string[];
+		/**
+		 * How long each step of a deletion is given, and how many times a row may refuse.
+		 *
+		 * Here rather than as constants in the module because they are the numbers a user with a
+		 * slow connection or a big list actually has to change, and this object is the one thing
+		 * in the engine they can change without a build — see the header of this file.
+		 */
+		waits: {
+			/** For a confirmation sheet to open, and for a row to leave once confirmed. */
+			stepMs: number;
+			/** For another row to turn up, counted from the last one that did. */
+			searchMs: number;
+			/** Rows that would not go before the run gives up on the list. */
+			maxFailures: number;
+		};
 	};
 }
 
@@ -183,7 +198,12 @@ export const siteConfig: SiteConfig = {
 			'لا يوجد نشاط',
 			'कोई गतिविधि नहीं',
 			'etkinlik yok'
-		]
+		],
+		waits: {
+			stepMs: 1500,
+			searchMs: 1000,
+			maxFailures: 3
+		}
 	}
 };
 

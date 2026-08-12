@@ -83,12 +83,17 @@ what ends it, the same way closing the tab ends a standalone script.
 Open the console on the platform tab — `__cmp` is right there, the same as in the app:
 
 ```js
-__cmp.config.youtube.likesPopupClickTargets.unshift('.some-new-class');
 __cmp.config.youtube.deleteActivityText.push('sil');
+__cmp.config.youtube.waits.searchMs = 4000; // a slow list needs longer to fill
+__cmp.config.youtube.waits.maxFailures = 5;
 ```
 
 The patch holds for that page load. `__cmp.countMatches` and `__cmp.readStructure` answer
 over the report channel, so their results appear in the console alongside everything else.
+
+The desktop app has the same object under **Settings → Engine script**, where what is typed
+is applied before every run and kept — the extension has no equivalent field yet, so a change
+here lasts until the tab is reloaded.
 
 ## What is not here yet
 

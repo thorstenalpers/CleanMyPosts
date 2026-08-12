@@ -67,11 +67,11 @@ function dismissSurveyBanner(): void {
  * in full every time the thing being waited for never arrived — which, for a confirmation
  * sheet that this page does not always put up, was every single item.
  */
-async function waitUntil(check: () => boolean, budgetMs: number, stepMs = 150): Promise<boolean> {
+async function waitUntil(check: () => boolean, budgetMs: number, pollMs = 150): Promise<boolean> {
 	const deadline = Date.now() + budgetMs;
 	while (Date.now() < deadline) {
 		if (check()) return true;
-		await delay(stepMs);
+		await delay(pollMs);
 	}
 	return check();
 }
@@ -88,9 +88,6 @@ function findConfirmButton(): HTMLElement | null {
 	return null;
 }
 
-/** How long a confirmation sheet, or a row's disappearance, is given to happen. */
-const STEP_BUDGET_MS = 1500;
-
 async function clickDeleteButton(waitBetweenRetryDeleteAttempts: number): Promise<boolean> {
 	const deleteButton = findDeleteButton();
 	if (!deleteButton) return false;
@@ -103,12 +100,13 @@ async function clickDeleteButton(waitBetweenRetryDeleteAttempts: number): Promis
 	// and waiting one out for a row that has already left is the cost of the whole run.
 	if (!document.contains(deleteButton)) return true;
 
-	if (await waitUntil(() => findConfirmButton() !== null, STEP_BUDGET_MS)) {
+	const { stepMs } = siteConfig.youtube.waits;
+	if (await waitUntil(() => findConfirmButton() !== null, stepMs)) {
 		const confirm = findConfirmButton();
 		if (confirm) clickWithCursor(confirm);
 	}
 
-	await waitUntil(() => !document.contains(deleteButton), STEP_BUDGET_MS);
+	await waitUntil(() => !document.contains(deleteButton), stepMs);
 	return true;
 }
 
@@ -132,7 +130,8 @@ export const activityAction: DeleteActionDefinition = {
 	async run(params: RunParams): Promise<number> {
 		let deletedCount = 0;
 		let failures = 0;
-		const maxFailures = 3;
+		// Read once: a patch applied mid-run would change the terms the loop already started on.
+		const { searchMs, maxFailures } = siteConfig.youtube.waits;
 
 		/**
 		 * How long the search for another row may go on, in total, since the last one was found.
@@ -145,7 +144,6 @@ export const activityAction: DeleteActionDefinition = {
 		 * Reset by a row being found and by "show more", so it bounds the tail of a run rather
 		 * than the run itself: a list of two thousand takes as long as it takes.
 		 */
-		const searchBudgetMs = 1000;
 		let searchingSince = Date.now();
 
 		while (failures < maxFailures) {
@@ -175,7 +173,7 @@ export const activityAction: DeleteActionDefinition = {
 					continue;
 				}
 
-				if (Date.now() - searchingSince > searchBudgetMs) {
+				if (Date.now() - searchingSince > searchMs) {
 					postLog('info', 'Nothing more turned up in time; treating the list as empty.');
 					break;
 				}

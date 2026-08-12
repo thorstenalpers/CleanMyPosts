@@ -26,7 +26,15 @@ function setup(
 	customActions: (typeof SAVED_ACTION)[] = []
 ) {
 	const navigate = vi.fn(() => ({ ok: true }));
-	const runAction = vi.fn(() => ({ deletedCount: 3 }));
+	// Three the first time a list is asked for and none after that: an action is re-run on a
+	// reloaded page until a pass finds nothing, so a mock that always deletes never ends.
+	const emptied = new Set<string>();
+	const runAction = vi.fn((payload?: { action?: string }) => {
+		const key = payload?.action ?? '';
+		if (emptied.has(key)) return { deletedCount: 0 };
+		emptied.add(key);
+		return { deletedCount: 3 };
+	});
 	const hide = vi.fn();
 
 	const { client, emit } = createMockHost({

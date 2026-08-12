@@ -86,7 +86,19 @@ async function clickDeleteButton(waitBetweenRetryDeleteAttempts: number): Promis
 	return true;
 }
 
-export const commentsAction: DeleteActionDefinition = {
+/**
+ * One list on Google My Activity, emptied a row at a time.
+ *
+ * Serves both of YouTube's lists, because both live here: comments under
+ * `page=youtube_comments` and liked videos under `page=youtube_likes`. Which one is on screen
+ * is the caller's business — the rows are the same rows, and the ✕ on them is the same button.
+ *
+ * Liked videos used to be taken from the Liked videos playlist instead, where removing one
+ * means opening a ⋮ menu and hitting an entry that three different YouTube renderers each
+ * place somewhere else. This page has neither the menu nor the renderers, and it lists
+ * disliked videos alongside the liked ones, which the playlist never showed at all.
+ */
+export const activityAction: DeleteActionDefinition = {
 	isEmpty(): boolean {
 		return findDeleteButton() === null;
 	},
@@ -119,7 +131,7 @@ export const commentsAction: DeleteActionDefinition = {
 				}
 
 				if (window.scrollY === prevScroll) {
-					postLog('info', 'No scroll change; assuming no more comments.');
+					postLog('info', 'No scroll change; assuming the list is empty.');
 					break;
 				}
 				continue;

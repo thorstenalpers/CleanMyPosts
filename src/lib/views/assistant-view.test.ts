@@ -122,7 +122,7 @@ describe('AssistantView', () => {
 		await fireEvent.click(screen.getByRole('button', { name: /^ask$/i }));
 
 		await waitFor(() => expect(asked).toHaveLength(1));
-		expect(asked[0]?.prompt).toContain('removeFromLikedText');
+		expect(asked[0]?.prompt).toContain('deleteActivityText');
 		expect(asked[0]?.prompt).toContain('AGENTS.md');
 
 		// Prose came back, so there is nothing to run and nothing to keep — and above all no

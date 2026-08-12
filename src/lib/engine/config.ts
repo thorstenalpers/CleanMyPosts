@@ -71,10 +71,6 @@ export interface SiteConfig {
 		unfollow: string;
 	};
 	youtube: {
-		/** One entry in the liked-videos list, old renderers and new view models alike. */
-		videoItem: string;
-		/** The ⋮ on such an entry. Matched by class, which survives a language change. */
-		itemMenu: string;
 		/** Anything only a signed-in page renders, across YouTube and My Activity. */
 		signedIn: string;
 		/** A real sign-in call to action — not merely a link pointing at the account pages. */
@@ -83,12 +79,6 @@ export interface SiteConfig {
 		deleteActivity: string;
 		/** The wording on that button's `aria-label`. */
 		deleteActivityText: string[];
-		/** The popup the ⋮ opens on a liked video, in either of its shapes. */
-		likesPopup: string;
-		/** One entry inside that popup. */
-		likesPopupItem: string;
-		/** Where the click has to land inside such an entry, most likely first. */
-		likesPopupClickTargets: string[];
 		/** The survey/feedback dialog that steals the next click. */
 		closeDialog: string;
 		/** My Activity's confirmation sheet: the button, and the label inside it to read. */
@@ -100,8 +90,6 @@ export interface SiteConfig {
 		loadMore: string;
 		/** The wording on it. */
 		loadMoreText: string[];
-		/** Fragments of the "Remove from Liked videos" menu item, lower-cased. */
-		removeFromLikedText: string[];
 	};
 }
 
@@ -127,23 +115,6 @@ export const siteConfig: SiteConfig = {
 		unfollow: 'button[data-testid$="-unfollow"]'
 	},
 	youtube: {
-		// YouTube is midway through replacing `ytd-*` renderers with `*-view-model` components;
-		// the liked list is already on the new ones. Both are listed, newest first, because a
-		// user on either build has to be served.
-		videoItem: [
-			'yt-lockup-view-model',
-			'ytd-playlist-video-renderer:not([is-dismissed])',
-			'ytd-rich-item-renderer:not([is-dismissed])',
-			'ytd-compact-video-renderer:not([is-dismissed])'
-		].join(', '),
-		// A class, not the `aria-label`: the label is translated ("Mehr Aktionen"), the class
-		// is not.
-		itemMenu: [
-			'.ytLockupMetadataViewModelMenuButton button',
-			'ytd-menu-renderer yt-icon-button#button button',
-			'ytd-menu-renderer button#button',
-			'ytd-menu-renderer button'
-		].join(', '),
 		signedIn: [
 			'button#avatar-btn img[src]',
 			'yt-img-shadow#avatar img[src]',
@@ -163,17 +134,6 @@ export const siteConfig: SiteConfig = {
 		// wording in `deleteActivityText` does the narrowing.
 		deleteActivity: 'div[role="listitem"] button[aria-label], div[jscontroller] button[aria-label]',
 		deleteActivityText: [...DELETE_WORDS],
-		likesPopup:
-			'.ytContextualSheetLayoutContentContainer, yt-list-view-model, ytd-menu-popup-renderer',
-		likesPopupItem: 'yt-list-item-view-model, ytd-menu-service-item-renderer, [role="menuitem"]',
-		// The `<button>` in a view-model entry is YouTube's own button component, and it keeps its
-		// events to itself — clicking it leaves the entry unactivated. `Tappable` is the class
-		// YouTube puts on the node that actually handles the tap, so it goes first.
-		likesPopupClickTargets: [
-			'.ytListItemViewModelTappable',
-			'tp-yt-paper-item',
-			'.ytListItemViewModelTextWrapper, button'
-		],
 		closeDialog: 'button[aria-label="Close this dialog"]',
 		confirmButton: 'div[role="button"]',
 		// Was `span.Crf1o`. That class is generated and changed under us; the label is simply the
@@ -197,31 +157,6 @@ export const siteConfig: SiteConfig = {
 			'عرض المزيد',
 			'और दिखाएं',
 			'daha fazla göster'
-		],
-		removeFromLikedText: [
-			'remove from liked',
-			'remove from "liked',
-			'aus "videos, die ich mag" entfernen',
-			'videos, die ich mag',
-			'entfernen',
-			'supprimer de',
-			"j'aime",
-			'retirer de',
-			'eliminar de',
-			'me gusta',
-			'quitar de',
-			'rimuovi da',
-			'mi piace',
-			'remover de',
-			'gostei',
-			'verwijderen uit',
-			'usuń z',
-			'удалить из',
-			'高く評価した動画',
-			'我喜欢的视频',
-			'أعجبتني',
-			'पसंद किए गए वीडियो',
-			'beğenilen videolardan'
 		]
 	}
 };

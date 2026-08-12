@@ -31,8 +31,10 @@ fn target_url(platform: &str, action: &str, user_name: &str) -> Option<String> {
         ("youtube", "showComments" | "deleteComments") => {
             "https://myactivity.google.com/page?page=youtube_comments".to_string()
         }
+        // My Activity, not the Liked videos playlist: this page deletes with one button rather
+        // than a menu three renderers each lay out differently, and it lists dislikes as well.
         ("youtube", "showLikes" | "deleteLikes") => {
-            "https://www.youtube.com/playlist?list=LL".to_string()
+            "https://myactivity.google.com/page?page=youtube_likes".to_string()
         }
         _ => return None,
     };
@@ -707,7 +709,7 @@ mod tests {
         );
         assert_eq!(
             target_url("youtube", "showLikes", "").unwrap(),
-            "https://www.youtube.com/playlist?list=LL"
+            "https://myactivity.google.com/page?page=youtube_likes"
         );
     }
 

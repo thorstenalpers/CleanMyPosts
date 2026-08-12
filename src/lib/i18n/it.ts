@@ -324,7 +324,7 @@ export const it: Record<MessageKey, string> = {
 	'settings.engine.save': 'Salva',
 	'settings.engine.hint':
 		'Gira nella pagina della piattaforma prima di ogni azione. In `window.__cmp.config` ci sono tutti i selettori e tutte le parole che il motore cerca: cambia ciò che la tua lingua o la tua regione richiede. Uno script rotto non costa nulla: viene intercettato, registrato, e il comportamento integrato prosegue.',
-	'settings.engine.placeholder': "window.__cmp.config.youtube.removeFromLikedText.push('…');",
+	'settings.engine.placeholder': "window.__cmp.config.youtube.deleteActivityText.push('…');",
 
 	'assistant.report': 'Segnalare un problema',
 	'assistant.report.hint':

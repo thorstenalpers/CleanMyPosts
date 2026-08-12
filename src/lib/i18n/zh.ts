@@ -302,7 +302,7 @@ export const zh: Record<MessageKey, string> = {
 	'settings.engine.save': '保存',
 	'settings.engine.hint':
 		'在每次操作之前，于平台页面里运行。`window.__cmp.config` 里放着引擎要找的全部选择器和词语 —— 按你的语言或地区改它。脚本写坏了也不要紧：会被捕获并记入日志，内置行为照常进行。',
-	'settings.engine.placeholder': "window.__cmp.config.youtube.removeFromLikedText.push('…');",
+	'settings.engine.placeholder': "window.__cmp.config.youtube.deleteActivityText.push('…');",
 
 	'assistant.report': '报告问题',
 	'assistant.report.hint':

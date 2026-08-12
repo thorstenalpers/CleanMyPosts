@@ -310,7 +310,7 @@ export const ar: Record<MessageKey, string> = {
 	'settings.engine.save': 'حفظ',
 	'settings.engine.hint':
 		'يعمل داخل صفحة المنصة قبل كل إجراء. يحتوي `window.__cmp.config` على كل المحدِّدات وكل الكلمات التي يبحث عنها المحرك — غيّر ما تحتاجه لغتك أو منطقتك. السكربت المعطوب لا يكلّف شيئًا: يُلتقَط ويُسجَّل، ويمضي السلوك المدمج.',
-	'settings.engine.placeholder': "window.__cmp.config.youtube.removeFromLikedText.push('…');",
+	'settings.engine.placeholder': "window.__cmp.config.youtube.deleteActivityText.push('…');",
 
 	'assistant.report': 'الإبلاغ عن مشكلة',
 	'assistant.report.hint':

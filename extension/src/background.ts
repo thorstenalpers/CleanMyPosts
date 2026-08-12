@@ -52,9 +52,11 @@ function targetUrl(platform: Platform, action: Action, userName: string): string
 				return undefined;
 		}
 	}
+	// Both on My Activity. Liked videos are not taken from the Liked videos playlist: this page
+	// deletes with one button instead of a menu, and it lists disliked videos as well.
 	if (action === 'deleteComments')
 		return 'https://myactivity.google.com/page?page=youtube_comments';
-	if (action === 'deleteLikes') return 'https://www.youtube.com/playlist?list=LL';
+	if (action === 'deleteLikes') return 'https://myactivity.google.com/page?page=youtube_likes';
 	return undefined;
 }
 

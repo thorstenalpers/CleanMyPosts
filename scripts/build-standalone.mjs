@@ -52,15 +52,15 @@ const ACTIONS = [
 	},
 	{
 		file: 'cleanmyposts-youtube-delete-comments',
-		from: 'youtube/comments',
-		name: 'commentsAction',
+		from: 'youtube/activity',
+		name: 'activityAction',
 		page: 'My Activity → YouTube comments'
 	},
 	{
 		file: 'cleanmyposts-youtube-delete-likes',
-		from: 'youtube/likes',
-		name: 'youTubeLikesAction',
-		page: 'your Liked videos playlist'
+		from: 'youtube/activity',
+		name: 'activityAction',
+		page: 'My Activity → YouTube likes'
 	}
 ];
 

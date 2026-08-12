@@ -141,6 +141,13 @@ async function ask<T>(tabId: number, message: HostMessage, attempts = 20): Promi
 	throw new Error('the page never answered — reload it and try again');
 }
 
+/** Marks the one failure the popup can act on, so it does not have to read the message. */
+class NotSignedIn extends Error {
+	constructor(readonly platform: Platform) {
+		super(`not signed in to ${platform === 'x' ? 'X' : 'YouTube'}`);
+	}
+}
+
 const HOME: Record<Platform, string> = {
 	x: 'https://x.com/home',
 	youtube: 'https://www.youtube.com'
@@ -161,17 +168,26 @@ async function openTab(platform: Platform): Promise<number> {
  * It is in the page and in no store, which means X has to be open before a target url can be
  * built at all — hence the detour to the home page. Read once per queue rather than before
  * each action, which would be five more of them.
+ *
+ * Asked repeatedly, because the first answer is not evidence of anything: `complete` is the
+ * document, and X builds its nav rail afterwards. A single ask returned the empty string from
+ * a page that was still rendering and reported a signed-in account as signed out.
  */
-async function readHandle(tabId: number): Promise<string> {
+async function readHandle(tabId: number, budgetMs = 15000): Promise<string> {
 	await navigate(tabId, HOME.x);
-	const answer = await ask<{ value?: string }>(tabId, {
-		kind: 'probe',
-		requestId: 'username',
-		what: 'userName'
-	});
-	const userName = answer.value ?? '';
-	if (!userName) throw new Error('not signed in to X');
-	return userName;
+
+	const deadline = Date.now() + budgetMs;
+	do {
+		const answer = await ask<{ value?: string }>(tabId, {
+			kind: 'probe',
+			requestId: 'username',
+			what: 'userName'
+		});
+		if (answer.value) return answer.value;
+		await delay(500);
+	} while (Date.now() < deadline);
+
+	throw new NotSignedIn('x');
 }
 
 /** Sets the queue up and starts it. One action or seven is the same path. */
@@ -212,6 +228,17 @@ async function runNext(): Promise<void> {
 	// `complete` is the document, not the list: both platforms keep filling one in afterwards,
 	// and starting on an empty page reads as "nothing to delete".
 	await delay(timeouts.waitAfterDocumentLoad);
+
+	// X proved itself by handing over a handle. YouTube has none to give, so it is asked here,
+	// on the page the action is about to run against.
+	if (state.platform === 'youtube') {
+		const answer = await ask<{ value?: string }>(state.tabId, {
+			kind: 'probe',
+			requestId: 'login',
+			what: 'loginStatus'
+		});
+		if (answer.value === '') throw new NotSignedIn('youtube');
+	}
 	await setState({ ...state, status: 'running', action, queue: rest, deletedCount: 0 });
 
 	await ask(state.tabId, {
@@ -236,7 +263,21 @@ async function runNext(): Promise<void> {
 async function show(platform: Platform, action: Action): Promise<void> {
 	const known = (await getState()).userName;
 	const tabId = await openTab(platform);
-	const userName = platform === 'x' ? known || (await readHandle(tabId)) : '';
+
+	let userName = '';
+	if (platform === 'x' && !known) {
+		try {
+			// Briefly, unlike a run: this click is how somebody gets to a page to sign in on, and
+			// making them watch fifteen seconds of nothing first is the opposite of that.
+			userName = await readHandle(tabId, 4000);
+		} catch {
+			// `readHandle` has already left the tab on x.com/home, which is the page to sign in on.
+			await setState({ ...IDLE, platform, tabId, signedOut: 'x', message: 'not signed in to X' });
+			return;
+		}
+	} else if (platform === 'x') {
+		userName = known ?? '';
+	}
 
 	const url = targetUrl(platform, action, userName);
 	if (!url) throw new Error(`unknown action "${platform}:${action}"`);
@@ -341,7 +382,8 @@ browser.runtime.onMessage.addListener(
 			.then(() => sendResponse({ ok: true }))
 			.catch((error: unknown) => {
 				const text = error instanceof Error ? error.message : String(error);
-				void setState({ ...IDLE, status: 'error', message: text });
+				const signedOut = error instanceof NotSignedIn ? error.platform : undefined;
+				void setState({ ...IDLE, status: 'error', message: text, signedOut });
 				sendResponse({ ok: false, error: text });
 			});
 		return true;

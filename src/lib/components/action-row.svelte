@@ -9,6 +9,13 @@
 		label: MessageKey;
 		icon: Component;
 		disabled?: boolean;
+		/**
+		 * Disables deleting while leaving the row itself live.
+		 *
+		 * For a platform that is not signed in: the page is exactly where somebody has to go
+		 * about that, so the half of the row that opens it stays available.
+		 */
+		deleteDisabled?: boolean;
 		/** Marks the row whose deletion is currently running. */
 		active?: boolean;
 		/** Marks the row whose page is the one on screen. */
@@ -21,6 +28,7 @@
 		label,
 		icon: Icon,
 		disabled = false,
+		deleteDisabled = false,
 		active = false,
 		current = false,
 		onShow,
@@ -61,7 +69,7 @@
 	<button
 		type="button"
 		aria-label={t('action.delete', { label: t(label) })}
-		{disabled}
+		disabled={disabled || deleteDisabled}
 		onclick={onDelete}
 		class={cn(
 			iconButton,

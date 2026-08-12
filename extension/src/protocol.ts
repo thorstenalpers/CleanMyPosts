@@ -42,6 +42,14 @@ export interface RunState {
 	 * is navigating back to x.com/home before every one of the five actions to read it again.
 	 */
 	userName?: string;
+	/**
+	 * The platform that turned out not to be signed in.
+	 *
+	 * Kept so the popup can grey out what cannot work rather than let it be pressed again for
+	 * the same message. Cleared by opening one of that platform's pages, which is what somebody
+	 * does about it.
+	 */
+	signedOut?: Platform;
 	message?: string;
 }
 

@@ -152,6 +152,11 @@
 		void browser.runtime.sendMessage({ kind: 'show', platform, action: actionOf(group) });
 	}
 
+	/** Whether this platform reported itself signed out on the last attempt. */
+	function locked(platform: Platform): boolean {
+		return run.signedOut === platform;
+	}
+
 	function start(platform: Platform, actions: Action[]): void {
 		lines = [];
 		// Out of the way for the run. Nothing unfolds it again but the chevron.
@@ -341,6 +346,7 @@
 							label={group.label}
 							icon={group.icon}
 							disabled={busy}
+							deleteDisabled={locked(platform.id)}
 							active={busy && isCurrent(platform.id, group)}
 							current={!busy && isCurrent(platform.id, group)}
 							onShow={() => show(platform.id, group)}
@@ -352,7 +358,7 @@
 					     five lists and YouTube two. No show button: "everything" is not a page. -->
 					<button
 						type="button"
-						disabled={busy}
+						disabled={busy || locked(platform.id)}
 						onclick={() => ask(platform.id)}
 						class="group/all mt-auto flex h-8 cursor-pointer items-center gap-2 rounded-md ps-2 pe-2 text-start
 						       transition-colors duration-150 hover:bg-destructive/10 focus-visible:ring-2

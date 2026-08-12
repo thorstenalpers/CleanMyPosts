@@ -210,6 +210,29 @@ export function clickWithCursor(el: HTMLElement, options: ClickOptions = {}): vo
 }
 
 /**
+ * Activates an element the way a keyboard does.
+ *
+ * A different path entirely, not another guess at which node listens: where every node in a
+ * menu entry has been clicked and the entry did nothing, the handler is not on a pointer event
+ * at all. `role="menuitem"` entries answer Enter, and focus is what makes that reach them.
+ */
+export function pressEnter(el: HTMLElement): void {
+	el.focus();
+	const init = {
+		key: 'Enter',
+		code: 'Enter',
+		keyCode: 13,
+		which: 13,
+		bubbles: true,
+		cancelable: true,
+		composed: true
+	};
+	for (const type of ['keydown', 'keypress', 'keyup']) {
+		el.dispatchEvent(new KeyboardEvent(type, init));
+	}
+}
+
+/**
  * The whole sequence a mouse produces, ending in `click`.
  *
  * `el.click()` alone fires one event and nothing else, which YouTube's view-model menu

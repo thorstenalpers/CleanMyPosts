@@ -6,6 +6,7 @@ import {
 	postLog,
 	postMarkup,
 	postProgress,
+	pressEnter,
 	waitForByScrolling
 } from '../dom';
 import { matchesAny, siteConfig } from '../config';
@@ -188,9 +189,32 @@ function describe(el: HTMLElement): string {
 	return el.tagName.toLowerCase() + (cls ? `.${cls}` : '');
 }
 
+interface Activation {
+	what: string;
+	run: () => void;
+}
+
 /**
- * @param attempt Which candidate to click. The run's failure count, so each retry tries a
- * different node rather than repeating the one that just did nothing.
+ * Every way this entry can be told to fire, in order of likelihood.
+ *
+ * The mouse sequence on each candidate node first, and the keyboard last. That order is what
+ * a log said to do: all three nodes were clicked, the entry acknowledged none of them, and at
+ * that point the node was never the variable — the kind of event was. An entry carrying
+ * `role="menuitem"` answers Enter whether or not anything is listening for a pointer.
+ */
+function activations(match: HTMLElement): Activation[] {
+	return [
+		...removeTargets(match).map((el) => ({
+			what: `a click on ${describe(el)}`,
+			run: () => clickWithCursor(el, { pointerSequence: true })
+		})),
+		{ what: `Enter on ${describe(match)}`, run: () => pressEnter(match) }
+	];
+}
+
+/**
+ * @param attempt Which activation to use. The run's failure count, so each retry tries a
+ * different one rather than repeating what just did nothing.
  */
 async function clickRemoveFromLiked(attempt: number): Promise<boolean> {
 	const delays = [200, 300, 400, 500, 600, 800, 1000, 1500];
@@ -202,15 +226,11 @@ async function clickRemoveFromLiked(attempt: number): Promise<boolean> {
 		// loop's business; that it holds an entry saying "remove from liked" is.
 		const match = findRemoveMatch(openMenuItems());
 		if (match) {
-			const targets = removeTargets(match);
-			const target = targets[Math.min(attempt, targets.length - 1)] ?? match;
-			// The full mouse sequence: these entries commit on `pointerup` and ignore a bare
-			// click. Which node hears it is what `attempt` walks through.
-			postLog(
-				'info',
-				`Clicking "${describe(target)}" (${attempt + 1} of ${targets.length} places the handler could be).`
-			);
-			clickWithCursor(target, { pointerSequence: true });
+			const ways = activations(match);
+			const way = ways[Math.min(attempt, ways.length - 1)];
+			if (!way) return false;
+			postLog('info', `Trying ${way.what} (${attempt + 1} of ${ways.length} ways to fire it).`);
+			way.run();
 			return true;
 		}
 	}
@@ -244,9 +264,22 @@ async function closeMenu(): Promise<void> {
 	await delay(200);
 }
 
+/**
+ * Which video a row is showing, from the `content-id-<id>` class YouTube puts on it.
+ *
+ * The list is virtualised, so "the node left the document" is not the only way a removal
+ * shows: the node can survive and be handed the next video instead. Same element, different
+ * id, and the deletion did happen.
+ */
+function videoIdOf(item: HTMLElement): string {
+	const host = item.querySelector('[class*="content-id-"]') ?? item;
+	return /content-id-([\w-]+)/.exec(host.className)?.[1] ?? '';
+}
+
 async function unlikeVideo(waitTime: number, attempt: number): Promise<boolean> {
 	const item = findVideoItem();
 	if (!item) return false;
+	const id = videoIdOf(item);
 
 	highlightElement(item);
 	if (!(await clickMenuButton(item, waitTime))) return false;
@@ -266,9 +299,11 @@ async function unlikeVideo(waitTime: number, attempt: number): Promise<boolean> 
 		await delay(ms);
 		if (!document.contains(item)) return true;
 		if (item.hasAttribute('is-dismissed') || item.hasAttribute('hidden')) return true;
+		// The row was reused for the next video, which is this list's other way of saying gone.
+		if (id && videoIdOf(item) !== id) return true;
 	}
 
-	postLog('warning', 'Clicked "remove from liked", but the video is still in the list.');
+	postLog('warning', 'Tried to remove it from Liked videos, and it is still in the list.');
 	return false;
 }
 
@@ -280,7 +315,9 @@ export const youTubeLikesAction: DeleteActionDefinition = {
 	async run(params: RunParams): Promise<number> {
 		let deletedCount = 0;
 		let failures = 0;
-		const maxFailures = 3;
+		// One per way `activations` can fire an entry, so the last of them — the keyboard — is
+		// actually reached. Three stopped one short of it.
+		const maxFailures = 4;
 
 		while (failures < maxFailures) {
 			dismissSurveyBanner();

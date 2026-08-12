@@ -77,17 +77,26 @@ const CURSOR_INK = '#000';
  * "This document requires 'TrustedHTML' assignment" as the only clue.
  */
 /**
- * Lucide's `brush-cleaning`, as path data.
+ * Lucide's `broom-sparkles`, as path data.
  *
- * The icon rather than a shape drawn here, and the paths rather than the component: this runs
- * in a foreign document with no Svelte and no bundler around it. Six nodes, built once and
- * kept for the length of the run — see `ensureCursor`.
+ * The paths rather than the component: this draws into a foreign document with no Svelte and
+ * no bundler around it. Kept in step with the package by hand, which is the price of the
+ * engine being able to run anywhere — `@lucide/svelte` is where they came from and where a
+ * corrected version would come from.
+ *
+ * The head is the one closed path and is the one that gets filled.
  */
 const BROOM_PATHS = [
-	'm16 22-1-4',
-	'M19 14a1 1 0 0 0 1-1v-1a2 2 0 0 0-2-2h-3a1 1 0 0 1-1-1V4a2 2 0 0 0-4 0v5a1 1 0 0 1-1 1H6a2 2 0 0 0-2 2v1a1 1 0 0 0 1 1',
-	'M19 14H5l-1.973 6.767A1 1 0 0 0 4 22h16a1 1 0 0 0 .973-1.233z',
-	'm8 22 1-4'
+	'M11 2v2',
+	'M12 3h-2',
+	'M13.5 10.5 22 2',
+	'M14.734 13.841a2 2 0 00-.314-2.42L12.58 9.58a2 2 0 00-2.421-.314l-7.657 4.461A1 1 0 002.3 15.3l6.403 6.403a1 1 0 001.571-.204z',
+	'M20 15v4',
+	'M22 17h-4',
+	'M4 4v4',
+	'm5 18 2-2',
+	'M6 6H2',
+	'm7.699 10.7 5.602 5.601'
 ];
 
 function buildCursorSvg(): SVGSVGElement {
@@ -117,11 +126,12 @@ function ensureCursor(): HTMLElement {
 	if (cursorEl && document.body.contains(cursorEl)) return cursorEl;
 	cursorEl = document.createElement('div');
 	cursorEl.append(buildCursorSvg());
-	// Anchored at the head, not the middle: the broom sweeps what it is standing on, so the
-	// bristles sit on the thing being clicked and the handle points up and away from it.
+	// Anchored on the head, not the middle: a broom sweeps what it stands on, so the head sits
+	// over the thing being clicked and the handle points up and away from it. The head of this
+	// icon is the lower-left corner of the box, around (8, 16) of its 24 — hence the offsets.
 	cursorEl.style.cssText =
 		'position:fixed;z-index:2147483647;pointer-events:none;line-height:0;opacity:1;' +
-		'transform:translate(-16px,-29px);transition:left .2s ease,top .2s ease,opacity .3s ease;' +
+		'transform:translate(-11px,-21px);transition:left .2s ease,top .2s ease,opacity .3s ease;' +
 		'filter:drop-shadow(0 0 2px rgba(255,255,255,.95)) drop-shadow(0 1px 3px rgba(0,0,0,.4));';
 	document.body.appendChild(cursorEl);
 	return cursorEl;

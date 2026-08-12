@@ -5,10 +5,10 @@
 	"type": "module",
 	"scripts": {
 		"start": "tauri dev",
+		"build:extension": "node scripts/build-extension.mjs",
 		"dev": "vite dev",
 		"dev:content": "vite build --config vite.content.config.ts",
 		"build:scripts": "node scripts/build-standalone.mjs",
-		"build:extension": "node scripts/build-extension.mjs",
 		"dev:extension": "node scripts/build-extension.mjs --watch",
 		"dev:app": "npm run dev:content && vite dev",
 		"prepare": "svelte-kit sync",

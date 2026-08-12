@@ -10,7 +10,12 @@
 	import SettingsIcon from '@lucide/svelte/icons/settings';
 	import InfoIcon from '@lucide/svelte/icons/info';
 	import XCloseIcon from '@lucide/svelte/icons/x';
-	import { t } from '$lib/i18n/index.svelte';
+	import ChevronDownIcon from '@lucide/svelte/icons/chevron-down';
+	import ChevronUpIcon from '@lucide/svelte/icons/chevron-up';
+	import SunIcon from '@lucide/svelte/icons/sun';
+	import MoonIcon from '@lucide/svelte/icons/moon';
+	import type { Language } from '$lib/bridge/contract';
+	import { i18n, LANGUAGES, t } from '$lib/i18n/index.svelte';
 	import { browser } from '../browser';
 	import {
 		ALL_ACTIONS,
@@ -42,16 +47,44 @@
 
 	const busy = $derived(run.status === 'preparing' || run.status === 'running');
 	const visible = $derived(PLATFORMS.filter((p) => settings.shown[p.id]));
+
+	/**
+	 * A run folds the window down to its header.
+	 *
+	 * While one is going, every control below is disabled anyway and the only two things worth
+	 * seeing are the count and the way to stop it — both of which live in the header. The
+	 * chevron brings the rest back, and having done that once it stays back for this run.
+	 */
+	let expanded = $state(false);
+	const folded = $derived(busy && !expanded);
+
 	// Hiding both leaves an empty window with a gear in the corner. Showing the panel instead
 	// puts the way back in front of the person who has to find it.
-	const panelOpen = $derived(settingsOpen || visible.length === 0);
+	const panelOpen = $derived(!folded && (settingsOpen || visible.length === 0));
 
 	void browser.storage.local.get(SETTINGS_KEY).then((stored) => {
-		settings = (stored[SETTINGS_KEY] as PopupSettings | undefined) ?? DEFAULT_SETTINGS;
+		settings = { ...DEFAULT_SETTINGS, ...(stored[SETTINGS_KEY] as PopupSettings | undefined) };
+		apply(settings);
 	});
+
+	/**
+	 * Theme and language onto the document.
+	 *
+	 * `main.ts` does this once from the browser's own preferences so the first paint is not
+	 * white; this runs again as soon as the stored choice arrives, and after every change.
+	 */
+	function apply(next: PopupSettings): void {
+		const dark =
+			next.theme === 'Dark' ||
+			(next.theme === 'Default' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+		document.documentElement.classList.toggle('dark', dark);
+		i18n.setting = next.language as Language;
+		i18n.applyToDocument();
+	}
 
 	function save(next: PopupSettings): void {
 		settings = next;
+		apply(next);
 		void browser.storage.local.set({ [SETTINGS_KEY]: next });
 	}
 
@@ -71,6 +104,13 @@
 		if (!Number.isFinite(ms) || ms < 0) return;
 		save({ ...settings, timeouts: { ...settings.timeouts, [key]: Math.round(ms) } });
 	}
+
+	// Two states, not three: `Default` is what it starts as, and the first press is a choice
+	// away from whatever it happens to be showing.
+	const isDark = $derived(
+		settings.theme === 'Dark' ||
+			(settings.theme === 'Default' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+	);
 
 	// Chrome closes this window as soon as focus leaves it, so nothing here is state — it is a
 	// view of what the worker holds, fetched again on every open.
@@ -112,6 +152,8 @@
 
 	function start(platform: Platform, actions: Action[]): void {
 		lines = [];
+		// Folded again for the new run, whatever the last one was left as.
+		expanded = false;
 		void browser.runtime.sendMessage({ kind: 'start', platform, actions });
 	}
 
@@ -153,18 +195,34 @@
 			>
 				{t('run.stop')}
 			</button>
+			<button
+				type="button"
+				aria-label={folded ? t('nav.expand') : t('nav.collapse')}
+				aria-expanded={!folded}
+				onclick={() => (expanded = !expanded)}
+				class="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-md text-muted-foreground
+				       transition-colors duration-150 hover:bg-muted hover:text-foreground focus-visible:ring-2
+				       focus-visible:ring-ring focus-visible:outline-none"
+			>
+				{#if folded}
+					<ChevronDownIcon class="size-3.5" />
+				{:else}
+					<ChevronUpIcon class="size-3.5" />
+				{/if}
+			</button>
+		{:else}
+			<button
+				type="button"
+				aria-label={t('nav.settings')}
+				aria-expanded={panelOpen}
+				onclick={() => (settingsOpen = !settingsOpen)}
+				class="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-md transition-colors
+				       duration-150 hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none
+				       {panelOpen ? 'bg-muted text-foreground' : 'text-muted-foreground'}"
+			>
+				<SettingsIcon class="size-3.5" />
+			</button>
 		{/if}
-		<button
-			type="button"
-			aria-label={t('nav.settings')}
-			aria-expanded={panelOpen}
-			onclick={() => (settingsOpen = !settingsOpen)}
-			class="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-md transition-colors
-			       duration-150 hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none
-			       {panelOpen ? 'bg-muted text-foreground' : 'text-muted-foreground'}"
-		>
-			<SettingsIcon class="size-3.5" />
-		</button>
 	</header>
 
 	{#if panelOpen}
@@ -183,6 +241,35 @@
 						{platform.label}
 					</label>
 				{/each}
+
+				<div class="ms-auto flex items-center gap-1">
+					<!-- Each language names itself, so nothing in this list is translated. -->
+					<select
+						aria-label={t('nav.settings')}
+						value={settings.language}
+						onchange={(e) => save({ ...settings, language: e.currentTarget.value })}
+						class="h-6 cursor-pointer rounded-md border border-input bg-background px-1 text-xs
+						       focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+					>
+						{#each LANGUAGES as language (language.id)}
+							<option value={language.id}>{language.label}</option>
+						{/each}
+					</select>
+					<button
+						type="button"
+						aria-label={isDark ? t('header.toLight') : t('header.toDark')}
+						onclick={() => save({ ...settings, theme: isDark ? 'Light' : 'Dark' })}
+						class="flex size-6 cursor-pointer items-center justify-center rounded-md text-muted-foreground
+						       transition-colors duration-150 hover:bg-muted hover:text-foreground focus-visible:ring-2
+						       focus-visible:ring-ring focus-visible:outline-none"
+					>
+						{#if isDark}
+							<SunIcon class="size-3.5" />
+						{:else}
+							<MoonIcon class="size-3.5" />
+						{/if}
+					</button>
+				</div>
 			</div>
 
 			<!-- Raising these is what a platform that started refusing needs. Lowering them is what
@@ -207,23 +294,14 @@
 		</div>
 	{/if}
 
-	<!-- Shown once. The two things a first run has to know are which half of a row does what,
-	     and that the other half is final — neither is guessable from a list of nouns. The app
-	     says these in a sidebar that is always there; a popup has one chance. -->
-	{#if !settings.welcomed}
-		<div class="flex gap-2 border-b bg-primary/5 px-3 py-2.5">
-			<InfoIcon class="mt-0.5 size-3.5 shrink-0 text-primary" />
-			<div class="flex-1 text-[11px] leading-relaxed">
-				<p class="font-medium">{t('app.tagline')}</p>
-				<p class="mt-1 text-muted-foreground">
-					Click a row to open that list on the platform. The bin beside it empties the list, item by
-					item, in the tab in front of you.
-				</p>
-				<p class="mt-1 text-muted-foreground">
-					Deletion cannot be undone, and runs are deliberately slow — the pauses are what keep the
-					session from being read as a bot.
-				</p>
-			</div>
+	<!-- One line, shown once: which half of a row does what is the thing a list of nouns cannot
+	     say, and the other half being final is the thing that has to be said before it is. -->
+	{#if !settings.welcomed && !folded}
+		<div class="flex items-center gap-2 border-b bg-primary/5 px-3 py-2">
+			<InfoIcon class="size-3.5 shrink-0 text-primary" />
+			<p class="flex-1 text-[11px] leading-snug">
+				Click a row to open that list; the bin beside it empties it, and that cannot be undone.
+			</p>
 			<button
 				type="button"
 				aria-label={t('confirm.cancel')}
@@ -237,52 +315,54 @@
 
 	<!-- Two columns rather than one list: the platforms have nothing to do with each other, and
 	     stacking them made a popup twice as tall as it needed to be for seven rows. -->
-	<div class="grid divide-x {visible.length > 1 ? 'grid-cols-2' : 'grid-cols-1'}">
-		{#each visible as platform (platform.id)}
-			{@const Icon = platform.icon}
-			<section class="flex flex-col gap-0.5 p-1.5">
-				<h2
-					class="flex items-center gap-1.5 px-2 pt-1 pb-1.5 text-[11px] font-medium tracking-tight text-muted-foreground"
-				>
-					<Icon class={platform.id === 'youtube' ? 'size-3.5 text-red-600' : 'size-3.5'} />
-					{platform.label}
-				</h2>
+	{#if !folded}
+		<div class="grid divide-x {visible.length > 1 ? 'grid-cols-2' : 'grid-cols-1'}">
+			{#each visible as platform (platform.id)}
+				{@const Icon = platform.icon}
+				<section class="flex flex-col gap-0.5 p-1.5">
+					<h2
+						class="flex items-center gap-1.5 px-2 pt-1 pb-1.5 text-[11px] font-medium tracking-tight text-muted-foreground"
+					>
+						<Icon class={platform.id === 'youtube' ? 'size-3.5 text-red-600' : 'size-3.5'} />
+						{platform.label}
+					</h2>
 
-				{#each platform.groups as group (group.key)}
-					<ActionRow
-						label={group.label}
-						icon={group.icon}
+					{#each platform.groups as group (group.key)}
+						<ActionRow
+							label={group.label}
+							icon={group.icon}
+							disabled={busy}
+							active={busy && isCurrent(platform.id, group)}
+							current={!busy && isCurrent(platform.id, group)}
+							onShow={() => show(platform.id, group)}
+							onDelete={() => ask(platform.id, group)}
+						/>
+					{/each}
+
+					<!-- Pinned to the bottom of its column so both sit on one line despite X having
+					     five lists and YouTube two. No show button: "everything" is not a page. -->
+					<button
+						type="button"
 						disabled={busy}
-						active={busy && isCurrent(platform.id, group)}
-						current={!busy && isCurrent(platform.id, group)}
-						onShow={() => show(platform.id, group)}
-						onDelete={() => ask(platform.id, group)}
-					/>
-				{/each}
+						onclick={() => ask(platform.id)}
+						class="group/all mt-auto flex h-8 cursor-pointer items-center gap-2 rounded-md ps-2 pe-2 text-start
+						       transition-colors duration-150 hover:bg-destructive/10 focus-visible:ring-2
+						       focus-visible:ring-ring focus-visible:outline-none disabled:pointer-events-none
+						       disabled:opacity-40"
+					>
+						<Trash2Icon
+							class="size-3.5 shrink-0 text-muted-foreground group-hover/all:text-destructive"
+						/>
+						<span class="flex-1 truncate text-[13px] group-hover/all:text-destructive">
+							{t('action.deleteAll')}
+						</span>
+					</button>
+				</section>
+			{/each}
+		</div>
+	{/if}
 
-				<!-- Pinned to the bottom of its column so both sit on one line despite X having
-				     five lists and YouTube two. No show button: "everything" is not a page. -->
-				<button
-					type="button"
-					disabled={busy}
-					onclick={() => ask(platform.id)}
-					class="group/all mt-auto flex h-8 cursor-pointer items-center gap-2 rounded-md ps-2 pe-2 text-start
-					       transition-colors duration-150 hover:bg-destructive/10 focus-visible:ring-2
-					       focus-visible:ring-ring focus-visible:outline-none disabled:pointer-events-none
-					       disabled:opacity-40"
-				>
-					<Trash2Icon
-						class="size-3.5 shrink-0 text-muted-foreground group-hover/all:text-destructive"
-					/>
-					<span class="flex-1 truncate text-[13px] group-hover/all:text-destructive">
-						{t('action.deleteAll')}
-					</span>
-				</button>
-			</section>
-		{/each}
-	</div>
-
-	{#if run.message || lines.length}
+	{#if !folded && (run.message || lines.length)}
 		<div class="border-t px-1.5 py-1.5">
 			{#if run.message}
 				<p class="px-2 pb-1 text-xs text-destructive">{run.message}</p>

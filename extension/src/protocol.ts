@@ -100,6 +100,10 @@ export interface PopupSettings {
 	timeouts: Timeouts;
 	/** Set once the welcome box has been dismissed. */
 	welcomed: boolean;
+	/** `Default` follows the browser, which is what it did before there was a choice. */
+	theme: 'Default' | 'Light' | 'Dark';
+	/** A `Language` from `$lib/i18n`; `System` reads `navigator.language`. */
+	language: string;
 }
 
 export const SETTINGS_KEY = 'popupSettings';
@@ -112,7 +116,9 @@ export const DEFAULT_SETTINGS: PopupSettings = {
 		waitBetweenRetryDeleteAttempts: 500,
 		waitAfterDocumentLoad: 3000
 	},
-	welcomed: false
+	welcomed: false,
+	theme: 'Default',
+	language: 'System'
 };
 
 /** Popup -> background. One action or all of them is the same request with a longer list. */

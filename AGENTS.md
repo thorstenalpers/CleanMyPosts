@@ -44,6 +44,12 @@ Two Vite build targets: `chrome` (the SvelteKit app, prerendered to `build/` by
 plugin). The content bundle is compiled into the host binary with `include_str!`, so the
 installed app carries no loose script tree.
 
+The engine has two consumers besides the app, both built from the same `src/lib/engine/` and
+neither a second implementation of it: the standalone console scripts
+(`scripts/build-standalone.mjs`) and the Chrome/Firefox extension (`extension/`, see
+[extension/README.md](extension/README.md)). A selector fixed for the app is fixed for all
+three in the same commit — that is the point of them living here.
+
 ## Commands
 
 ```bash
@@ -54,7 +60,8 @@ npm run lint
 npm run check
 npm run test
 npm run test:e2e
-npm run app:build    # NSIS installer + updater artifacts
+npm run app:build         # NSIS installer + updater artifacts
+npm run build:extension   # unpacked Chrome and Firefox builds in dist/extension/
 cargo test --manifest-path src-tauri/Cargo.toml
 ```
 

@@ -358,6 +358,18 @@ export function hideShield(): void {
 	shieldAbort = null;
 }
 
+type Transport = (message: ContentMessage) => void;
+
+let transport: Transport | null = null;
+
+/**
+ * Sends the reports somewhere other than WebView2 — the browser extension routes them
+ * through `chrome.runtime` instead, since a content script has no host webview to post to.
+ */
+export function setTransport(next: Transport): void {
+	transport = next;
+}
+
 /**
  * The one way out of the page.
  *
@@ -367,6 +379,10 @@ export function hideShield(): void {
  * surface left there, so it gets the same lines.
  */
 function post(message: ContentMessage): void {
+	if (transport) {
+		transport(message);
+		return;
+	}
 	const bridge = window.chrome?.webview;
 	if (bridge) {
 		bridge.postMessage(message);

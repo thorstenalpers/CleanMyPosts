@@ -1,0 +1,5 @@
+@import '../../../src/app.css';
+
+/* Tailwind scans upwards from the stylesheet it is imported into, which is `src/` — this
+   directory is not under it and its classes would be dropped without saying so. */
+@source '../../';

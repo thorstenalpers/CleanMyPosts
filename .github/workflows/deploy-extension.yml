@@ -1,0 +1,81 @@
+name: 'Deploy Extension'
+
+on:
+  workflow_dispatch: # manual trigger
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    env:
+      MANIFEST_PATH: 'extension/manifest.json'
+
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          ref: main
+
+      - name: Install Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm run test
+
+      - name: Typecheck
+        run: npm run check
+
+      - name: Extract version
+        shell: bash
+        run: |
+          version=$(node -p "require('./${MANIFEST_PATH}').version")
+          if [ -z "$version" ]; then
+            echo "No version in ${MANIFEST_PATH}" >&2
+            exit 1
+          fi
+          echo "VERSION=$version" >> "$GITHUB_ENV"
+
+      - name: Build
+        run: npm run build:extension
+
+      # Stores take a zip of the extension root, not of a folder containing it.
+      - name: Package
+        shell: bash
+        run: |
+          mkdir -p artifacts
+          for browser in chrome firefox; do
+            (cd "dist/extension/$browser" && zip -qr "../../../artifacts/cleanmyposts-$browser-$VERSION.zip" .)
+          done
+          ls -la artifacts
+
+      - name: Create git tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "ext-v${{ env.VERSION }}" -m "Extension v${{ env.VERSION }}"
+          git push origin "ext-v${{ env.VERSION }}"
+
+      # `make_latest: false` is load-bearing, not tidiness. The desktop updater polls
+      # `releases/latest/download/latest.json`, and an extension release taking that spot
+      # leaves every installed app unable to find an update.
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: 'ext-v${{ env.VERSION }}'
+          name: 'CleanMyPosts Extension ${{ env.VERSION }}'
+          body_path: ./release-notes/ext-v${{ env.VERSION }}.md
+          make_latest: 'false'
+          files: artifacts/*.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

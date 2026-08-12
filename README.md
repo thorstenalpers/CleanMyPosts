@@ -7,7 +7,7 @@
 [![Donate](https://img.shields.io/badge/donate-PayPal-00457C?style=flat-square&logo=paypal&logoColor=white)](https://www.paypal.com/donate/?hosted_button_id=QYHGE9LA9SNAN)
 [![Stars](https://img.shields.io/github/stars/thorstenalpers/CleanMyPosts?style=flat-square&logo=github&label=stars)](https://github.com/thorstenalpers/CleanMyPosts)
 
-**CleanMyPosts** is a lightweight Windows desktop app that securely deletes all posts, reposts, replies, likes, and followings from your X (formerly Twitter) account, as well as YouTube comments, in bulk using browser automation.
+**CleanMyPosts** deletes all posts, reposts, replies, likes and followings from your X (formerly Twitter) account, and your YouTube comments and liked videos, in bulk — by driving a real browser session rather than an API. It comes as a Windows desktop app and as a [Chrome and Firefox extension](#-in-your-own-browser-the-extension) built from the same engine.
 
 There is **no API, no OAuth, and no token**. You sign in exactly as you would in a browser,
 and the app clicks the same buttons you would — just without stopping. Deletions are
@@ -51,9 +51,13 @@ YouTube does not stop a run.
 
 ### YouTube
 
-- 🔍 **See a list first** — comments via Google My Activity, liked videos
+- 🔍 **See a list first** — comments and liked videos, both on Google My Activity
 - 🗑️ **Empty it** — either one, on its own
 - 💣 **Delete everything** — comments and liked videos in one run
+
+Liked videos are cleared on My Activity rather than on the Liked videos playlist: it removes
+them with one button instead of a menu, and it lists the ones you disliked alongside them — so
+those go too.
 
 Every delete asks for confirmation first, and the confirmation for **Delete everything**
 names each list it is about to empty. A finished run reports in the status bar — green when
@@ -153,6 +157,36 @@ controls do not disappear mid-task.
 **Assistant** — the exact text that would be sent, shown before anything is sent.
 
 <img src="./assets/Assistant.png" alt="The assistant, showing what would be sent before it is sent" width="700" />
+
+---
+
+## 🧩 In Your Own Browser: The Extension
+
+There is a Chrome and a Firefox extension that does the same deleting in a tab you already have
+open, for people who are not on Windows or would rather not install anything.
+
+It is not a second implementation. `src/lib/engine/` — the same code the app injects into its
+own browser window — is what the extension injects into yours, so a selector fixed for one is
+fixed for both in the same commit.
+
+- **Same lists:** posts, replies, reposts, likes and followings on X; comments and liked videos
+  on YouTube.
+- **Same deliberate slowness.** The pauses between deletions are the only brake against a
+  platform reading the session as automation, and they are configurable here too.
+- **Same nothing-stored:** no account, no server, no analytics. What is kept is which action is
+  running and how far it has got, in memory, until the browser closes.
+
+It is not in either store yet. Until it is, download the build from
+[Releases](https://github.com/thorstenalpers/CleanMyPosts/releases) — or build it yourself with
+`npm run build:extension` — and load it unpacked:
+
+- **Chrome:** `chrome://extensions`, turn on Developer mode, _Load unpacked_, pick the `chrome`
+  folder.
+- **Firefox:** `about:debugging#/runtime/this-firefox`, _Load Temporary Add-on_, pick the
+  `manifest.json` inside the `firefox` folder. Temporary add-ons are gone on restart.
+
+[extension/README.md](./extension/README.md) has the rest, including how to patch a selector
+from the console when a platform moves something.
 
 ---
 

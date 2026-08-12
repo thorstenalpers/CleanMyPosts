@@ -114,12 +114,39 @@ promise an interface that is still English.
 
 None of these exist yet. Nothing here can be submitted without them.
 
-| Asset              | Size                    | Required                                      |
-| ------------------ | ----------------------- | --------------------------------------------- |
-| Store icon         | 128×128 PNG             | yes — `src-tauri/icons/128x128.png` may serve |
-| Screenshot         | 1280×800 or 640×400 PNG | yes, at least 1, up to 5                      |
-| Small promo tile   | 440×280 PNG             | only to be eligible for featuring             |
-| Marquee promo tile | 1400×560 PNG            | optional                                      |
+| Asset              | Chrome                                          | AMO                                 |
+| ------------------ | ----------------------------------------------- | ----------------------------------- |
+| Store icon         | 128×128 PNG (artwork within 96×96)              | 32×32 and 64×64, PNG or JPEG        |
+| Screenshot         | 1280×800 or 640×400, square corners, full bleed | 1280×800 recommended, 1.6:1         |
+| How many           | at least 1, at most 5 — five is what to aim for | no practical limit, one per feature |
+| Small promo tile   | 440×280                                         | —                                   |
+| Marquee promo tile | 1400×560, optional                              | —                                   |
+
+**Formats:** neither store documents what a screenshot may be. Both upload forms take PNG and
+JPEG; nothing suggests an animated format is accepted, and a store that downscales every
+screenshot to 640×400 for display is not the place to rely on one. Chrome takes a YouTube link
+for anything that has to move. AMO shows one set of screenshots to every locale — only their
+captions are translated.
+
+The store rejects screenshots that are mostly text, and they have to show the extension itself
+rather than a mock-up. Five worth having, in order:
+
+1. The popup open over a platform page, both columns, nothing running — the seven lists at a
+   glance, and the two halves of a row.
+2. Mid-run: folded to its header with the count climbing and the stop button, the broom pointer
+   on the page behind it.
+3. The confirmation for **Delete everything**, which names the lists it is about to empty.
+4. The settings panel: platforms, the three waits, theme, language.
+5. A finished run with the log open under it.
+
+Every screenshot needs the account content in it blurred or replaced with a throwaway account.
+A store screenshot is a permanent, indexed copy of whatever is on it.
+
+------------------ | ----------------------- | --------------------------------------------- |
+| Store icon | 128×128 PNG | yes — `src-tauri/icons/128x128.png` may serve |
+| Screenshot | 1280×800 or 640×400 PNG | yes, at least 1, up to 5 |
+| Small promo tile | 440×280 PNG | only to be eligible for featuring |
+| Marquee promo tile | 1400×560 PNG | optional |
 
 Screenshots have to show the extension itself, not a mock-up, and the store rejects ones that
 are mostly text. What is worth showing, in order:

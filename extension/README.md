@@ -46,3 +46,7 @@ what ends it, the same way closing the tab ends a standalone script.
 Neither store has been approached. An extension that clicks through x.com on the user's behalf
 runs into the platform's own rules on automation — the desktop app takes the WebView2 route
 partly to stay out of that argument, and this one cannot. Treat store acceptance as unproven.
+
+The listing copy, the permission justifications and what is still missing are in
+[store-listing.md](store-listing.md). Screenshots are the blocker: none exist, and neither
+store accepts a submission without them.

@@ -1,5 +1,9 @@
 @import '../../../src/app.css';
 
-/* Tailwind scans upwards from the stylesheet it is imported into, which is `src/` — this
-   directory is not under it and its classes would be dropped without saying so. */
+/* Both trees, spelled out, because neither is found on its own: the popup build sets Vite's
+   root to this directory, and Tailwind takes its automatic source detection from that. Without
+   the second line the app components render unstyled — `size-7`, every `group-hover/row`, the
+   whole active-row treatment — and nothing warns, because a class that was never scanned is
+   indistinguishable from one nobody used. */
 @source '../../';
+@source '../../../src/lib/components';

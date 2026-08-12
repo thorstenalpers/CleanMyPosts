@@ -289,11 +289,7 @@ function videoIdOf(item: HTMLElement): string {
 	return /content-id-([\w-]+)/.exec(host.className)?.[1] ?? '';
 }
 
-async function unlikeVideo(
-	item: HTMLElement,
-	waitTime: number,
-	attempt: number
-): Promise<boolean> {
+async function unlikeVideo(item: HTMLElement, waitTime: number, attempt: number): Promise<boolean> {
 	const id = videoIdOf(item);
 
 	highlightElement(item);

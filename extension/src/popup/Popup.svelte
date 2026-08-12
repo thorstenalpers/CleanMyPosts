@@ -8,6 +8,8 @@
 	import YoutubeIcon from '$lib/components/icons/youtube-icon.svelte';
 	import Trash2Icon from '@lucide/svelte/icons/trash-2';
 	import SettingsIcon from '@lucide/svelte/icons/settings';
+	import InfoIcon from '@lucide/svelte/icons/info';
+	import XCloseIcon from '@lucide/svelte/icons/x';
 	import { t } from '$lib/i18n/index.svelte';
 	import { browser } from '../browser';
 	import {
@@ -20,7 +22,8 @@
 		type BackgroundMessage,
 		type PopupSettings,
 		type RunState,
-		type Snapshot
+		type Snapshot,
+		type Timeouts
 	} from '../protocol';
 
 	const PLATFORMS: { id: Platform; label: string; icon: Component; groups: ActionGroupDef[] }[] = [
@@ -47,9 +50,26 @@
 		settings = (stored[SETTINGS_KEY] as PopupSettings | undefined) ?? DEFAULT_SETTINGS;
 	});
 
+	function save(next: PopupSettings): void {
+		settings = next;
+		void browser.storage.local.set({ [SETTINGS_KEY]: next });
+	}
+
 	function toggle(id: Platform): void {
-		settings = { shown: { ...settings.shown, [id]: !settings.shown[id] } };
-		void browser.storage.local.set({ [SETTINGS_KEY]: settings });
+		save({ ...settings, shown: { ...settings.shown, [id]: !settings.shown[id] } });
+	}
+
+	/** The same three the app exposes, under the same labels. */
+	const TIMEOUT_FIELDS = [
+		{ key: 'waitAfterDocumentLoad', label: 'settings.timing.afterLoad' },
+		{ key: 'waitAfterDelete', label: 'settings.timing.betweenDeletes' },
+		{ key: 'waitBetweenRetryDeleteAttempts', label: 'settings.timing.betweenRetries' }
+	] as const;
+
+	function setTimeout_(key: keyof Timeouts, value: string): void {
+		const ms = Number(value);
+		if (!Number.isFinite(ms) || ms < 0) return;
+		save({ ...settings, timeouts: { ...settings.timeouts, [key]: Math.round(ms) } });
 	}
 
 	// Chrome closes this window as soon as focus leaves it, so nothing here is state — it is a
@@ -112,12 +132,12 @@
 	}
 </script>
 
-<div
-	class="flex flex-col bg-background text-foreground {visible.length > 1
-		? 'w-[520px]'
-		: 'w-[280px]'}"
->
+<!-- One width, whichever platforms are shown: a popup that resizes as a checkbox is ticked
+     moves the controls under the pointer that just ticked it. -->
+<div class="flex w-[520px] flex-col bg-background text-foreground">
 	<header class="flex h-11 shrink-0 items-center gap-2 border-b px-3">
+		<!-- The extension's own icon, from the package root next to popup.html. -->
+		<img src="icons/32x32.png" alt="" width="16" height="16" class="size-4 shrink-0" />
 		<span class="flex-1 text-[13px] font-semibold tracking-tight">CleanMyPosts</span>
 		{#if run.status !== 'idle'}
 			<span class="text-xs text-muted-foreground tabular-nums">
@@ -148,20 +168,70 @@
 	</header>
 
 	{#if panelOpen}
-		<div class="flex items-center gap-4 border-b bg-muted/40 px-3 py-2">
-			{#each PLATFORMS as platform (platform.id)}
-				{@const Icon = platform.icon}
-				<label class="flex cursor-pointer items-center gap-1.5 text-xs">
-					<input
-						type="checkbox"
-						checked={settings.shown[platform.id]}
-						onchange={() => toggle(platform.id)}
-						class="size-3.5 cursor-pointer accent-primary"
-					/>
-					<Icon class={platform.id === 'youtube' ? 'size-3.5 text-red-600' : 'size-3.5'} />
-					{platform.label}
-				</label>
-			{/each}
+		<div class="flex flex-col gap-2 border-b bg-muted/40 px-3 py-2">
+			<div class="flex items-center gap-4">
+				{#each PLATFORMS as platform (platform.id)}
+					{@const Icon = platform.icon}
+					<label class="flex cursor-pointer items-center gap-1.5 text-xs">
+						<input
+							type="checkbox"
+							checked={settings.shown[platform.id]}
+							onchange={() => toggle(platform.id)}
+							class="size-3.5 cursor-pointer accent-primary"
+						/>
+						<Icon class={platform.id === 'youtube' ? 'size-3.5 text-red-600' : 'size-3.5'} />
+						{platform.label}
+					</label>
+				{/each}
+			</div>
+
+			<!-- Raising these is what a platform that started refusing needs. Lowering them is what
+			     gets a session flagged, which is why they are named rather than tuned away. -->
+			<div class="flex flex-col gap-1 border-t pt-2">
+				{#each TIMEOUT_FIELDS as field (field.key)}
+					<label class="flex items-center gap-2 text-xs">
+						<span class="flex-1 text-muted-foreground">{t(field.label)}</span>
+						<input
+							type="number"
+							min="0"
+							step="100"
+							value={settings.timeouts[field.key]}
+							onchange={(e) => setTimeout_(field.key, e.currentTarget.value)}
+							class="h-6 w-20 rounded-md border border-input bg-background px-1.5 text-right
+							       tabular-nums focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+						/>
+						<span class="w-4 text-[10px] text-muted-foreground">ms</span>
+					</label>
+				{/each}
+			</div>
+		</div>
+	{/if}
+
+	<!-- Shown once. The two things a first run has to know are which half of a row does what,
+	     and that the other half is final — neither is guessable from a list of nouns. The app
+	     says these in a sidebar that is always there; a popup has one chance. -->
+	{#if !settings.welcomed}
+		<div class="flex gap-2 border-b bg-primary/5 px-3 py-2.5">
+			<InfoIcon class="mt-0.5 size-3.5 shrink-0 text-primary" />
+			<div class="flex-1 text-[11px] leading-relaxed">
+				<p class="font-medium">{t('app.tagline')}</p>
+				<p class="mt-1 text-muted-foreground">
+					Click a row to open that list on the platform. The bin beside it empties the list, item by
+					item, in the tab in front of you.
+				</p>
+				<p class="mt-1 text-muted-foreground">
+					Deletion cannot be undone, and runs are deliberately slow — the pauses are what keep the
+					session from being read as a bot.
+				</p>
+			</div>
+			<button
+				type="button"
+				aria-label={t('confirm.cancel')}
+				onclick={() => save({ ...settings, welcomed: true })}
+				class="size-5 shrink-0 cursor-pointer rounded text-muted-foreground hover:bg-muted hover:text-foreground"
+			>
+				<XCloseIcon class="size-3.5" />
+			</button>
 		</div>
 	{/if}
 

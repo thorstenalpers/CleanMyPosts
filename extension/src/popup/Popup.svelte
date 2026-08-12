@@ -49,14 +49,14 @@
 	const visible = $derived(PLATFORMS.filter((p) => settings.shown[p.id]));
 
 	/**
-	 * A run folds the window down to its header.
+	 * Whether the window is folded down to its header.
 	 *
-	 * While one is going, every control below is disabled anyway and the only two things worth
-	 * seeing are the count and the way to stop it — both of which live in the header. The
-	 * chevron brings the rest back, and having done that once it stays back for this run.
+	 * Set when a run starts and left alone after it ends: a finished run is not a reason to
+	 * unfold something the last one folded, and the count of what it removed is in the header
+	 * either way. Its own state rather than something derived from `busy`, so the chevron works
+	 * at any time and its answer survives the run it was pressed during.
 	 */
-	let expanded = $state(false);
-	const folded = $derived(busy && !expanded);
+	let folded = $state(false);
 
 	// Hiding both leaves an empty window with a gear in the corner. Showing the panel instead
 	// puts the way back in front of the person who has to find it.
@@ -152,8 +152,8 @@
 
 	function start(platform: Platform, actions: Action[]): void {
 		lines = [];
-		// Folded again for the new run, whatever the last one was left as.
-		expanded = false;
+		// Out of the way for the run. Nothing unfolds it again but the chevron.
+		folded = true;
 		void browser.runtime.sendMessage({ kind: 'start', platform, actions });
 	}
 
@@ -195,27 +195,16 @@
 			>
 				{t('run.stop')}
 			</button>
-			<button
-				type="button"
-				aria-label={folded ? t('nav.expand') : t('nav.collapse')}
-				aria-expanded={!folded}
-				onclick={() => (expanded = !expanded)}
-				class="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-md text-muted-foreground
-				       transition-colors duration-150 hover:bg-muted hover:text-foreground focus-visible:ring-2
-				       focus-visible:ring-ring focus-visible:outline-none"
-			>
-				{#if folded}
-					<ChevronDownIcon class="size-3.5" />
-				{:else}
-					<ChevronUpIcon class="size-3.5" />
-				{/if}
-			</button>
 		{:else}
+			<!-- Nothing to configure while folded, so the gear opens both at once. -->
 			<button
 				type="button"
 				aria-label={t('nav.settings')}
 				aria-expanded={panelOpen}
-				onclick={() => (settingsOpen = !settingsOpen)}
+				onclick={() => {
+					folded = false;
+					settingsOpen = !settingsOpen;
+				}}
 				class="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-md transition-colors
 				       duration-150 hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none
 				       {panelOpen ? 'bg-muted text-foreground' : 'text-muted-foreground'}"
@@ -223,6 +212,21 @@
 				<SettingsIcon class="size-3.5" />
 			</button>
 		{/if}
+		<button
+			type="button"
+			aria-label={folded ? t('nav.expand') : t('nav.collapse')}
+			aria-expanded={!folded}
+			onclick={() => (folded = !folded)}
+			class="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-md text-muted-foreground
+			       transition-colors duration-150 hover:bg-muted hover:text-foreground focus-visible:ring-2
+			       focus-visible:ring-ring focus-visible:outline-none"
+		>
+			{#if folded}
+				<ChevronDownIcon class="size-3.5" />
+			{:else}
+				<ChevronUpIcon class="size-3.5" />
+			{/if}
+		</button>
 	</header>
 
 	{#if panelOpen}

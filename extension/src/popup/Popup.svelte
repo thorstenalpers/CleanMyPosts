@@ -7,14 +7,18 @@
 	import XIcon from '$lib/components/icons/x-icon.svelte';
 	import YoutubeIcon from '$lib/components/icons/youtube-icon.svelte';
 	import Trash2Icon from '@lucide/svelte/icons/trash-2';
+	import SettingsIcon from '@lucide/svelte/icons/settings';
 	import { t } from '$lib/i18n/index.svelte';
 	import { browser } from '../browser';
 	import {
 		ALL_ACTIONS,
+		DEFAULT_SETTINGS,
 		IDLE,
 		LOG_LIMIT,
+		SETTINGS_KEY,
 		type Action,
 		type BackgroundMessage,
+		type PopupSettings,
 		type RunState,
 		type Snapshot
 	} from '../protocol';
@@ -30,8 +34,23 @@
 	let lines = $state<string[]>([]);
 	let confirmTarget = $state<{ platform: Platform; group?: ActionGroupDef } | null>(null);
 	let confirmOpen = $state(false);
+	let settings = $state<PopupSettings>(DEFAULT_SETTINGS);
+	let settingsOpen = $state(false);
 
 	const busy = $derived(run.status === 'preparing' || run.status === 'running');
+	const visible = $derived(PLATFORMS.filter((p) => settings.shown[p.id]));
+	// Hiding both leaves an empty window with a gear in the corner. Showing the panel instead
+	// puts the way back in front of the person who has to find it.
+	const panelOpen = $derived(settingsOpen || visible.length === 0);
+
+	void browser.storage.local.get(SETTINGS_KEY).then((stored) => {
+		settings = (stored[SETTINGS_KEY] as PopupSettings | undefined) ?? DEFAULT_SETTINGS;
+	});
+
+	function toggle(id: Platform): void {
+		settings = { shown: { ...settings.shown, [id]: !settings.shown[id] } };
+		void browser.storage.local.set({ [SETTINGS_KEY]: settings });
+	}
 
 	// Chrome closes this window as soon as focus leaves it, so nothing here is state — it is a
 	// view of what the worker holds, fetched again on every open.
@@ -93,7 +112,11 @@
 	}
 </script>
 
-<div class="flex w-[520px] flex-col bg-background text-foreground">
+<div
+	class="flex flex-col bg-background text-foreground {visible.length > 1
+		? 'w-[520px]'
+		: 'w-[280px]'}"
+>
 	<header class="flex h-11 shrink-0 items-center gap-2 border-b px-3">
 		<span class="flex-1 text-[13px] font-semibold tracking-tight">CleanMyPosts</span>
 		{#if run.status !== 'idle'}
@@ -111,12 +134,41 @@
 				{t('run.stop')}
 			</button>
 		{/if}
+		<button
+			type="button"
+			aria-label={t('nav.settings')}
+			aria-expanded={panelOpen}
+			onclick={() => (settingsOpen = !settingsOpen)}
+			class="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-md transition-colors
+			       duration-150 hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none
+			       {panelOpen ? 'bg-muted text-foreground' : 'text-muted-foreground'}"
+		>
+			<SettingsIcon class="size-3.5" />
+		</button>
 	</header>
+
+	{#if panelOpen}
+		<div class="flex items-center gap-4 border-b bg-muted/40 px-3 py-2">
+			{#each PLATFORMS as platform (platform.id)}
+				{@const Icon = platform.icon}
+				<label class="flex cursor-pointer items-center gap-1.5 text-xs">
+					<input
+						type="checkbox"
+						checked={settings.shown[platform.id]}
+						onchange={() => toggle(platform.id)}
+						class="size-3.5 cursor-pointer accent-primary"
+					/>
+					<Icon class={platform.id === 'youtube' ? 'size-3.5 text-red-600' : 'size-3.5'} />
+					{platform.label}
+				</label>
+			{/each}
+		</div>
+	{/if}
 
 	<!-- Two columns rather than one list: the platforms have nothing to do with each other, and
 	     stacking them made a popup twice as tall as it needed to be for seven rows. -->
-	<div class="grid grid-cols-2 divide-x">
-		{#each PLATFORMS as platform (platform.id)}
+	<div class="grid divide-x {visible.length > 1 ? 'grid-cols-2' : 'grid-cols-1'}">
+		{#each visible as platform (platform.id)}
 			{@const Icon = platform.icon}
 			<section class="flex flex-col gap-0.5 p-1.5">
 				<h2

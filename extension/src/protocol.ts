@@ -59,6 +59,17 @@ export interface Snapshot {
 /** How many log lines are kept for a reopened popup. */
 export const LOG_LIMIT = 100;
 
+/**
+ * The popup's own preferences. In `storage.local`, so they survive the browser closing —
+ * unlike everything else here, which is about one run and is meant to go.
+ */
+export interface PopupSettings {
+	shown: Record<Platform, boolean>;
+}
+
+export const SETTINGS_KEY = 'popupSettings';
+export const DEFAULT_SETTINGS: PopupSettings = { shown: { x: true, youtube: true } };
+
 /** Popup -> background. One action or all of them is the same request with a longer list. */
 export type PopupMessage =
 	| { kind: 'start'; platform: Platform; actions: Action[] }

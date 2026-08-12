@@ -28,6 +28,11 @@ type MessageListener<M> = (
 
 type TabListener = (tabId: number, changeInfo: TabChangeInfo) => void;
 
+interface Area {
+	get(keys: string | string[]): Promise<Record<string, unknown>>;
+	set(items: Record<string, unknown>): Promise<void>;
+}
+
 interface BrowserApi {
 	runtime: {
 		sendMessage<R = unknown>(message: unknown): Promise<R>;
@@ -46,10 +51,9 @@ interface BrowserApi {
 	};
 	storage: {
 		/** Cleared when the browser closes, and out of reach of content scripts. */
-		session: {
-			get(keys: string | string[]): Promise<Record<string, unknown>>;
-			set(items: Record<string, unknown>): Promise<void>;
-		};
+		session: Area;
+		/** Survives the browser closing. Only the popup's own preferences live here. */
+		local: Area;
 	};
 }
 

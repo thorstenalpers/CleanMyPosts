@@ -28,13 +28,13 @@ directly. One more Vite output next to the app and the standalone scripts, built
 **Version it separately from the app.** The extension starts at `0.1.0` while the app is at
 `3.4.0`, and the two never have to agree.
 
-| | App | Extension |
-| --- | --- | --- |
-| Version lives in | `src-tauri/tauri.conf.json` (+ `Cargo.toml`) | `extension/manifest.json` |
-| Tag | `v3.4.0` | `ext-v0.1.0` |
-| Release notes | `release-notes/v3.4.0.md` | `release-notes/ext-v0.1.0.md` |
-| Workflow | `deploy-release.yml` | `deploy-extension.yml` |
-| Marked latest | yes | **no** |
+|                  | App                                          | Extension                     |
+| ---------------- | -------------------------------------------- | ----------------------------- |
+| Version lives in | `src-tauri/tauri.conf.json` (+ `Cargo.toml`) | `extension/manifest.json`     |
+| Tag              | `v3.4.0`                                     | `ext-v0.1.0`                  |
+| Release notes    | `release-notes/v3.4.0.md`                    | `release-notes/ext-v0.1.0.md` |
+| Workflow         | `deploy-release.yml`                         | `deploy-extension.yml`        |
+| Marked latest    | yes                                          | **no**                        |
 
 `make_latest: false` on the extension release is load-bearing. The desktop updater polls
 `releases/latest/download/latest.json`; an extension release taking that spot leaves every

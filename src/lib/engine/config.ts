@@ -11,6 +11,30 @@
  * something a user — or the assistant writing it for them — can get right in one line.
  */
 
+/**
+ * "Delete", in every language the app offers, as a lower-cased substring.
+ *
+ * Spread into each field that needs it rather than shared by reference: a patch is one
+ * `push`, and a shared array would have that push land on three unrelated menus at once.
+ */
+const DELETE_WORDS = [
+	'delete',
+	'löschen',
+	'supprimer',
+	'eliminar',
+	'borrar',
+	'elimina',
+	'excluir',
+	'verwijderen',
+	'usuń',
+	'удалить',
+	'削除',
+	'删除',
+	'حذف',
+	'हटाएं',
+	'sil'
+];
+
 export interface SiteConfig {
 	/** Whether cookie banners are clicked away. The host writes the user's setting here. */
 	autoConsent: boolean;
@@ -55,8 +79,10 @@ export interface SiteConfig {
 		signedIn: string;
 		/** A real sign-in call to action — not merely a link pointing at the account pages. */
 		signedOut: string;
-		/** My Activity's per-item delete button. */
+		/** My Activity's per-item delete button, narrowed by `deleteActivityText`. */
 		deleteActivity: string;
+		/** The wording on that button's `aria-label`. */
+		deleteActivityText: string[];
 		/** The popup the ⋮ opens on a liked video, in either of its shapes. */
 		likesPopup: string;
 		/** One entry inside that popup. */
@@ -68,8 +94,10 @@ export interface SiteConfig {
 		confirmLabel: string;
 		/** "Delete" in that sheet. */
 		confirmDeleteText: string[];
-		/** "Show more" under a My Activity day group. */
+		/** "Show more" under a My Activity day group, narrowed by `loadMoreText`. */
 		loadMore: string;
+		/** The wording on it. */
+		loadMoreText: string[];
 		/** Fragments of the "Remove from Liked videos" menu item, lower-cased. */
 		removeFromLikedText: string[];
 	};
@@ -89,23 +117,7 @@ export const siteConfig: SiteConfig = {
 		article: 'article',
 		menu: '[role="menu"]',
 		menuItem: '[role="menuitem"]',
-		deleteMenuText: [
-			'delete',
-			'löschen',
-			'supprimer',
-			'eliminar',
-			'borrar',
-			'elimina',
-			'excluir',
-			'verwijderen',
-			'usuń',
-			'удалить',
-			'削除',
-			'删除',
-			'حذف',
-			'हटाएं',
-			'sil'
-		],
+		deleteMenuText: [...DELETE_WORDS],
 		confirm: "button[data-testid='confirmationSheetConfirm']",
 		unretweet: 'button[data-testid="unretweet"]',
 		unretweetConfirm: 'div[role="menuitem"][data-testid="unretweetConfirm"]',
@@ -143,37 +155,39 @@ export const siteConfig: SiteConfig = {
 		// every Google page, signed in or not — matching it read My Activity as signed out and
 		// disabled the whole panel the moment a user opened their comments.
 		signedOut: 'ytd-button-renderer a[href*="accounts.google.com"], a[href*="ServiceLogin"]',
-		// Google's own component ids, identical in every language; the English label is only the
-		// last resort. `Fs3gzb` wraps the ✕ on an activity row and `114566` is its logging id —
-		// each appears exactly once per row.
-		deleteActivity:
-			'div[jscontroller="Fs3gzb"] button, button[jslog^="114566"], button[aria-label^="Delete activity item"]',
+		// Google's `jscontroller`/`jsname`/`jslog` *values* are Closure output and rotate with a
+		// deployment; a selector pinned to one of them dies on a Tuesday for no visible reason.
+		// The attribute being *present* is what survives, so the structure anchors here and the
+		// wording in `deleteActivityText` does the narrowing.
+		deleteActivity: 'div[role="listitem"] button[aria-label], div[jscontroller] button[aria-label]',
+		deleteActivityText: [...DELETE_WORDS],
 		likesPopup:
 			'.ytContextualSheetLayoutContentContainer, yt-list-view-model, ytd-menu-popup-renderer',
 		likesPopupItem: 'yt-list-item-view-model, ytd-menu-service-item-renderer, [role="menuitem"]',
 		closeDialog: 'button[aria-label="Close this dialog"]',
 		confirmButton: 'div[role="button"]',
-		// An obfuscated Google class, which is what this sheet gives us — it changes with a
-		// deployment, so it is here where it can be patched rather than buried in a module.
-		confirmLabel: 'span.Crf1o',
-		confirmDeleteText: [
-			'delete',
-			'löschen',
-			'supprimer',
-			'eliminar',
-			'borrar',
-			'elimina',
-			'excluir',
-			'verwijderen',
-			'usuń',
-			'удалить',
-			'削除',
-			'删除',
-			'حذف',
-			'हटाएं',
-			'sil'
+		// Was `span.Crf1o`. That class is generated and changed under us; the label is simply the
+		// text inside the button, and the button itself is the fallback when there is no span.
+		confirmLabel: 'span',
+		confirmDeleteText: [...DELETE_WORDS],
+		loadMore: 'button[jsname], div[role="button"][jsname], button[jsaction]',
+		loadMoreText: [
+			'show more',
+			'load more',
+			'mehr anzeigen',
+			'afficher plus',
+			'mostrar más',
+			'mostra altro',
+			'mostrar mais',
+			'meer weergeven',
+			'pokaż więcej',
+			'показать больше',
+			'もっと見る',
+			'显示更多',
+			'عرض المزيد',
+			'और दिखाएं',
+			'daha fazla göster'
 		],
-		loadMore: 'button[jsname="T8gEfd"]',
 		removeFromLikedText: [
 			'remove from liked',
 			'remove from "liked',

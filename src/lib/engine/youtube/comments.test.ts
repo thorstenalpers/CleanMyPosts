@@ -11,8 +11,22 @@ describe('commentsAction.isEmpty', () => {
 	});
 
 	it('is not empty when a delete button is present', () => {
-		document.body.innerHTML = '<button aria-label="Delete activity item"></button>';
+		document.body.innerHTML =
+			'<div role="listitem"><button aria-label="Delete activity item"></button></div>';
 		expect(commentsAction.isEmpty()).toBe(false);
+	});
+
+	// The row is what tells this button from the "delete by date and product" control at the top
+	// of My Activity, which carries the same word and empties far more than one comment.
+	it('ignores a delete button that is not inside an activity row', () => {
+		document.body.innerHTML = '<button aria-label="Delete activity"></button>';
+		expect(commentsAction.isEmpty()).toBe(true);
+	});
+
+	it('ignores a row button whose label is not about deleting', () => {
+		document.body.innerHTML =
+			'<div role="listitem"><button aria-label="More options"></button></div>';
+		expect(commentsAction.isEmpty()).toBe(true);
 	});
 });
 

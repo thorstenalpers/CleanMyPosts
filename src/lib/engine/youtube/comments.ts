@@ -10,8 +10,30 @@ import { matchesAny, siteConfig } from '../config';
 import type { RunParams } from '../protocol';
 import type { DeleteActionDefinition } from '../types';
 
+/**
+ * The ✕ on an activity row.
+ *
+ * Structure plus wording, because the only thing that told these buttons apart cheaply was a
+ * generated `jscontroller` value, and those rotate with a Google deployment.
+ */
 function findDeleteButton(): HTMLButtonElement | null {
-	return document.querySelector<HTMLButtonElement>(siteConfig.youtube.deleteActivity);
+	for (const button of document.querySelectorAll<HTMLButtonElement>(
+		siteConfig.youtube.deleteActivity
+	)) {
+		const label = button.getAttribute('aria-label') ?? '';
+		if (matchesAny(label, siteConfig.youtube.deleteActivityText)) return button;
+	}
+	return null;
+}
+
+/** The "Show more" under a day group, found the same way and for the same reason. */
+function findLoadMoreButton(): HTMLElement | null {
+	for (const button of document.querySelectorAll<HTMLElement>(siteConfig.youtube.loadMore)) {
+		if (button.offsetParent === null) continue;
+		const text = `${button.textContent ?? ''} ${button.getAttribute('aria-label') ?? ''}`;
+		if (matchesAny(text, siteConfig.youtube.loadMoreText)) return button;
+	}
+	return null;
 }
 
 /** A Google feedback/survey dialog can pop up mid-run and, being modal, blocks the next click. */
@@ -28,20 +50,13 @@ async function clickConfirmDeleteButton(): Promise<boolean> {
 	for (const ms of delays) {
 		await delay(ms);
 
-		const confirmDeleteBtn = document.querySelector<HTMLElement>(
-			'div[role="button"][data-id="EBS5u"]'
-		);
-		if (confirmDeleteBtn && confirmDeleteBtn.offsetParent !== null) {
-			clickWithCursor(confirmDeleteBtn);
-			return true;
-		}
-
 		for (const btn of document.querySelectorAll<HTMLElement>(siteConfig.youtube.confirmButton)) {
-			const deleteSpan = btn.querySelector(siteConfig.youtube.confirmLabel);
-			if (
-				deleteSpan &&
-				matchesAny(deleteSpan.textContent ?? '', siteConfig.youtube.confirmDeleteText)
-			) {
+			if (btn.offsetParent === null) continue;
+			// The label lives in a span, except where the sheet does not use one — then the button's
+			// own text is the label. A generated class used to pick the span out; it no longer can.
+			const label =
+				btn.querySelector(siteConfig.youtube.confirmLabel)?.textContent ?? btn.textContent;
+			if (matchesAny(label ?? '', siteConfig.youtube.confirmDeleteText)) {
 				clickWithCursor(btn);
 				return true;
 			}
@@ -95,8 +110,8 @@ export const commentsAction: DeleteActionDefinition = {
 				window.scrollBy(0, 500);
 				await delay(500);
 
-				const loadMoreBtn = document.querySelector<HTMLElement>(siteConfig.youtube.loadMore);
-				if (loadMoreBtn && loadMoreBtn.offsetParent !== null) {
+				const loadMoreBtn = findLoadMoreButton();
+				if (loadMoreBtn) {
 					clickWithCursor(loadMoreBtn);
 					await delay(1000);
 					failures = 0;

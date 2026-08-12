@@ -17,10 +17,10 @@ an unsigned build without an add-on id.
 
 ## Load it
 
-**Chrome** — `chrome://extensions`, turn on Developer mode, *Load unpacked*, pick
+**Chrome** — `chrome://extensions`, turn on Developer mode, _Load unpacked_, pick
 `dist/extension/chrome`.
 
-**Firefox** — `about:debugging#/runtime/this-firefox`, *Load Temporary Add-on*, pick
+**Firefox** — `about:debugging#/runtime/this-firefox`, _Load Temporary Add-on_, pick
 `dist/extension/firefox/manifest.json`. Temporary add-ons are gone on restart.
 
 ## How a run works

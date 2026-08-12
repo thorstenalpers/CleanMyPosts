@@ -17,7 +17,33 @@ import type { ContentMessage } from '$lib/engine/protocol';
 import { browser } from './browser';
 import type { ContentReport, HostMessage } from './protocol';
 
+/**
+ * Everything also goes to this tab's console, `debug` and markup dumps included.
+ *
+ * The popup drops those — a 4,000-character dump of a menu that would not open is unreadable
+ * in 340px — and they are exactly what a broken selector is diagnosed from. In a webview the
+ * host held that detail; here the console is the only place with room for it, and setting a
+ * transport at all is what had switched it off.
+ */
+function toConsole(message: ContentMessage): void {
+	const tag = '[CleanMyPosts]';
+	if (message.type === 'log') {
+		const write =
+			message.level === 'error'
+				? console.error
+				: message.level === 'warning'
+					? console.warn
+					: console.log;
+		write(`${tag} ${message.message}`);
+	} else if (message.type === 'progress') {
+		console.log(`${tag} ${message.deletedCount} removed`);
+	} else if (message.type === 'error') {
+		console.error(`${tag} ${message.message}`);
+	}
+}
+
 setTransport((message: ContentMessage) => {
+	toConsole(message);
 	// The worker may be asleep between two progress ticks; a rejected send is that and not a
 	// reason to stop deleting, so it is swallowed rather than thrown into the run.
 	const report: ContentReport = { kind: 'content', message };

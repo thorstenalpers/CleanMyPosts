@@ -34,8 +34,12 @@ function findDeleteButton(): HTMLButtonElement | null {
  * and a run that re-runs itself on a reloaded page spends them twice.
  */
 function pageSaysEmpty(): boolean {
-	const scope = document.querySelector<HTMLElement>(siteConfig.youtube.emptyScope);
-	return matchesAny(scope?.innerText ?? '', siteConfig.youtube.emptyText);
+	// Every match, not the first: `querySelector` on a comma list answers with whichever comes
+	// first in the document, and on this page that is a `c-wiz` wrapper around the chrome.
+	for (const scope of document.querySelectorAll<HTMLElement>(siteConfig.youtube.emptyScope)) {
+		if (matchesAny(scope.innerText ?? '', siteConfig.youtube.emptyText)) return true;
+	}
+	return false;
 }
 
 /** The "Show more" under a day group, found the same way and for the same reason. */
@@ -120,6 +124,17 @@ export const activityAction: DeleteActionDefinition = {
 		let failures = 0;
 		const maxFailures = 3;
 
+		/**
+		 * How long the search for another row may go on, in total, since the last one was found.
+		 *
+		 * A budget rather than a per-attempt timeout: the loop scrolls and looks again, so three
+		 * five-second attempts spent fifteen seconds at the end of every run deciding a list was
+		 * empty. Nothing is lost by cutting it — the caller re-runs the action on a reloaded page
+		 * whenever a pass deleted anything, and a row that needed longer turns up on that pass.
+		 */
+		const searchBudgetMs = 2000;
+		let searchingSince = Date.now();
+
 		while (failures < maxFailures) {
 			dismissSurveyBanner();
 
@@ -130,23 +145,31 @@ export const activityAction: DeleteActionDefinition = {
 			}
 
 			const found = await waitForByScrolling(() => findDeleteButton() !== null, 400, {
-				maxWaitMs: 5000,
+				maxWaitMs: 800,
 				intervalMs: 300
 			});
 
 			if (!found) {
 				failures++;
-				const prevScroll = window.scrollY;
-				window.scrollBy(0, 500);
-				await delay(500);
 
 				const loadMoreBtn = findLoadMoreButton();
 				if (loadMoreBtn) {
+					// More to come is not the case this budget is about, so it starts over.
 					clickWithCursor(loadMoreBtn);
 					await delay(1000);
 					failures = 0;
+					searchingSince = Date.now();
 					continue;
 				}
+
+				if (Date.now() - searchingSince > searchBudgetMs) {
+					postLog('info', 'Nothing more turned up in two seconds; treating the list as empty.');
+					break;
+				}
+
+				const prevScroll = window.scrollY;
+				window.scrollBy(0, 500);
+				await delay(500);
 
 				if (window.scrollY === prevScroll) {
 					postLog('info', 'No scroll change; assuming the list is empty.');
@@ -154,6 +177,8 @@ export const activityAction: DeleteActionDefinition = {
 				}
 				continue;
 			}
+
+			searchingSince = Date.now();
 
 			const success = await clickDeleteButton(params.waitBetweenRetryDeleteAttempts);
 			if (success) {

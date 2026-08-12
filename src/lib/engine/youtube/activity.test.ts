@@ -42,7 +42,6 @@ describe('activityAction.run', () => {
 	});
 
 	it('returns 0 when no delete button is ever found', async () => {
-		// maxFailures=3, each retry waits up to the action's hardcoded 5s scroll-timeout.
 		const deletedCount = await activityAction.run({
 			requestId: 'r1',
 			waitAfterDelete: 1,
@@ -75,7 +74,10 @@ describe('activityAction.run', () => {
 			waitBetweenRetryDeleteAttempts: 1
 		});
 		// Nothing to delete either way, so the only evidence it did not take the shortcut is
-		// that it spent the timeouts looking.
-		expect(Date.now() - started).toBeGreaterThan(1000);
+		// that it spent the timeout looking. The upper bound is the point of the number being
+		// what it is: the caller reloads and looks again, so this one does not need five seconds.
+		const spent = Date.now() - started;
+		expect(spent).toBeGreaterThan(1000);
+		expect(spent).toBeLessThan(4000);
 	}, 20000);
 });

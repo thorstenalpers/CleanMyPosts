@@ -114,7 +114,7 @@ export const DEFAULT_SETTINGS: PopupSettings = {
 	timeouts: {
 		waitAfterDelete: 500,
 		waitBetweenRetryDeleteAttempts: 500,
-		waitAfterDocumentLoad: 3000
+		waitAfterDocumentLoad: 1000
 	},
 	welcomed: false,
 	theme: 'Default',

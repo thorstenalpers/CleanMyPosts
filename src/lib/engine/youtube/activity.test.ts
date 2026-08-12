@@ -50,4 +50,32 @@ describe('activityAction.run', () => {
 		});
 		expect(deletedCount).toBe(0);
 	}, 20000);
+
+	// The point of reading the notice is the time it saves; a version that still waited out the
+	// scroll timeouts would pass every other assertion here.
+	it('stops at once when the page says there is no activity', async () => {
+		document.body.innerHTML = '<div role="main"><p>No activity</p></div>';
+		const started = Date.now();
+		const deletedCount = await activityAction.run({
+			requestId: 'r1',
+			waitAfterDelete: 1,
+			waitBetweenRetryDeleteAttempts: 1
+		});
+		expect(deletedCount).toBe(0);
+		expect(Date.now() - started).toBeLessThan(1000);
+	});
+
+	it('does not read the notice off the surrounding chrome', async () => {
+		document.body.innerHTML =
+			'<nav>No activity</nav><div role="main"><div role="listitem"></div></div>';
+		const started = Date.now();
+		await activityAction.run({
+			requestId: 'r1',
+			waitAfterDelete: 1,
+			waitBetweenRetryDeleteAttempts: 1
+		});
+		// Nothing to delete either way, so the only evidence it did not take the shortcut is
+		// that it spent the timeouts looking.
+		expect(Date.now() - started).toBeGreaterThan(1000);
+	}, 20000);
 });

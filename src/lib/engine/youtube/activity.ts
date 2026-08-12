@@ -26,6 +26,18 @@ function findDeleteButton(): HTMLButtonElement | null {
 	return null;
 }
 
+/**
+ * Whether the page says outright that there is nothing here.
+ *
+ * Worth asking before the scroll timeout rather than after it: `waitForByScrolling` spends its
+ * full five seconds finding nothing on a page that already carries the answer in plain text,
+ * and a run that re-runs itself on a reloaded page spends them twice.
+ */
+function pageSaysEmpty(): boolean {
+	const scope = document.querySelector<HTMLElement>(siteConfig.youtube.emptyScope);
+	return matchesAny(scope?.innerText ?? '', siteConfig.youtube.emptyText);
+}
+
 /** The "Show more" under a day group, found the same way and for the same reason. */
 function findLoadMoreButton(): HTMLElement | null {
 	for (const button of document.querySelectorAll<HTMLElement>(siteConfig.youtube.loadMore)) {
@@ -110,6 +122,12 @@ export const activityAction: DeleteActionDefinition = {
 
 		while (failures < maxFailures) {
 			dismissSurveyBanner();
+
+			// Before the timeout, not after it: the page has already answered.
+			if (findDeleteButton() === null && pageSaysEmpty()) {
+				postLog('info', 'The page says there is no activity left.');
+				break;
+			}
 
 			const found = await waitForByScrolling(() => findDeleteButton() !== null, 400, {
 				maxWaitMs: 5000,

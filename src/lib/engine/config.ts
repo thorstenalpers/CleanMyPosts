@@ -90,6 +90,9 @@ export interface SiteConfig {
 		loadMore: string;
 		/** The wording on it. */
 		loadMoreText: string[];
+		/** Where a "there is nothing here" notice would be, and what it says. */
+		emptyScope: string;
+		emptyText: string[];
 	};
 }
 
@@ -157,6 +160,29 @@ export const siteConfig: SiteConfig = {
 			'عرض المزيد',
 			'और दिखाएं',
 			'daha fazla göster'
+		],
+		// Read off the page rather than concluded from five seconds of finding nothing: My
+		// Activity says so in as many words, and waiting out a scroll timeout to work out what
+		// is already written on the screen is the difference between a run ending and hanging.
+		// Scoped to the content area — the surrounding chrome carries the word "activity" on
+		// every page of the site.
+		emptyScope: '[role="main"], c-wiz',
+		emptyText: [
+			'no activity',
+			'keine aktivität',
+			'aucune activité',
+			'sin actividad',
+			'ninguna actividad',
+			'nessuna attività',
+			'nenhuma atividade',
+			'geen activiteit',
+			'brak aktywności',
+			'нет действий',
+			'アクティビティはありません',
+			'没有活动',
+			'لا يوجد نشاط',
+			'कोई गतिविधि नहीं',
+			'etkinlik yok'
 		]
 	}
 };

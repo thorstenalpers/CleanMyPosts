@@ -28,6 +28,17 @@
 				"https://www.youtube.com/*",
 				"https://myactivity.google.com/*"
 			],
+			"js": ["main-world.js"],
+			"world": "MAIN",
+			"run_at": "document_idle",
+			"all_frames": false
+		},
+		{
+			"matches": [
+				"https://x.com/*",
+				"https://www.youtube.com/*",
+				"https://myactivity.google.com/*"
+			],
 			"js": ["content.js"],
 			"run_at": "document_idle",
 			"all_frames": false

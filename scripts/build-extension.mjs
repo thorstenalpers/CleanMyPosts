@@ -52,7 +52,11 @@ function singleFile(entry, fileName, first) {
 
 await rm(OUT, { recursive: true, force: true });
 
-await singleFile('extension/src/content.ts', 'content.js', true);
+// The engine and the extension half are separate scripts because they run in separate worlds:
+// the page's own (so `window.__cmp` is reachable from the console) and the isolated one (the
+// only place `chrome.*` exists). Neither can import the other.
+await singleFile('extension/src/main-world.ts', 'main-world.js', true);
+await singleFile('extension/src/content.ts', 'content.js', false);
 await singleFile('extension/src/background.ts', 'background.js', false);
 
 await build({

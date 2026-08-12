@@ -101,7 +101,11 @@ function navigate(tabId: number, url: string): Promise<void> {
 async function ask<T>(tabId: number, message: HostMessage, attempts = 20): Promise<T> {
 	for (let i = 0; i < attempts; i++) {
 		try {
-			return await browser.tabs.sendMessage<T>(tabId, message);
+			const answer = await browser.tabs.sendMessage<T & { error?: string }>(tabId, message);
+			// The content script answers rather than rejects when the page world is not up yet, so
+			// its error has to become one here or the retry below never runs.
+			if (answer?.error) throw new Error(answer.error);
+			return answer;
 		} catch {
 			await new Promise((resolve) => setTimeout(resolve, 500));
 		}

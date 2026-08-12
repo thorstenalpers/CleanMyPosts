@@ -23,15 +23,52 @@ an unsigned build without an add-on id.
 **Firefox** — `about:debugging#/runtime/this-firefox`, _Load Temporary Add-on_, pick
 `dist/extension/firefox/manifest.json`. Temporary add-ons are gone on restart.
 
+## Three scripts, two worlds
+
+| File            | World          | What it is                                            |
+| --------------- | -------------- | ----------------------------------------------------- |
+| `main-world.js` | the page's own | the engine, and `window.__cmp`                        |
+| `content.js`    | isolated       | the only half with `chrome.*`; relays between the two |
+| `background.js` | worker         | what the Rust host does in the app                    |
+
+The engine sits in the page's world so `window.__cmp` is the object the console can reach —
+patching `__cmp.config` is how a selector gets fixed without a release, and an isolated
+`__cmp` is reachable by nobody. It also puts the engine where the desktop app's copy runs, so
+a page that behaves for the app behaves here.
+
+The cost is real and deliberate: the page can reach `__cmp` too, and could in principle call
+it. The desktop app has always paid it.
+
+The two halves talk over `CustomEvent`s carrying JSON strings (`page-protocol.ts`) — `detail`
+is structured-cloned across the world boundary and a string is what survives it. Both scripts
+run at `document_idle` in no guaranteed order, so a command that arrives before the engine
+does times out after two seconds and hands the retry back to the worker.
+
+**Firefox caveat, unverified:** `world: "MAIN"` in `content_scripts` is a Chrome feature that
+Firefox added later, and which release first carries it is not established here. If the
+Firefox build reports `the page world did not answer`, that is this — the script loaded into
+the isolated world and the bridge has nobody to talk to.
+
 ## How a run works
 
-The background worker does what the Rust host does in the app: read the handle off the page,
-build the target url, drive the tab to it, and ask the content script to run. The retry loop
-is not in the worker — it runs in the page, which is what makes MV3 stopping the worker
-mid-run harmless. Every progress report wakes it up again.
+The background worker reads the handle off the page, builds the target url, drives the tab to
+it, and asks for the run. The retry loop is not in the worker — it runs in the page, which is
+what makes MV3 stopping the worker mid-run harmless. Every progress report wakes it up again.
 
 Stopping reloads the tab. The engine has no way to interrupt a run, so taking the page away is
 what ends it, the same way closing the tab ends a standalone script.
+
+## Fixing a selector without a build
+
+Open the console on the platform tab — `__cmp` is right there, the same as in the app:
+
+```js
+__cmp.config.youtube.likesPopupClickTargets.unshift('.some-new-class');
+__cmp.config.youtube.deleteActivityText.push('sil');
+```
+
+The patch holds for that page load. `__cmp.countMatches` and `__cmp.readStructure` answer
+over the report channel, so their results appear in the console alongside everything else.
 
 ## What is not here yet
 

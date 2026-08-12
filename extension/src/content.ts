@@ -1,29 +1,29 @@
 /**
- * The content script, and the only file that knows the engine runs inside an extension.
+ * The isolated half: everything that needs `chrome.*`, and nothing that needs the page.
  *
- * Importing `content-entry` is what puts `window.__cmp` on this page — the same object the
- * desktop app injects into its site webview. Everything below it is transport: the engine
- * reports through `setTransport` instead of the WebView2 bridge, and the background worker
- * asks for runs through `runtime` instead of an `eval` against `window.__cmp`.
- *
- * `window` here is the isolated world the browser gives a content script, not the page's own,
- * so `__cmp` is never reachable from the site. Which origins this runs on is decided by
- * `manifest.json`, taking the place of the host-side origin guard the app has.
+ * The engine itself is in `main-world.ts`, running in the page's own world so the console can
+ * reach `window.__cmp`. This script is the only thing between it and the extension — it
+ * forwards the worker's commands into that world and carries the reports back out.
  */
 
-import '$lib/engine/content-entry';
-import { setTransport } from '$lib/engine/dom';
 import type { ContentMessage } from '$lib/engine/protocol';
 import { browser } from './browser';
-import type { ContentReport, HostMessage } from './protocol';
+import {
+	ANSWER_EVENT,
+	ANSWER_TIMEOUT_MS,
+	COMMAND_EVENT,
+	receive,
+	REPORT_EVENT,
+	send
+} from './page-protocol';
+import type { PageAnswer, PageCommand } from './page-protocol';
+import type { ContentReport } from './protocol';
 
 /**
- * Everything also goes to this tab's console, `debug` and markup dumps included.
+ * Also to this tab's console, `debug` and markup dumps included.
  *
  * The popup drops those — a 4,000-character dump of a menu that would not open is unreadable
- * in 340px — and they are exactly what a broken selector is diagnosed from. In a webview the
- * host held that detail; here the console is the only place with room for it, and setting a
- * transport at all is what had switched it off.
+ * in 340px — and they are exactly what a broken selector is diagnosed from.
  */
 function toConsole(message: ContentMessage): void {
 	const tag = '[CleanMyPosts]';
@@ -42,7 +42,7 @@ function toConsole(message: ContentMessage): void {
 	}
 }
 
-setTransport((message: ContentMessage) => {
+receive<ContentMessage>(REPORT_EVENT, (message) => {
 	toConsole(message);
 	// The worker may be asleep between two progress ticks; a rejected send is that and not a
 	// reason to stop deleting, so it is swallowed rather than thrown into the run.
@@ -50,20 +50,41 @@ setTransport((message: ContentMessage) => {
 	void browser.runtime.sendMessage(report).catch(() => {});
 });
 
-browser.runtime.onMessage.addListener((message: HostMessage, _sender, sendResponse) => {
-	const api = window.__cmp;
-	if (!api) {
-		sendResponse({ error: 'engine not loaded' });
-		return;
-	}
+const pending = new Map<string, (answer: PageAnswer) => void>();
+let nextId = 0;
 
-	if (message.kind === 'run') {
-		api.run(message.platform, message.action, JSON.stringify(message.params));
-		sendResponse({ started: true });
-		return;
-	}
+receive<PageAnswer>(ANSWER_EVENT, (answer) => {
+	pending.get(answer.id)?.(answer);
+	pending.delete(answer.id);
+});
 
-	sendResponse({
-		value: message.what === 'userName' ? api.getUserName() : api.getLoginStatus()
+/**
+ * Puts one command into the page world and waits for its answer.
+ *
+ * The timeout is the point: both scripts run at `document_idle` and their order is not
+ * guaranteed, so a command can arrive before the engine is there. Failing after two seconds
+ * hands the retry back to the worker, which already has one.
+ */
+function command(message: unknown): Promise<PageAnswer> {
+	const id = String(nextId++);
+	return new Promise((resolve) => {
+		const timer = setTimeout(() => {
+			pending.delete(id);
+			resolve({ id, error: 'the page world did not answer' });
+		}, ANSWER_TIMEOUT_MS);
+
+		pending.set(id, (answer) => {
+			clearTimeout(timer);
+			resolve(answer);
+		});
+
+		send(COMMAND_EVENT, { id, message } satisfies PageCommand);
 	});
+}
+
+browser.runtime.onMessage.addListener((message: unknown, _sender, sendResponse) => {
+	void command(message).then((answer) =>
+		sendResponse(answer.error ? { error: answer.error } : answer.value)
+	);
+	return true;
 });

@@ -152,19 +152,15 @@ type ParentElement = Document | Element;
 /**
  * Where the handler might be on a menu entry, most likely first.
  *
- * Which node actually listens differs between YouTube's shapes and is not readable from here:
- * the view model puts it on an inner button, the old renderer on the `tp-yt-paper-item`, and
- * the shorts sheet on the entry itself. Guessing once and reporting success is what left three
- * identical attempts clicking the same wrong node three times.
+ * Which node actually listens differs between YouTube's shapes and is not readable from here,
+ * so the entry itself is always the last resort. Deduplicated because one node can answer two
+ * selectors: in the view model the `<button>` *is* the text wrapper.
  */
 function removeTargets(match: HTMLElement): HTMLElement[] {
-	const candidates = [
-		match.querySelector<HTMLElement>('button'),
-		match.querySelector<HTMLElement>('.ytListItemViewModelTextWrapper'),
-		match.querySelector<HTMLElement>('tp-yt-paper-item'),
-		match
-	].filter((el): el is HTMLElement => el !== null);
-	return [...new Set(candidates)];
+	const candidates = siteConfig.youtube.likesPopupClickTargets
+		.map((selector) => match.querySelector<HTMLElement>(selector))
+		.filter((el): el is HTMLElement => el !== null);
+	return [...new Set([...candidates, match])];
 }
 
 /** Enough of an element to tell two candidates apart in a log line. */

@@ -87,6 +87,8 @@ export interface SiteConfig {
 		likesPopup: string;
 		/** One entry inside that popup. */
 		likesPopupItem: string;
+		/** Where the click has to land inside such an entry, most likely first. */
+		likesPopupClickTargets: string[];
 		/** The survey/feedback dialog that steals the next click. */
 		closeDialog: string;
 		/** My Activity's confirmation sheet: the button, and the label inside it to read. */
@@ -164,6 +166,14 @@ export const siteConfig: SiteConfig = {
 		likesPopup:
 			'.ytContextualSheetLayoutContentContainer, yt-list-view-model, ytd-menu-popup-renderer',
 		likesPopupItem: 'yt-list-item-view-model, ytd-menu-service-item-renderer, [role="menuitem"]',
+		// The `<button>` in a view-model entry is YouTube's own button component, and it keeps its
+		// events to itself — clicking it leaves the entry unactivated. `Tappable` is the class
+		// YouTube puts on the node that actually handles the tap, so it goes first.
+		likesPopupClickTargets: [
+			'.ytListItemViewModelTappable',
+			'tp-yt-paper-item',
+			'.ytListItemViewModelTextWrapper, button'
+		],
 		closeDialog: 'button[aria-label="Close this dialog"]',
 		confirmButton: 'div[role="button"]',
 		// Was `span.Crf1o`. That class is generated and changed under us; the label is simply the

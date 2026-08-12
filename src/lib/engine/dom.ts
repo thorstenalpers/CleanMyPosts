@@ -77,7 +77,7 @@ const CURSOR_INK = '#000';
  * "This document requires 'TrustedHTML' assignment" as the only clue.
  */
 /**
- * Lucide's `broom-sparkles`, as path data.
+ * Lucide's `broom`, as path data.
  *
  * The paths rather than the component: this draws into a foreign document with no Svelte and
  * no bundler around it. Kept in step with the package by hand, which is the price of the
@@ -87,15 +87,9 @@ const CURSOR_INK = '#000';
  * The head is the one closed path and is the one that gets filled.
  */
 const BROOM_PATHS = [
-	'M11 2v2',
-	'M12 3h-2',
 	'M13.5 10.5 22 2',
 	'M14.734 13.841a2 2 0 00-.314-2.42L12.58 9.58a2 2 0 00-2.421-.314l-7.657 4.461A1 1 0 002.3 15.3l6.403 6.403a1 1 0 001.571-.204z',
-	'M20 15v4',
-	'M22 17h-4',
-	'M4 4v4',
 	'm5 18 2-2',
-	'M6 6H2',
 	'm7.699 10.7 5.602 5.601'
 ];
 

@@ -47,7 +47,7 @@ On X:
 
 On YouTube:
 • Comments
-• Liked videos
+• Liked and disliked videos
 
 HOW IT WORKS
 
@@ -74,8 +74,8 @@ WHAT IT DOES NOT DO
   never written down.
 • No remote code. Everything it runs ships inside the extension.
 
-It runs on x.com, youtube.com and Google My Activity — where YouTube comments actually live —
-and on no other site.
+It runs on x.com and on Google My Activity — where YouTube keeps both the comments and the
+liked videos — and on no other site.
 
 BEFORE YOU START
 
@@ -162,10 +162,12 @@ cleared when the browser closes and holds no content from any page.
 **`tabs`**
 
 ```
-Used to find the tab to work in and to drive it to the list being emptied — the user's replies
-page, their likes page, their Liked videos playlist — and to reload it when the user presses
-Stop, which is what ends a run. Browsing history is never read; the extension only ever touches
-the tab it was asked to work in.
+Used to find the tab to work in, to drive it to the list being emptied, and to reload it —
+both when the user presses Stop, which is what ends a run, and when an action has to run twice
+on a freshly loaded page. That reload needs the tab's current address to compare against the
+target: navigating a tab to the address it already shows may start no load at all, and the
+extension would then wait forever for one to finish. No browsing history is read and no other
+tab is looked at.
 ```
 
 **Host permission — `https://x.com/*`**
@@ -176,19 +178,12 @@ delete entry, then the confirmation, in the user's own signed-in session. There 
 to the same result that does not cost the user a paid X subscription.
 ```
 
-**Host permission — `https://www.youtube.com/*`**
-
-```
-Liked videos are removed from the user's Liked videos playlist on this site, by the same
-click-through the user would perform themselves.
-```
-
 **Host permission — `https://myactivity.google.com/*`**
 
 ```
-YouTube comments are not deletable from youtube.com. They are listed and deleted on Google My
-Activity, which is where this permission points. The extension touches nothing else on that
-site.
+Both YouTube lists this extension deletes live here, not on youtube.com: comments and liked
+videos are listed on Google My Activity and removed with the button next to each entry. The
+extension opens only those two pages and touches nothing else on the site.
 ```
 
 ### Remote code
@@ -242,11 +237,6 @@ AMO reuses the summary and description above. What it asks for separately:
 
 ## Open questions
 
-- **`tabs` may be removable.** Chrome only requires it to read a tab's `url`, `title`,
-  `pendingUrl` or `favIconUrl`, and `background.ts` reads none of those — it uses `tab.id`,
-  `tabs.update`, `tabs.reload` and `tabs.sendMessage`, all of which the host permissions
-  already cover. Dropping it would remove a permission warning and a justification from the
-  review. Untested: verify against a loaded build before changing the manifest.
 - **Store acceptance is unproven.** An extension that clicks through x.com on the user's behalf
   runs into the platform's own rules on automation. Both stores may reject it, and Chrome may
   remove it later. Nothing here changes that; it only makes sure a rejection is about the

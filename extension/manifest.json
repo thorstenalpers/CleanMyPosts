@@ -9,11 +9,7 @@
 		"128": "icons/128x128.png"
 	},
 	"permissions": ["tabs", "storage"],
-	"host_permissions": [
-		"https://x.com/*",
-		"https://www.youtube.com/*",
-		"https://myactivity.google.com/*"
-	],
+	"host_permissions": ["https://x.com/*", "https://myactivity.google.com/*"],
 	"background": {
 		"service_worker": "background.js"
 	},
@@ -23,22 +19,14 @@
 	},
 	"content_scripts": [
 		{
-			"matches": [
-				"https://x.com/*",
-				"https://www.youtube.com/*",
-				"https://myactivity.google.com/*"
-			],
+			"matches": ["https://x.com/*", "https://myactivity.google.com/*"],
 			"js": ["main-world.js"],
 			"world": "MAIN",
 			"run_at": "document_idle",
 			"all_frames": false
 		},
 		{
-			"matches": [
-				"https://x.com/*",
-				"https://www.youtube.com/*",
-				"https://myactivity.google.com/*"
-			],
+			"matches": ["https://x.com/*", "https://myactivity.google.com/*"],
 			"js": ["content.js"],
 			"run_at": "document_idle",
 			"all_frames": false

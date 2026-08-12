@@ -148,9 +148,15 @@ class NotSignedIn extends Error {
 	}
 }
 
+/**
+ * Where a run starts when there is no tab to take over.
+ *
+ * YouTube's is My Activity, not youtube.com: both of its lists live there, and pointing at
+ * the site itself would be the only reason left to ask for access to it.
+ */
 const HOME: Record<Platform, string> = {
 	x: 'https://x.com/home',
-	youtube: 'https://www.youtube.com'
+	youtube: 'https://myactivity.google.com/page?page=youtube_comments'
 };
 
 async function openTab(platform: Platform): Promise<number> {

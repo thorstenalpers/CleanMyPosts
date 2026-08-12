@@ -136,7 +136,11 @@ describe('the pointer', () => {
 
 		const svg = document.querySelector('svg');
 		expect(svg?.namespaceURI).toBe('http://www.w3.org/2000/svg');
-		expect(svg?.querySelectorAll('circle')).toHaveLength(2);
+		// Built node by node, which is the point: YouTube's Trusted Types policy throws on any
+		// `innerHTML`, and this used to take the run down before the first deletion.
+		const paths = svg?.querySelectorAll('path') ?? [];
+		expect(paths).toHaveLength(4);
+		expect(paths[0]?.namespaceURI).toBe('http://www.w3.org/2000/svg');
 	});
 
 	/**

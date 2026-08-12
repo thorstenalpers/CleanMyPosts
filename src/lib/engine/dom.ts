@@ -53,11 +53,21 @@ let rippleEl: HTMLElement | null = null;
 /**
  * The pointer the user watches while the app clicks.
  *
- * An emoji was legible but never looked like it belonged to the page. This is a reticle in
- * the same red the highlight uses, drawn as an inline SVG so it stays sharp at any zoom and
- * needs no asset. `pointer-events:none` keeps it out of the way of the clicks it reports.
+ * A broom, drawn as inline SVG rather than loaded as an image: no asset means no
+ * `web_accessible_resources` entry in the extension and nothing for a store review to ask
+ * about, and it stays sharp at any zoom. `pointer-events:none` keeps it out of the way of the
+ * clicks it reports.
  */
 const SVG_NS = 'http://www.w3.org/2000/svg';
+
+/**
+ * Black, and legible on a black page.
+ *
+ * Both platforms have a dark mode, where black on its own is a hole in the screen. The white
+ * head and the halo in `ensureCursor` are what make it a shape there — a drop-shadow rather
+ * than a second set of SVG nodes, so it costs the compositor one filter and the DOM nothing.
+ */
+const CURSOR_INK = '#000';
 
 /**
  * Built node by node rather than from a string of markup.
@@ -66,49 +76,40 @@ const SVG_NS = 'http://www.w3.org/2000/svg';
  * `innerHTML` throws — which took the whole run down before the first item was deleted, with
  * "This document requires 'TrustedHTML' assignment" as the only clue.
  */
+/**
+ * Lucide's `brush-cleaning`, as path data.
+ *
+ * The icon rather than a shape drawn here, and the paths rather than the component: this runs
+ * in a foreign document with no Svelte and no bundler around it. Six nodes, built once and
+ * kept for the length of the run — see `ensureCursor`.
+ */
+const BROOM_PATHS = [
+	'm16 22-1-4',
+	'M19 14a1 1 0 0 0 1-1v-1a2 2 0 0 0-2-2h-3a1 1 0 0 1-1-1V4a2 2 0 0 0-4 0v5a1 1 0 0 1-1 1H6a2 2 0 0 0-2 2v1a1 1 0 0 0 1 1',
+	'M19 14H5l-1.973 6.767A1 1 0 0 0 4 22h16a1 1 0 0 0 .973-1.233z',
+	'm8 22 1-4'
+];
+
 function buildCursorSvg(): SVGSVGElement {
 	const svg = document.createElementNS(SVG_NS, 'svg');
-	svg.setAttribute('width', '34');
-	svg.setAttribute('height', '34');
-	svg.setAttribute('viewBox', '0 0 34 34');
+	svg.setAttribute('width', '32');
+	svg.setAttribute('height', '32');
+	svg.setAttribute('viewBox', '0 0 24 24');
 	svg.setAttribute('fill', 'none');
+	svg.setAttribute('stroke', CURSOR_INK);
+	svg.setAttribute('stroke-width', '2');
+	svg.setAttribute('stroke-linecap', 'round');
+	svg.setAttribute('stroke-linejoin', 'round');
 
-	const line = (x1: number, y1: number, x2: number, y2: number): SVGLineElement => {
-		const el = document.createElementNS(SVG_NS, 'line');
-		el.setAttribute('x1', String(x1));
-		el.setAttribute('y1', String(y1));
-		el.setAttribute('x2', String(x2));
-		el.setAttribute('y2', String(y2));
-		el.setAttribute('stroke', '#ff3b30');
-		el.setAttribute('stroke-width', '3');
-		el.setAttribute('stroke-linecap', 'round');
-		return el;
-	};
+	for (const d of BROOM_PATHS) {
+		const path = document.createElementNS(SVG_NS, 'path');
+		path.setAttribute('d', d);
+		// The head is the one closed shape, and filling it white is what keeps the whole thing
+		// readable on a dark timeline — black on black is a hole, outline or not.
+		if (d.endsWith('z')) path.setAttribute('fill', '#fff');
+		svg.append(path);
+	}
 
-	// A reticle: heavy ring, four ticks, filled centre. Thick enough to follow across a busy
-	// timeline, and unmistakably not the platform's own pointer.
-	const ring = document.createElementNS(SVG_NS, 'circle');
-	ring.setAttribute('cx', '17');
-	ring.setAttribute('cy', '17');
-	ring.setAttribute('r', '10');
-	ring.setAttribute('stroke', '#ff3b30');
-	ring.setAttribute('stroke-width', '3');
-	ring.setAttribute('fill', 'rgba(255,59,48,.14)');
-
-	const dot = document.createElementNS(SVG_NS, 'circle');
-	dot.setAttribute('cx', '17');
-	dot.setAttribute('cy', '17');
-	dot.setAttribute('r', '3');
-	dot.setAttribute('fill', '#ff3b30');
-
-	svg.append(
-		ring,
-		line(17, 1.5, 17, 6),
-		line(17, 28, 17, 32.5),
-		line(1.5, 17, 6, 17),
-		line(28, 17, 32.5, 17),
-		dot
-	);
 	return svg;
 }
 
@@ -116,10 +117,12 @@ function ensureCursor(): HTMLElement {
 	if (cursorEl && document.body.contains(cursorEl)) return cursorEl;
 	cursorEl = document.createElement('div');
 	cursorEl.append(buildCursorSvg());
+	// Anchored at the head, not the middle: the broom sweeps what it is standing on, so the
+	// bristles sit on the thing being clicked and the handle points up and away from it.
 	cursorEl.style.cssText =
 		'position:fixed;z-index:2147483647;pointer-events:none;line-height:0;opacity:1;' +
-		'transform:translate(-17px,-17px);transition:left .2s ease,top .2s ease,opacity .3s ease;' +
-		'filter:drop-shadow(0 1px 3px rgba(0,0,0,.45));';
+		'transform:translate(-16px,-29px);transition:left .2s ease,top .2s ease,opacity .3s ease;' +
+		'filter:drop-shadow(0 0 2px rgba(255,255,255,.95)) drop-shadow(0 1px 3px rgba(0,0,0,.4));';
 	document.body.appendChild(cursorEl);
 	return cursorEl;
 }
@@ -130,8 +133,8 @@ function ensureRipple(): HTMLElement {
 	rippleEl = document.createElement('div');
 	rippleEl.style.cssText =
 		'position:fixed;z-index:2147483646;pointer-events:none;opacity:0;' +
-		'width:20px;height:20px;margin:-10px 0 0 -10px;border:2px solid #ff3b30;border-radius:50%;' +
-		'background:rgba(255,59,48,.25);';
+		'width:20px;height:20px;margin:-10px 0 0 -10px;border:3px solid #000;border-radius:50%;' +
+		'background:rgba(0,0,0,.18);box-shadow:0 0 0 1px rgba(255,255,255,.9);';
 	document.body.appendChild(rippleEl);
 	return rippleEl;
 }

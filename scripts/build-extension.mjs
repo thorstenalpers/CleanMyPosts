@@ -12,6 +12,7 @@ import { build } from 'vite';
 import { svelte, vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 import tailwindcss from '@tailwindcss/vite';
 import { cp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { watch } from 'node:fs';
 import path from 'node:path';
 
 const ROOT = process.cwd();
@@ -50,46 +51,99 @@ function singleFile(entry, fileName, first) {
 	});
 }
 
-await rm(OUT, { recursive: true, force: true });
+async function buildAll() {
+	await rm(OUT, { recursive: true, force: true });
 
-// The engine and the extension half are separate scripts because they run in separate worlds:
-// the page's own (so `window.__cmp` is reachable from the console) and the isolated one (the
-// only place `chrome.*` exists). Neither can import the other.
-await singleFile('extension/src/main-world.ts', 'main-world.js', true);
-await singleFile('extension/src/content.ts', 'content.js', false);
-await singleFile('extension/src/background.ts', 'background.js', false);
+	// The engine and the extension half are separate scripts because they run in separate worlds:
+	// the page's own (so `window.__cmp` is reachable from the console) and the isolated one (the
+	// only place `chrome.*` exists). Neither can import the other.
+	await singleFile('extension/src/main-world.ts', 'main-world.js', true);
+	await singleFile('extension/src/content.ts', 'content.js', false);
+	await singleFile('extension/src/background.ts', 'background.js', false);
 
-await build({
-	configFile: false,
-	logLevel: 'warn',
-	root: path.resolve(ROOT, 'extension/src/popup'),
-	base: './',
-	plugins: [tailwindcss(), svelte({ preprocess: vitePreprocess() })],
-	resolve: { alias },
-	build: {
-		outDir: path.resolve(ROOT, CHROME),
-		emptyOutDir: false,
-		rollupOptions: { input: path.resolve(ROOT, 'extension/src/popup/popup.html') }
+	await build({
+		configFile: false,
+		logLevel: 'warn',
+		root: path.resolve(ROOT, 'extension/src/popup'),
+		base: './',
+		plugins: [tailwindcss(), svelte({ preprocess: vitePreprocess() })],
+		resolve: { alias },
+		build: {
+			outDir: path.resolve(ROOT, CHROME),
+			emptyOutDir: false,
+			rollupOptions: { input: path.resolve(ROOT, 'extension/src/popup/popup.html') }
+		}
+	});
+
+	const manifest = JSON.parse(await readFile('extension/manifest.json', 'utf8'));
+	await writeFile(path.join(CHROME, 'manifest.json'), JSON.stringify(manifest, null, 2), 'utf8');
+
+	await mkdir(path.join(CHROME, 'icons'), { recursive: true });
+	for (const icon of ['32x32.png', '64x64.png', '128x128.png']) {
+		await cp(path.join('src-tauri/icons', icon), path.join(CHROME, 'icons', icon));
 	}
-});
 
-const manifest = JSON.parse(await readFile('extension/manifest.json', 'utf8'));
-await writeFile(path.join(CHROME, 'manifest.json'), JSON.stringify(manifest, null, 2), 'utf8');
+	await cp(CHROME, FIREFOX, { recursive: true });
 
-await mkdir(path.join(CHROME, 'icons'), { recursive: true });
-for (const icon of ['32x32.png', '64x64.png', '128x128.png']) {
-	await cp(path.join('src-tauri/icons', icon), path.join(CHROME, 'icons', icon));
+	// Firefox implements MV3 background as an event page, not a service worker, and refuses an
+	// unsigned build without an explicit add-on id.
+	const firefox = {
+		...manifest,
+		background: { scripts: ['background.js'] },
+		browser_specific_settings: { gecko: { id: GECKO_ID, strict_min_version: GECKO_MIN } }
+	};
+	await writeFile(path.join(FIREFOX, 'manifest.json'), JSON.stringify(firefox, null, 2), 'utf8');
+
+	return manifest.version;
 }
 
-await cp(CHROME, FIREFOX, { recursive: true });
+const version = await buildAll();
+console.log(`  ${CHROME}\n  ${FIREFOX}\n  version ${version}`);
 
-// Firefox implements MV3 background as an event page, not a service worker, and refuses an
-// unsigned build without an explicit add-on id.
-const firefox = {
-	...manifest,
-	background: { scripts: ['background.js'] },
-	browser_specific_settings: { gecko: { id: GECKO_ID, strict_min_version: GECKO_MIN } }
-};
-await writeFile(path.join(FIREFOX, 'manifest.json'), JSON.stringify(firefox, null, 2), 'utf8');
+if (!process.argv.includes('--watch')) process.exit(0);
 
-console.log(`  ${CHROME}\n  ${FIREFOX}\n  version ${manifest.version}`);
+/**
+ * Rebuilds on a save. It cannot reload the extension itself — Chrome only re-reads an unpacked
+ * build when told to on `chrome://extensions`, and there is no API an extension can call on its
+ * own behalf from outside the browser.
+ *
+ * Debounced because one save from an editor is several filesystem events, and a rebuild takes
+ * long enough that overlapping ones would interleave their writes into the same output.
+ */
+const WATCHED = [
+	'extension/src',
+	'extension/manifest.json',
+	'src/lib/engine',
+	'src/lib/components'
+];
+let timer;
+let building = false;
+let again = false;
+
+async function rebuild() {
+	if (building) {
+		again = true;
+		return;
+	}
+	building = true;
+	try {
+		await buildAll();
+		console.log(`  rebuilt — reload it on chrome://extensions, then reload the platform tab`);
+	} catch (error) {
+		console.error(`  build failed: ${error instanceof Error ? error.message : String(error)}`);
+	}
+	building = false;
+	if (again) {
+		again = false;
+		void rebuild();
+	}
+}
+
+for (const target of WATCHED) {
+	watch(path.resolve(ROOT, target), { recursive: true }, () => {
+		clearTimeout(timer);
+		timer = setTimeout(() => void rebuild(), 150);
+	});
+}
+
+console.log(`\n  watching ${WATCHED.join(', ')}\n  Ctrl+C to stop`);

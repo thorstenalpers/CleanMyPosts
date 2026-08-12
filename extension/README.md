@@ -15,6 +15,26 @@ Writes `dist/extension/chrome/` and `dist/extension/firefox/`. The two differ in
 Firefox implements MV3 background as an event page rather than a service worker, and refuses
 an unsigned build without an add-on id.
 
+While working on it:
+
+```bash
+npm run dev:extension
+```
+
+Same build, rebuilt on every save to `extension/src`, `src/lib/engine` or
+`src/lib/components`.
+
+**It cannot reload the extension for you.** Chrome only re-reads an unpacked build when told
+to on `chrome://extensions`, and nothing an extension can call reaches that from outside the
+browser. So a change still costs two clicks:
+
+1. Reload on `chrome://extensions` — picks up the new popup and worker.
+2. Reload the platform tab — the content scripts in an already-open page are the ones that
+   loaded with it, and an engine fix does nothing until the page has them again.
+
+The second one is the one that gets forgotten, and it looks exactly like a fix that did not
+work.
+
 ## Load it
 
 **Chrome** — `chrome://extensions`, turn on Developer mode, _Load unpacked_, pick

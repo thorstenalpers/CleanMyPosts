@@ -48,6 +48,7 @@ export function waitForByScrolling<T>(
 }
 
 let cursorEl: HTMLElement | null = null;
+let rippleEl: HTMLElement | null = null;
 
 /**
  * The pointer the user watches while the app clicks.
@@ -123,6 +124,18 @@ function ensureCursor(): HTMLElement {
 	return cursorEl;
 }
 
+/** Lives as long as the cursor does, for the same reason: one node, not one per click. */
+function ensureRipple(): HTMLElement {
+	if (rippleEl && document.body.contains(rippleEl)) return rippleEl;
+	rippleEl = document.createElement('div');
+	rippleEl.style.cssText =
+		'position:fixed;z-index:2147483646;pointer-events:none;opacity:0;' +
+		'width:20px;height:20px;margin:-10px 0 0 -10px;border:2px solid #ff3b30;border-radius:50%;' +
+		'background:rgba(255,59,48,.25);';
+	document.body.appendChild(rippleEl);
+	return rippleEl;
+}
+
 /**
  * Takes the pointer off the page.
  *
@@ -131,6 +144,8 @@ function ensureCursor(): HTMLElement {
  * it does not own.
  */
 export function hideCursor(): void {
+	rippleEl?.remove();
+	rippleEl = null;
 	if (!cursorEl) return;
 	const el = cursorEl;
 	cursorEl = null;
@@ -175,17 +190,20 @@ export function clickWithCursor(el: HTMLElement, options: ClickOptions = {}): vo
 	cursor.style.left = `${x}px`;
 	cursor.style.top = `${y}px`;
 
-	const ripple = document.createElement('div');
-	ripple.style.cssText =
-		`position:fixed;left:${x}px;top:${y}px;z-index:2147483646;pointer-events:none;` +
-		'width:20px;height:20px;margin:-10px 0 0 -10px;border:2px solid #ff3b30;border-radius:50%;' +
-		'background:rgba(255,59,48,.25);transition:transform .4s ease,opacity .4s ease;';
-	document.body.appendChild(ripple);
+	const ripple = ensureRipple();
+	// Restarted rather than rebuilt. Appending a node and removing it 450ms later put two body
+	// mutations inside the window where a menu this engine had just opened was supposed to stay
+	// open, and a platform that watches its own subtree gets to react to both.
+	ripple.style.transition = 'none';
+	ripple.style.left = `${x}px`;
+	ripple.style.top = `${y}px`;
+	ripple.style.transform = 'scale(1)';
+	ripple.style.opacity = '1';
 	requestAnimationFrame(() => {
+		ripple.style.transition = 'transform .4s ease,opacity .4s ease';
 		ripple.style.transform = 'scale(2.4)';
 		ripple.style.opacity = '0';
 	});
-	setTimeout(() => ripple.remove(), 450);
 
 	if (options.pointerSequence) dispatchRealClick(el, x, y);
 	else el.click();

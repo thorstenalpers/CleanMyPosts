@@ -85,10 +85,25 @@ function findMenuButton(videoItem: HTMLElement): HTMLElement | null {
 	);
 }
 
-/** Whether a menu is open, judged by it actually holding entries. */
-function menuIsOpen(): boolean {
+/**
+ * The entries of whatever menu is open, if any.
+ *
+ * Scoped to `likesPopup` when that matches and to the whole document when it does not. The
+ * container was the weak link: YouTube has three shapes for this menu and the wrapper is the
+ * part that changes, so a wrapper nobody recognised made an open menu read as closed — and
+ * that verdict is what sent a second click at the ⋮, which shut the menu that had just opened.
+ * The entries are the thing worth asking about, and they are visible or they are not.
+ */
+function openMenuItems(): HTMLElement[] {
 	const popup = document.querySelector(siteConfig.youtube.likesPopup);
-	return popup !== null && popup.querySelector(siteConfig.youtube.likesPopupItem) !== null;
+	const scope: ParentElement = popup ?? document;
+	return [...scope.querySelectorAll<HTMLElement>(siteConfig.youtube.likesPopupItem)].filter(
+		(item) => item.getBoundingClientRect().height > 0
+	);
+}
+
+function menuIsOpen(): boolean {
+	return openMenuItems().length > 0;
 }
 
 /**
@@ -134,13 +149,17 @@ async function clickMenuButton(videoItem: HTMLElement, waitTime: number): Promis
 	return false;
 }
 
-function findRemoveMatch(
-	container: ParentElement,
-	itemSelector: string,
-	textSelectors: string[]
-): HTMLElement | null {
-	for (const item of container.querySelectorAll<HTMLElement>(itemSelector)) {
-		const textEl = textSelectors.map((s) => item.querySelector(s)).find((el) => el !== null);
+const TITLE_SELECTORS = [
+	'.ytListItemViewModelTitle',
+	'.yt-list-item-view-model__title',
+	'.yt-core-attributed-string',
+	'yt-formatted-string',
+	'[role="text"]'
+];
+
+function findRemoveMatch(items: HTMLElement[]): HTMLElement | null {
+	for (const item of items) {
+		const textEl = TITLE_SELECTORS.map((s) => item.querySelector(s)).find((el) => el !== null);
 		const text = textEl?.textContent ?? item.textContent ?? '';
 		if (matchesRemovePattern(text)) return item;
 	}
@@ -179,30 +198,20 @@ async function clickRemoveFromLiked(attempt: number): Promise<boolean> {
 	for (const ms of delays) {
 		await delay(ms);
 
-		// One popup selector for all of YouTube's shapes — the old renderer, the new view model
-		// and the sheet the shorts player uses. Which one is on screen is not this loop's
-		// business; that it holds an entry saying "remove from liked" is.
-		const popup = document.querySelector(siteConfig.youtube.likesPopup);
-		if (popup) {
-			const match = findRemoveMatch(popup, siteConfig.youtube.likesPopupItem, [
-				'.ytListItemViewModelTitle',
-				'.yt-list-item-view-model__title',
-				'.yt-core-attributed-string',
-				'yt-formatted-string',
-				'[role="text"]'
-			]);
-			if (match) {
-				const targets = removeTargets(match);
-				const target = targets[Math.min(attempt, targets.length - 1)] ?? match;
-				// The full mouse sequence: these entries commit on `pointerup` and ignore a bare
-				// click. Which node hears it is what `attempt` walks through.
-				postLog(
-					'info',
-					`Clicking "${describe(target)}" (${attempt + 1} of ${targets.length} places the handler could be).`
-				);
-				clickWithCursor(target, { pointerSequence: true });
-				return true;
-			}
+		// Whatever menu is up, in any of YouTube's three shapes. Which wrapper it is is not this
+		// loop's business; that it holds an entry saying "remove from liked" is.
+		const match = findRemoveMatch(openMenuItems());
+		if (match) {
+			const targets = removeTargets(match);
+			const target = targets[Math.min(attempt, targets.length - 1)] ?? match;
+			// The full mouse sequence: these entries commit on `pointerup` and ignore a bare
+			// click. Which node hears it is what `attempt` walks through.
+			postLog(
+				'info',
+				`Clicking "${describe(target)}" (${attempt + 1} of ${targets.length} places the handler could be).`
+			);
+			clickWithCursor(target, { pointerSequence: true });
+			return true;
 		}
 	}
 
@@ -221,7 +230,9 @@ async function clickRemoveFromLiked(attempt: number): Promise<boolean> {
 	);
 	postMarkup(
 		'The menu that held no remove entry',
-		document.querySelector(siteConfig.youtube.likesPopup)
+		document.querySelector(siteConfig.youtube.likesPopup) ??
+			openMenuItems()[0]?.parentElement ??
+			null
 	);
 	return false;
 }

@@ -12,16 +12,19 @@ import type { Platform } from '$lib/engine/protocol';
 import { MAX_DELETE_ROUNDS } from '$lib/actions';
 import { browser, type TabChangeInfo } from './browser';
 import {
-	DEFAULT_WAITS,
+	DEFAULT_SETTINGS,
 	IDLE,
 	LOG_LIMIT,
+	SETTINGS_KEY,
 	type Action,
 	type BackgroundMessage,
 	type ContentReport,
 	type HostMessage,
 	type PopupMessage,
+	type PopupSettings,
 	type RunState,
-	type Snapshot
+	type Snapshot,
+	type Timeouts
 } from './protocol';
 
 const STATE_KEY = 'runState';
@@ -68,6 +71,16 @@ async function setState(state: RunState): Promise<void> {
 async function getLines(): Promise<string[]> {
 	const stored = await browser.storage.session.get(LOG_KEY);
 	return (stored[LOG_KEY] as string[] | undefined) ?? [];
+}
+
+/** The user's waits, or the app's defaults until they change one. */
+async function getTimeouts(): Promise<Timeouts> {
+	const stored = await browser.storage.local.get(SETTINGS_KEY);
+	return (stored[SETTINGS_KEY] as PopupSettings | undefined)?.timeouts ?? DEFAULT_SETTINGS.timeouts;
+}
+
+function delay(ms: number): Promise<void> {
+	return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 /** Kept here rather than in the popup, which does not survive losing focus. */
@@ -192,14 +205,23 @@ async function runNext(): Promise<void> {
 	const url = targetUrl(state.platform, action, state.userName ?? '');
 	if (!url) throw new Error(`unknown action "${state.platform}:${action}"`);
 
+	const timeouts = await getTimeouts();
 	await navigate(state.tabId, url);
+	// `complete` is the document, not the list: both platforms keep filling one in afterwards,
+	// and starting on an empty page reads as "nothing to delete".
+	await delay(timeouts.waitAfterDocumentLoad);
 	await setState({ ...state, status: 'running', action, queue: rest, deletedCount: 0 });
 
 	await ask(state.tabId, {
 		kind: 'run',
 		platform: state.platform,
 		action,
-		params: { requestId: action, ...DEFAULT_WAITS, userName: state.userName }
+		params: {
+			requestId: action,
+			waitAfterDelete: timeouts.waitAfterDelete,
+			waitBetweenRetryDeleteAttempts: timeouts.waitBetweenRetryDeleteAttempts,
+			userName: state.userName
+		}
 	});
 }
 

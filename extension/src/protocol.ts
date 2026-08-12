@@ -75,15 +75,45 @@ export interface Snapshot {
 export const LOG_LIMIT = 100;
 
 /**
+ * The waits, in milliseconds.
+ *
+ * The same three the desktop app exposes, deliberately — they are the only brake against a
+ * platform treating the session as automation, and a user who had to raise them there should
+ * not have to work out a second set of names here. `TimeoutSettings` in
+ * `$lib/bridge/contract.ts` is the app's copy; importing it would drag the bridge in.
+ */
+export interface Timeouts {
+	/** Between one deletion and the next. */
+	waitAfterDelete: number;
+	/** Between two attempts at the same item. */
+	waitBetweenRetryDeleteAttempts: number;
+	/** After a page has loaded, before the engine is asked to do anything on it. */
+	waitAfterDocumentLoad: number;
+}
+
+/**
  * The popup's own preferences. In `storage.local`, so they survive the browser closing —
  * unlike everything else here, which is about one run and is meant to go.
  */
 export interface PopupSettings {
 	shown: Record<Platform, boolean>;
+	timeouts: Timeouts;
+	/** Set once the welcome box has been dismissed. */
+	welcomed: boolean;
 }
 
 export const SETTINGS_KEY = 'popupSettings';
-export const DEFAULT_SETTINGS: PopupSettings = { shown: { x: true, youtube: true } };
+
+/** The app's own defaults, so a run behaves the same in either place until it is changed. */
+export const DEFAULT_SETTINGS: PopupSettings = {
+	shown: { x: true, youtube: true },
+	timeouts: {
+		waitAfterDelete: 500,
+		waitBetweenRetryDeleteAttempts: 500,
+		waitAfterDocumentLoad: 3000
+	},
+	welcomed: false
+};
 
 /** Popup -> background. One action or all of them is the same request with a longer list. */
 export type PopupMessage =
@@ -118,12 +148,3 @@ export interface ContentReport {
 	kind: 'content';
 	message: ContentMessage;
 }
-
-/**
- * The waits the standalone scripts default to. Deletion is deliberately slow — these are the
- * only brake against the platform treating the session as automation.
- */
-export const DEFAULT_WAITS = {
-	waitAfterDelete: 500,
-	waitBetweenRetryDeleteAttempts: 500
-} as const;

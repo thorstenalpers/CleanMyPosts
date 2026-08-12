@@ -249,16 +249,19 @@
 				{/each}
 
 				<div class="ms-auto flex items-center gap-1">
-					<!-- Each language names itself, so nothing in this list is translated. -->
 					<select
-						aria-label={t('nav.settings')}
+						aria-label={t('header.language')}
 						value={settings.language}
 						onchange={(e) => save({ ...settings, language: e.currentTarget.value })}
 						class="h-6 cursor-pointer rounded-md border border-input bg-background px-1 text-xs
 						       focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
 					>
 						{#each LANGUAGES as language (language.id)}
-							<option value={language.id}>{language.label}</option>
+							<!-- `System` is the only entry with a translated label; every language names
+							     itself, which is why the rest are printed as they come. -->
+							<option value={language.id}>
+								{language.id === 'System' ? t('settings.language.system') : language.label}
+							</option>
 						{/each}
 					</select>
 					<button

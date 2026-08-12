@@ -5,42 +5,31 @@
     <title>YouTube liked-videos fixture</title>
   </head>
   <body>
-    <ytd-playlist-video-renderer>
-      <span>Video 1</span>
-      <ytd-menu-renderer>
-        <button aria-label="Action menu">More</button>
-      </ytd-menu-renderer>
-    </ytd-playlist-video-renderer>
-    <ytd-playlist-video-renderer>
-      <span>Video 2</span>
-      <ytd-menu-renderer>
-        <button aria-label="Action menu">More</button>
-      </ytd-menu-renderer>
-    </ytd-playlist-video-renderer>
+    <!--
+      My Activity, not the Liked videos playlist: both YouTube lists are deleted here, with the
+      button beside each row rather than through a menu.
 
-    <ytd-menu-popup-renderer>
-      <ytd-menu-service-item-renderer>
-        <tp-yt-paper-item>
-          <yt-formatted-string>Remove from Liked videos</yt-formatted-string>
-        </tp-yt-paper-item>
-      </ytd-menu-service-item-renderer>
-    </ytd-menu-popup-renderer>
+      Deliberately without `jscontroller` or any other generated attribute. The selectors stopped
+      relying on those because their values rotate with a Google deployment, and a fixture that
+      still carried them would let a selector pinned to one keep passing.
+    -->
+    <div id="contents">
+      <div role="listitem">
+        <span>Liked video 1</span>
+        <button aria-label="Delete activity item">Delete</button>
+      </div>
+      <div role="listitem">
+        <span>Liked video 2</span>
+        <button aria-label="Delete activity item">Delete</button>
+      </div>
+    </div>
 
     <script>
-      // Stand in for YouTube's shared overflow menu: opening a video's menu arms
-      // it, clicking "Remove from Liked videos" marks that video is-dismissed.
-      let pending = null;
+      // No confirmation sheet on this list, which is the case worth covering here: the row goes
+      // on the click, and an engine that waits for a sheet anyway spends four seconds per item.
       document.addEventListener('click', (e) => {
-        const menuBtn = e.target.closest?.('ytd-menu-renderer button');
-        if (menuBtn) {
-          pending = menuBtn.closest('ytd-playlist-video-renderer');
-          return;
-        }
-        const remove = e.target.closest?.('ytd-menu-service-item-renderer');
-        if (remove && pending) {
-          pending.setAttribute('is-dismissed', '');
-          pending = null;
-        }
+        const del = e.target.closest?.('button[aria-label]');
+        if (del) del.closest('div[role="listitem"]')?.remove();
       });
     </script>
   </body>

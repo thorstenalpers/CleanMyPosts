@@ -44,6 +44,8 @@
 	let confirmOpen = $state(false);
 	let settings = $state<PopupSettings>(DEFAULT_SETTINGS);
 	let settingsOpen = $state(false);
+	/** The log is for when something went wrong, which is not most of the time. */
+	let logOpen = $state(false);
 
 	const busy = $derived(run.status === 'preparing' || run.status === 'running');
 	const visible = $derived(PLATFORMS.filter((p) => settings.shown[p.id]));
@@ -366,16 +368,40 @@
 		</div>
 	{/if}
 
+	<!-- The log is shut unless asked for. A run says what it is doing in the count above; the
+	     lines matter when something has gone wrong, and then they are one click away. Its
+	     toggle sits at the very bottom so opening it grows the window downwards and leaves
+	     everything above where the pointer left it. -->
 	{#if !folded && (run.message || lines.length)}
-		<div class="border-t px-1.5 py-1.5">
+		<div class="flex flex-col border-t">
 			{#if run.message}
-				<p class="px-2 pb-1 text-xs text-destructive">{run.message}</p>
+				<p class="px-3 pt-2 text-xs text-destructive">{run.message}</p>
 			{/if}
-			{#if lines.length}
+
+			{#if logOpen && lines.length}
 				<pre
-					class="max-h-24 overflow-auto rounded-md bg-muted p-2 text-[10px] leading-tight">{lines.join(
+					class="mx-1.5 mt-1.5 max-h-32 overflow-auto rounded-md bg-muted p-2 text-[10px] leading-tight">{lines.join(
 						'\n'
 					)}</pre>
+			{/if}
+
+			{#if lines.length}
+				<button
+					type="button"
+					aria-expanded={logOpen}
+					onclick={() => (logOpen = !logOpen)}
+					class="flex cursor-pointer items-center justify-center gap-1 py-1 text-[10px]
+					       text-muted-foreground transition-colors duration-150 hover:bg-muted
+					       hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring
+					       focus-visible:outline-none"
+				>
+					{#if logOpen}
+						<ChevronUpIcon class="size-3" />
+					{:else}
+						<ChevronDownIcon class="size-3" />
+					{/if}
+					{t('nav.log')} · {lines.length}
+				</button>
 			{/if}
 		</div>
 	{/if}

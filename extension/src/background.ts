@@ -113,22 +113,29 @@ async function ask<T>(tabId: number, message: HostMessage, attempts = 20): Promi
 	throw new Error('the page never answered — reload it and try again');
 }
 
-async function start(platform: Platform, action: Action): Promise<void> {
+const HOME: Record<Platform, string> = {
+	x: 'https://x.com/home',
+	youtube: 'https://www.youtube.com'
+};
+
+/** Sets the queue up and starts it. One action or seven is the same path. */
+async function start(platform: Platform, actions: Action[]): Promise<void> {
 	await browser.storage.session.set({ [LOG_KEY]: [] });
-	await setState({ status: 'preparing', platform, action, deletedCount: 0 });
+	await setState({ ...IDLE, status: 'preparing', platform, queue: actions });
 
 	const [active] = await browser.tabs.query({ active: true, currentWindow: true });
 	const tab = active?.id
 		? active
-		: await browser.tabs.create({ url: 'https://x.com/home', active: true });
+		: await browser.tabs.create({ url: HOME[platform], active: true });
 	const tabId = tab.id;
 	if (!tabId) throw new Error('no tab to work in');
 
 	let userName = '';
 	if (platform === 'x') {
 		// The handle is in the page, not in any store: it is read off the signed-in nav rail,
-		// which means X has to be open before a target url can be built at all.
-		await navigate(tabId, 'https://x.com/home');
+		// which means X has to be open before a target url can be built at all. Read once here
+		// rather than before each action, which would be five more navigations.
+		await navigate(tabId, HOME.x);
 		const answer = await ask<{ value?: string }>(tabId, {
 			kind: 'probe',
 			requestId: 'username',
@@ -138,17 +145,36 @@ async function start(platform: Platform, action: Action): Promise<void> {
 		if (!userName) throw new Error('not signed in to X');
 	}
 
-	const url = targetUrl(platform, action, userName);
-	if (!url) throw new Error(`unknown action "${platform}:${action}"`);
+	await setState({ ...IDLE, status: 'preparing', platform, tabId, userName, queue: actions });
+	await runNext();
+}
 
-	await navigate(tabId, url);
-	await setState({ status: 'running', platform, action, tabId, deletedCount: 0 });
+/**
+ * Takes the next action off the queue and runs it.
+ *
+ * Called by `start` once and by `relay` after every `done`. Reads its whole world back out of
+ * storage, because between those two calls the worker may have been stopped and restarted.
+ */
+async function runNext(): Promise<void> {
+	const state = await getState();
+	const [action, ...rest] = state.queue;
 
-	await ask(tabId, {
+	if (!action || !state.platform || !state.tabId) {
+		await setState({ ...state, status: 'done', queue: [] });
+		return;
+	}
+
+	const url = targetUrl(state.platform, action, state.userName ?? '');
+	if (!url) throw new Error(`unknown action "${state.platform}:${action}"`);
+
+	await navigate(state.tabId, url);
+	await setState({ ...state, status: 'running', action, queue: rest, deletedCount: 0 });
+
+	await ask(state.tabId, {
 		kind: 'run',
-		platform,
+		platform: state.platform,
 		action,
-		params: { requestId: 'run', ...DEFAULT_WAITS, userName }
+		params: { requestId: action, ...DEFAULT_WAITS, userName: state.userName }
 	});
 }
 
@@ -176,10 +202,31 @@ async function relay(message: ContentReport['message']): Promise<void> {
 	const state = await getState();
 	if (message.type === 'progress') {
 		await setState({ ...state, status: 'running', deletedCount: message.deletedCount });
-	} else if (message.type === 'done') {
-		await setState({ ...state, status: 'done', deletedCount: message.deletedCount });
-	} else if (message.type === 'error') {
-		await setState({ ...state, status: 'error', message: message.message });
+		return;
+	}
+
+	if (message.type === 'done') {
+		const totalCount = state.totalCount + message.deletedCount;
+		const carryOn = state.queue.length > 0;
+		// `deletedCount` belongs to the action that just ended and has been folded into the total,
+		// so it goes back to zero — the popup shows the sum of the two and would count twice.
+		await setState({
+			...state,
+			status: carryOn ? 'running' : 'done',
+			deletedCount: 0,
+			totalCount
+		});
+		// This message is also what woke the worker, if it had been stopped. Everything the next
+		// action needs was read back from storage a line ago.
+		if (carryOn) await runNext();
+		return;
+	}
+
+	if (message.type === 'error') {
+		// The queue goes with it: what state the page is in after a failed action is not knowable
+		// from here, and navigating on regardless is how one broken selector empties a list nobody
+		// asked about.
+		await setState({ ...state, status: 'error', message: message.message, queue: [] });
 	}
 }
 
@@ -202,7 +249,7 @@ browser.runtime.onMessage.addListener(
 			return true;
 		}
 
-		void start(message.platform, message.action)
+		void start(message.platform, message.actions)
 			.then(() => sendResponse({ ok: true }))
 			.catch((error: unknown) => {
 				const text = error instanceof Error ? error.message : String(error);

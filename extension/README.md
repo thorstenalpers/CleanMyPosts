@@ -76,7 +76,16 @@ over the report channel, so their results appear in the console alongside everyt
 - The assistant. It reads an API key out of the Windows Credential Manager, which has no
   extension equivalent, and it is not obvious yet that it should have one.
 - Action plans and saved actions.
-- Delete everything.
+
+**Delete all** is here, one button per platform, and it is a queue rather than a loop: MV3
+stops the worker between two runs and takes any pending promise with it, so what comes next
+lives in `storage.session` and the `done` that wakes the worker is what starts it. An action
+that errors clears the queue — where the page ends up after a failed one is not knowable from
+the worker, and navigating on regardless is how one broken selector empties a list nobody
+asked about.
+
+It takes two clicks. It sits beside six buttons that each empty one list, it empties all of
+them, and none of it comes back.
 
 ## Before it can ship
 

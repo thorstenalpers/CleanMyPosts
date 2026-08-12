@@ -11,8 +11,10 @@
 import { build } from 'vite';
 import { svelte, vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 import tailwindcss from '@tailwindcss/vite';
-import { cp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { cp, mkdir, readdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { watch } from 'node:fs';
+import { exec } from 'node:child_process';
+import { promisify } from 'node:util';
 import path from 'node:path';
 
 const ROOT = process.cwd();
@@ -97,8 +99,50 @@ async function buildAll() {
 	return manifest.version;
 }
 
+/**
+ * Zips the extension root, which is the shape both stores want.
+ *
+ * Not `Compress-Archive`: Windows PowerShell 5.1 writes `assets\popup.js` into the archive,
+ * with the separator the zip format does not use, and a browser then cannot find a single file
+ * under `assets/`. `tar` is bsdtar on Windows and writes them properly; elsewhere it is GNU
+ * tar, which cannot write zip at all, so `zip` does it there.
+ *
+ * Entries are named rather than passed as `.`, which both tools would turn into a `./` prefix
+ * on everything. Source maps are left out: they are half the package and belong with the
+ * source AMO asks for separately, not in the build a store serves.
+ */
+async function zipInto(dir, out) {
+	await rm(out, { force: true });
+	const entries = (await readdir(dir)).filter((name) => !name.endsWith('.map'));
+	const quoted = entries.map((name) => `"${name}"`).join(' ');
+	// Relative, and reached by `cd` rather than by `-C`: an absolute Windows path carries a
+	// colon, and bsdtar reads what is before one as a host to connect to.
+	const target = path.relative(dir, out).replace(/\\/g, '/');
+	// Windows' own tar by full path, because a bare `tar` finds Git's GNU one first and that
+	// cannot write zip at all. `--format zip` spelled out, because `-a` reads the format off the
+	// file extension and does not find one on a relative path — it wrote a tar named .zip and
+	// said nothing.
+	const bsdtar = `"${process.env.SystemRoot ?? 'C:\\Windows'}\\System32\\tar.exe"`;
+	const tool =
+		process.platform === 'win32'
+			? `${bsdtar} -c --format zip -f "${target}"`
+			: `zip -qr "${target}"`;
+	await promisify(exec)(`cd "${dir}" && ${tool} ${quoted}`);
+}
+
 const version = await buildAll();
 console.log(`  ${CHROME}\n  ${FIREFOX}\n  version ${version}`);
+
+if (process.argv.includes('--zip')) {
+	for (const [browser, dir] of [
+		['chrome', CHROME],
+		['firefox', FIREFOX]
+	]) {
+		const out = path.join(OUT, `cleanmyposts-${browser}-${version}.zip`);
+		await zipInto(dir, out);
+		console.log(`  ${out}`);
+	}
+}
 
 if (!process.argv.includes('--watch')) process.exit(0);
 

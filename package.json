@@ -6,6 +6,7 @@
 	"scripts": {
 		"start": "tauri dev",
 		"build:extension": "node scripts/build-extension.mjs",
+		"pack:extension": "node scripts/build-extension.mjs --zip",
 		"dev": "vite dev",
 		"dev:content": "vite build --config vite.content.config.ts",
 		"build:scripts": "node scripts/build-standalone.mjs",

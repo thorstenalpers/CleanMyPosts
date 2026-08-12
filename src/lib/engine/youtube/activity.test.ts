@@ -77,7 +77,9 @@ describe('activityAction.run', () => {
 		// that it spent the timeout looking. The upper bound is the point of the number being
 		// what it is: the caller reloads and looks again, so this one does not need five seconds.
 		const spent = Date.now() - started;
-		expect(spent).toBeGreaterThan(1000);
-		expect(spent).toBeLessThan(4000);
+		expect(spent).toBeGreaterThan(500);
+		// A one-second budget with one more look possibly in flight. The number is the point of
+		// the change, so it is asserted rather than left to whatever the constants happen to be.
+		expect(spent).toBeLessThan(3000);
 	}, 20000);
 });

@@ -131,8 +131,11 @@ export const activityAction: DeleteActionDefinition = {
 		 * five-second attempts spent fifteen seconds at the end of every run deciding a list was
 		 * empty. Nothing is lost by cutting it — the caller re-runs the action on a reloaded page
 		 * whenever a pass deleted anything, and a row that needed longer turns up on that pass.
+		 *
+		 * Reset by a row being found and by "show more", so it bounds the tail of a run rather
+		 * than the run itself: a list of two thousand takes as long as it takes.
 		 */
-		const searchBudgetMs = 2000;
+		const searchBudgetMs = 1000;
 		let searchingSince = Date.now();
 
 		while (failures < maxFailures) {
@@ -145,8 +148,8 @@ export const activityAction: DeleteActionDefinition = {
 			}
 
 			const found = await waitForByScrolling(() => findDeleteButton() !== null, 400, {
-				maxWaitMs: 800,
-				intervalMs: 300
+				maxWaitMs: 400,
+				intervalMs: 200
 			});
 
 			if (!found) {
@@ -163,7 +166,7 @@ export const activityAction: DeleteActionDefinition = {
 				}
 
 				if (Date.now() - searchingSince > searchBudgetMs) {
-					postLog('info', 'Nothing more turned up in two seconds; treating the list as empty.');
+					postLog('info', 'Nothing more turned up in time; treating the list as empty.');
 					break;
 				}
 

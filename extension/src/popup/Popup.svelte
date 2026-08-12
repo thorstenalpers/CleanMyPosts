@@ -93,11 +93,11 @@
 	}
 </script>
 
-<div class="flex w-[340px] flex-col bg-background text-foreground">
+<div class="flex w-[520px] flex-col bg-background text-foreground">
 	<header class="flex h-11 shrink-0 items-center gap-2 border-b px-3">
 		<span class="flex-1 text-[13px] font-semibold tracking-tight">CleanMyPosts</span>
 		{#if run.status !== 'idle'}
-			<span class="text-xs text-muted-foreground">
+			<span class="text-xs text-muted-foreground tabular-nums">
 				{run.totalCount + run.deletedCount}
 				{#if busy && run.queue.length}· +{run.queue.length}{/if}
 			</span>
@@ -113,57 +113,65 @@
 		{/if}
 	</header>
 
-	<div class="flex flex-col gap-0.5 px-1.5 py-2">
+	<!-- Two columns rather than one list: the platforms have nothing to do with each other, and
+	     stacking them made a popup twice as tall as it needed to be for seven rows. -->
+	<div class="grid grid-cols-2 divide-x">
 		{#each PLATFORMS as platform (platform.id)}
 			{@const Icon = platform.icon}
-			<h2
-				class="flex items-center gap-1.5 px-2 pt-2 pb-1 text-[11px] font-medium tracking-tight text-muted-foreground"
-			>
-				<Icon class={platform.id === 'youtube' ? 'size-3.5 text-red-600' : 'size-3.5'} />
-				{platform.label}
-			</h2>
+			<section class="flex flex-col gap-0.5 p-1.5">
+				<h2
+					class="flex items-center gap-1.5 px-2 pt-1 pb-1.5 text-[11px] font-medium tracking-tight text-muted-foreground"
+				>
+					<Icon class={platform.id === 'youtube' ? 'size-3.5 text-red-600' : 'size-3.5'} />
+					{platform.label}
+				</h2>
 
-			{#each platform.groups as group (group.key)}
-				<ActionRow
-					label={group.label}
-					icon={group.icon}
+				{#each platform.groups as group (group.key)}
+					<ActionRow
+						label={group.label}
+						icon={group.icon}
+						disabled={busy}
+						active={busy && isCurrent(platform.id, group)}
+						current={!busy && isCurrent(platform.id, group)}
+						onShow={() => show(platform.id, group)}
+						onDelete={() => ask(platform.id, group)}
+					/>
+				{/each}
+
+				<!-- Pinned to the bottom of its column so both sit on one line despite X having
+				     five lists and YouTube two. No show button: "everything" is not a page. -->
+				<button
+					type="button"
 					disabled={busy}
-					active={busy && isCurrent(platform.id, group)}
-					current={!busy && isCurrent(platform.id, group)}
-					onShow={() => show(platform.id, group)}
-					onDelete={() => ask(platform.id, group)}
-				/>
-			{/each}
-
-			<!-- No show button: "everything" is not a page anyone can be sent to. -->
-			<button
-				type="button"
-				disabled={busy}
-				onclick={() => ask(platform.id)}
-				class="group/all mt-0.5 flex h-8 cursor-pointer items-center gap-2 rounded-md ps-2 pe-2 text-start
-				       transition-colors duration-150 hover:bg-destructive/10 focus-visible:ring-2
-				       focus-visible:ring-ring focus-visible:outline-none disabled:pointer-events-none
-				       disabled:opacity-40"
-			>
-				<Trash2Icon
-					class="size-3.5 shrink-0 text-muted-foreground group-hover/all:text-destructive"
-				/>
-				<span class="flex-1 truncate text-[13px] group-hover/all:text-destructive">
-					{t('action.deleteAll')}
-				</span>
-			</button>
+					onclick={() => ask(platform.id)}
+					class="group/all mt-auto flex h-8 cursor-pointer items-center gap-2 rounded-md ps-2 pe-2 text-start
+					       transition-colors duration-150 hover:bg-destructive/10 focus-visible:ring-2
+					       focus-visible:ring-ring focus-visible:outline-none disabled:pointer-events-none
+					       disabled:opacity-40"
+				>
+					<Trash2Icon
+						class="size-3.5 shrink-0 text-muted-foreground group-hover/all:text-destructive"
+					/>
+					<span class="flex-1 truncate text-[13px] group-hover/all:text-destructive">
+						{t('action.deleteAll')}
+					</span>
+				</button>
+			</section>
 		{/each}
 	</div>
 
-	{#if run.message}
-		<p class="px-3 pb-2 text-xs text-destructive">{run.message}</p>
-	{/if}
-
-	{#if lines.length}
-		<pre
-			class="mx-1.5 mb-2 max-h-32 overflow-auto rounded-md bg-muted p-2 text-[10px] leading-tight">{lines.join(
-				'\n'
-			)}</pre>
+	{#if run.message || lines.length}
+		<div class="border-t px-1.5 py-1.5">
+			{#if run.message}
+				<p class="px-2 pb-1 text-xs text-destructive">{run.message}</p>
+			{/if}
+			{#if lines.length}
+				<pre
+					class="max-h-24 overflow-auto rounded-md bg-muted p-2 text-[10px] leading-tight">{lines.join(
+						'\n'
+					)}</pre>
+			{/if}
+		</div>
 	{/if}
 </div>
 

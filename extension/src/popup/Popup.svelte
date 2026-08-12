@@ -1,5 +1,7 @@
 <script lang="ts">
 	import type { Platform } from '$lib/engine/protocol';
+	import XIcon from '$lib/components/icons/x-icon.svelte';
+	import YoutubeIcon from '$lib/components/icons/youtube-icon.svelte';
 	import { browser } from '../browser';
 	import { IDLE, type Action, type BackgroundMessage, type RunState } from '../protocol';
 
@@ -52,7 +54,12 @@
 
 	{#each ['x', 'youtube'] as const as platform (platform)}
 		<section class="flex flex-col gap-1">
-			<h2 class="text-xs tracking-wide text-muted-foreground uppercase">
+			<h2 class="flex items-center gap-1.5 text-xs tracking-wide text-muted-foreground uppercase">
+				{#if platform === 'x'}
+					<XIcon class="size-3.5" />
+				{:else}
+					<YoutubeIcon class="size-3.5 text-red-600" />
+				{/if}
 				{platform === 'x' ? 'X' : 'YouTube'}
 			</h2>
 			<div class="flex flex-wrap gap-1">

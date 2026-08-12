@@ -17,7 +17,14 @@ declare global {
 	}
 }
 
-test('deleteLikes unlikes every video and reports progress in a real browser', async ({ page }) => {
+/**
+ * The other half of `youtube-comments.spec.ts`: same action, same page, no confirmation sheet.
+ *
+ * Both YouTube lists are the one engine on My Activity now, and what still differs between them
+ * is whether a sheet opens. This one covers the list where none does — where an engine that
+ * waits for one regardless spends four seconds on every item it deletes.
+ */
+test('deleteLikes removes every row and reports progress in a real browser', async ({ page }) => {
 	// Capture what the injected engine posts back, standing in for the WPF host.
 	await page.addInitScript(() => {
 		window.__msgs = [];
@@ -51,7 +58,7 @@ test('deleteLikes unlikes every video and reports progress in a real browser', a
 	expect(msgs.filter((m) => m.type === 'progress').map((m) => m.deletedCount)).toEqual([1, 2]);
 
 	const remaining = await page.evaluate(
-		() => document.querySelectorAll('ytd-playlist-video-renderer:not([is-dismissed])').length
+		() => document.querySelectorAll('div[role="listitem"]').length
 	);
 	expect(remaining).toBe(0);
 });

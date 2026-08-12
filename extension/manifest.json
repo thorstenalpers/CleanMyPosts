@@ -1,0 +1,35 @@
+{
+	"manifest_version": 3,
+	"name": "CleanMyPosts",
+	"version": "0.1.0",
+	"description": "Bulk-delete your posts, replies, reposts, likes and followings on X, and your comments and liked videos on YouTube.",
+	"icons": {
+		"32": "icons/32x32.png",
+		"64": "icons/64x64.png",
+		"128": "icons/128x128.png"
+	},
+	"permissions": ["tabs", "storage"],
+	"host_permissions": ["https://x.com/*", "https://myactivity.google.com/*"],
+	"background": {
+		"service_worker": "background.js"
+	},
+	"action": {
+		"default_popup": "popup.html",
+		"default_title": "CleanMyPosts"
+	},
+	"content_scripts": [
+		{
+			"matches": ["https://x.com/*", "https://myactivity.google.com/*"],
+			"js": ["main-world.js"],
+			"world": "MAIN",
+			"run_at": "document_idle",
+			"all_frames": false
+		},
+		{
+			"matches": ["https://x.com/*", "https://myactivity.google.com/*"],
+			"js": ["content.js"],
+			"run_at": "document_idle",
+			"all_frames": false
+		}
+	]
+}

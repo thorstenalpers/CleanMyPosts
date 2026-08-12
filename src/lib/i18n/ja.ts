@@ -315,7 +315,7 @@ export const ja: Record<MessageKey, string> = {
 	'settings.engine.save': '保存',
 	'settings.engine.hint':
 		'各アクションの前に、プラットフォームのページで実行されます。`window.__cmp.config` にはエンジンが探すセレクターと語句がすべて入っています。言語や地域に合わせて書き換えてください。壊れたスクリプトの代償はありません。捕捉してログに残し、組み込みの動作がそのまま続きます。',
-	'settings.engine.placeholder': "window.__cmp.config.youtube.removeFromLikedText.push('…');",
+	'settings.engine.placeholder': "window.__cmp.config.youtube.deleteActivityText.push('…');",
 
 	'assistant.report': '不具合を報告',
 	'assistant.report.hint':

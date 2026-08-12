@@ -319,7 +319,7 @@ export const ru: Record<MessageKey, string> = {
 	'settings.engine.save': 'Сохранить',
 	'settings.engine.hint':
 		'Выполняется на странице платформы перед каждым действием. В `window.__cmp.config` лежат все селекторы и все слова, которые ищет движок, — поменяйте то, что нужно вашему языку или региону. Сломанный скрипт ничего не стоит: он перехватывается, попадает в журнал, и встроенное поведение продолжает работать.',
-	'settings.engine.placeholder': "window.__cmp.config.youtube.removeFromLikedText.push('…');",
+	'settings.engine.placeholder': "window.__cmp.config.youtube.deleteActivityText.push('…');",
 
 	'assistant.report': 'Сообщить о проблеме',
 	'assistant.report.hint':

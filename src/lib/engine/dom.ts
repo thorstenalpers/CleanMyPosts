@@ -48,15 +48,26 @@ export function waitForByScrolling<T>(
 }
 
 let cursorEl: HTMLElement | null = null;
+let rippleEl: HTMLElement | null = null;
 
 /**
  * The pointer the user watches while the app clicks.
  *
- * An emoji was legible but never looked like it belonged to the page. This is a reticle in
- * the same red the highlight uses, drawn as an inline SVG so it stays sharp at any zoom and
- * needs no asset. `pointer-events:none` keeps it out of the way of the clicks it reports.
+ * A broom, drawn as inline SVG rather than loaded as an image: no asset means no
+ * `web_accessible_resources` entry in the extension and nothing for a store review to ask
+ * about, and it stays sharp at any zoom. `pointer-events:none` keeps it out of the way of the
+ * clicks it reports.
  */
 const SVG_NS = 'http://www.w3.org/2000/svg';
+
+/**
+ * Black, and legible on a black page.
+ *
+ * Both platforms have a dark mode, where black on its own is a hole in the screen. The white
+ * head and the halo in `ensureCursor` are what make it a shape there — a drop-shadow rather
+ * than a second set of SVG nodes, so it costs the compositor one filter and the DOM nothing.
+ */
+const CURSOR_INK = '#000';
 
 /**
  * Built node by node rather than from a string of markup.
@@ -65,49 +76,43 @@ const SVG_NS = 'http://www.w3.org/2000/svg';
  * `innerHTML` throws — which took the whole run down before the first item was deleted, with
  * "This document requires 'TrustedHTML' assignment" as the only clue.
  */
+/**
+ * Lucide's `broom`, as path data.
+ *
+ * The paths rather than the component: this draws into a foreign document with no Svelte and
+ * no bundler around it. Kept in step with the package by hand, which is the price of the
+ * engine being able to run anywhere — `@lucide/svelte` is where they came from and where a
+ * corrected version would come from.
+ *
+ * The head is the one closed path and is the one that gets filled.
+ */
+const BROOM_PATHS = [
+	'M13.5 10.5 22 2',
+	'M14.734 13.841a2 2 0 00-.314-2.42L12.58 9.58a2 2 0 00-2.421-.314l-7.657 4.461A1 1 0 002.3 15.3l6.403 6.403a1 1 0 001.571-.204z',
+	'm5 18 2-2',
+	'm7.699 10.7 5.602 5.601'
+];
+
 function buildCursorSvg(): SVGSVGElement {
 	const svg = document.createElementNS(SVG_NS, 'svg');
-	svg.setAttribute('width', '34');
-	svg.setAttribute('height', '34');
-	svg.setAttribute('viewBox', '0 0 34 34');
+	svg.setAttribute('width', '32');
+	svg.setAttribute('height', '32');
+	svg.setAttribute('viewBox', '0 0 24 24');
 	svg.setAttribute('fill', 'none');
+	svg.setAttribute('stroke', CURSOR_INK);
+	svg.setAttribute('stroke-width', '2');
+	svg.setAttribute('stroke-linecap', 'round');
+	svg.setAttribute('stroke-linejoin', 'round');
 
-	const line = (x1: number, y1: number, x2: number, y2: number): SVGLineElement => {
-		const el = document.createElementNS(SVG_NS, 'line');
-		el.setAttribute('x1', String(x1));
-		el.setAttribute('y1', String(y1));
-		el.setAttribute('x2', String(x2));
-		el.setAttribute('y2', String(y2));
-		el.setAttribute('stroke', '#ff3b30');
-		el.setAttribute('stroke-width', '3');
-		el.setAttribute('stroke-linecap', 'round');
-		return el;
-	};
+	for (const d of BROOM_PATHS) {
+		const path = document.createElementNS(SVG_NS, 'path');
+		path.setAttribute('d', d);
+		// The head is the one closed shape, and filling it white is what keeps the whole thing
+		// readable on a dark timeline — black on black is a hole, outline or not.
+		if (d.endsWith('z')) path.setAttribute('fill', '#fff');
+		svg.append(path);
+	}
 
-	// A reticle: heavy ring, four ticks, filled centre. Thick enough to follow across a busy
-	// timeline, and unmistakably not the platform's own pointer.
-	const ring = document.createElementNS(SVG_NS, 'circle');
-	ring.setAttribute('cx', '17');
-	ring.setAttribute('cy', '17');
-	ring.setAttribute('r', '10');
-	ring.setAttribute('stroke', '#ff3b30');
-	ring.setAttribute('stroke-width', '3');
-	ring.setAttribute('fill', 'rgba(255,59,48,.14)');
-
-	const dot = document.createElementNS(SVG_NS, 'circle');
-	dot.setAttribute('cx', '17');
-	dot.setAttribute('cy', '17');
-	dot.setAttribute('r', '3');
-	dot.setAttribute('fill', '#ff3b30');
-
-	svg.append(
-		ring,
-		line(17, 1.5, 17, 6),
-		line(17, 28, 17, 32.5),
-		line(1.5, 17, 6, 17),
-		line(28, 17, 32.5, 17),
-		dot
-	);
 	return svg;
 }
 
@@ -115,12 +120,27 @@ function ensureCursor(): HTMLElement {
 	if (cursorEl && document.body.contains(cursorEl)) return cursorEl;
 	cursorEl = document.createElement('div');
 	cursorEl.append(buildCursorSvg());
+	// Anchored on the head, not the middle: a broom sweeps what it stands on, so the head sits
+	// over the thing being clicked and the handle points up and away from it. The head of this
+	// icon is the lower-left corner of the box, around (8, 16) of its 24 — hence the offsets.
 	cursorEl.style.cssText =
 		'position:fixed;z-index:2147483647;pointer-events:none;line-height:0;opacity:1;' +
-		'transform:translate(-17px,-17px);transition:left .2s ease,top .2s ease,opacity .3s ease;' +
-		'filter:drop-shadow(0 1px 3px rgba(0,0,0,.45));';
+		'transform:translate(-11px,-21px);transition:left .2s ease,top .2s ease,opacity .3s ease;' +
+		'filter:drop-shadow(0 0 2px rgba(255,255,255,.95)) drop-shadow(0 1px 3px rgba(0,0,0,.4));';
 	document.body.appendChild(cursorEl);
 	return cursorEl;
+}
+
+/** Lives as long as the cursor does, for the same reason: one node, not one per click. */
+function ensureRipple(): HTMLElement {
+	if (rippleEl && document.body.contains(rippleEl)) return rippleEl;
+	rippleEl = document.createElement('div');
+	rippleEl.style.cssText =
+		'position:fixed;z-index:2147483646;pointer-events:none;opacity:0;' +
+		'width:20px;height:20px;margin:-10px 0 0 -10px;border:3px solid #000;border-radius:50%;' +
+		'background:rgba(0,0,0,.18);box-shadow:0 0 0 1px rgba(255,255,255,.9);';
+	document.body.appendChild(rippleEl);
+	return rippleEl;
 }
 
 /**
@@ -131,6 +151,8 @@ function ensureCursor(): HTMLElement {
  * it does not own.
  */
 export function hideCursor(): void {
+	rippleEl?.remove();
+	rippleEl = null;
 	if (!cursorEl) return;
 	const el = cursorEl;
 	cursorEl = null;
@@ -175,20 +197,46 @@ export function clickWithCursor(el: HTMLElement, options: ClickOptions = {}): vo
 	cursor.style.left = `${x}px`;
 	cursor.style.top = `${y}px`;
 
-	const ripple = document.createElement('div');
-	ripple.style.cssText =
-		`position:fixed;left:${x}px;top:${y}px;z-index:2147483646;pointer-events:none;` +
-		'width:20px;height:20px;margin:-10px 0 0 -10px;border:2px solid #ff3b30;border-radius:50%;' +
-		'background:rgba(255,59,48,.25);transition:transform .4s ease,opacity .4s ease;';
-	document.body.appendChild(ripple);
+	const ripple = ensureRipple();
+	// Restarted rather than rebuilt. Appending a node and removing it 450ms later put two body
+	// mutations inside the window where a menu this engine had just opened was supposed to stay
+	// open, and a platform that watches its own subtree gets to react to both.
+	ripple.style.transition = 'none';
+	ripple.style.left = `${x}px`;
+	ripple.style.top = `${y}px`;
+	ripple.style.transform = 'scale(1)';
+	ripple.style.opacity = '1';
 	requestAnimationFrame(() => {
+		ripple.style.transition = 'transform .4s ease,opacity .4s ease';
 		ripple.style.transform = 'scale(2.4)';
 		ripple.style.opacity = '0';
 	});
-	setTimeout(() => ripple.remove(), 450);
 
 	if (options.pointerSequence) dispatchRealClick(el, x, y);
 	else el.click();
+}
+
+/**
+ * Activates an element the way a keyboard does.
+ *
+ * A different path entirely, not another guess at which node listens: where every node in a
+ * menu entry has been clicked and the entry did nothing, the handler is not on a pointer event
+ * at all. `role="menuitem"` entries answer Enter, and focus is what makes that reach them.
+ */
+export function pressEnter(el: HTMLElement): void {
+	el.focus();
+	const init = {
+		key: 'Enter',
+		code: 'Enter',
+		keyCode: 13,
+		which: 13,
+		bubbles: true,
+		cancelable: true,
+		composed: true
+	};
+	for (const type of ['keydown', 'keypress', 'keyup']) {
+		el.dispatchEvent(new KeyboardEvent(type, init));
+	}
 }
 
 /**
@@ -358,6 +406,18 @@ export function hideShield(): void {
 	shieldAbort = null;
 }
 
+type Transport = (message: ContentMessage) => void;
+
+let transport: Transport | null = null;
+
+/**
+ * Sends the reports somewhere other than WebView2 — the browser extension routes them
+ * through `chrome.runtime` instead, since a content script has no host webview to post to.
+ */
+export function setTransport(next: Transport): void {
+	transport = next;
+}
+
 /**
  * The one way out of the page.
  *
@@ -367,6 +427,10 @@ export function hideShield(): void {
  * surface left there, so it gets the same lines.
  */
 function post(message: ContentMessage): void {
+	if (transport) {
+		transport(message);
+		return;
+	}
 	const bridge = window.chrome?.webview;
 	if (bridge) {
 		bridge.postMessage(message);

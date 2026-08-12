@@ -21,7 +21,7 @@ import { siteConfig } from '$lib/engine/config';
 // The modules themselves rather than a description of them, so what the model is shown cannot
 // drift from what the engine actually runs.
 import xLikesSource from '$lib/engine/x/likes.ts?raw';
-import youtubeLikesSource from '$lib/engine/youtube/likes.ts?raw';
+import youtubeActivitySource from '$lib/engine/youtube/activity.ts?raw';
 
 /** The last stretch of the log; older lines rarely explain the run being asked about. */
 const LOG_LINES = 200;
@@ -354,7 +354,7 @@ function describeStructure(structure: string): string {
  */
 function describeEngineSource(platform: Platform | undefined): string {
 	if (!platform) return '';
-	const source = platform === 'x' ? xLikesSource : youtubeLikesSource;
+	const source = platform === 'x' ? xLikesSource : youtubeActivitySource;
 	return [
 		'## How the built-in actions do it',
 		'',

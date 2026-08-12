@@ -47,6 +47,31 @@ jobs:
       - name: Build
         run: npm run build
 
+      # Its own step: the extension is three more Vite outputs off the same engine, and a
+      # change that compiles for the app can still fail here — the content scripts are built
+      # as standalone IIFEs and the popup under a different Vite root.
+      - name: Build extension
+        run: npm run build:extension
+
+      - name: Check the extension manifests
+        shell: pwsh
+        run: |
+          foreach ($browser in 'chrome', 'firefox') {
+            $dir = "dist/extension/$browser"
+            $manifest = Get-Content "$dir/manifest.json" -Raw | ConvertFrom-Json
+            foreach ($file in 'background.js', 'content.js', 'main-world.js', 'popup.html') {
+              if (-not (Test-Path "$dir/$file")) { throw "$browser is missing $file" }
+            }
+            # Every host a content script runs on has to be one the extension asked for.
+            $hosts = $manifest.host_permissions
+            foreach ($entry in $manifest.content_scripts) {
+              foreach ($match in $entry.matches) {
+                if ($hosts -notcontains $match) { throw "$browser matches $match without permission" }
+              }
+            }
+            Write-Host "$browser $($manifest.version): $($hosts -join ', ')"
+          }
+
       - name: Upload Test Coverage Report
         uses: actions/upload-artifact@v7
         with:

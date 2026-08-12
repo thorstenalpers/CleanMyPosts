@@ -317,7 +317,7 @@ export const hi: Record<MessageKey, string> = {
 	'settings.engine.save': 'सहेजें',
 	'settings.engine.hint':
 		'हर क्रिया से पहले प्लेटफ़ॉर्म पेज में चलती है। `window.__cmp.config` में वे सारे सिलेक्टर और शब्द हैं जिन्हें इंजन ढूँढ़ता है — जो आपकी भाषा या क्षेत्र को चाहिए, वह बदल दें। ख़राब स्क्रिप्ट का कोई नुक़सान नहीं: वह पकड़ी जाती है, लॉग होती है, और अंतर्निहित व्यवहार चलता रहता है।',
-	'settings.engine.placeholder': "window.__cmp.config.youtube.removeFromLikedText.push('…');",
+	'settings.engine.placeholder': "window.__cmp.config.youtube.deleteActivityText.push('…');",
 
 	'assistant.report': 'समस्या की रिपोर्ट करें',
 	'assistant.report.hint':

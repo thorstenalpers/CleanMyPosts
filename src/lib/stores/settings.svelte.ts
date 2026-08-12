@@ -25,7 +25,7 @@ const FALLBACK_SETTINGS: AppSettings = {
 	timeouts: {
 		waitAfterDelete: 500,
 		waitBetweenRetryDeleteAttempts: 500,
-		waitAfterDocumentLoad: 3000
+		waitAfterDocumentLoad: 1000
 	}
 };
 

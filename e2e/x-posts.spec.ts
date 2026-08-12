@@ -42,7 +42,10 @@ test('deletePosts deletes every post and reports progress in a real browser', as
 		new MutationObserver((records) => {
 			for (const record of records) {
 				for (const node of record.addedNodes) {
-					if (node instanceof HTMLElement && node.querySelector('svg circle')) {
+					// `svg path`, not a shape: the pointer is Lucide's broom now, and was a reticle
+					// of circles and lines before that. The icon can change again; that it draws
+					// an svg into the page while a run is going is what this is watching for.
+					if (node instanceof HTMLElement && node.querySelector('svg path')) {
 						window.__cursorSeen = true;
 					}
 				}
@@ -83,6 +86,6 @@ test('deletePosts deletes every post and reports progress in a real browser', as
 	// ends, because a marker left standing reads as "still working".
 	expect(await page.evaluate(() => window.__cursorSeen)).toBe(true);
 	await expect
-		.poll(() => page.evaluate(() => document.body.querySelectorAll('svg circle').length))
+		.poll(() => page.evaluate(() => document.body.querySelectorAll('svg path').length))
 		.toBe(0);
 });

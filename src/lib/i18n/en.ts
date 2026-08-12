@@ -328,7 +328,7 @@ export const en = {
 	'settings.engine.save': 'Save',
 	'settings.engine.hint':
 		'Runs in the platform page before each action. `window.__cmp.config` holds every selector and every word the engine looks for — change what your language or region needs. A broken script costs the run nothing: it is caught, logged, and the built-in behaviour goes on.',
-	'settings.engine.placeholder': "window.__cmp.config.youtube.removeFromLikedText.push('…');",
+	'settings.engine.placeholder': "window.__cmp.config.youtube.deleteActivityText.push('…');",
 
 	'assistant.report': 'Report a problem',
 	'assistant.report.hint':

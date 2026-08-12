@@ -15,7 +15,7 @@ impl Default for TimeoutSettings {
         Self {
             wait_after_delete: 500,
             wait_between_retry_delete_attempts: 500,
-            wait_after_document_load: 3000,
+            wait_after_document_load: 1000,
         }
     }
 }

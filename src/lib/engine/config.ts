@@ -11,6 +11,30 @@
  * something a user — or the assistant writing it for them — can get right in one line.
  */
 
+/**
+ * "Delete", in every language the app offers, as a lower-cased substring.
+ *
+ * Spread into each field that needs it rather than shared by reference: a patch is one
+ * `push`, and a shared array would have that push land on three unrelated menus at once.
+ */
+const DELETE_WORDS = [
+	'delete',
+	'löschen',
+	'supprimer',
+	'eliminar',
+	'borrar',
+	'elimina',
+	'excluir',
+	'verwijderen',
+	'usuń',
+	'удалить',
+	'削除',
+	'删除',
+	'حذف',
+	'हटाएं',
+	'sil'
+];
+
 export interface SiteConfig {
 	/** Whether cookie banners are clicked away. The host writes the user's setting here. */
 	autoConsent: boolean;
@@ -47,20 +71,14 @@ export interface SiteConfig {
 		unfollow: string;
 	};
 	youtube: {
-		/** One entry in the liked-videos list, old renderers and new view models alike. */
-		videoItem: string;
-		/** The ⋮ on such an entry. Matched by class, which survives a language change. */
-		itemMenu: string;
 		/** Anything only a signed-in page renders, across YouTube and My Activity. */
 		signedIn: string;
 		/** A real sign-in call to action — not merely a link pointing at the account pages. */
 		signedOut: string;
-		/** My Activity's per-item delete button. */
+		/** My Activity's per-item delete button, narrowed by `deleteActivityText`. */
 		deleteActivity: string;
-		/** The popup the ⋮ opens on a liked video, in either of its shapes. */
-		likesPopup: string;
-		/** One entry inside that popup. */
-		likesPopupItem: string;
+		/** The wording on that button's `aria-label`. */
+		deleteActivityText: string[];
 		/** The survey/feedback dialog that steals the next click. */
 		closeDialog: string;
 		/** My Activity's confirmation sheet: the button, and the label inside it to read. */
@@ -68,10 +86,28 @@ export interface SiteConfig {
 		confirmLabel: string;
 		/** "Delete" in that sheet. */
 		confirmDeleteText: string[];
-		/** "Show more" under a My Activity day group. */
+		/** "Show more" under a My Activity day group, narrowed by `loadMoreText`. */
 		loadMore: string;
-		/** Fragments of the "Remove from Liked videos" menu item, lower-cased. */
-		removeFromLikedText: string[];
+		/** The wording on it. */
+		loadMoreText: string[];
+		/** Where a "there is nothing here" notice would be, and what it says. */
+		emptyScope: string;
+		emptyText: string[];
+		/**
+		 * How long each step of a deletion is given, and how many times a row may refuse.
+		 *
+		 * Here rather than as constants in the module because they are the numbers a user with a
+		 * slow connection or a big list actually has to change, and this object is the one thing
+		 * in the engine they can change without a build — see the header of this file.
+		 */
+		waits: {
+			/** For a confirmation sheet to open, and for a row to leave once confirmed. */
+			stepMs: number;
+			/** For another row to turn up, counted from the last one that did. */
+			searchMs: number;
+			/** Rows that would not go before the run gives up on the list. */
+			maxFailures: number;
+		};
 	};
 }
 
@@ -89,23 +125,7 @@ export const siteConfig: SiteConfig = {
 		article: 'article',
 		menu: '[role="menu"]',
 		menuItem: '[role="menuitem"]',
-		deleteMenuText: [
-			'delete',
-			'löschen',
-			'supprimer',
-			'eliminar',
-			'borrar',
-			'elimina',
-			'excluir',
-			'verwijderen',
-			'usuń',
-			'удалить',
-			'削除',
-			'删除',
-			'حذف',
-			'हटाएं',
-			'sil'
-		],
+		deleteMenuText: [...DELETE_WORDS],
 		confirm: "button[data-testid='confirmationSheetConfirm']",
 		unretweet: 'button[data-testid="unretweet"]',
 		unretweetConfirm: 'div[role="menuitem"][data-testid="unretweetConfirm"]',
@@ -113,23 +133,6 @@ export const siteConfig: SiteConfig = {
 		unfollow: 'button[data-testid$="-unfollow"]'
 	},
 	youtube: {
-		// YouTube is midway through replacing `ytd-*` renderers with `*-view-model` components;
-		// the liked list is already on the new ones. Both are listed, newest first, because a
-		// user on either build has to be served.
-		videoItem: [
-			'yt-lockup-view-model',
-			'ytd-playlist-video-renderer:not([is-dismissed])',
-			'ytd-rich-item-renderer:not([is-dismissed])',
-			'ytd-compact-video-renderer:not([is-dismissed])'
-		].join(', '),
-		// A class, not the `aria-label`: the label is translated ("Mehr Aktionen"), the class
-		// is not.
-		itemMenu: [
-			'.ytLockupMetadataViewModelMenuButton button',
-			'ytd-menu-renderer yt-icon-button#button button',
-			'ytd-menu-renderer button#button',
-			'ytd-menu-renderer button'
-		].join(', '),
 		signedIn: [
 			'button#avatar-btn img[src]',
 			'yt-img-shadow#avatar img[src]',
@@ -143,62 +146,64 @@ export const siteConfig: SiteConfig = {
 		// every Google page, signed in or not — matching it read My Activity as signed out and
 		// disabled the whole panel the moment a user opened their comments.
 		signedOut: 'ytd-button-renderer a[href*="accounts.google.com"], a[href*="ServiceLogin"]',
-		// Google's own component ids, identical in every language; the English label is only the
-		// last resort. `Fs3gzb` wraps the ✕ on an activity row and `114566` is its logging id —
-		// each appears exactly once per row.
-		deleteActivity:
-			'div[jscontroller="Fs3gzb"] button, button[jslog^="114566"], button[aria-label^="Delete activity item"]',
-		likesPopup:
-			'.ytContextualSheetLayoutContentContainer, yt-list-view-model, ytd-menu-popup-renderer',
-		likesPopupItem: 'yt-list-item-view-model, ytd-menu-service-item-renderer, [role="menuitem"]',
+		// Google's `jscontroller`/`jsname`/`jslog` *values* are Closure output and rotate with a
+		// deployment; a selector pinned to one of them dies on a Tuesday for no visible reason.
+		// The attribute being *present* is what survives, so the structure anchors here and the
+		// wording in `deleteActivityText` does the narrowing.
+		deleteActivity: 'div[role="listitem"] button[aria-label], div[jscontroller] button[aria-label]',
+		deleteActivityText: [...DELETE_WORDS],
 		closeDialog: 'button[aria-label="Close this dialog"]',
 		confirmButton: 'div[role="button"]',
-		// An obfuscated Google class, which is what this sheet gives us — it changes with a
-		// deployment, so it is here where it can be patched rather than buried in a module.
-		confirmLabel: 'span.Crf1o',
-		confirmDeleteText: [
-			'delete',
-			'löschen',
-			'supprimer',
-			'eliminar',
-			'borrar',
-			'elimina',
-			'excluir',
-			'verwijderen',
-			'usuń',
-			'удалить',
-			'削除',
-			'删除',
-			'حذف',
-			'हटाएं',
-			'sil'
+		// Was `span.Crf1o`. That class is generated and changed under us; the label is simply the
+		// text inside the button, and the button itself is the fallback when there is no span.
+		confirmLabel: 'span',
+		confirmDeleteText: [...DELETE_WORDS],
+		loadMore: 'button[jsname], div[role="button"][jsname], button[jsaction]',
+		loadMoreText: [
+			'show more',
+			'load more',
+			'mehr anzeigen',
+			'afficher plus',
+			'mostrar más',
+			'mostra altro',
+			'mostrar mais',
+			'meer weergeven',
+			'pokaż więcej',
+			'показать больше',
+			'もっと見る',
+			'显示更多',
+			'عرض المزيد',
+			'और दिखाएं',
+			'daha fazla göster'
 		],
-		loadMore: 'button[jsname="T8gEfd"]',
-		removeFromLikedText: [
-			'remove from liked',
-			'remove from "liked',
-			'aus "videos, die ich mag" entfernen',
-			'videos, die ich mag',
-			'entfernen',
-			'supprimer de',
-			"j'aime",
-			'retirer de',
-			'eliminar de',
-			'me gusta',
-			'quitar de',
-			'rimuovi da',
-			'mi piace',
-			'remover de',
-			'gostei',
-			'verwijderen uit',
-			'usuń z',
-			'удалить из',
-			'高く評価した動画',
-			'我喜欢的视频',
-			'أعجبتني',
-			'पसंद किए गए वीडियो',
-			'beğenilen videolardan'
-		]
+		// Read off the page rather than concluded from five seconds of finding nothing: My
+		// Activity says so in as many words, and waiting out a scroll timeout to work out what
+		// is already written on the screen is the difference between a run ending and hanging.
+		// Scoped to the content area — the surrounding chrome carries the word "activity" on
+		// every page of the site.
+		emptyScope: '[role="main"], c-wiz',
+		emptyText: [
+			'no activity',
+			'keine aktivität',
+			'aucune activité',
+			'sin actividad',
+			'ninguna actividad',
+			'nessuna attività',
+			'nenhuma atividade',
+			'geen activiteit',
+			'brak aktywności',
+			'нет действий',
+			'アクティビティはありません',
+			'没有活动',
+			'لا يوجد نشاط',
+			'कोई गतिविधि नहीं',
+			'etkinlik yok'
+		],
+		waits: {
+			stepMs: 1500,
+			searchMs: 1000,
+			maxFailures: 3
+		}
 	}
 };
 

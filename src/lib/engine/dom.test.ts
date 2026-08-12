@@ -136,7 +136,16 @@ describe('the pointer', () => {
 
 		const svg = document.querySelector('svg');
 		expect(svg?.namespaceURI).toBe('http://www.w3.org/2000/svg');
-		expect(svg?.querySelectorAll('circle')).toHaveLength(2);
+		// Built node by node, which is the point: YouTube's Trusted Types policy throws on any
+		// `innerHTML`, and this used to take the run down before the first deletion.
+		const paths = svg?.querySelectorAll('path') ?? [];
+		expect(paths.length).toBeGreaterThan(1);
+		expect(paths[0]?.namespaceURI).toBe('http://www.w3.org/2000/svg');
+		// Exactly one closed path, the head, and it is the only one carrying a fill — that fill
+		// is what keeps the shape readable on a dark timeline.
+		const filled = [...paths].filter((p) => p.getAttribute('fill'));
+		expect(filled).toHaveLength(1);
+		expect(filled[0]?.getAttribute('d')?.endsWith('z')).toBe(true);
 	});
 
 	/**

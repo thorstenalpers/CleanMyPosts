@@ -1,8 +1,13 @@
 # CleanMyPosts
 
-A Windows desktop app that bulk-deletes posts, reposts, replies, likes, and followings on
-X (formerly Twitter), and comments and liked videos on YouTube, by driving an embedded
-WebView2 browser with injected JavaScript.
+Bulk-deletes posts, reposts, replies, likes, and followings on X (formerly Twitter), and
+comments and liked videos on YouTube, by driving a browser with injected JavaScript.
+
+Two products, one engine. The **Windows desktop app** drives an embedded WebView2 browser; the
+**Chrome and Firefox extension** (`extension/`) drives a tab of the user's own. Both inject
+`src/lib/engine/`, which is why it knows nothing about either of them — see
+[ADR 0003](.agents/docs/adr/0003-browser-extension-in-repo.md). Everything below describes the
+app unless it says otherwise.
 
 ## The core approach
 
@@ -62,6 +67,8 @@ npm run test
 npm run test:e2e
 npm run app:build         # NSIS installer + updater artifacts
 npm run build:extension   # unpacked Chrome and Firefox builds in dist/extension/
+npm run dev:extension     # the same, rebuilt on every save
+npm run pack:extension    # the same, zipped for the stores
 cargo test --manifest-path src-tauri/Cargo.toml
 ```
 
@@ -139,4 +146,5 @@ Read selectively, not all of it.
 | Tests, CI, logging           | [12-testing-and-quality.md](.agents/docs/12-testing-and-quality.md)   |
 | Privacy, threat model        | [13-security-and-privacy.md](.agents/docs/13-security-and-privacy.md) |
 | Order, acceptance criteria   | [14-roadmap.md](.agents/docs/14-roadmap.md)                           |
+| The browser extension        | [extension/README.md](extension/README.md)                            |
 | Why a decision was made      | [adr/](.agents/docs/adr/)                                             |

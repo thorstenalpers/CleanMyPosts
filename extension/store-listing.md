@@ -18,10 +18,24 @@ CleanMyPosts
 
 ## Item summary
 
-`132 characters max — using 112`
+Chrome allows 132 characters, AMO 250. The same line fits both, and one line that is true in
+both places is worth more than two that have to be kept in step.
+
+`using 115 of Chrome's 132`
 
 ```
-Bulk-delete your posts, replies, reposts, likes and follows on X, and your comments and liked videos on YouTube.
+Bulk-delete your posts, replies, reposts, likes and followings on X, and your comments and liked videos on YouTube.
+```
+
+Naming both lists separately is the point of the length. "posts, replies, reposts, likes and
+followings on X or YouTube" is shorter and says the extension deletes reposts and followings on
+YouTube, which it cannot — there are none. A summary that promises a platform's features
+wrongly is the first thing a reviewer checks and the first thing a user is annoyed by.
+
+If it has to be shorter, this stays true at 97:
+
+```
+Bulk-delete what you posted, liked and followed on X, and your YouTube comments and liked videos.
 ```
 
 ## Detailed description
@@ -224,6 +238,58 @@ future versions as much as this one:
 - not being used or transferred for a purpose unrelated to the item's single purpose
 - not being used or transferred to determine creditworthiness or for lending
 
+### Privacy policy
+
+Chrome takes a URL. **AMO takes the text itself**, in a field on the submission form — this is
+what goes in it. `PRIVACY.md` in the repository root is the same statement covering both
+products, and is what the Chrome URL points at; the two have to be kept saying the same thing.
+
+```
+CleanMyPosts collects nothing, sends nothing anywhere, and has no server. There is no
+account to create and no analytics of any kind.
+
+WHAT IT READS
+
+The extension reads the page you have open on x.com or Google My Activity, for as long as
+it takes to find the next item and click it away. Nothing it reads is kept after the click
+— no post, comment, video title, or any other content from a page is ever written down or
+sent anywhere.
+
+WHAT IT STORES
+
+Two things, both in the browser's own extension storage:
+
+Until you close the browser: which action is running, how many items it has removed, the
+tab it is working in, and the recent lines of its log. Firefox stops and restarts an
+extension's background worker while it is running, and this is what survives that. It also
+holds your X handle for the length of a run, because every address the extension navigates
+to is built from it — x.com/<handle>/likes and so on. It is never sent anywhere.
+
+Kept between sessions: your own preferences for the popup — which platforms to show, the
+three waits, the theme, the language.
+
+WHAT IT SENDS
+
+Nothing. The extension has no server component and contacts no host of its own. It talks
+only to the sites you are already signed in to, by being on their pages.
+
+YOUR LOGIN
+
+Your session stays where it was: in the browser's cookie store, exactly as for any other
+site. The extension never reads, copies or transmits it.
+
+PERMISSIONS
+
+- storage: the two things above.
+- tabs: to find the tab to work in, drive it to the list being emptied, and reload it.
+  No browsing history is read and no other tab is looked at.
+- Access to x.com and myactivity.google.com: the pages the items are on. Nowhere else.
+
+No part of what the extension runs is fetched at runtime. Everything is in the package you
+installed, and all of it is public:
+https://github.com/thorstenalpers/CleanMyPosts
+```
+
 ### URLs
 
 | Field          | Value                                                               |
@@ -239,7 +305,12 @@ repository root is that policy.
 
 ## Firefox (addons.mozilla.org)
 
-AMO reuses the summary and description above. What it asks for separately:
+AMO reuses the summary and description above, unchanged — it accepts them as plain text, and
+the line breaks and bullets survive. It also allows a little HTML (`<b>`, `<a>`, `<ul>`,
+`<code>`), which is worth nothing here: a second copy of the description with tags in it would
+be a second thing to keep true, and the first one to go stale.
+
+What it asks for separately:
 
 - **Source code.** Because the submitted build is minified and bundled, AMO requires the source
   and exact build instructions. `npm ci && npm run build:extension` reproduces

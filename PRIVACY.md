@@ -22,10 +22,24 @@ The extension has no server component. There is nothing for data to be sent to.
 
 ## What is stored
 
-The browser extension stores one thing: the progress of a run in progress — which action is
-running and how many items it has removed so far — in `chrome.storage.session`. It exists so
-the count survives the browser stopping and restarting the extension's background worker
-mid-run. It is cleared when the browser closes, and it contains no content from any page.
+The browser extension stores two things, both in the browser's own extension storage and
+neither of them anywhere else.
+
+**Until the browser closes** (`storage.session`): the progress of a run — which action is
+running, how many items it has removed, the tab it is working in, and the recent lines of its
+log. This exists because Manifest V3 stops and restarts the extension's background worker
+while a run is going, and the count would be lost every time it did.
+
+It also holds your X handle for the length of a run. The handle is read off the page you are
+signed in to, and it is there because every X address the extension navigates to is built from
+it — `x.com/<handle>/likes` and so on. It is never sent anywhere, and it is gone when the
+browser closes.
+
+**Kept between sessions** (`storage.local`): your own preferences for the popup — which
+platforms to show, the three waits, the theme, the language, and whether the welcome note has
+been dismissed. Nothing here comes from a platform page.
+
+Neither store ever holds a post, a comment, a video title, or any other content from a page.
 
 The desktop app stores its own settings (theme, timeouts, log visibility) and its window
 position, in the user's own application data folder. It stores no posts, likes, comments or

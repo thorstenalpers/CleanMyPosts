@@ -25,12 +25,15 @@ are screenshots of text.
 
 AMO takes the same three files.
 
+The tiles are not screenshots, which the store refuses on one: they are the icon, the name and
+one line, on the same background. The icon comes from `src-tauri/icons/icon.png` at 512×512 and
+the strapline is drawn rather than scaled, so both stay sharp on the marquee tile — over three
+times the size of the small one.
+
 ## Still missing
 
 - Two more screenshots — Chrome allows five and prefers them: the confirmation dialog for
   **Delete everything**, and a finished run with the log open.
-- `promo-440x280.png`, which Chrome needs before the item can be featured, and the optional
-  `promo-1400x560.png`.
 
 Screenshots have to show the real extension and carry no real account content — a store
 screenshot is a permanent, indexed copy of whatever is on it.

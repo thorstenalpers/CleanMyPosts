@@ -60,3 +60,50 @@ foreach ($name in $files.Keys) {
     $out.Dispose()
     $src.Dispose()
 }
+
+<#
+Promotional tiles.
+
+Not screenshots: the store rejects a tile that is one, and a shrunk screenshot is unreadable
+at 440x280 anyway. These are the icon, the wordmark and one line, on the same background the
+screenshots use.
+
+The icon is drawn from `src-tauri/icons/icon.png` at 512x512, so it is scaled down at every
+size rather than up. The strapline is rendered rather than taken from an image, for the same
+reason — it stays sharp on the 1400x560 tile, which is over three times the small one.
+#>
+function New-PromoTile {
+    param([int]$W, [int]$H, [string]$Out)
+
+    $icon = [System.Drawing.Bitmap]::FromFile((Resolve-Path 'src-tauri\icons\icon.png'))
+    $bmp = New-Object System.Drawing.Bitmap $W, $H, ([System.Drawing.Imaging.PixelFormat]::Format24bppRgb)
+    $g = [System.Drawing.Graphics]::FromImage($bmp)
+    $g.Clear([System.Drawing.Color]::FromArgb(255, 237, 242, 250))
+    $g.InterpolationMode = [System.Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic
+    $g.SmoothingMode = [System.Drawing.Drawing2D.SmoothingMode]::AntiAlias
+    $g.TextRenderingHint = [System.Drawing.Text.TextRenderingHint]::ClearTypeGridFit
+
+    $unit = $H / 280.0
+    $iconSize = [int](96 * $unit)
+    $g.DrawImage($icon, [int](($W - $iconSize) / 2), [int](40 * $unit), $iconSize, $iconSize)
+
+    $ink = New-Object System.Drawing.SolidBrush ([System.Drawing.Color]::FromArgb(255, 20, 20, 22))
+    $grey = New-Object System.Drawing.SolidBrush ([System.Drawing.Color]::FromArgb(255, 90, 96, 106))
+    $centre = New-Object System.Drawing.StringFormat
+    $centre.Alignment = [System.Drawing.StringAlignment]::Center
+
+    $nameFont = New-Object System.Drawing.Font 'Segoe UI', ([float](34 * $unit)), ([System.Drawing.FontStyle]::Bold), ([System.Drawing.GraphicsUnit]::Pixel)
+    $lineFont = New-Object System.Drawing.Font 'Segoe UI', ([float](17 * $unit)), ([System.Drawing.FontStyle]::Regular), ([System.Drawing.GraphicsUnit]::Pixel)
+
+    $g.DrawString('CleanMyPosts', $nameFont, $ink, [float]($W / 2), [float](150 * $unit), $centre)
+    $g.DrawString('Bulk-delete your posts, likes and comments', $lineFont, $grey, [float]($W / 2), [float](200 * $unit), $centre)
+    $g.DrawString('on X and YouTube', $lineFont, $grey, [float]($W / 2), [float](226 * $unit), $centre)
+
+    $g.Dispose()
+    $bmp.Save($Out, [System.Drawing.Imaging.ImageFormat]::Png)
+    Write-Host ("{0,-28} {1}x{2}" -f (Split-Path $Out -Leaf), $W, $H)
+    $bmp.Dispose(); $icon.Dispose()
+}
+
+New-PromoTile -W 440  -H 280 -Out (Join-Path $Destination 'promo-440x280.png')
+New-PromoTile -W 1400 -H 560 -Out (Join-Path $Destination 'promo-1400x560.png')

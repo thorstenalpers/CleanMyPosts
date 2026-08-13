@@ -247,7 +247,21 @@ AMO reuses the summary and description above. What it asks for separately:
   [extension/README.md](README.md).
 - **Add-on id** — `cleanmyposts@thorstenalpers.com`, already in the built manifest.
 - **Reviewer notes.** Say plainly that the add-on automates clicking on the user's own account
-  pages and why. A reviewer who works that out for themselves reads it as concealment.
+  pages and why. A reviewer who works that out for themselves reads it as concealment. Then the
+  one warning the validator raises, before they have to ask:
+
+```
+The "unsafe assignment to innerHTML" in assets/popup-*.js is Svelte 5's template
+instantiation, not a data path. Svelte sets innerHTML on a detached <template> element,
+from a string its compiler produced at build time, and routes it through a
+trustedTypes policy it registers as "svelte-trusted-html". No value from a page, a
+network response or a user reaches it — the popup renders no untrusted content at all.
+It cannot be avoided without changing UI frameworks; the same warning appears for every
+Svelte extension.
+```
+
+- **Minimum versions.** Firefox 140 and Firefox for Android 142, because that is where each
+  understood `data_collection_permissions`. `world: "MAIN"` already needed 128.
 
 ---
 

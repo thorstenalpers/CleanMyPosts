@@ -142,22 +142,6 @@ rather than a mock-up. Five worth having, in order:
 Every screenshot needs the account content in it blurred or replaced with a throwaway account.
 A store screenshot is a permanent, indexed copy of whatever is on it.
 
------------------- | ----------------------- | --------------------------------------------- |
-| Store icon | 128×128 PNG | yes — `src-tauri/icons/128x128.png` may serve |
-| Screenshot | 1280×800 or 640×400 PNG | yes, at least 1, up to 5 |
-| Small promo tile | 440×280 PNG | only to be eligible for featuring |
-| Marquee promo tile | 1400×560 PNG | optional |
-
-Screenshots have to show the extension itself, not a mock-up, and the store rejects ones that
-are mostly text. What is worth showing, in order:
-
-1. The popup open over an X profile, mid-run, with the count climbing.
-2. The popup's action list, so the seven things it deletes are visible at a glance.
-3. A finished run with its result.
-
-Every screenshot needs the account content in it blurred or replaced with a throwaway account.
-A real timeline in a store screenshot is a permanent, indexed copy of it.
-
 ---
 
 ## Privacy tab
@@ -224,7 +208,12 @@ lie and the review into a takedown.
 
 ### Data usage
 
-Every category is answered **not collected**: personally identifiable information, health
+AMO reads this off the manifest rather than a form: `data_collection_permissions.required` is
+`["none"]`, which is the one value that cannot be listed beside another, and a submission
+without the key at all is now rejected outright. `build-extension.mjs` writes it into the
+Firefox manifest.
+
+Chrome asks the same question as a form. Every category is answered **not collected**: personally identifiable information, health
 information, financial information, authentication information, personal communications,
 location, web history, user activity, website content.
 

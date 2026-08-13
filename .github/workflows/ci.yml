@@ -72,6 +72,14 @@ jobs:
             Write-Host "$browser $($manifest.version): $($hosts -join ', ')"
           }
 
+          # AMO rejects a submission that leaves this out, and it is written by the build
+          # rather than by hand — so nothing in the repository shows when it goes missing.
+          $gecko = (Get-Content 'dist/extension/firefox/manifest.json' -Raw | ConvertFrom-Json).browser_specific_settings.gecko
+          if (-not $gecko.id) { throw 'firefox manifest has no add-on id' }
+          $collects = $gecko.data_collection_permissions.required
+          if ($collects -ne 'none') { throw "firefox declares data collection: $($collects -join ', ')" }
+          Write-Host "firefox declares: id $($gecko.id), collects $collects"
+
       - name: Upload Test Coverage Report
         uses: actions/upload-artifact@v7
         with:

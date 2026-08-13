@@ -89,10 +89,20 @@ async function buildAll() {
 
 	// Firefox implements MV3 background as an event page, not a service worker, and refuses an
 	// unsigned build without an explicit add-on id.
+	//
+	// `data_collection_permissions` is what AMO now rejects a submission for leaving out, and
+	// `none` is the whole of what this has to say: nothing is collected, which is also what the
+	// listing and PRIVACY.md say. It is the one value that may not appear beside another.
 	const firefox = {
 		...manifest,
 		background: { scripts: ['background.js'] },
-		browser_specific_settings: { gecko: { id: GECKO_ID, strict_min_version: GECKO_MIN } }
+		browser_specific_settings: {
+			gecko: {
+				id: GECKO_ID,
+				strict_min_version: GECKO_MIN,
+				data_collection_permissions: { required: ['none'] }
+			}
+		}
 	};
 	await writeFile(path.join(FIREFOX, 'manifest.json'), JSON.stringify(firefox, null, 2), 'utf8');
 

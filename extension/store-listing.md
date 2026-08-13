@@ -18,10 +18,24 @@ CleanMyPosts
 
 ## Item summary
 
-`132 characters max — using 112`
+Chrome allows 132 characters, AMO 250. The same line fits both, and one line that is true in
+both places is worth more than two that have to be kept in step.
+
+`using 115 of Chrome's 132`
 
 ```
-Bulk-delete your posts, replies, reposts, likes and follows on X, and your comments and liked videos on YouTube.
+Bulk-delete your posts, replies, reposts, likes and followings on X, and your comments and liked videos on YouTube.
+```
+
+Naming both lists separately is the point of the length. "posts, replies, reposts, likes and
+followings on X or YouTube" is shorter and says the extension deletes reposts and followings on
+YouTube, which it cannot — there are none. A summary that promises a platform's features
+wrongly is the first thing a reviewer checks and the first thing a user is annoyed by.
+
+If it has to be shorter, this stays true at 97:
+
+```
+Bulk-delete what you posted, liked and followed on X, and your YouTube comments and liked videos.
 ```
 
 ## Detailed description
@@ -291,7 +305,12 @@ repository root is that policy.
 
 ## Firefox (addons.mozilla.org)
 
-AMO reuses the summary and description above. What it asks for separately:
+AMO reuses the summary and description above, unchanged — it accepts them as plain text, and
+the line breaks and bullets survive. It also allows a little HTML (`<b>`, `<a>`, `<ul>`,
+`<code>`), which is worth nothing here: a second copy of the description with tags in it would
+be a second thing to keep true, and the first one to go stale.
+
+What it asks for separately:
 
 - **Source code.** Because the submitted build is minified and bundled, AMO requires the source
   and exact build instructions. `npm ci && npm run build:extension` reproduces

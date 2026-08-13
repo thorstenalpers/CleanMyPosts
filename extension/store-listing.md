@@ -40,15 +40,21 @@ Bulk-delete what you posted, liked and followed on X, and your YouTube comments 
 
 ## Detailed description
 
-`16,000 characters max — using about 2,700`
+`16,000 characters max — using about 2,800`
+
+AMO warns that only the first 250 characters are read before anything else, and that is a
+better rule than a limit: the opening below says what the thing does and stops at 249, so
+nothing lands mid-sentence. What used to open it — why the platforms make this necessary — now
+comes second, where an explanation belongs.
 
 ```
+CleanMyPosts deletes your own posts, replies, reposts, likes and followings on X, and your comments and liked videos on YouTube — in bulk, in a tab you already have open, in the account you are signed in to. No API, no token, nothing to sign up for.
+
+WHY IT EXISTS
+
 Neither X nor YouTube will let you delete in bulk. Their interfaces remove one item at a time,
 each behind its own menu and its own confirmation — fine for a mistake, hopeless for ten years
 of posting.
-
-CleanMyPosts does it for you, in the tab in front of you, in the account you are already
-signed in to.
 
 WHAT IT DELETES
 
@@ -113,8 +119,16 @@ and an optional AI assistant that writes new ones. Same engine, same repository.
 
 ## Category
 
-`Productivity` — the item does one job on the user's own account. Not "Social & Communication",
-which reads as a client for the platform rather than a tool that acts on it.
+`Privacy & Security`, in both stores — they name it near enough identically, so the add-on is
+not filed as two different things.
+
+What it does is remove the user's own trail. The alternative, `Social Networking` on Chrome and
+`Social & Communication` on AMO, is where tools that work _with_ a network live: feed filters,
+alternative clients, posting aids. This works against what a network has accumulated, and that
+is what somebody looking for it searches under.
+
+The argument against, for the record: it protects nothing and blocks nothing. Data minimisation
+is the part of that category it belongs to, alongside the trackers and the blockers.
 
 ## Language
 

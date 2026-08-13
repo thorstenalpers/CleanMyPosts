@@ -6,19 +6,34 @@ with the build they show.
 Sizes, counts and what each screenshot is meant to contain are in
 [../store-listing.md](../store-listing.md).
 
-Nothing in here yet. Both stores refuse a submission without at least one screenshot, so this
-is the last thing standing between the build and a review.
+## What is here
 
-Naming, once there is something to name:
+| File                        | Shows                                                                      |
+| --------------------------- | -------------------------------------------------------------------------- |
+| `screenshot-1-lists.png`    | The popup at rest — both columns, all seven lists, the two halves of a row |
+| `screenshot-2-running.png`  | Folded to its header mid-run: the count, the stop button, over My Activity |
+| `screenshot-3-settings.png` | The settings panel: platforms, the three waits, language, theme            |
 
-```
-icon-128.png            the store icon, if it ever differs from src-tauri/icons/
-promo-440x280.png       Chrome's small tile — required to be eligible for featuring
-promo-1400x560.png      Chrome's marquee tile, optional
-screenshot-1-lists.png  1280×800, in the order store-listing.md lists them
-screenshot-2-running.png
-...
-```
+All three are 1280×800, 24-bit PNG, no alpha channel — which is what Chrome requires and what
+the originals failed on. A Windows screenshot carries an alpha channel by default, and the
+store rejects the upload for it without looking at the picture.
+
+`scripts/store-screenshots.ps1` produced them from the raw captures. It scales each to fit,
+never past 2x, and centres it on a flat background rather than stretching: the sources are
+1.59, 2.47 and 1.13 to one, and forcing them to 1.6 would show. The 2x ceiling is because these
+are screenshots of text.
+
+AMO takes the same three files.
+
+The tiles are not screenshots, which the store refuses on one: they are the icon, the name and
+one line, on the same background. The icon comes from `src-tauri/icons/icon.png` at 512×512 and
+the strapline is drawn rather than scaled, so both stay sharp on the marquee tile — over three
+times the size of the small one.
+
+## Still missing
+
+- Two more screenshots — Chrome allows five and prefers them: the confirmation dialog for
+  **Delete everything**, and a finished run with the log open.
 
 Screenshots have to show the real extension and carry no real account content — a store
 screenshot is a permanent, indexed copy of whatever is on it.

@@ -180,49 +180,56 @@ permission's name gets rejected.
 
 ### Single purpose
 
+`1000 characters max — using 581`
+
 ```
-CleanMyPosts deletes the signed-in user's own content on X and YouTube in bulk — posts,
-replies, reposts, likes and follows on X, and comments and liked videos on YouTube. It does
-this by clicking the platform's own controls on the user's own pages. It has no second
-function.
+CleanMyPosts deletes the signed-in user's own content on X and YouTube in bulk: posts, replies, reposts, likes and followings on X, and comments and liked videos on YouTube.
+
+It does this by clicking the platforms' own controls on the user's own pages — the same menus and confirmations the user would click themselves, without stopping. Neither platform offers bulk deletion, and neither can be asked for it through an API a private person can afford.
+
+It has no second function. It does not post, read messages, change settings on the platforms, or do anything on any other site.
 ```
 
 ### Permission justifications
 
-**`storage`**
+One field each, 1000 characters each — and **one field for all host permissions together**,
+not one per host. Each has to say what breaks without the permission; a restatement of its name
+is what gets a version rejected.
+
+**`tabs`** — `using 729`
 
 ```
-Stores the progress of a run in progress — which action is running and how many items it has
-removed — in session storage. Manifest V3 stops and restarts the background worker while a run
-is going, and without this the count and the target tab are lost every time it does. It is
-cleared when the browser closes and holds no content from any page.
+Used to find the tab to work in, to drive it to the list being emptied, and to reload it.
+
+Reloading happens in two cases: when the user presses Stop, which is what ends a run — the delete loop runs inside the page, and taking the page away is the only way to interrupt it — and when an action has to run a second time on a freshly loaded page, because both platforms leave rows on screen that they have already removed.
+
+That second reload needs the tab's current address to compare against the target. Navigating a tab to the address it already shows may start no load at all, and the extension would then wait forever for one to finish.
+
+No browsing history is read, and no tab other than the one being worked in is looked at.
 ```
 
-**`tabs`**
+**`storage`** — `using 767`
 
 ```
-Used to find the tab to work in, to drive it to the list being emptied, and to reload it —
-both when the user presses Stop, which is what ends a run, and when an action has to run twice
-on a freshly loaded page. That reload needs the tab's current address to compare against the
-target: navigating a tab to the address it already shows may start no load at all, and the
-extension would then wait forever for one to finish. No browsing history is read and no other
-tab is looked at.
+Stores two things, both in the browser's own extension storage.
+
+In session storage, until the browser closes: which action is running, how many items it has removed, the tab it is working in, and the recent lines of its log. Manifest V3 stops and restarts the background worker while a run is going, and without this the count and the target tab are lost every time it does. It also holds the user's X handle for the length of a run, because every X address the extension navigates to is built from it (x.com/<handle>/likes and so on).
+
+In local storage, kept between sessions: the user's own popup preferences — which platforms to show, the three waits, the theme, the language.
+
+Neither ever holds a post, a comment, a video title or any other content from a page.
 ```
 
-**Host permission — `https://x.com/*`**
+**Host permissions** — `using 735`
 
 ```
-The items being deleted are on this site, and deleting one means clicking its menu, then the
-delete entry, then the confirmation, in the user's own signed-in session. There is no API path
-to the same result that does not cost the user a paid X subscription.
-```
+Two hosts, and the items being deleted are on them.
 
-**Host permission — `https://myactivity.google.com/*`**
+https://x.com/* — posts, replies, reposts, likes and followings are listed and deleted here. Removing one means clicking its menu, then the delete entry, then the confirmation, in the user's own signed-in session. There is no API path to the same result that does not cost the user a paid X subscription.
 
-```
-Both YouTube lists this extension deletes live here, not on youtube.com: comments and liked
-videos are listed on Google My Activity and removed with the button next to each entry. The
-extension opens only those two pages and touches nothing else on the site.
+https://myactivity.google.com/* — both YouTube lists live here, not on youtube.com: comments and liked videos are listed on Google My Activity and removed with the button beside each entry. The extension opens only those two pages of that site.
+
+The extension runs on no other host. It asked for youtube.com in an earlier version and no longer does, because nothing needed it.
 ```
 
 ### Remote code
@@ -236,21 +243,26 @@ lie and the review into a takedown.
 
 ### Data usage
 
-AMO reads this off the manifest rather than a form: `data_collection_permissions.required` is
-`["none"]`, which is the one value that cannot be listed beside another, and a submission
-without the key at all is now rejected outright. `build-extension.mjs` writes it into the
-Firefox manifest.
+**Every box stays unticked**, and the three certifications are all ticked.
 
-Chrome asks the same question as a form. Every category is answered **not collected**: personally identifiable information, health
-information, financial information, authentication information, personal communications,
-location, web history, user activity, website content.
+Chrome's question is what the extension _collects_. Its own guidance draws that at data leaving
+the device or being kept for later; the extension does neither. It reads a page for as long as
+it takes to find the next item and click it away, and keeps nothing of what it read. The X
+handle it holds for the length of a run is in session storage, never transmitted, and gone when
+the browser closes — and the popup preferences that outlive a session are a theme and a
+language, not user data in any of the nine categories.
 
-The three certifications are all true as the code stands, and each one is a promise about
-future versions as much as this one:
+If a reviewer asks about **website content** — the extension does read page text to find the
+right menu entry — the answer is that it is read and discarded within the same click, never
+stored and never sent. That is the same statement `PRIVACY.md` makes, which is what the URL
+below points at.
 
-- not being sold to third parties
-- not being used or transferred for a purpose unrelated to the item's single purpose
-- not being used or transferred to determine creditworthiness or for lending
+The three certifications are true as the code stands, and each is a promise about future
+versions as much as this one:
+
+- not sold or transferred to third parties
+- not used or transferred for any purpose unrelated to the single purpose above
+- not used or transferred to determine creditworthiness or for lending
 
 ### Privacy policy
 

@@ -23,7 +23,16 @@ const CHROME = path.join(OUT, 'chrome');
 const FIREFOX = path.join(OUT, 'firefox');
 
 const GECKO_ID = 'cleanmyposts@thorstenalpers.com';
-const GECKO_MIN = '128.0';
+/**
+ * 140 on desktop and 142 on Android, which is where each first understood
+ * `data_collection_permissions`.
+ *
+ * Not a free choice: AMO rejects a submission without that key and warns about one that claims
+ * to run on a Firefox predating it. `world: "MAIN"` — how the engine gets into the page at all
+ * — needs 128 anyway, so this only moves a floor that was already there.
+ */
+const GECKO_MIN = '140.0';
+const GECKO_ANDROID_MIN = '142.0';
 
 const alias = { $lib: path.resolve(ROOT, 'src/lib') };
 
@@ -101,7 +110,8 @@ async function buildAll() {
 				id: GECKO_ID,
 				strict_min_version: GECKO_MIN,
 				data_collection_permissions: { required: ['none'] }
-			}
+			},
+			gecko_android: { strict_min_version: GECKO_ANDROID_MIN }
 		}
 	};
 	await writeFile(path.join(FIREFOX, 'manifest.json'), JSON.stringify(firefox, null, 2), 'utf8');

@@ -119,8 +119,16 @@ and an optional AI assistant that writes new ones. Same engine, same repository.
 
 ## Category
 
-`Productivity` — the item does one job on the user's own account. Not "Social & Communication",
-which reads as a client for the platform rather than a tool that acts on it.
+`Privacy & Security`, in both stores — they name it near enough identically, so the add-on is
+not filed as two different things.
+
+What it does is remove the user's own trail. The alternative, `Social Networking` on Chrome and
+`Social & Communication` on AMO, is where tools that work _with_ a network live: feed filters,
+alternative clients, posting aids. This works against what a network has accumulated, and that
+is what somebody looking for it searches under.
+
+The argument against, for the record: it protects nothing and blocks nothing. Data minimisation
+is the part of that category it belongs to, alongside the trackers and the blockers.
 
 ## Language
 

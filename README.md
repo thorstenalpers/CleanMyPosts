@@ -138,11 +138,6 @@ Once your system meets the requirements, follow these steps to install **CleanMy
 
 ## 🎬 See It in Action
 
-**Overview** — where you land. Which accounts are signed in, what each platform has to clean,
-and **Delete everything** for every platform you are signed in to.
-
-<img src="./assets/Overview.png" alt="The overview, listing what each platform can clean" width="700" />
-
 **X (Twitter)** — **Delete everything** running: posts, replies, reposts, likes and
 followings, one list after the next. The sub-navigation stays open the whole time, so the
 controls do not disappear mid-task.

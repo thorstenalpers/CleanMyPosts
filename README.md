@@ -4,7 +4,6 @@
 [![Release](https://img.shields.io/github/v/release/thorstenalpers/CleanMyPosts?style=flat-square&logo=github&label=release)](https://github.com/thorstenalpers/CleanMyPosts/releases/latest)
 [![Downloads](https://img.shields.io/github/downloads/thorstenalpers/CleanMyPosts/total?style=flat-square&logo=github&label=downloads)](https://github.com/thorstenalpers/CleanMyPosts/releases)
 [![Platform](https://img.shields.io/badge/platform-Windows-0078D6?style=flat-square&logo=windows&logoColor=white)](https://github.com/thorstenalpers/CleanMyPosts/releases)
-[![Donate](https://img.shields.io/badge/donate-PayPal-00457C?style=flat-square&logo=paypal&logoColor=white)](https://www.paypal.com/donate/?hosted_button_id=QYHGE9LA9SNAN)
 [![Stars](https://img.shields.io/github/stars/thorstenalpers/CleanMyPosts?style=flat-square&logo=github&label=stars)](https://github.com/thorstenalpers/CleanMyPosts)
 
 **CleanMyPosts** deletes all posts, reposts, replies, likes and followings from your X (formerly Twitter) account, and your YouTube comments and liked videos, in bulk — by driving a real browser session rather than an API. It comes as a Windows desktop app and as a [Chrome and Firefox extension](#-in-your-own-browser-the-extension) built from the same engine.
@@ -138,11 +137,6 @@ Once your system meets the requirements, follow these steps to install **CleanMy
 ---
 
 ## 🎬 See It in Action
-
-**Overview** — where you land. Which accounts are signed in, what each platform has to clean,
-and **Delete everything** for every platform you are signed in to.
-
-<img src="./assets/Overview.png" alt="The overview, listing what each platform can clean" width="700" />
 
 **X (Twitter)** — **Delete everything** running: posts, replies, reposts, likes and
 followings, one list after the next. The sub-navigation stays open the whole time, so the

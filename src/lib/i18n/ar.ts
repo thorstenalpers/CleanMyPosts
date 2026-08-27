@@ -329,6 +329,10 @@ export const ar: Record<MessageKey, string> = {
 
 	'header.url': 'أنت هنا',
 	'header.reload': 'إعادة تحميل الصفحة',
+	'settings.urls': 'الصفحات',
+	'settings.urls.description':
+		'أين يعمل كل إجراء. {user} يمثل اسم المستخدم المسجّل؛ إفراغ الحقل يعيده إلى الصفحة المدمجة.',
+	'settings.urls.reset': 'إعادة تعيين الصفحات',
 
 	'log.column.time': 'الوقت',
 	'log.column.level': 'المستوى',

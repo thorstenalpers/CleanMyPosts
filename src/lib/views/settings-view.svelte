@@ -10,6 +10,8 @@
 		type Language
 	} from '$lib/bridge/contract';
 	import { THEME_PRESETS } from '$lib/theme/preset';
+	import { SITE_URL_DEFAULTS } from '$lib/site-urls';
+	import { X_GROUPS, YOUTUBE_GROUPS } from '$lib/actions';
 	import { LANGUAGES, i18n, t } from '$lib/i18n/index.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
@@ -29,6 +31,7 @@
 	import { cn } from '$lib/utils';
 	import PaletteIcon from '@lucide/svelte/icons/palette';
 	import SlidersIcon from '@lucide/svelte/icons/sliders-horizontal';
+	import GlobeIcon from '@lucide/svelte/icons/globe';
 	import LayoutGridIcon from '@lucide/svelte/icons/layout-grid';
 	import CodeIcon from '@lucide/svelte/icons/code';
 	import RotateCcwIcon from '@lucide/svelte/icons/rotate-ccw';
@@ -129,6 +132,25 @@
 			description: 'settings.timing.betweenRetries.description'
 		}
 	] as const;
+
+	/** One row per action, in the order the panels list them. The keys mirror the Rust side. */
+	const urlFields = [
+		...X_GROUPS.map((group) => ({ key: `x.${group.key}`, platform: 'X', label: group.label })),
+		...YOUTUBE_GROUPS.map((group) => ({
+			key: `youtube.${group.key}`,
+			platform: 'YouTube',
+			label: group.label
+		}))
+	];
+
+	/** Only overrides are stored: a field left empty or put back to the default is deleted. */
+	function commitSiteUrl(key: string, value: string): void {
+		const next = { ...settingsStore.settings.siteUrls };
+		const trimmed = value.trim();
+		if (trimmed === '' || trimmed === SITE_URL_DEFAULTS[key]) delete next[key];
+		else next[key] = trimmed;
+		void commit({ siteUrls: next });
+	}
 
 	async function commit(next: Partial<typeof settingsStore.settings>): Promise<void> {
 		const merged = { ...settingsStore.settings, ...next };
@@ -642,6 +664,43 @@
 						</div>
 					{/snippet}
 				</SettingRow>
+			</CardContent>
+		</Card>
+
+		<Card>
+			<CardHeader>
+				{@render cardTitle(t('settings.urls'), GlobeIcon)}
+				<CardDescription>{t('settings.urls.description')}</CardDescription>
+			</CardHeader>
+			<CardContent class="divide-y divide-border/60">
+				{#each urlFields as field (field.key)}
+					<SettingRow label={`${field.platform} · ${t(field.label)}`} for={`url-${field.key}`}>
+						{#snippet control()}
+							<Input
+								id={`url-${field.key}`}
+								type="text"
+								spellcheck={false}
+								class="h-8 w-80 font-mono text-[11px]"
+								value={settingsStore.settings.siteUrls[field.key] ?? SITE_URL_DEFAULTS[field.key]}
+								onchange={(e: Event & { currentTarget: HTMLInputElement }) =>
+									commitSiteUrl(field.key, e.currentTarget.value)}
+							/>
+						{/snippet}
+					</SettingRow>
+				{/each}
+
+				<div class="flex justify-end pt-2.5">
+					<Button
+						variant="ghost"
+						size="sm"
+						class="h-8"
+						disabled={Object.keys(settingsStore.settings.siteUrls).length === 0}
+						onclick={() => commit({ siteUrls: {} })}
+					>
+						<RotateCcwIcon />
+						{t('settings.urls.reset')}
+					</Button>
+				</div>
 			</CardContent>
 		</Card>
 

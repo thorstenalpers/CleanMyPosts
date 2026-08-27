@@ -81,6 +81,20 @@ async function getTimeouts(): Promise<Timeouts> {
 	return (stored[SETTINGS_KEY] as PopupSettings | undefined)?.timeouts ?? DEFAULT_SETTINGS.timeouts;
 }
 
+/** The built-in page, unless the popup's settings carry an override under `platform.group`. */
+async function resolveTargetUrl(
+	platform: Platform,
+	action: Action,
+	userName: string
+): Promise<string | undefined> {
+	const stored = await browser.storage.local.get(SETTINGS_KEY);
+	const overrides = (stored[SETTINGS_KEY] as PopupSettings | undefined)?.siteUrls ?? {};
+	const group = action.replace(/^delete/, '').toLowerCase();
+	const template = overrides[`${platform}.${group}`]?.trim();
+	if (template) return template.replace('{user}', userName.replace(/[^A-Za-z0-9_]/g, ''));
+	return targetUrl(platform, action, userName);
+}
+
 function delay(ms: number): Promise<void> {
 	return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -226,7 +240,7 @@ async function runNext(): Promise<void> {
 		return;
 	}
 
-	const url = targetUrl(state.platform, action, state.userName ?? '');
+	const url = await resolveTargetUrl(state.platform, action, state.userName ?? '');
 	if (!url) throw new Error(`unknown action "${state.platform}:${action}"`);
 
 	const timeouts = await getTimeouts();
@@ -285,7 +299,7 @@ async function show(platform: Platform, action: Action): Promise<void> {
 		userName = known ?? '';
 	}
 
-	const url = targetUrl(platform, action, userName);
+	const url = await resolveTargetUrl(platform, action, userName);
 	if (!url) throw new Error(`unknown action "${platform}:${action}"`);
 
 	await navigate(tabId, url);

@@ -38,6 +38,7 @@ type AppSettings = {
 	assistantSource: string; // 'claude-code' for the local binary, else a provider id
 	assistantCliPath: string; // empty: look where Claude Code installs itself
 	engineScript: string; // the user's own patch for the delete engine; empty = built-in
+	siteUrls: Record<string, string>; // page overrides, keyed `platform.group`; absent = built-in
 	timeouts: {
 		waitAfterDelete: number; // ms — pause between individual delete actions
 		waitBetweenRetryDeleteAttempts: number;
@@ -52,7 +53,7 @@ A form in the chrome UI at `/settings`. It calls `settings.get` on load and `set
 on every change. The host pushes a `settingsChanged` event whenever settings change so
 other views stay in sync.
 
-Four cards — **Appearance, General, Assistant, Automation** — each with a `CardDescription`
+Five cards — **Appearance, General, Assistant, Automation, Pages** — each with a `CardDescription`
 saying what the group is for, and `SettingRow`s inside.
 
 - **Appearance**: the mode switch (System / Light / Dark), the colour preset picker and the
@@ -71,6 +72,13 @@ saying what the group is for, and `SettingRow`s inside.
   provider with a button into the API-keys dialog.
 - **Automation**: everything that decides how a run behaves — the confirmation, the cookie
   banners, the three waits, and the engine script.
+- **Pages**: the address every action runs on, one row per action. Only overrides are stored
+  (`siteUrls`, keyed `platform.group`, `{user}` for the handle); clearing a field or matching
+  the default deletes the key, and "Reset pages" drops them all. The Rust host resolves the
+  override in `resolve_target_url` (`src-tauri/src/commands/site.rs`); the defaults the view
+  prints beside the fields live in `src/lib/site-urls.ts`, kept in step by hand. The
+  extension mirrors the card in its popup (`siteUrls` in `PopupSettings`), resolved in its
+  `background.ts` the same way.
 
 `notifications` and `telemetry` are two switches that could be mistaken for each other and
 are not. A toast is a courtesy; the log is the record, and the diagnostics switch is enforced

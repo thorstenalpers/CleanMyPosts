@@ -2,6 +2,7 @@
 	import type { Component } from 'svelte';
 	import type { Platform } from '$lib/engine/protocol';
 	import { X_GROUPS, YOUTUBE_GROUPS, type ActionGroupDef } from '$lib/actions';
+	import { SITE_URL_DEFAULTS } from '$lib/site-urls';
 	import ActionRow from '$lib/components/action-row.svelte';
 	import { ConfirmDialog } from '$lib/components/ui/alert-dialog';
 	import XIcon from '$lib/components/icons/x-icon.svelte';
@@ -105,6 +106,24 @@
 		const ms = Number(value);
 		if (!Number.isFinite(ms) || ms < 0) return;
 		save({ ...settings, timeouts: { ...settings.timeouts, [key]: Math.round(ms) } });
+	}
+
+	/** One row per action, mirroring the app's Settings → Pages. */
+	const URL_FIELDS = PLATFORMS.flatMap((p) =>
+		p.groups.map((group) => ({
+			key: `${p.id}.${group.key}`,
+			platform: p.label,
+			label: group.label
+		}))
+	);
+
+	/** Only overrides are stored: a field left empty or put back to the default is deleted. */
+	function setSiteUrl(key: string, value: string): void {
+		const next = { ...settings.siteUrls };
+		const trimmed = value.trim();
+		if (trimmed === '' || trimmed === SITE_URL_DEFAULTS[key]) delete next[key];
+		else next[key] = trimmed;
+		save({ ...settings, siteUrls: next });
 	}
 
 	// Two states, not three: `Default` is what it starts as, and the first press is a choice
@@ -304,6 +323,36 @@
 						<span class="w-4 text-[10px] text-muted-foreground">ms</span>
 					</label>
 				{/each}
+			</div>
+
+			<div class="flex flex-col gap-1 border-t pt-2">
+				<p class="text-[10px] leading-snug text-muted-foreground">
+					{t('settings.urls.description')}
+				</p>
+				{#each URL_FIELDS as field (field.key)}
+					<label class="flex items-center gap-2 text-xs">
+						<span class="w-28 shrink-0 truncate text-muted-foreground">
+							{field.platform} · {t(field.label)}
+						</span>
+						<input
+							type="text"
+							spellcheck="false"
+							value={settings.siteUrls[field.key] ?? SITE_URL_DEFAULTS[field.key]}
+							onchange={(e) => setSiteUrl(field.key, e.currentTarget.value)}
+							class="h-6 min-w-0 flex-1 rounded-md border border-input bg-background px-1.5 font-mono
+							       text-[10px] focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+						/>
+					</label>
+				{/each}
+				<button
+					type="button"
+					disabled={Object.keys(settings.siteUrls).length === 0}
+					onclick={() => save({ ...settings, siteUrls: {} })}
+					class="cursor-pointer self-end text-[10px] text-muted-foreground hover:text-foreground
+					       disabled:cursor-default disabled:opacity-50"
+				>
+					{t('settings.urls.reset')}
+				</button>
 			</div>
 		</div>
 	{/if}

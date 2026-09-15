@@ -345,6 +345,10 @@ export const fr: Record<MessageKey, string> = {
 
 	'header.url': 'Tu es ici',
 	'header.reload': 'Recharger la page',
+	'settings.urls': 'Pages',
+	'settings.urls.description':
+		'Où chaque action s’exécute. {user} représente le pseudo connecté ; vider un champ le ramène à la page intégrée.',
+	'settings.urls.reset': 'Réinitialiser les pages',
 
 	'log.column.time': 'Heure',
 	'log.column.level': 'Niveau',

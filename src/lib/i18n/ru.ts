@@ -338,6 +338,10 @@ export const ru: Record<MessageKey, string> = {
 
 	'header.url': 'Вы здесь',
 	'header.reload': 'Перезагрузить страницу',
+	'settings.urls': 'Страницы',
+	'settings.urls.description':
+		'Где выполняется каждое действие. {user} — имя вошедшего пользователя; очищенное поле возвращается к встроенной странице.',
+	'settings.urls.reset': 'Сбросить страницы',
 
 	'log.column.time': 'Время',
 	'log.column.level': 'Уровень',

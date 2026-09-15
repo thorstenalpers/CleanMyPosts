@@ -112,6 +112,12 @@ export interface PopupSettings {
 	theme: 'Default' | 'Light' | 'Dark';
 	/** A `Language` from `$lib/i18n`; `System` reads `navigator.language`. */
 	language: string;
+	/**
+	 * Overrides for the pages the actions run on, keyed `platform.group` (`x.reposts`), with
+	 * `{user}` standing for the handle — the same scheme as the app's Settings → Pages. Only
+	 * overrides live here; an absent key means the built-in page.
+	 */
+	siteUrls: Record<string, string>;
 }
 
 export const SETTINGS_KEY = 'popupSettings';
@@ -126,7 +132,8 @@ export const DEFAULT_SETTINGS: PopupSettings = {
 	},
 	welcomed: false,
 	theme: 'Default',
-	language: 'System'
+	language: 'System',
+	siteUrls: {}
 };
 
 /** Popup -> background. One action or all of them is the same request with a longer list. */

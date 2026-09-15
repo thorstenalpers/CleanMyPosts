@@ -321,6 +321,10 @@ export const zh: Record<MessageKey, string> = {
 
 	'header.url': '你在这里',
 	'header.reload': '重新加载页面',
+	'settings.urls': '页面',
+	'settings.urls.description':
+		'每个操作运行的页面。{user} 代表已登录的用户名；清空字段即恢复内置页面。',
+	'settings.urls.reset': '重置页面',
 
 	'log.column.time': '时间',
 	'log.column.level': '级别',

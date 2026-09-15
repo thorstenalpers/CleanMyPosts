@@ -22,6 +22,7 @@ const FALLBACK_SETTINGS: AppSettings = {
 	assistantModel: '',
 	assistantEffort: 'medium',
 	customActions: [],
+	siteUrls: {},
 	timeouts: {
 		waitAfterDelete: 500,
 		waitBetweenRetryDeleteAttempts: 500,

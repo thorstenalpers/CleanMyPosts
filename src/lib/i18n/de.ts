@@ -346,6 +346,10 @@ export const de: Record<MessageKey, string> = {
 
 	'header.url': 'Du bist hier',
 	'header.reload': 'Seite neu laden',
+	'settings.urls': 'Seiten',
+	'settings.urls.description':
+		'Wo jede Aktion läuft. {user} steht für den angemeldeten Handle; ein geleertes Feld kehrt zur eingebauten Seite zurück.',
+	'settings.urls.reset': 'Seiten zurücksetzen',
 
 	'log.column.time': 'Zeit',
 	'log.column.level': 'Stufe',

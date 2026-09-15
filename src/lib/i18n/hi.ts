@@ -336,6 +336,10 @@ export const hi: Record<MessageKey, string> = {
 
 	'header.url': 'आप यहाँ हैं',
 	'header.reload': 'पेज फिर से लोड करें',
+	'settings.urls': 'पेज',
+	'settings.urls.description':
+		'हर क्रिया कहाँ चलती है। {user} साइन-इन हैंडल के लिए है; खाली किया गया फ़ील्ड बिल्ट-इन पेज पर लौट जाता है।',
+	'settings.urls.reset': 'पेज रीसेट करें',
 
 	'log.column.time': 'समय',
 	'log.column.level': 'स्तर',

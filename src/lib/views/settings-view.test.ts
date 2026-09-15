@@ -36,6 +36,7 @@ function setup(overrides: MockHandlers = {}) {
 			assistantModel: '',
 			assistantEffort: 'medium' as const,
 			customActions: [],
+			siteUrls: {},
 			timeouts: {
 				waitAfterDelete: 500,
 				waitBetweenRetryDeleteAttempts: 500,
@@ -143,6 +144,7 @@ describe('SettingsView', () => {
 			assistantModel: '',
 			assistantEffort: 'medium' as const,
 			customActions: [],
+			siteUrls: {},
 			timeouts: {
 				waitAfterDelete: 500,
 				waitBetweenRetryDeleteAttempts: 500,

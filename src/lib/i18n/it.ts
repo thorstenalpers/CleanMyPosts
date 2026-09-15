@@ -343,6 +343,10 @@ export const it: Record<MessageKey, string> = {
 
 	'header.url': 'Sei qui',
 	'header.reload': 'Ricarica la pagina',
+	'settings.urls': 'Pagine',
+	'settings.urls.description':
+		'Dove viene eseguita ogni azione. {user} rappresenta l’handle connesso; svuotare un campo lo riporta alla pagina integrata.',
+	'settings.urls.reset': 'Ripristina le pagine',
 
 	'log.column.time': 'Ora',
 	'log.column.level': 'Livello',

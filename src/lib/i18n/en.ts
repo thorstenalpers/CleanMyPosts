@@ -347,6 +347,10 @@ export const en = {
 
 	'header.url': 'You are here',
 	'header.reload': 'Reload page',
+	'settings.urls': 'Pages',
+	'settings.urls.description':
+		'Where each action runs. {user} stands for the signed-in handle; clearing a field returns it to the built-in page.',
+	'settings.urls.reset': 'Reset pages',
 
 	'log.column.time': 'Time',
 	'log.column.level': 'Level',

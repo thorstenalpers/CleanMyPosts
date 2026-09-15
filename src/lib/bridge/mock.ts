@@ -91,6 +91,7 @@ function mockSettings(): AppSettings {
 		assistantModel: '',
 		assistantEffort: 'medium',
 		customActions: [],
+		siteUrls: {},
 		timeouts: {
 			waitAfterDelete: 500,
 			waitBetweenRetryDeleteAttempts: 500,

@@ -27,6 +27,7 @@ describe('BridgeClient', () => {
 				assistantModel: '',
 				assistantEffort: 'medium' as const,
 				customActions: [],
+				siteUrls: {},
 				timeouts: {
 					waitAfterDelete: 100,
 					waitBetweenRetryDeleteAttempts: 200,

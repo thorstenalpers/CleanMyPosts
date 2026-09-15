@@ -343,6 +343,10 @@ export const es: Record<MessageKey, string> = {
 
 	'header.url': 'Estás aquí',
 	'header.reload': 'Recargar la página',
+	'settings.urls': 'Páginas',
+	'settings.urls.description':
+		'Dónde se ejecuta cada acción. {user} representa el nombre de usuario conectado; vaciar un campo lo devuelve a la página integrada.',
+	'settings.urls.reset': 'Restablecer páginas',
 
 	'log.column.time': 'Hora',
 	'log.column.level': 'Nivel',

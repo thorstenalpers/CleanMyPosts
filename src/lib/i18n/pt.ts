@@ -342,6 +342,10 @@ export const pt: Record<MessageKey, string> = {
 
 	'header.url': 'Estás aqui',
 	'header.reload': 'Recarregar a página',
+	'settings.urls': 'Páginas',
+	'settings.urls.description':
+		'Onde cada ação é executada. {user} representa o utilizador com sessão iniciada; esvaziar um campo devolve-o à página integrada.',
+	'settings.urls.reset': 'Repor páginas',
 
 	'log.column.time': 'Hora',
 	'log.column.level': 'Nível',

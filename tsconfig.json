@@ -14,7 +14,7 @@
 		"isolatedModules": true,
 		"verbatimModuleSyntax": true,
 		"noEmit": true,
-		"types": ["vite/client", "@testing-library/jest-dom"]
+		"types": ["vite/client", "@testing-library/jest-dom/vitest"]
 	},
 	// Replicated from `.svelte-kit/tsconfig.json` rather than inherited: setting `include` here
 	// replaces the generated one wholesale, and without it `extension/` is never checked at all.

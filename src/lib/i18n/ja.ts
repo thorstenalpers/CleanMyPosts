@@ -334,6 +334,10 @@ export const ja: Record<MessageKey, string> = {
 
 	'header.url': '現在の場所',
 	'header.reload': 'ページを再読み込み',
+	'settings.urls': 'ページ',
+	'settings.urls.description':
+		'各アクションが実行されるページ。{user} はサインイン中のハンドルを表します。空にした欄は組み込みのページに戻ります。',
+	'settings.urls.reset': 'ページをリセット',
 
 	'log.column.time': '時刻',
 	'log.column.level': 'レベル',

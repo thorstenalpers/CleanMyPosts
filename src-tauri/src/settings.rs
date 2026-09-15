@@ -94,6 +94,11 @@ pub struct AppSettings {
     #[serde(default)]
     pub custom_actions: Vec<CustomAction>,
     pub timeouts: TimeoutSettings,
+    /// Overrides for the pages the actions run on, keyed `platform.group` (`x.reposts`),
+    /// with `{user}` standing for the handle. Only overrides live here — an absent key means
+    /// the built-in page in `commands::site::target_url`.
+    #[serde(default)]
+    pub site_urls: std::collections::HashMap<String, String>,
 }
 
 impl Default for AppSettings {
@@ -120,6 +125,7 @@ impl Default for AppSettings {
             assistant_effort: medium(),
             custom_actions: Vec::new(),
             timeouts: TimeoutSettings::default(),
+            site_urls: Default::default(),
         }
     }
 }

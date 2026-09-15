@@ -33,6 +33,7 @@ function setup(confirmDeletion: boolean) {
 			assistantModel: '',
 			assistantEffort: 'medium' as const,
 			customActions: [],
+			siteUrls: {},
 			timeouts: { waitAfterDelete: 1, waitBetweenRetryDeleteAttempts: 1, waitAfterDocumentLoad: 1 }
 		}),
 		'site.navigate': navigate,

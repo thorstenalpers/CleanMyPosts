@@ -227,7 +227,13 @@ export const AppSettingsSchema = z.object({
 	assistantEffort: AssistantEffortSchema,
 	/** Scripts the assistant wrote that the user kept. Shown in each platform's action panel. */
 	customActions: z.array(CustomActionSchema),
-	timeouts: TimeoutSettingsSchema
+	timeouts: TimeoutSettingsSchema,
+	/**
+	 * Overrides for the pages the actions run on, keyed `platform.group` (`x.reposts`), with
+	 * `{user}` standing for the handle. Only overrides live here — an absent key means the
+	 * built-in page, so resetting is deleting. See `$lib/site-urls.ts` for the defaults.
+	 */
+	siteUrls: z.record(z.string(), z.string()).default({})
 });
 export type AppSettings = z.infer<typeof AppSettingsSchema>;
 

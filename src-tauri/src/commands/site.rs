@@ -41,6 +41,30 @@ fn target_url(platform: &str, action: &str, user_name: &str) -> Option<String> {
     Some(url)
 }
 
+/// The built-in page, unless the settings carry an override under `platform.group` — which
+/// is how a platform moving a page again gets fixed from Settings rather than waited out.
+fn resolve_target_url(
+    overrides: &std::collections::HashMap<String, String>,
+    platform: &str,
+    action: &str,
+    user_name: &str,
+) -> Option<String> {
+    let key = format!("{platform}.{}", subject(action));
+    if let Some(template) = overrides
+        .get(&key)
+        .map(|t| t.trim())
+        .filter(|t| !t.is_empty())
+    {
+        return Some(template.replace("{user}", &urlencoding_minimal(user_name)));
+    }
+    target_url(platform, action, user_name)
+}
+
+fn effective_target_url(app: &AppHandle, platform: &str, action: &str) -> Option<String> {
+    let overrides = app.state::<AppState>().settings.get().site_urls;
+    resolve_target_url(&overrides, platform, action, &read_user_name(app))
+}
+
 /// X handles are `[A-Za-z0-9_]`, so percent-encoding only has to defend against a handle
 /// that never should have got this far rather than implement general URL encoding.
 fn urlencoding_minimal(input: &str) -> String {
@@ -95,8 +119,7 @@ pub fn navigate(app: &AppHandle, params: &Value) -> Result<Value> {
         .and_then(Value::as_str)
         .ok_or(Error::MissingParam("action"))?;
 
-    let user = read_user_name(app);
-    let url = target_url(platform, action, &user).ok_or_else(|| Error::NoTarget {
+    let url = effective_target_url(app, platform, action).ok_or_else(|| Error::NoTarget {
         platform: platform.to_string(),
         action: action.to_string(),
     })?;
@@ -416,7 +439,7 @@ pub async fn run_action(app: AppHandle, params: &Value) -> Result<Value> {
     // same outcome, with the same empty log.
     // Scoped so the webview handle is dropped before the wait below: a `Webview` is not
     // `Send`, and holding one across an `await` makes the whole command un-spawnable.
-    if let Some(url) = target_url(platform, action, &read_user_name(&app)) {
+    if let Some(url) = effective_target_url(&app, platform, action) {
         {
             let site = app
                 .get_webview(crate::site_webview_label(platform))
@@ -673,6 +696,30 @@ mod tests {
             target_url("x", "showFollowing", "someuser").unwrap(),
             "https://x.com/someuser/following"
         );
+    }
+
+    #[test]
+    fn an_override_beats_the_built_in_page() {
+        let mut overrides = std::collections::HashMap::new();
+        overrides.insert(
+            "x.reposts".to_string(),
+            "https://x.com/{user}/rt".to_string(),
+        );
+        overrides.insert("x.likes".to_string(), "   ".to_string());
+        assert_eq!(
+            resolve_target_url(&overrides, "x", "deleteReposts", "someuser").unwrap(),
+            "https://x.com/someuser/rt"
+        );
+        // Blank overrides read as "not set", and an untouched action keeps its built-in page.
+        assert_eq!(
+            resolve_target_url(&overrides, "x", "deleteLikes", "someuser").unwrap(),
+            "https://x.com/someuser/likes"
+        );
+        assert_eq!(
+            resolve_target_url(&overrides, "x", "showReplies", "someuser").unwrap(),
+            "https://x.com/someuser/with_replies"
+        );
+        assert!(resolve_target_url(&overrides, "x", "whatever", "someuser").is_none());
     }
 
     /// `show*` and `delete*` land on the same page; deleting happens where the items are

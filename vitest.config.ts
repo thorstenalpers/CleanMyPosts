@@ -4,7 +4,7 @@ import { sveltekit } from '@sveltejs/kit/vite';
 export default defineConfig({
 	// The SvelteKit plugin rather than the bare svelte one: components under `routes/`
 	// import `$app/*`, which nothing else can resolve.
-	plugins: [sveltekit()],
+	plugins: [sveltekit({ alias: { $lib: 'src/lib' } })],
 	resolve: {
 		conditions: ['browser']
 	},

@@ -280,7 +280,7 @@
 		// yet is taken and highlighted immediately, then served the moment it does.
 		void settingsStore.load();
 		void logStore.load();
-		for (const path of Object.values(ROUTES)) void preloadCode(resolve(path));
+		for (const path of Object.values(ROUTES)) void preloadCode(path);
 	});
 
 	// Waits for the real settings: the fallback has the check on, and asking GitHub for a

@@ -1,5 +1,5 @@
 {
-	"extends": "./.svelte-kit/tsconfig.json",
+	"extends": "$app/tsconfig",
 	"compilerOptions": {
 		"target": "ES2022",
 		"lib": ["ES2022", "DOM", "DOM.Iterable"],
@@ -14,10 +14,10 @@
 		"isolatedModules": true,
 		"verbatimModuleSyntax": true,
 		"noEmit": true,
-		"types": ["vite/client", "@testing-library/jest-dom/vitest"]
+		"types": ["$app/types", "vite/client", "@testing-library/jest-dom/vitest"]
 	},
-	// Replicated from `.svelte-kit/tsconfig.json` rather than inherited: setting `include` here
-	// replaces the generated one wholesale, and without it `extension/` is never checked at all.
+	// Set here rather than inherited: `include` replaces the generated one wholesale, and without
+	// `extension/` is never checked at all.
 	"include": [
 		".svelte-kit/ambient.d.ts",
 		".svelte-kit/env.d.ts",

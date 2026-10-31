@@ -6,7 +6,6 @@
 [![CI](https://img.shields.io/github/actions/workflow/status/thorstenalpers/CleanMyPosts/ci.yml?branch=main&style=flat-square&logo=githubactions&logoColor=white&label=CI)](https://github.com/thorstenalpers/CleanMyPosts/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/thorstenalpers/CleanMyPosts?style=flat-square&logo=github&label=release)](https://github.com/thorstenalpers/CleanMyPosts/releases/latest)
 [![Downloads](https://img.shields.io/github/downloads/thorstenalpers/CleanMyPosts/total?style=flat-square&logo=github&label=downloads)](https://github.com/thorstenalpers/CleanMyPosts/releases)
-[![Platform](https://img.shields.io/badge/platform-Windows-0078D6?style=flat-square&logo=windows&logoColor=white)](https://github.com/thorstenalpers/CleanMyPosts/releases)
 [![Chrome Web Store](https://img.shields.io/chrome-web-store/v/klkjiihehilemkhhdnfphkildcakadbi?style=flat-square&logo=googlechrome&logoColor=white&label=chrome)](https://chromewebstore.google.com/detail/cleanmyposts/klkjiihehilemkhhdnfphkildcakadbi)
 [![Firefox Add-on](https://img.shields.io/amo/v/cleanmyposts?style=flat-square&logo=firefox&logoColor=white&label=firefox)](https://addons.mozilla.org/en-US/firefox/addon/cleanmyposts/)
 [![Stars](https://img.shields.io/github/stars/thorstenalpers/CleanMyPosts?style=flat-square&logo=github&label=stars)](https://github.com/thorstenalpers/CleanMyPosts)

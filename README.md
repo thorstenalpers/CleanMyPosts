@@ -1,228 +1,210 @@
+<div align="center">
+
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="./assets/banner-dark.png">
   <img alt="CleanMyPosts" src="./assets/banner.png">
 </picture>
 
-[![CI](https://img.shields.io/github/actions/workflow/status/thorstenalpers/CleanMyPosts/ci.yml?branch=main&style=flat-square&logo=githubactions&logoColor=white&label=CI)](https://github.com/thorstenalpers/CleanMyPosts/actions/workflows/ci.yml)
+### Delete your X and YouTube history in bulk — free, private, no API key.
+
+Posts, replies, reposts, likes and followings on X. Comments and liked videos on YouTube.<br>
+Years of it, gone in one click instead of one menu at a time.
+
+[![Download for Windows](https://img.shields.io/badge/Download-Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/thorstenalpers/CleanMyPosts/releases/latest)
+[![Add to Chrome](https://img.shields.io/badge/Add_to-Chrome-4285F4?style=for-the-badge&logo=googlechrome&logoColor=white)](https://chromewebstore.google.com/detail/cleanmyposts/klkjiihehilemkhhdnfphkildcakadbi)
+[![Add to Firefox](https://img.shields.io/badge/Add_to-Firefox-FF7139?style=for-the-badge&logo=firefoxbrowser&logoColor=white)](https://addons.mozilla.org/en-US/firefox/addon/cleanmyposts/)
+
 [![Release](https://img.shields.io/github/v/release/thorstenalpers/CleanMyPosts?style=flat-square&logo=github&label=release)](https://github.com/thorstenalpers/CleanMyPosts/releases/latest)
 [![Downloads](https://img.shields.io/github/downloads/thorstenalpers/CleanMyPosts/total?style=flat-square&logo=github&label=downloads)](https://github.com/thorstenalpers/CleanMyPosts/releases)
-[![Platform](https://img.shields.io/badge/platform-Windows-0078D6?style=flat-square&logo=windows&logoColor=white)](https://github.com/thorstenalpers/CleanMyPosts/releases)
 [![Chrome Web Store](https://img.shields.io/chrome-web-store/v/klkjiihehilemkhhdnfphkildcakadbi?style=flat-square&logo=googlechrome&logoColor=white&label=chrome)](https://chromewebstore.google.com/detail/cleanmyposts/klkjiihehilemkhhdnfphkildcakadbi)
 [![Firefox Add-on](https://img.shields.io/amo/v/cleanmyposts?style=flat-square&logo=firefox&logoColor=white&label=firefox)](https://addons.mozilla.org/en-US/firefox/addon/cleanmyposts/)
+[![CI](https://img.shields.io/github/actions/workflow/status/thorstenalpers/CleanMyPosts/ci.yml?branch=main&style=flat-square&logo=githubactions&logoColor=white&label=CI)](https://github.com/thorstenalpers/CleanMyPosts/actions/workflows/ci.yml)
 [![Stars](https://img.shields.io/github/stars/thorstenalpers/CleanMyPosts?style=flat-square&logo=github&label=stars)](https://github.com/thorstenalpers/CleanMyPosts)
 
-**CleanMyPosts** deletes all posts, reposts, replies, likes and followings from your X (formerly Twitter) account, and your YouTube comments and liked videos, in bulk — by driving a real browser session rather than an API. It comes as a Windows desktop app and as a [Chrome and Firefox extension](#-in-your-own-browser-the-extension) built from the same engine.
+<img src="./assets/X.webp" alt="Delete everything running across posts, replies, reposts, likes and followings on X" width="760" />
 
-There is **no API, no OAuth, and no token**. You sign in exactly as you would in a browser,
-and the app clicks the same buttons you would — just without stopping. Deletions are
-deliberately paced; the waits between them are configurable and exist to keep the platforms
-from treating you as a bot.
-
-A browser rather than an API, because neither platform will sell you the thing you actually
-want — and one of them will charge you for the detour.
-
-**Bulk deletion is not offered.** Not on X, not on YouTube. Their interfaces delete one item
-at a time, each behind its own menu and its own confirmation — which is fine for a mistake
-and hopeless for ten years of posting.
-
-**The programmatic route costs.** X keeps API access behind paid tiers, so deleting your own
-posts through it means paying a monthly fee for the privilege. YouTube's Data API is free but
-metered: every deletion spends from a daily quota that runs out long before a busy account is
-clean, and a large clean-up turns into a job spread over days.
-
-**Driving the browser costs nothing.** The app opens the same pages you would, in your own
-signed-in session, and presses the same buttons. No developer account, no key, no monthly
-fee, no quota — and nothing about you leaves the machine, because there is no server of ours
-for it to leave to.
-
-🌍 **Speaks your language.** The whole interface is available in **eleven languages** —
-English, German, Spanish, French, Hindi, Italian, Japanese, Portuguese, Arabic, Russian and
-Chinese — and follows the one Windows runs in unless you pick another. The delete engine is built for it too: it reads the pages structurally
-wherever it can and asks every platform for English, so a translated interface on X or
-YouTube does not stop a run.
+</div>
 
 ---
 
-## 🚀 Features
+## Why CleanMyPosts
 
-<img align="right" src="./assets/CleanMyPosts_X.png" alt="CleanMyPosts cleaning up an X account" width="460" />
+Neither X nor YouTube lets you delete in bulk. Every post, like and comment sits behind its own
+menu and its own confirmation — fine for one mistake, hopeless for ten years of posting.
 
-### X (Twitter)
+|                                 | CleanMyPosts | Deleting by hand | Official API         |
+| ------------------------------- | :----------: | :--------------: | -------------------- |
+| Bulk deletion                   |      ✅      |        ❌        | ✅                   |
+| Free                            |      ✅      |        ✅        | ❌ X charges monthly |
+| No daily limit                  |      ✅      |        ✅        | ❌ YouTube quota     |
+| No developer account or API key |      ✅      |        ✅        | ❌                   |
+| Your data stays on your machine |      ✅      |        ✅        | depends on the tool  |
 
-- 🔍 **See a list first** — posts, replies, reposts, likes, followings
-- 🗑️ **Empty it** — any one of them, on its own
-- 💣 **Delete everything** — all five, one after another, from a single button
-
-### YouTube
-
-- 🔍 **See a list first** — comments and liked videos, both on Google My Activity
-- 🗑️ **Empty it** — either one, on its own
-- 💣 **Delete everything** — comments and liked videos in one run
-
-Liked videos are cleared on My Activity rather than on the Liked videos playlist: it removes
-them with one button instead of a menu, and it lists the ones you disliked alongside them — so
-those go too.
-
-Every delete asks for confirmation first, and the confirmation for **Delete everything**
-names each list it is about to empty. A finished run reports in the status bar — green when
-it worked, amber when it found nothing, red when it failed — and the number of items removed
-goes into the log.
-
-**Delete everything** is also on the overview, once for each platform you are signed in to,
-so the most common job is one click from the page the app opens on.
-
-### 🤖 Assistant
-
-X and YouTube change their pages without warning, and when they do, a selector that worked
-last week finds nothing. The assistant is the answer to that, and it does three things:
-
-- 🩹 **Write an action plan** — hand it the log of a failed run, or ask for a list the app
-  does not handle yet, and it answers with a short plan: what to remove, and how one of them
-  goes away — or how to reach a page or a button the app does not offer yet. Not code. It is a
-  fixed vocabulary of clicks, waits, scrolls, navigation and typing, checked against a schema
-  before anything runs, so a wrong answer can only ask for things the delete engine could
-  already do, and only on the platform's own pages. Nothing a model wrote is ever evaluated
-  inside your signed-in session, and you can read every step before you run it.
-
-  Then, in this order: **Check first** counts what the plan would find and touches none of
-  it. **Run once** tries it on the page in front of you. **Keep as action** gives it a name and
-  keeps it: something that deletes lands in that platform's list beside the built-in ones,
-  something that only opens a page or clicks a banner away lands in the sidebar as an entry of
-  its own. The settings show every plan you kept with the day you kept it — a plan is a
-  selector, and the platform moves.
-
-- 🐞 **File a bug report** — it turns the same log into a report a maintainer can act on,
-  and opens GitHub's issue form with the title and body already filled in. Pressing submit
-  stays with you.
-- 💬 **Ask a question** — about a run, a setting, or what the app just did.
-
-Reachable two ways: the **Assistant** page, or the sparkles icon in the header, which opens it
-as a column beside the platform so you can see the page you are asking about.
-
-Every mode shows the exact text that would be sent **before** anything is sent, assembled from
-the same functions that build the request, so the preview cannot drift from it. Asking for a
-plan also sends a skeleton of the open page — tags, test ids and the words on buttons, with
-every post, handle and address stripped out in the browser before it goes anywhere. Nothing
-leaves the machine until you press the button.
-
-It runs against [Claude Code](https://claude.com/claude-code) if it is installed on this
-machine, or against a provider of your choice with your own API key — and it can be switched
-off entirely in the settings.
-
-The assistant is the only part of the app that needs either one. **Without them the app is
-whole**: every list still deletes, and the assistant is simply not there — no entry, no icon,
-no prompt to set one up. The settings say once that no source is configured, and nothing else
-in the app mentions it again.
-
-<br clear="both" />
+- 🆓 **Free and open source.** MIT licensed. No subscription, no account, no paywall.
+- 🔒 **Private.** There is no server. You sign in to X and Google directly, in your own
+  session, and nothing about you leaves your machine.
+- 🖱️ **No API, no token.** It clicks the same buttons you would — just without stopping.
+- 🐢 **Paced like a human.** Deliberate pauses between deletions keep the platforms from
+  flagging you as a bot. You can tune them.
+- 🌍 **Eleven languages.** English, German, Spanish, French, Hindi, Italian, Japanese,
+  Portuguese, Arabic, Russian and Chinese — and it works even if X or YouTube are shown in
+  another language.
 
 ---
 
-## 🛠️ Requirements
+## What it deletes
 
-- Windows 10 version 2004 (build 19041) or later, 64-bit
-- X (Twitter) account (for X features)
-- Google account (for YouTube features)
+| Platform    | Lists                                           |
+| ----------- | ----------------------------------------------- |
+| **X**       | Posts · Replies · Reposts · Likes · Followings  |
+| **YouTube** | Comments · Liked videos (and disliked ones too) |
 
-Nothing else — the app ships everything it needs and uses the WebView2 runtime that ships
-with Windows. The only data it writes is your own preferences and the browser profile that
-keeps you signed in, under `%AppData%` and `%LocalAppData%`.
+For each list you can **look first**, **empty just that one**, or hit **Delete everything** to
+clear all of them in one run. Every delete asks for confirmation first, and the confirmation
+names exactly what is about to go.
 
----
-
-## 📦 Installation
-
-Once your system meets the requirements, follow these steps to install **CleanMyPosts**:
-
-1. Download the latest version from [Releases](https://github.com/thorstenalpers/CleanMyPosts/releases).
-2. Run the installer. Ignore the warning about the app being from an unverified publisher.
-3. Launch the app and log in with your X (formerly Twitter) or Google account.
-4. Start bulk deleting your posts, replies, reposts, likes, following, and YouTube comments easily.
+<img src="./assets/Overview.png" alt="The overview: X and YouTube, each with a Delete everything button" width="760" />
 
 ---
 
-## 🎬 See It in Action
+## Get started in 3 steps
 
-**X (Twitter)** — **Delete everything** running: posts, replies, reposts, likes and
-followings, one list after the next. The sub-navigation stays open the whole time, so the
-controls do not disappear mid-task.
+### 🪟 Windows app
 
-<img src="./assets/X.webp" alt="Delete everything running across posts, replies, reposts, likes and followings on X" width="700" />
+1. [Download the installer](https://github.com/thorstenalpers/CleanMyPosts/releases/latest)
+   and run it. Windows may warn about an unverified publisher — choose _Run anyway_.
+2. Sign in to X or YouTube inside the app.
+3. Press **Delete everything** — or pick a single list.
 
-**YouTube** — comments and liked videos in a single run, each with its own status.
+Needs Windows 10 (2004) or later, 64-bit. Nothing else to install.
 
-<img src="./assets/Youtube.webp" alt="Comments and liked videos being deleted on YouTube" width="700" />
+### 🧩 Chrome or Firefox extension
 
-**Assistant** — the exact text that would be sent, shown before anything is sent.
+Not on Windows, or rather not install an app? The extension uses the very same delete engine,
+right in the tab you already have open.
+
+1. Install it from the [Chrome Web Store](https://chromewebstore.google.com/detail/cleanmyposts/klkjiihehilemkhhdnfphkildcakadbi)
+   or [Firefox Add-ons](https://addons.mozilla.org/en-US/firefox/addon/cleanmyposts/).
+2. Open X or YouTube and sign in.
+3. Click the CleanMyPosts icon in the toolbar and pick what to delete.
+
+> [!WARNING]
+> **Deletions are permanent.** Neither platform offers a way back, and CleanMyPosts keeps no
+> copy. Look at a list before you empty it.
+
+---
+
+## See it in action
+
+**YouTube** — comments and liked videos in a single run.
+
+<img src="./assets/Youtube.webp" alt="Comments and liked videos being deleted on YouTube" width="760" />
+
+---
+
+## 🤖 Optional: the built-in assistant
+
+X and YouTube change their pages without warning. When a list suddenly stops deleting, the
+assistant helps:
+
+- 🩹 **Fix it yourself** — hand it the log of a failed run and it writes a short plan of clicks,
+  waits and scrolls. You read every step, **Check first** counts what it would touch, and
+  **Keep as action** saves it next to the built-in lists.
+- 🐞 **Report a bug** — it turns the log into a ready-to-file GitHub issue. You press submit.
+- 💬 **Ask a question** — about a run, a setting, or what just happened.
+
+It runs on [Claude Code](https://claude.com/claude-code) if installed, or on a provider of
+your choice with your own API key. You see the exact text before anything is sent, and posts,
+handles and addresses are stripped out first. **Without it the app is complete** — the
+assistant simply does not show up.
+
+<details>
+<summary>How the assistant stays safe</summary>
+
+A plan is not code. It is a fixed vocabulary of clicks, waits, scrolls, navigation and typing,
+checked against a schema before anything runs — so a wrong answer can only ask for things the
+delete engine could already do, and only on the platform's own pages. Nothing a model wrote is
+ever evaluated inside your signed-in session.
+
+Asking for a plan also sends a skeleton of the open page: tags, test ids and button labels,
+with every post, handle and address removed in the browser before it goes anywhere. The
+preview is assembled from the same functions that build the request, so it cannot drift from
+what is actually sent. The settings list every plan you kept with the day you kept it, and the
+assistant can be switched off entirely.
 
 <img src="./assets/Assistant.png" alt="The assistant, showing what would be sent before it is sent" width="700" />
 
----
-
-## 🧩 In Your Own Browser: The Extension
-
-There is a Chrome and a Firefox extension that does the same deleting in a tab you already have
-open, for people who are not on Windows or would rather not install anything.
-
-It is not a second implementation. `src/lib/engine/` — the same code the app injects into its
-own browser window — is what the extension injects into yours, so a selector fixed for one is
-fixed for both in the same commit.
-
-- **Same lists:** posts, replies, reposts, likes and followings on X; comments and liked videos
-  on YouTube.
-- **Same deliberate slowness.** The pauses between deletions are the only brake against a
-  platform reading the session as automation, and they are configurable here too.
-- **Same nothing-stored:** no account, no server, no analytics. What is kept is which action is
-  running and how far it has got, in memory, until the browser closes.
-
-Install it from the store:
-
-- **Chrome:** [Chrome Web Store](https://chromewebstore.google.com/detail/cleanmyposts/klkjiihehilemkhhdnfphkildcakadbi)
-- **Firefox:** [Firefox Add-ons](https://addons.mozilla.org/en-US/firefox/addon/cleanmyposts/)
-
-Or skip the stores: download the build from
-[Releases](https://github.com/thorstenalpers/CleanMyPosts/releases) — or build it yourself with
-`npm run build:extension` — and load it unpacked:
-
-- **Chrome:** `chrome://extensions`, turn on Developer mode, _Load unpacked_, pick the `chrome`
-  folder.
-- **Firefox:** `about:debugging#/runtime/this-firefox`, _Load Temporary Add-on_, pick the
-  `manifest.json` inside the `firefox` folder. Temporary add-ons are gone on restart.
-
-[extension/README.md](./extension/README.md) has the rest, including how to patch a selector
-from the console when a platform moves something.
+</details>
 
 ---
 
-## 🧟‍♂️ Without the App: Run the Scripts by Hand
+## ❓ FAQ
 
-Every delete action is also published as a standalone script — one file per list, for people
-who are not on Windows or would rather not install anything.
+<details>
+<summary><b>Will my account get banned?</b></summary>
 
-These are generated from the app's own delete engine at build time rather than written
-separately, which is the whole difference from the versions that shipped this way before 3.0:
-a selector fixed in the app is fixed in the download, because they are the same code. There is
-also nothing left to fill in — each script starts by itself and works on whatever page it is
-pasted into, so there is no function to call and no username to pass.
+CleanMyPosts paces itself like a person and works in your normal session. Still, both
+platforms restrict automated access in their terms, and the consequence would fall on your
+account. If a run gets throttled, raise the pauses in **Settings → Timing** and wait a few
+minutes. You use it at your own risk.
 
-### 🔧 Steps
+</details>
 
-1. Open the URL for the list you want to clear, and sign in. Replace `USERNAME` with your own X
-   handle — the part after `x.com/`, without the `@`.
-2. Download the script below and open it in a text editor. Read it — you are about to run it in
-   your signed-in account, and it is unminified for exactly that reason.
-3. Press <kbd>F12</kbd> to open developer tools, then go to the **Console** tab.
-4. Paste the whole file and press <kbd>Enter</kbd>.
-5. It starts immediately and reports each step. Close the tab to stop it.
+<details>
+<summary><b>Do you see my password or my data?</b></summary>
+
+No. There is no server of ours. You sign in on X's and Google's own pages; the app only keeps
+your preferences and the browser profile that keeps you signed in, on your own disk under
+`%AppData%` and `%LocalAppData%`.
+
+</details>
+
+<details>
+<summary><b>Can I undo a deletion?</b></summary>
+
+No. Deletions are permanent on the platform's side, and CleanMyPosts keeps no copy.
+
+</details>
+
+<details>
+<summary><b>I'm on macOS or Linux.</b></summary>
+
+Use the [Chrome](https://chromewebstore.google.com/detail/cleanmyposts/klkjiihehilemkhhdnfphkildcakadbi)
+or [Firefox](https://addons.mozilla.org/en-US/firefox/addon/cleanmyposts/) extension, or the
+[console scripts](#-without-installing-anything-console-scripts) below.
+
+</details>
+
+<details>
+<summary><b>Something isn't working.</b></summary>
+
+See [Troubleshooting](#-troubleshooting). If it is still broken, update to the
+[latest release](https://github.com/thorstenalpers/CleanMyPosts/releases/latest) and
+[open an issue](https://github.com/thorstenalpers/CleanMyPosts/issues) with the log — the
+assistant can write it for you.
+
+</details>
+
+---
+
+## 🧟 Without installing anything: console scripts
+
+Every delete action is also published as a single readable script, generated from the app's
+own engine — so a fix in the app is a fix here too.
+
+<details>
+<summary>Show steps and scripts</summary>
+
+1. Open the page for the list you want to clear and sign in. Replace `USERNAME` with your X
+   handle, without the `@`.
+2. Download the script and read it — you are about to run it in your signed-in account, and it
+   is unminified for exactly that reason.
+3. Press <kbd>F12</kbd>, open the **Console** tab, paste the whole file and press
+   <kbd>Enter</kbd>.
+4. It starts immediately and reports each step. Close the tab to stop it.
 
 The two waits at the top of each file are the brake against the platform treating your session
 as automation. Raising them is always safe; lowering them is what gets a session flagged.
-
-> **Deletion cannot be undone.** The script keeps going for as long as it finds anything.
-
-### 📜 The scripts
-
-Every link points at the newest release, so it stays current.
 
 | List             | Open this page                                                                           | Script                                                                                                                                                     |
 | ---------------- | ---------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -234,13 +216,17 @@ Every link points at the newest release, so it stays current.
 | YouTube comments | [`myactivity.google.com`](https://myactivity.google.com/page?page=youtube_comments)      | [cleanmyposts-youtube-delete-comments.js](https://github.com/thorstenalpers/CleanMyPosts/releases/latest/download/cleanmyposts-youtube-delete-comments.js) |
 | Liked videos     | [`youtube.com/playlist?list=LL`](https://www.youtube.com/playlist?list=LL)               | [cleanmyposts-youtube-delete-likes.js](https://github.com/thorstenalpers/CleanMyPosts/releases/latest/download/cleanmyposts-youtube-delete-likes.js)       |
 
+</details>
+
 ---
 
 ## 🩺 Troubleshooting
 
-Most runs that go wrong go wrong in one of a few ways. The app's own log is the first place
-to look — **Log** in the sidebar, or ask the built-in assistant, which is handed this same
-list along with your log.
+Start with the app's **Log** in the sidebar — or hand it to the assistant, which knows this
+list too.
+
+<details>
+<summary>Common problems and fixes</summary>
 
 | Symptom                                                                                 | Why                                                                                                                                    | What to do                                                                                                                                                                                                              |
 | --------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -253,13 +239,14 @@ list along with your log.
 | YouTube comments cannot be reached                                                      | My Activity asks for the Google sign-in again, per session.                                                                            | Open the YouTube pane, sign in, and start the action again.                                                                                                                                                             |
 | _Check for updates_ reports nothing                                                     | Updates only work in the installed build, and the check needs network access.                                                          | Compare your version on the **Info** page with the [latest release](https://github.com/thorstenalpers/CleanMyPosts/releases/latest) and install it manually if they differ.                                             |
 
-Deletions cannot be undone, and no run is ever resumed from a copy of your data — there is
-no copy. If something was removed that should not have been, it is gone on the platform's
-side too.
+</details>
 
 ---
 
-## 🧑‍💻 Building from Source
+## 🧑‍💻 For developers
+
+<details>
+<summary>Build from source, run the tests, load the extension unpacked</summary>
 
 Requires the [Rust toolchain](https://rustup.rs/) and [Node.js 24+](https://nodejs.org/).
 
@@ -272,11 +259,8 @@ npm run start
 `npm run build` before the first `npm run start` is not optional. The Rust crate compiles
 the delete engine into itself with `include_str!("../../dist/content/content.js")`, and
 `npm run start` does not produce that file — it runs Vite's dev server, which serves the
-interface and nothing else. Without the build the crate does not compile at all. The same
-applies after any change under `src/lib/engine/`: the app keeps running the bundle it was
-compiled with until it is rebuilt.
-
-`npm run start` then opens the real Tauri window, with hot reload for the interface.
+interface and nothing else. The same applies after any change under `src/lib/engine/`: the app
+keeps running the bundle it was compiled with until it is rebuilt.
 
 Build the installer:
 
@@ -284,8 +268,7 @@ Build the installer:
 npm run app:build
 ```
 
-Working on the UI alone is faster in the browser — it falls back to an in-memory mock host,
-so no WebView2 is needed:
+Work on the UI alone in the browser, against an in-memory mock host:
 
 ```bash
 npm run dev
@@ -301,44 +284,42 @@ npm run test:e2e
 cargo test --manifest-path src-tauri/Cargo.toml --lib
 ```
 
-`npm test` covers the interface and the engine; the Rust half has no npm script and is the
-line above. `npm run test:e2e` builds the engine bundle first and runs it in real Chromium
-against saved page markup — never against the live sites, so nothing is deleted for real.
+`npm run test:e2e` builds the engine bundle first and runs it in real Chromium against saved
+page markup — never against the live sites, so nothing is deleted for real.
 
-The architecture, the UI↔host bridge, and the design rules are documented under
+**Extension, unpacked:** download the build from
+[Releases](https://github.com/thorstenalpers/CleanMyPosts/releases) or run
+`npm run build:extension`, then:
+
+- **Chrome:** `chrome://extensions`, turn on Developer mode, _Load unpacked_, pick the `chrome`
+  folder.
+- **Firefox:** `about:debugging#/runtime/this-firefox`, _Load Temporary Add-on_, pick the
+  `manifest.json` inside the `firefox` folder. Temporary add-ons are gone on restart.
+
+The extension injects the same `src/lib/engine/` as the app, so a selector fixed for one is
+fixed for both. [extension/README.md](./extension/README.md) has the rest.
+
+Architecture, the UI↔host bridge and the design rules live under
 [`.agents/docs/`](.agents/docs/) — start at [AGENTS.md](AGENTS.md).
+
+</details>
 
 ---
 
-## 🤝 How to Contribute
+## 🤝 Contributing
 
-We welcome contributions to **CleanMyPosts**! If you’d like to improve the project, please:
+Contributions are welcome. Read the [contributing guidelines](CONTRIBUTING.md), ideally open an
+issue first, then send a pull request. Found a bug?
+[Report it here](https://github.com/thorstenalpers/CleanMyPosts/issues).
 
-1. Check out our [contributing guidelines](CONTRIBUTING.md).
-2. Ideally, open an issue before starting work.
-3. Submit a pull request with your changes.
-
-Thank you for helping make **CleanMyPosts** better!
+If CleanMyPosts saved you an afternoon of clicking, a ⭐ helps others find it.
 
 ---
 
 ## ⚠️ Disclaimer
 
-This tool automates a web browser to delete your own content. It uses no API and no token —
-it presses the same buttons you would, in your own signed-in session.
-
-**Deletions are permanent.** Nothing here can undo them, and neither platform offers a way
-back. Look at a list before you empty it.
-
-**Automation may conflict with the platforms' terms of use.** They restrict automated
-access, and the consequence would fall on your account rather than on this software. You use
-it at your own risk.
-
-The author is not affiliated with X (formerly Twitter) or Google. Provided as-is under the
-MIT licence, without warranty of any kind.
-
----
-
-## 🐞 Report a Bug
-
-If you encounter any issues or bugs, please [report them here](https://github.com/thorstenalpers/CleanMyPosts/issues).
+This tool automates a web browser to delete your own content, in your own signed-in session.
+Deletions are permanent. Automation may conflict with the platforms' terms of use, and the
+consequence would fall on your account rather than on this software — use it at your own
+risk. Not affiliated with X Corp. or Google. Provided as-is under the MIT licence, without
+warranty of any kind.

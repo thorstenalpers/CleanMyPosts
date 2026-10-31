@@ -27,10 +27,10 @@
 	"devDependencies": {
 		"@eslint/js": "^10.0.1",
 		"@internationalized/date": "^3.12.4",
-		"@lucide/svelte": "^1.62.0",
+		"@lucide/svelte": "^1.66.0",
 		"@playwright/test": "^1.64.1",
-		"@sveltejs/adapter-static": "^4.0.0",
-		"@sveltejs/kit": "^3.1.0",
+		"@sveltejs/adapter-static": "^4.0.1",
+		"@sveltejs/kit": "^3.1.1",
 		"@sveltejs/vite-plugin-svelte": "^7.3.1",
 		"@tailwindcss/vite": "^4.3.3",
 		"@tauri-apps/cli": "^2.12.4",
@@ -40,7 +40,7 @@
 		"bits-ui": "^2.20.2",
 		"class-variance-authority": "^0.7.1",
 		"clsx": "^2.1.1",
-		"eslint": "^10.13.0",
+		"eslint": "^10.14.0",
 		"eslint-config-prettier": "^10.1.8",
 		"eslint-plugin-svelte": "^3.23.1",
 		"globals": "^17.13.0",
@@ -53,12 +53,12 @@
 		"svelte-check": "^4.7.7",
 		"svelte-sonner": "^1.2.2",
 		"tailwind-merge": "^3.7.0",
-		"tailwind-variants": "^3.3.1",
+		"tailwind-variants": "^4.0.1",
 		"tailwindcss": "^4.3.3",
 		"typescript": "^6.0.3",
 		"typescript-eslint": "^8.72.1",
 		"vite": "^8.3.5",
-		"vitest": "^5.0.0",
+		"vitest": "^5.0.5",
 		"zod": "^4.6.7"
 	}
 }

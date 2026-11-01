@@ -14,13 +14,6 @@ Years of it, gone in one click instead of one menu at a time.
 [![Add to Chrome](https://img.shields.io/badge/Add_to-Chrome-4285F4?style=for-the-badge&logo=googlechrome&logoColor=white)](https://chromewebstore.google.com/detail/cleanmyposts/klkjiihehilemkhhdnfphkildcakadbi)
 [![Add to Firefox](https://img.shields.io/badge/Add_to-Firefox-FF7139?style=for-the-badge&logo=firefoxbrowser&logoColor=white)](https://addons.mozilla.org/en-US/firefox/addon/cleanmyposts/)
 
-[![Release](https://img.shields.io/github/v/release/thorstenalpers/CleanMyPosts?style=flat-square&logo=github&label=release)](https://github.com/thorstenalpers/CleanMyPosts/releases/latest)
-[![Downloads](https://img.shields.io/github/downloads/thorstenalpers/CleanMyPosts/total?style=flat-square&logo=github&label=downloads)](https://github.com/thorstenalpers/CleanMyPosts/releases)
-[![Chrome Web Store](https://img.shields.io/chrome-web-store/v/klkjiihehilemkhhdnfphkildcakadbi?style=flat-square&logo=googlechrome&logoColor=white&label=chrome)](https://chromewebstore.google.com/detail/cleanmyposts/klkjiihehilemkhhdnfphkildcakadbi)
-[![Firefox Add-on](https://img.shields.io/amo/v/cleanmyposts?style=flat-square&logo=firefox&logoColor=white&label=firefox)](https://addons.mozilla.org/en-US/firefox/addon/cleanmyposts/)
-[![CI](https://img.shields.io/github/actions/workflow/status/thorstenalpers/CleanMyPosts/ci.yml?branch=main&style=flat-square&logo=githubactions&logoColor=white&label=CI)](https://github.com/thorstenalpers/CleanMyPosts/actions/workflows/ci.yml)
-[![Stars](https://img.shields.io/github/stars/thorstenalpers/CleanMyPosts?style=flat-square&logo=github&label=stars)](https://github.com/thorstenalpers/CleanMyPosts)
-
 <img src="./assets/X.webp" alt="Delete everything running across posts, replies, reposts, likes and followings on X" width="760" />
 
 </div>
